@@ -21,6 +21,8 @@ import AdminCarRentals from "./pages/admin/CarRentals";
 import AdminBikeRentals from "./pages/admin/BikeRentals";
 import AdminAdventures from "./pages/admin/Adventures";
 import AdminSettings from "./pages/admin/Settings";
+import AdminPageBuilder from "./pages/admin/PageBuilder";
+import AdminWebsiteSettings from "./pages/admin/WebsiteSettings";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +50,8 @@ const App = () => (
             <Route path="rentals/car" element={<AdminCarRentals />} />
             <Route path="rentals/bike" element={<AdminBikeRentals />} />
             <Route path="adventures" element={<AdminAdventures />} />
+            <Route path="page-builder" element={<AdminPageBuilder />} />
+            <Route path="website-settings" element={<AdminWebsiteSettings />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           
