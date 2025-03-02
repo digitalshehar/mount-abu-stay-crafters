@@ -15,6 +15,7 @@ const Index = () => {
     {
       id: 1,
       name: "Hilltop Luxury Resort",
+      slug: "hilltop-luxury-resort",
       image: "https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
       price: 5800,
       location: "Near Nakki Lake",
@@ -26,6 +27,7 @@ const Index = () => {
     {
       id: 2,
       name: "Palace Heritage Hotel",
+      slug: "palace-heritage-hotel",
       image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
       price: 7200,
       location: "Central Mount Abu",
@@ -36,6 +38,7 @@ const Index = () => {
     {
       id: 3,
       name: "Green Valley Resort",
+      slug: "green-valley-resort",
       image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
       price: 4300,
       location: "Near Wildlife Sanctuary",
@@ -46,6 +49,7 @@ const Index = () => {
     {
       id: 4,
       name: "Mountain View Cottages",
+      slug: "mountain-view-cottages",
       image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
       price: 3500,
       location: "Sunset Point",
@@ -56,6 +60,7 @@ const Index = () => {
     {
       id: 5,
       name: "Lakeside Retreat",
+      slug: "lakeside-retreat",
       image: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
       price: 4800,
       location: "Nakki Lake",

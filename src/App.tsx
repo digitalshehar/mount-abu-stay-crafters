@@ -10,6 +10,7 @@ import CarRentals from "./pages/CarRentals";
 import BikeRentals from "./pages/BikeRentals";
 import Adventures from "./pages/Adventures";
 import Blog from "./pages/Blog";
+import HotelDetail from "./pages/HotelDetail";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -33,6 +34,7 @@ const App = () => (
           {/* Public Routes */}
           <Route path="/" element={<Index />} />
           <Route path="/hotels" element={<Index />} />
+          <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
           <Route path="/rentals/car" element={<CarRentals />} />
           <Route path="/rentals/bike" element={<BikeRentals />} />
           <Route path="/adventures" element={<Adventures />} />

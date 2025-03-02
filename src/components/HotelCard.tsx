@@ -12,6 +12,7 @@ interface HotelCardProps {
   reviewCount: number;
   amenities: string[];
   featured?: boolean;
+  slug?: string;
 }
 
 const HotelCard = ({
@@ -24,7 +25,11 @@ const HotelCard = ({
   reviewCount,
   amenities,
   featured = false,
+  slug,
 }: HotelCardProps) => {
+  // Generate a slug from the hotel name if not provided
+  const hotelSlug = slug || name.toLowerCase().replace(/\s+/g, '-');
+
   // Function to render amenity icon
   const renderAmenityIcon = (amenity: string) => {
     switch (amenity.toLowerCase()) {
@@ -57,7 +62,7 @@ const HotelCard = ({
             </span>
           </div>
         )}
-        <Link to={`/hotel/${id}`}>
+        <Link to={`/hotel/${hotelSlug}`}>
           <img
             src={image}
             alt={name}
@@ -68,7 +73,7 @@ const HotelCard = ({
 
       <div className="p-6 flex flex-col flex-grow">
         <div className="flex items-start justify-between mb-2">
-          <Link to={`/hotel/${id}`} className="hover:opacity-80 transition-opacity">
+          <Link to={`/hotel/${hotelSlug}`} className="hover:opacity-80 transition-opacity">
             <h3 className="text-lg font-display font-semibold">{name}</h3>
           </Link>
           <div className="flex items-center bg-primary/5 rounded-lg px-2 py-1">
@@ -101,7 +106,7 @@ const HotelCard = ({
             <span className="text-stone-500 text-sm">/night</span>
           </div>
           <Link
-            to={`/hotel/${id}`}
+            to={`/hotel/${hotelSlug}`}
             className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg transition-colors hover:bg-primary/90"
           >
             View Details
