@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Calendar, MapPin, Users, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -22,30 +21,21 @@ const Hero = () => {
       {/* Content */}
       <div className="container-custom relative z-20 pt-32 pb-20">
         <div className="max-w-3xl mx-auto text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6"
+          <h1
+            className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6 animate-fade-in-down"
           >
             Discover the Serenity of Mount Abu
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-white/90 mb-12"
+          </h1>
+          <p
+            className="text-xl text-white/90 mb-12 animate-fade-in-down animation-delay-200"
           >
             Find the perfect accommodations, adventures, and experiences for your dream getaway
-          </motion.p>
+          </p>
         </div>
 
         {/* Search Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg"
+        <div
+          className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg animate-fade-in-up animation-delay-400"
         >
           <div className="flex border-b space-x-4 mb-6">
             {[
@@ -211,7 +201,7 @@ const Hero = () => {
               {activeTab === "activities" && "Search Activities"}
             </Link>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
