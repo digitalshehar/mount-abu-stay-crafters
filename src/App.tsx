@@ -11,6 +11,16 @@ import BikeRentals from "./pages/BikeRentals";
 import Adventures from "./pages/Adventures";
 import Blog from "./pages/Blog";
 
+// Admin Pages
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminOverview from "./pages/admin/Overview";
+import AdminHotels from "./pages/admin/Hotels";
+import AdminBlog from "./pages/admin/Blog";
+import AdminCarRentals from "./pages/admin/CarRentals";
+import AdminBikeRentals from "./pages/admin/BikeRentals";
+import AdminAdventures from "./pages/admin/Adventures";
+import AdminSettings from "./pages/admin/Settings";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -20,13 +30,26 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<Index />} />
           <Route path="/hotels" element={<Index />} />
           <Route path="/rentals/car" element={<CarRentals />} />
           <Route path="/rentals/bike" element={<BikeRentals />} />
           <Route path="/adventures" element={<Adventures />} />
           <Route path="/blog" element={<Blog />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route index element={<AdminOverview />} />
+            <Route path="hotels" element={<AdminHotels />} />
+            <Route path="blog" element={<AdminBlog />} />
+            <Route path="rentals/car" element={<AdminCarRentals />} />
+            <Route path="rentals/bike" element={<AdminBikeRentals />} />
+            <Route path="adventures" element={<AdminAdventures />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Route>
+          
+          {/* Catch All Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
