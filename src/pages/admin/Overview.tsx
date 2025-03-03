@@ -3,6 +3,13 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Calendar, CreditCard, Hotel, MapPin, TrendingUp, Users } from "lucide-react";
+import AnalyticsSummary from "@/components/admin/AnalyticsSummary";
+import NotificationsPanel from "@/components/admin/NotificationsPanel";
+import QuickActions from "@/components/admin/QuickActions";
+import ActivityLog from "@/components/admin/ActivityLog";
+import TaskManager from "@/components/admin/TaskManager";
+import SiteMonitoring from "@/components/admin/SiteMonitoring";
+import SeoAnalytics from "@/components/admin/SeoAnalytics";
 
 const data = [
   { name: "Jan", bookings: 65 },
@@ -75,7 +82,19 @@ const AdminOverview = () => {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* New Analytics Summary Component */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-3">Website Analytics</h2>
+        <AnalyticsSummary />
+      </div>
+      
+      {/* Quick Actions Component */}
+      <div className="mb-6">
+        <QuickActions />
+      </div>
+
+      {/* Two Column Layout for Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>
             <CardTitle>Booking Overview</CardTitle>
@@ -113,6 +132,28 @@ const AdminOverview = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+      </div>
+      
+      {/* SEO Analytics */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-3">SEO Performance</h2>
+        <SeoAnalytics />
+      </div>
+
+      {/* Three Column Layout for Different Components */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="space-y-6">
+          <NotificationsPanel />
+        </div>
+        
+        <div className="space-y-6">
+          <TaskManager />
+        </div>
+        
+        <div className="space-y-6">
+          <SiteMonitoring />
+          <ActivityLog />
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
