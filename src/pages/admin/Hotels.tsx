@@ -14,7 +14,10 @@ import {
   Users,
   Utensils,
   Check,
-  X
+  X,
+  Wifi,
+  Droplets,
+  Coffee
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
