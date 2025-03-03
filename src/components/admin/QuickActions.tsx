@@ -10,7 +10,7 @@ import {
   Users, 
   Calendar, 
   Mail,
-  RefreshCw 
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -24,9 +24,9 @@ const QuickActions = () => {
     { name: "Edit Pages", icon: Edit, color: "bg-blue-100 text-blue-600", path: "/admin/page-builder" },
     { name: "New Blog Post", icon: FileText, color: "bg-purple-100 text-purple-600", path: "/admin/blog" },
     { name: "Update Settings", icon: Settings, color: "bg-orange-100 text-orange-600", path: "/admin/settings" },
-    { name: "Manage Users", icon: Users, color: "bg-indigo-100 text-indigo-600", path: "/admin/settings" },
-    { name: "View Calendar", icon: Calendar, color: "bg-pink-100 text-pink-600", path: "/admin/settings" },
-    { name: "Send Newsletter", icon: Mail, color: "bg-yellow-100 text-yellow-600", path: "/admin/settings" },
+    { name: "Manage Users", icon: Users, color: "bg-indigo-100 text-indigo-600", path: "/admin/website-settings" },
+    { name: "View Calendar", icon: Calendar, color: "bg-pink-100 text-pink-600", path: "/admin/website-settings" },
+    { name: "Send Newsletter", icon: Mail, color: "bg-yellow-100 text-yellow-600", path: "/admin/website-settings" },
     { name: "Cache Refresh", icon: RefreshCw, color: "bg-red-100 text-red-600", path: "" },
   ];
 
@@ -34,6 +34,7 @@ const QuickActions = () => {
     if (path) {
       navigate(path);
     } else {
+      // For actions without a specific path, like "Cache Refresh"
       toast({
         title: "Action triggered",
         description: `You clicked on "${actionName}"`,
