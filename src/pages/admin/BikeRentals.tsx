@@ -1,18 +1,16 @@
-
 import React, { useState } from "react";
 import { 
   Plus, 
   Search, 
   Edit, 
   Trash, 
-  Calendar, 
   Bike,
   Eye,
   Filter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 const AdminBikeRentals = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Sample bike data - would typically come from API
   const [bikes, setBikes] = useState([
@@ -108,6 +107,8 @@ const AdminBikeRentals = () => {
       title: "Bike added",
       description: `${newBike.name} has been added successfully.`,
     });
+    
+    setIsDialogOpen(false);
   };
 
   // Handle deleting a bike
@@ -133,7 +134,7 @@ const AdminBikeRentals = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Manage Bike Rentals</h1>
         
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus size={16} />
@@ -219,12 +220,8 @@ const AdminBikeRentals = () => {
               </div>
               
               <div className="col-span-2 flex justify-end gap-2 mt-4">
-                <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <DialogClose asChild>
-                  <Button onClick={handleAddBike}>Add Bike</Button>
-                </DialogClose>
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddBike}>Add Bike</Button>
               </div>
             </div>
           </DialogContent>

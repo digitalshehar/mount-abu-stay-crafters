@@ -1,18 +1,16 @@
-
 import React, { useState } from "react";
 import { 
   Plus, 
   Search, 
   Edit, 
   Trash, 
-  Calendar, 
   Car,
   Eye,
   Filter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 const AdminCarRentals = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Sample car data - would typically come from API
   const [cars, setCars] = useState([
@@ -113,6 +112,8 @@ const AdminCarRentals = () => {
       title: "Car added",
       description: `${newCar.name} has been added successfully.`,
     });
+    
+    setIsDialogOpen(false);
   };
 
   // Handle deleting a car
@@ -137,7 +138,7 @@ const AdminCarRentals = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Manage Car Rentals</h1>
         
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus size={16} />
@@ -238,12 +239,8 @@ const AdminCarRentals = () => {
               </div>
               
               <div className="col-span-2 flex justify-end gap-2 mt-4">
-                <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <DialogClose asChild>
-                  <Button onClick={handleAddCar}>Add Car</Button>
-                </DialogClose>
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddCar}>Add Car</Button>
               </div>
             </div>
           </DialogContent>

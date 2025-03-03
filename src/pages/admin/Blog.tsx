@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Plus, 
@@ -12,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 const AdminBlog = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Sample blog data - would typically come from API
   const [blogs, setBlogs] = useState([
@@ -108,6 +108,8 @@ const AdminBlog = () => {
       title: "Blog article added",
       description: `"${newBlog.title}" has been saved as draft.`,
     });
+    
+    setIsDialogOpen(false);
   };
 
   // Handle deleting a blog
@@ -133,7 +135,7 @@ const AdminBlog = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Manage Blog</h1>
         
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus size={16} />
@@ -220,12 +222,8 @@ const AdminBlog = () => {
               </div>
               
               <div className="col-span-2 flex justify-end gap-2 mt-4">
-                <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <DialogClose asChild>
-                  <Button onClick={handleAddBlog}>Save as Draft</Button>
-                </DialogClose>
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddBlog}>Save as Draft</Button>
               </div>
             </div>
           </DialogContent>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { 
   Plus, 
@@ -7,21 +6,17 @@ import {
   Trash, 
   Star, 
   Filter, 
-  SlidersHorizontal, 
   Eye,
-  Image,
-  Bed,
-  Users,
-  Utensils,
   Check,
   X,
   Wifi,
   Droplets,
-  Coffee
+  Coffee,
+  Utensils
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -44,8 +39,8 @@ const AdminHotels = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("general");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  // Sample hotel data - would typically come from API
   const [hotels, setHotels] = useState([
     {
       id: 1,
@@ -106,7 +101,6 @@ const AdminHotels = () => {
     },
   ]);
 
-  // Form state for new hotel
   const [newHotel, setNewHotel] = useState({
     name: "",
     location: "",
@@ -119,7 +113,6 @@ const AdminHotels = () => {
     featured: false,
   });
 
-  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setNewHotel({
@@ -130,7 +123,6 @@ const AdminHotels = () => {
     });
   };
 
-  // Handle amenity changes
   const handleAmenityToggle = (amenity) => {
     if (newHotel.amenities.includes(amenity)) {
       setNewHotel({
@@ -145,7 +137,6 @@ const AdminHotels = () => {
     }
   };
 
-  // Handle room changes
   const handleRoomChange = (index, field, value) => {
     const updatedRooms = [...newHotel.rooms];
     updatedRooms[index] = {
@@ -160,7 +151,6 @@ const AdminHotels = () => {
     });
   };
 
-  // Add new room
   const handleAddRoom = () => {
     setNewHotel({
       ...newHotel,
@@ -168,7 +158,6 @@ const AdminHotels = () => {
     });
   };
 
-  // Remove room
   const handleRemoveRoom = (index) => {
     if (newHotel.rooms.length <= 1) {
       toast({
@@ -188,14 +177,11 @@ const AdminHotels = () => {
     });
   };
 
-  // Handle adding a new hotel
   const handleAddHotel = () => {
-    // Auto-generate slug from name
     const slug = newHotel.name.toLowerCase()
       .replace(/[^\w\s]/gi, '')
       .replace(/\s+/g, '-');
     
-    // Validation would happen here in a real application
     const newId = hotels.length > 0 ? Math.max(...hotels.map(hotel => hotel.id)) + 1 : 1;
     
     const hotelToAdd = {
@@ -225,9 +211,10 @@ const AdminHotels = () => {
       title: "Hotel added",
       description: `${newHotel.name} has been added successfully.`,
     });
+
+    setIsDialogOpen(false);
   };
 
-  // Handle deleting a hotel
   const handleDeleteHotel = (id) => {
     setHotels(hotels.filter(hotel => hotel.id !== id));
     
@@ -238,7 +225,6 @@ const AdminHotels = () => {
     });
   };
 
-  // Handle toggling hotel status
   const handleToggleHotelStatus = (id) => {
     setHotels(hotels.map(hotel => {
       if (hotel.id === id) {
@@ -257,14 +243,12 @@ const AdminHotels = () => {
     });
   };
 
-  // Available amenities for selection
   const availableAmenities = [
     "WiFi", "Swimming Pool", "Restaurant", "Spa", "Gym", "Bar", 
     "24/7 Room Service", "Parking", "Laundry", "Pet Friendly", 
     "Air Conditioning", "TV", "Breakfast", "Minibar"
   ];
 
-  // Filter hotels based on search query
   const filteredHotels = hotels.filter(hotel => 
     hotel.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     hotel.location.toLowerCase().includes(searchQuery.toLowerCase())
@@ -275,7 +259,7 @@ const AdminHotels = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Manage Hotels</h1>
         
-        <Dialog>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus size={16} />
@@ -408,7 +392,6 @@ const AdminHotels = () => {
                           {amenity === "Swimming Pool" && <Droplets className="h-5 w-5 text-stone-500" />}
                           {amenity === "Restaurant" && <Utensils className="h-5 w-5 text-stone-500" />}
                           {amenity === "Breakfast" && <Coffee className="h-5 w-5 text-stone-500" />}
-                          {/* Default icon for other amenities */}
                           {!["WiFi", "Swimming Pool", "Restaurant", "Breakfast"].includes(amenity) && 
                             <Check className="h-5 w-5 text-stone-500" />}
                         </div>
@@ -497,14 +480,12 @@ const AdminHotels = () => {
                 
                 <div className="flex justify-between gap-2 mt-4">
                   <Button variant="outline" onClick={() => setActiveTab("amenities")}>Back: Amenities</Button>
-                  <DialogClose asChild>
-                    <Button 
-                      onClick={handleAddHotel}
-                      disabled={!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0}
-                    >
-                      Add Hotel
-                    </Button>
-                  </DialogClose>
+                  <Button 
+                    onClick={handleAddHotel}
+                    disabled={!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0}
+                  >
+                    Add Hotel
+                  </Button>
                 </div>
               </TabsContent>
             </Tabs>
