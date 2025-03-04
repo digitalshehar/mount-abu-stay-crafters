@@ -1,11 +1,30 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Calendar, MapPin, ChevronDown, Filter, Car } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const CarRentals = () => {
+  const location = useLocation();
+  const { toast } = useToast();
+  const searchParams = new URLSearchParams(location.search);
+
+  const [searchValues, setSearchValues] = useState({
+    location: searchParams.get("location") || "",
+    dates: searchParams.get("dates") || "",
+    type: searchParams.get("type") || ""
+  });
+
+  useEffect(() => {
+    if (searchParams.toString()) {
+      toast({
+        title: "Search Applied",
+        description: "Showing search results based on your criteria",
+      });
+    }
+  }, []);
+
   const cars = [
     {
       id: 1,
@@ -45,11 +64,39 @@ const CarRentals = () => {
     },
   ];
 
+  const filteredCars = cars.filter(car => {
+    if (!searchValues.location && !searchValues.dates && !searchValues.type) {
+      return true;
+    }
+
+    let matches = true;
+    
+    if (searchValues.type && searchValues.type !== "") {
+      matches = matches && car.type.toLowerCase() === searchValues.type.toLowerCase();
+    }
+    
+    return matches;
+  });
+
+  const handleSearchFormSubmit = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchValues.location) params.append("location", searchValues.location);
+    if (searchValues.dates) params.append("dates", searchValues.dates);
+    if (searchValues.type) params.append("type", searchValues.type);
+    
+    window.history.pushState({}, "", `${location.pathname}?${params.toString()}`);
+    
+    toast({
+      title: "Search Updated",
+      description: "Showing updated search results",
+    });
+  };
+
   return (
     <>
       <Header />
       <main>
-        {/* Hero Section */}
         <section className="relative py-20 bg-stone-100">
           <div className="container-custom">
             <div className="max-w-3xl mx-auto text-center">
@@ -58,15 +105,16 @@ const CarRentals = () => {
                 Explore the scenic beauty of Mount Abu with our comfortable and reliable car rental service
               </p>
 
-              {/* Search Form */}
               <div className="bg-white rounded-xl shadow-md p-6 mt-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <form onSubmit={handleSearchFormSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="relative">
                     <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-stone-400" />
                     <input
                       type="text"
                       placeholder="Pickup location"
                       className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={searchValues.location}
+                      onChange={(e) => setSearchValues({...searchValues, location: e.target.value})}
                     />
                   </div>
                   <div className="relative">
@@ -75,42 +123,53 @@ const CarRentals = () => {
                       type="text"
                       placeholder="Pickup — Dropoff date"
                       className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                      value={searchValues.dates}
+                      onChange={(e) => setSearchValues({...searchValues, dates: e.target.value})}
                     />
                   </div>
-                  <button className="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg shadow transition-all flex items-center justify-center">
+                  <button 
+                    type="submit"
+                    className="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg shadow transition-all flex items-center justify-center"
+                  >
                     Search Cars
                   </button>
-                </div>
+                </form>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Car Listings */}
         <section className="py-16">
           <div className="container-custom">
             <div className="flex flex-col md:flex-row gap-8">
-              {/* Filters */}
               <div className="w-full md:w-1/4 bg-white rounded-xl shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium">Filters</h3>
                   <Filter size={20} />
                 </div>
                 
-                {/* Car Type */}
                 <div className="mb-6">
                   <h4 className="text-sm font-medium mb-3">Car Type</h4>
                   <div className="space-y-2">
                     {['SUV', 'Sedan', 'Hatchback', 'Luxury'].map((type) => (
                       <label key={type} className="flex items-center">
-                        <input type="checkbox" className="mr-2" />
+                        <input 
+                          type="checkbox" 
+                          className="mr-2" 
+                          checked={searchValues.type.toLowerCase() === type.toLowerCase()}
+                          onChange={() => {
+                            setSearchValues({
+                              ...searchValues, 
+                              type: searchValues.type.toLowerCase() === type.toLowerCase() ? "" : type.toLowerCase()
+                            });
+                          }}
+                        />
                         <span>{type}</span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                {/* Transmission */}
                 <div className="mb-6">
                   <h4 className="text-sm font-medium mb-3">Transmission</h4>
                   <div className="space-y-2">
@@ -123,7 +182,6 @@ const CarRentals = () => {
                   </div>
                 </div>
 
-                {/* Price Range */}
                 <div className="mb-6">
                   <h4 className="text-sm font-medium mb-3">Price Range</h4>
                   <input
@@ -139,15 +197,17 @@ const CarRentals = () => {
                   </div>
                 </div>
 
-                <button className="w-full bg-secondary hover:bg-secondary/80 text-primary font-medium py-2 px-4 rounded-lg transition-all">
+                <button 
+                  onClick={handleSearchFormSubmit}
+                  className="w-full bg-secondary hover:bg-secondary/80 text-primary font-medium py-2 px-4 rounded-lg transition-all"
+                >
                   Apply Filters
                 </button>
               </div>
 
-              {/* Car List */}
               <div className="w-full md:w-3/4">
                 <div className="flex justify-between items-center mb-6">
-                  <p className="text-stone-500">Showing {cars.length} cars</p>
+                  <p className="text-stone-500">Showing {filteredCars.length} cars</p>
                   <div className="flex items-center">
                     <span className="mr-2">Sort by:</span>
                     <button className="flex items-center text-stone-700 hover:text-primary transition-colors">
@@ -158,41 +218,56 @@ const CarRentals = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {cars.map((car) => (
-                    <div key={car.id} className="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
-                      <div className="relative h-48">
-                        <img
-                          src={car.image}
-                          alt={car.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-6">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-display font-bold text-xl mb-1">{car.name}</h3>
-                            <p className="text-sm text-stone-500 mb-2">{car.type} • {car.transmission}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-primary font-bold text-xl">₹{car.price}</p>
-                            <p className="text-xs text-stone-500">per day</p>
-                          </div>
+                  {filteredCars.length > 0 ? (
+                    filteredCars.map((car) => (
+                      <div key={car.id} className="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+                        <div className="relative h-48">
+                          <img
+                            src={car.image}
+                            alt={car.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                        
-                        <div className="flex items-center text-sm text-stone-500 mt-4 mb-6">
-                          <Car size={16} className="mr-1" />
-                          <span className="mr-3">{car.capacity} Seats</span>
+                        <div className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-display font-bold text-xl mb-1">{car.name}</h3>
+                              <p className="text-sm text-stone-500 mb-2">{car.type} • {car.transmission}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-primary font-bold text-xl">₹{car.price}</p>
+                              <p className="text-xs text-stone-500">per day</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center text-sm text-stone-500 mt-4 mb-6">
+                            <Car size={16} className="mr-1" />
+                            <span className="mr-3">{car.capacity} Seats</span>
+                          </div>
+                          
+                          <Link
+                            to={`/rentals/car/${car.id}`}
+                            className="block w-full bg-primary hover:bg-primary/90 text-white text-center font-medium py-2 px-4 rounded-lg shadow-sm transition-all"
+                          >
+                            Book Now
+                          </Link>
                         </div>
-                        
-                        <Link
-                          to={`/rentals/car/${car.id}`}
-                          className="block w-full bg-primary hover:bg-primary/90 text-white text-center font-medium py-2 px-4 rounded-lg shadow-sm transition-all"
-                        >
-                          Book Now
-                        </Link>
                       </div>
+                    ))
+                  ) : (
+                    <div className="col-span-2 text-center py-10">
+                      <p className="text-lg text-stone-500">No cars found matching your search criteria.</p>
+                      <button 
+                        onClick={() => {
+                          setSearchValues({ location: "", dates: "", type: "" });
+                          window.history.pushState({}, "", location.pathname);
+                        }}
+                        className="mt-4 bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-all"
+                      >
+                        Clear Search
+                      </button>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>

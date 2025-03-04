@@ -1,10 +1,68 @@
 
 import { useState } from "react";
 import { Calendar, MapPin, Users, Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("hotels");
+  
+  // Search form state
+  const [hotelSearch, setHotelSearch] = useState({
+    location: "",
+    dates: "",
+    guests: ""
+  });
+  
+  const [carSearch, setCarSearch] = useState({
+    location: "",
+    dates: "",
+    type: ""
+  });
+  
+  const [bikeSearch, setBikeSearch] = useState({
+    location: "",
+    dates: "",
+    type: ""
+  });
+  
+  const [activitySearch, setActivitySearch] = useState({
+    location: "",
+    date: "",
+    type: ""
+  });
+
+  const handleSearch = () => {
+    // Prepare search parameters based on active tab
+    let searchParams = new URLSearchParams();
+    
+    switch(activeTab) {
+      case "hotels":
+        if (hotelSearch.location) searchParams.append("location", hotelSearch.location);
+        if (hotelSearch.dates) searchParams.append("dates", hotelSearch.dates);
+        if (hotelSearch.guests) searchParams.append("guests", hotelSearch.guests);
+        navigate(`/hotels?${searchParams.toString()}`);
+        break;
+      case "cars":
+        if (carSearch.location) searchParams.append("location", carSearch.location);
+        if (carSearch.dates) searchParams.append("dates", carSearch.dates);
+        if (carSearch.type) searchParams.append("type", carSearch.type);
+        navigate(`/rentals/car?${searchParams.toString()}`);
+        break;
+      case "bikes":
+        if (bikeSearch.location) searchParams.append("location", bikeSearch.location);
+        if (bikeSearch.dates) searchParams.append("dates", bikeSearch.dates);
+        if (bikeSearch.type) searchParams.append("type", bikeSearch.type);
+        navigate(`/rentals/bike?${searchParams.toString()}`);
+        break;
+      case "activities":
+        if (activitySearch.location) searchParams.append("location", activitySearch.location);
+        if (activitySearch.date) searchParams.append("date", activitySearch.date);
+        if (activitySearch.type) searchParams.append("type", activitySearch.type);
+        navigate(`/adventures?${searchParams.toString()}`);
+        break;
+    }
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -66,6 +124,8 @@ const Hero = () => {
                   type="text"
                   placeholder="Where are you going?"
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={hotelSearch.location}
+                  onChange={(e) => setHotelSearch({...hotelSearch, location: e.target.value})}
                 />
               </div>
               <div className="relative">
@@ -74,12 +134,16 @@ const Hero = () => {
                   type="text"
                   placeholder="Check-in — Check-out"
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={hotelSearch.dates}
+                  onChange={(e) => setHotelSearch({...hotelSearch, dates: e.target.value})}
                 />
               </div>
               <div className="relative">
                 <Users className="absolute left-4 top-3.5 h-5 w-5 text-stone-400" />
                 <select
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
+                  value={hotelSearch.guests}
+                  onChange={(e) => setHotelSearch({...hotelSearch, guests: e.target.value})}
                 >
                   <option value="">Guests & Rooms</option>
                   <option value="1-1">1 Guest, 1 Room</option>
@@ -101,6 +165,8 @@ const Hero = () => {
                   type="text"
                   placeholder="Pickup location"
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={carSearch.location}
+                  onChange={(e) => setCarSearch({...carSearch, location: e.target.value})}
                 />
               </div>
               <div className="relative">
@@ -109,11 +175,15 @@ const Hero = () => {
                   type="text"
                   placeholder="Pickup — Dropoff date"
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={carSearch.dates}
+                  onChange={(e) => setCarSearch({...carSearch, dates: e.target.value})}
                 />
               </div>
               <div className="relative">
                 <select
                   className="w-full pl-4 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
+                  value={carSearch.type}
+                  onChange={(e) => setCarSearch({...carSearch, type: e.target.value})}
                 >
                   <option value="">Car Type</option>
                   <option value="economy">Economy</option>
@@ -133,6 +203,8 @@ const Hero = () => {
                   type="text"
                   placeholder="Pickup location"
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={bikeSearch.location}
+                  onChange={(e) => setBikeSearch({...bikeSearch, location: e.target.value})}
                 />
               </div>
               <div className="relative">
@@ -141,11 +213,15 @@ const Hero = () => {
                   type="text"
                   placeholder="Pickup — Dropoff date"
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={bikeSearch.dates}
+                  onChange={(e) => setBikeSearch({...bikeSearch, dates: e.target.value})}
                 />
               </div>
               <div className="relative">
                 <select
                   className="w-full pl-4 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
+                  value={bikeSearch.type}
+                  onChange={(e) => setBikeSearch({...bikeSearch, type: e.target.value})}
                 >
                   <option value="">Bike Type</option>
                   <option value="scooter">Scooter</option>
@@ -165,6 +241,8 @@ const Hero = () => {
                   type="text"
                   placeholder="Location"
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={activitySearch.location}
+                  onChange={(e) => setActivitySearch({...activitySearch, location: e.target.value})}
                 />
               </div>
               <div className="relative">
@@ -173,11 +251,15 @@ const Hero = () => {
                   type="text"
                   placeholder="Date"
                   className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  value={activitySearch.date}
+                  onChange={(e) => setActivitySearch({...activitySearch, date: e.target.value})}
                 />
               </div>
               <div className="relative">
                 <select
                   className="w-full pl-4 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none bg-white"
+                  value={activitySearch.type}
+                  onChange={(e) => setActivitySearch({...activitySearch, type: e.target.value})}
                 >
                   <option value="">Activity Type</option>
                   <option value="trekking">Trekking</option>
@@ -190,8 +272,8 @@ const Hero = () => {
           )}
 
           <div className="flex justify-center">
-            <Link
-              to={`/${activeTab}`}
+            <button
+              onClick={handleSearch}
               className="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg shadow transition-all flex items-center"
             >
               <Search className="h-4 w-4 mr-2" />
@@ -199,7 +281,7 @@ const Hero = () => {
               {activeTab === "cars" && "Search Cars"}
               {activeTab === "bikes" && "Search Bikes"}
               {activeTab === "activities" && "Search Activities"}
-            </Link>
+            </button>
           </div>
         </div>
       </div>
