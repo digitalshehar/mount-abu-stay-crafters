@@ -7,9 +7,21 @@ import { Button } from "@/components/ui/button";
 interface HotelSearchBarProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  handleFilter?: () => void;
 }
 
-const HotelSearchBar = ({ searchQuery, setSearchQuery }: HotelSearchBarProps) => {
+const HotelSearchBar = ({ searchQuery, setSearchQuery, handleFilter }: HotelSearchBarProps) => {
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (handleFilter) handleFilter();
+    }
+  };
+
   return (
     <div className="p-4 border-b flex flex-col sm:flex-row gap-4">
       <div className="relative flex-1">
@@ -18,10 +30,11 @@ const HotelSearchBar = ({ searchQuery, setSearchQuery }: HotelSearchBarProps) =>
           placeholder="Search hotels by name or location..."
           className="pl-10"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={handleSearchInputChange}
+          onKeyPress={handleKeyPress}
         />
       </div>
-      <Button variant="outline" className="gap-2">
+      <Button variant="outline" className="gap-2" onClick={handleFilter}>
         <Filter size={16} />
         Filters
       </Button>

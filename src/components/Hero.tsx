@@ -1,10 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, MapPin, Users, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const Hero = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("hotels");
   
   // Search form state
@@ -41,26 +43,81 @@ const Hero = () => {
         if (hotelSearch.location) searchParams.append("location", hotelSearch.location);
         if (hotelSearch.dates) searchParams.append("dates", hotelSearch.dates);
         if (hotelSearch.guests) searchParams.append("guests", hotelSearch.guests);
+        
+        // Show toast for empty search
+        if (searchParams.toString() === "") {
+          toast({
+            title: "Empty Search",
+            description: "Please enter at least one search criteria",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         navigate(`/hotels?${searchParams.toString()}`);
         break;
+        
       case "cars":
         if (carSearch.location) searchParams.append("location", carSearch.location);
         if (carSearch.dates) searchParams.append("dates", carSearch.dates);
         if (carSearch.type) searchParams.append("type", carSearch.type);
+        
+        // Show toast for empty search
+        if (searchParams.toString() === "") {
+          toast({
+            title: "Empty Search",
+            description: "Please enter at least one search criteria",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         navigate(`/rentals/car?${searchParams.toString()}`);
         break;
+        
       case "bikes":
         if (bikeSearch.location) searchParams.append("location", bikeSearch.location);
         if (bikeSearch.dates) searchParams.append("dates", bikeSearch.dates);
         if (bikeSearch.type) searchParams.append("type", bikeSearch.type);
+        
+        // Show toast for empty search
+        if (searchParams.toString() === "") {
+          toast({
+            title: "Empty Search",
+            description: "Please enter at least one search criteria",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         navigate(`/rentals/bike?${searchParams.toString()}`);
         break;
+        
       case "activities":
         if (activitySearch.location) searchParams.append("location", activitySearch.location);
         if (activitySearch.date) searchParams.append("date", activitySearch.date);
         if (activitySearch.type) searchParams.append("type", activitySearch.type);
+        
+        // Show toast for empty search
+        if (searchParams.toString() === "") {
+          toast({
+            title: "Empty Search",
+            description: "Please enter at least one search criteria",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         navigate(`/adventures?${searchParams.toString()}`);
         break;
+    }
+    
+    // Success toast
+    if (searchParams.toString() !== "") {
+      toast({
+        title: "Search Initiated",
+        description: `Searching ${activeTab}...`,
+      });
     }
   };
 

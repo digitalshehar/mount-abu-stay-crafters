@@ -1,12 +1,14 @@
+
 import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Calendar, MapPin, ChevronDown, Filter } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const BikeRentals = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const searchParams = new URLSearchParams(location.search);
 
@@ -17,13 +19,22 @@ const BikeRentals = () => {
   });
 
   useEffect(() => {
-    if (searchParams.toString()) {
+    // Update search values when URL changes
+    const params = new URLSearchParams(location.search);
+    setSearchValues({
+      location: params.get("location") || "",
+      dates: params.get("dates") || "",
+      type: params.get("type") || ""
+    });
+    
+    // Show toast for search results if parameters exist
+    if (params.toString()) {
       toast({
         title: "Search Applied",
         description: "Showing search results based on your criteria",
       });
     }
-  }, []);
+  }, [location.search, toast]);
 
   const bikes = [
     {
@@ -61,13 +72,24 @@ const BikeRentals = () => {
   ];
 
   const filteredBikes = bikes.filter(bike => {
+    // If no search parameters, show all bikes
     if (!searchValues.location && !searchValues.dates && !searchValues.type) {
       return true;
     }
 
+    // Initialize as true and then apply filters
     let matches = true;
     
-    if (searchValues.type && searchValues.type !== "") {
+    // Filter by location if provided (case insensitive partial match)
+    if (searchValues.location && searchValues.location.trim() !== "") {
+      // Since we don't have actual location data for each bike in this demo, 
+      // we'll just check if any bike is available in the searched location
+      // In a real app, you would check bike.location against searchValues.location
+      matches = true; // Simplified for demo
+    }
+    
+    // Filter by type if provided (exact match, case insensitive)
+    if (searchValues.type && searchValues.type.trim() !== "") {
       matches = matches && bike.type.toLowerCase() === searchValues.type.toLowerCase();
     }
     
@@ -81,11 +103,23 @@ const BikeRentals = () => {
     if (searchValues.dates) params.append("dates", searchValues.dates);
     if (searchValues.type) params.append("type", searchValues.type);
     
-    window.history.pushState({}, "", `${location.pathname}?${params.toString()}`);
+    // Navigate with new search params
+    navigate(`${location.pathname}?${params.toString()}`);
     
+    // Show success toast
     toast({
       title: "Search Updated",
       description: "Showing updated search results",
+    });
+  };
+
+  const handleClearSearch = () => {
+    setSearchValues({ location: "", dates: "", type: "" });
+    navigate(location.pathname);
+    
+    toast({
+      title: "Search Cleared",
+      description: "Showing all available bikes",
     });
   };
 
