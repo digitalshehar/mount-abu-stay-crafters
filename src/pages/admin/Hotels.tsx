@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -156,11 +155,11 @@ const AdminHotels = () => {
     
     const newId = hotels.length > 0 ? Math.max(...hotels.map(hotel => hotel.id)) + 1 : 1;
     
-    const hotelToAdd = {
+    const hotelToAdd: Hotel = {
       ...newHotel,
       id: newId,
       slug,
-      status: "active",
+      status: "active" as const,
       reviewCount: 0,
       rating: 0
     };
