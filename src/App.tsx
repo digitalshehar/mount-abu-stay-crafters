@@ -11,6 +11,13 @@ import BikeRentals from "./pages/BikeRentals";
 import Adventures from "./pages/Adventures";
 import Blog from "./pages/Blog";
 import HotelDetail from "./pages/HotelDetail";
+import AboutUs from "./pages/AboutUs";
+import Contact from "./pages/Contact";
+import TravelGuide from "./pages/TravelGuide";
+import FAQs from "./pages/FAQs";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import CancellationPolicy from "./pages/CancellationPolicy";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -41,6 +48,13 @@ const App = () => (
           <Route path="/rentals/bike" element={<BikeRentals />} />
           <Route path="/adventures" element={<Adventures />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/travel-guide" element={<TravelGuide />} />
+          <Route path="/faqs" element={<FAQs />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/cancellation-policy" element={<CancellationPolicy />} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboard />}>

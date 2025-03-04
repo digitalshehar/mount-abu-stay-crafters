@@ -1,127 +1,121 @@
 
+import React from "react";
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Twitter } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="bg-stone-50 border-t border-stone-200">
-      <div className="container-custom py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          <div className="space-y-4">
-            <Link to="/" className="inline-block">
-              <span className="text-2xl font-display font-bold text-primary">
-                HotelInMountAbu
-              </span>
-            </Link>
-            <p className="text-muted-foreground">
-              Discover the best hotels, adventures, and experiences in Mount Abu.
-              Your perfect getaway starts here.
+    <footer className="bg-stone-900 text-white pt-16 pb-8">
+      <div className="container-custom">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          <div>
+            <h3 className="text-xl font-display font-bold mb-6">HotelInMountAbu</h3>
+            <p className="text-stone-300 mb-6">
+              Your trusted partner for finding the perfect accommodations and experiences in beautiful Mount Abu.
             </p>
             <div className="flex space-x-4">
-              <a 
-                href="#" 
-                className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-stone-200 hover:bg-primary hover:text-white transition-colors"
+              <a
+                href="#"
+                className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
                 aria-label="Facebook"
               >
-                <Facebook className="h-5 w-5" />
+                <Facebook size={20} />
               </a>
-              <a 
-                href="#" 
-                className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-stone-200 hover:bg-primary hover:text-white transition-colors"
+              <a
+                href="#"
+                className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
                 aria-label="Instagram"
               >
-                <Instagram className="h-5 w-5" />
+                <Instagram size={20} />
               </a>
-              <a 
-                href="#" 
-                className="h-10 w-10 rounded-full bg-white flex items-center justify-center border border-stone-200 hover:bg-primary hover:text-white transition-colors"
+              <a
+                href="#"
+                className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors"
                 aria-label="Twitter"
               >
-                <Twitter className="h-5 w-5" />
+                <Twitter size={20} />
               </a>
             </div>
           </div>
-          
+
           <div>
-            <h3 className="text-lg font-display font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              {[
-                { name: "Home", path: "/" },
-                { name: "About Us", path: "/about" },
-                { name: "Hotels", path: "/hotels" },
-                { name: "Car Rentals", path: "/rentals/car" },
-                { name: "Bike Rentals", path: "/rentals/bike" },
-                { name: "Adventures", path: "/adventures" },
-                { name: "Contact", path: "/contact" },
-              ].map((item, index) => (
-                <li key={index}>
-                  <Link 
-                    to={item.path}
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
+            <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
+            <ul className="space-y-3">
+              <li>
+                <Link to="/" className="text-stone-300 hover:text-white transition-colors">Home</Link>
+              </li>
+              <li>
+                <Link to="/about-us" className="text-stone-300 hover:text-white transition-colors">About Us</Link>
+              </li>
+              <li>
+                <Link to="/hotels" className="text-stone-300 hover:text-white transition-colors">Hotels</Link>
+              </li>
+              <li>
+                <Link to="/rentals/car" className="text-stone-300 hover:text-white transition-colors">Car Rentals</Link>
+              </li>
+              <li>
+                <Link to="/rentals/bike" className="text-stone-300 hover:text-white transition-colors">Bike Rentals</Link>
+              </li>
+              <li>
+                <Link to="/adventures" className="text-stone-300 hover:text-white transition-colors">Adventures</Link>
+              </li>
+              <li>
+                <Link to="/blog" className="text-stone-300 hover:text-white transition-colors">Blog</Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-stone-300 hover:text-white transition-colors">Contact Us</Link>
+              </li>
             </ul>
           </div>
-          
+
           <div>
-            <h3 className="text-lg font-display font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2">
-              {[
-                { name: "Travel Guide", path: "/travel-guide" },
-                { name: "FAQs", path: "/faqs" },
-                { name: "Blog", path: "/blog" },
-                { name: "Terms & Conditions", path: "/terms" },
-                { name: "Privacy Policy", path: "/privacy" },
-                { name: "Cancellation Policy", path: "/cancellation" },
-              ].map((item, index) => (
-                <li key={index}>
-                  <Link 
-                    to={item.path}
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
+            <h3 className="text-lg font-semibold mb-6">Resources</h3>
+            <ul className="space-y-3">
+              <li>
+                <Link to="/travel-guide" className="text-stone-300 hover:text-white transition-colors">Travel Guide</Link>
+              </li>
+              <li>
+                <Link to="/faqs" className="text-stone-300 hover:text-white transition-colors">FAQs</Link>
+              </li>
+              <li>
+                <Link to="/terms" className="text-stone-300 hover:text-white transition-colors">Terms & Conditions</Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-stone-300 hover:text-white transition-colors">Privacy Policy</Link>
+              </li>
+              <li>
+                <Link to="/cancellation-policy" className="text-stone-300 hover:text-white transition-colors">Cancellation Policy</Link>
+              </li>
             </ul>
           </div>
-          
+
           <div>
-            <h3 className="text-lg font-display font-semibold mb-4">Contact Us</h3>
+            <h3 className="text-lg font-semibold mb-6">Contact Info</h3>
             <ul className="space-y-4">
               <li className="flex items-start">
-                <MapPin className="h-5 w-5 text-primary mr-3 mt-0.5" />
-                <span className="text-muted-foreground">
-                  123 Mount Abu Road, Rajasthan, India
-                </span>
+                <MapPin className="h-5 w-5 mr-3 text-primary" />
+                <span className="text-stone-300">123 Main Street, Mount Abu, Rajasthan 307501, India</span>
               </li>
-              <li className="flex items-center">
-                <Phone className="h-5 w-5 text-primary mr-3" />
-                <a 
-                  href="tel:+919876543210" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  +91 9876 543 210
-                </a>
+              <li className="flex items-start">
+                <Phone className="h-5 w-5 mr-3 text-primary" />
+                <span className="text-stone-300">+91 98765 43210</span>
               </li>
-              <li className="flex items-center">
-                <Mail className="h-5 w-5 text-primary mr-3" />
-                <a 
-                  href="mailto:info@hotelinmountabu.com" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  info@hotelinmountabu.com
-                </a>
+              <li className="flex items-start">
+                <Mail className="h-5 w-5 mr-3 text-primary" />
+                <span className="text-stone-300">info@hotelinmountabu.com</span>
+              </li>
+              <li className="flex items-start">
+                <Clock className="h-5 w-5 mr-3 text-primary" />
+                <span className="text-stone-300">Open 24/7</span>
               </li>
             </ul>
           </div>
         </div>
-        
-        <div className="mt-16 pt-8 border-t border-stone-200 text-center text-muted-foreground text-sm">
-          <p>&copy; {new Date().getFullYear()} HotelInMountAbu. All rights reserved.</p>
+
+        <div className="border-t border-stone-800 pt-8">
+          <p className="text-center text-stone-400">
+            &copy; {new Date().getFullYear()} HotelInMountAbu. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>
