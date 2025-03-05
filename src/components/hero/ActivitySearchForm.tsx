@@ -1,5 +1,14 @@
 
 import { MapPin, Calendar } from "lucide-react";
+import { useState } from "react";
+import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface ActivitySearchFormProps {
   search: {
@@ -15,6 +24,17 @@ interface ActivitySearchFormProps {
 }
 
 const ActivitySearchForm = ({ search, setSearch }: ActivitySearchFormProps) => {
+  const [dateOpen, setDateOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+    if (date) {
+      setSearch({ ...search, date: format(date, "MM/dd/yyyy") });
+      setDateOpen(false);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
       <div className="relative">
@@ -28,14 +48,33 @@ const ActivitySearchForm = ({ search, setSearch }: ActivitySearchFormProps) => {
         />
       </div>
       <div className="relative">
-        <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-stone-400" />
-        <input
-          type="text"
-          placeholder="Date"
-          className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          value={search.date}
-          onChange={(e) => setSearch({ ...search, date: e.target.value })}
-        />
+        <Popover open={dateOpen} onOpenChange={setDateOpen}>
+          <PopoverTrigger asChild>
+            <div className="relative cursor-pointer">
+              <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-stone-400" />
+              <input
+                type="text"
+                placeholder="Date"
+                className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
+                value={search.date}
+                readOnly
+                onClick={() => setDateOpen(true)}
+              />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <CalendarComponent
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDateSelect}
+              disabled={(date) => 
+                date < new Date(new Date().setHours(0, 0, 0, 0))
+              }
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
       <div className="relative">
         <select

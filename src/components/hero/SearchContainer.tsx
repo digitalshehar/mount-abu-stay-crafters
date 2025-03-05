@@ -62,7 +62,7 @@ const SearchContainer = () => {
         
         // Validate and navigate
         if (!validateSearch(searchParams, toast)) return;
-        navigate(`/rentals/car?${searchParams.toString()}`);
+        navigate(`/car-rentals?${searchParams.toString()}`);
         break;
         
       case "bikes":
@@ -72,7 +72,7 @@ const SearchContainer = () => {
         
         // Validate and navigate
         if (!validateSearch(searchParams, toast)) return;
-        navigate(`/rentals/bike?${searchParams.toString()}`);
+        navigate(`/bike-rentals?${searchParams.toString()}`);
         break;
         
       case "activities":

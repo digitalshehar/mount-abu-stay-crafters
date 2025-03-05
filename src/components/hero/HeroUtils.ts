@@ -14,5 +14,17 @@ export const validateSearch = (
     });
     return false;
   }
+  
+  // Check if location is empty and show a specific message
+  const location = searchParams.get("location");
+  if (!location || location.trim() === "") {
+    toast({
+      title: "Location Required",
+      description: "Please enter a destination for your search",
+      variant: "destructive",
+    });
+    return false;
+  }
+  
   return true;
 };
