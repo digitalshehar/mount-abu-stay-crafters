@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Plus, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,9 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { BikeRental } from "@/integrations/supabase/custom-types";
-import BikeRentalForm from "../components/admin/bike-rentals/BikeRentalForm";
-import BikeRentalTable from "../components/admin/bike-rentals/BikeRentalTable";
-import BikeRentalSearch from "../components/admin/bike-rentals/BikeRentalSearch";
+import BikeRentalForm from "@/components/admin/bike-rentals/BikeRentalForm";
+import BikeRentalTable from "@/components/admin/bike-rentals/BikeRentalTable";
+import BikeRentalSearch from "@/components/admin/bike-rentals/BikeRentalSearch";
 
 const AdminBikeRentals = () => {
   const { toast } = useToast();
