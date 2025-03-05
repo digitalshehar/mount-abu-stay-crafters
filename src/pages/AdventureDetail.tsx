@@ -1,422 +1,447 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { 
-  Calendar, 
-  Users, 
-  Clock, 
-  AlertCircle, 
-  CheckCircle, 
-  Star, 
-  ChevronRight, 
-  MapPin 
+  MapPin, Calendar, Clock, Star, 
+  Users, Award, ArrowRight, 
+  Clipboard, CheckCircle, AlertCircle, 
+  Heart
 } from "lucide-react";
-import { format } from "date-fns";
-import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Calendar as CalendarUI } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Adventure } from "@/integrations/supabase/custom-types";
 
 const AdventureDetail = () => {
   const { adventureSlug } = useParams();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [participants, setParticipants] = useState(1);
-  
-  // Fetch adventure data from Supabase
-  const { data: adventure, isLoading, error } = useQuery({
-    queryKey: ["adventure", adventureSlug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("adventures")
-        .select("*")
-        .eq("status", "active")
-        .ilike("name", `%${adventureSlug?.replace(/-/g, " ")}%`)
-        .limit(1)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { toast } = useToast();
+  const [adventure, setAdventure] = useState<Adventure | null>(null);
+  const [similarAdventures, setSimilarAdventures] = useState<Adventure[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
-  if (error) {
-    console.error("Error fetching adventure:", error);
-  }
+  useEffect(() => {
+    // This would normally fetch from Supabase, but we're using static data for demonstration
+    const fetchAdventure = () => {
+      setLoading(true);
+      
+      // Mock adventure data - replace with actual API call
+      const adventures = [
+        {
+          id: 1,
+          name: "Sunset Point Trekking",
+          slug: "sunset-point-trekking",
+          type: "Trekking",
+          duration: "3 hours",
+          difficulty: "Easy",
+          price: 800,
+          image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&q=80&w=1574&ixlib=rb-4.0.3",
+          bookings: 124,
+          rating: 4.8,
+          description: "Experience the breathtaking sunset views from the highest point in Mount Abu on this guided trekking tour. Perfect for beginners and photography enthusiasts, this trek takes you through lush forests and rocky terrain to reach the panoramic viewpoint.",
+          includes: ["Professional guide", "Bottled water", "Snacks", "Photography assistance"],
+          timeline: ["2:30 PM: Meet at the starting point", "3:00 PM: Begin trek", "4:30 PM: Reach Sunset Point", "5:30 PM: Watch sunset", "6:30 PM: Return trek begins"],
+          requirements: ["Comfortable walking shoes", "Water bottle", "Camera (optional)", "Light jacket"],
+          location: "Sunset Point, Mount Abu",
+          meetingPoint: "Nakki Lake Parking Area",
+          cancellationPolicy: "Free cancellation up to 24 hours before the activity",
+          maxGroupSize: 12,
+          minAge: 8
+        },
+        {
+          id: 2,
+          name: "Wildlife Safari",
+          slug: "wildlife-safari",
+          type: "Sightseeing",
+          duration: "5 hours",
+          difficulty: "Easy",
+          price: 1200,
+          image: "https://images.unsplash.com/photo-1561040594-a1b8785b8d1e?auto=format&fit=crop&q=80&w=1548&ixlib=rb-4.0.3",
+          bookings: 98,
+          rating: 4.5,
+          description: "Explore the rich biodiversity of Mount Abu Wildlife Sanctuary on this guided safari tour. Spot various animals including leopards, sambhar deer, wild boars, and numerous bird species in their natural habitat.",
+          includes: ["Jeep safari", "Professional naturalist guide", "Bottled water", "Entrance fees", "Binoculars for use"],
+          timeline: ["6:00 AM: Meet at sanctuary entrance", "6:30 AM: Safari begins", "9:30 AM: Refreshment break", "11:00 AM: Return to entrance"],
+          requirements: ["Comfortable clothing", "Binoculars (optional)", "Camera with zoom lens (recommended)"],
+          location: "Mount Abu Wildlife Sanctuary",
+          meetingPoint: "Wildlife Sanctuary Main Gate",
+          cancellationPolicy: "Free cancellation up to 48 hours before the activity",
+          maxGroupSize: 6,
+          minAge: 5
+        },
+        {
+          id: 3,
+          name: "Nakki Lake Boating",
+          slug: "nakki-lake-boating",
+          type: "Water Activity",
+          duration: "1 hour",
+          difficulty: "Easy",
+          price: 500,
+          image: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+          bookings: 210,
+          rating: 4.3,
+          description: "Enjoy a serene boating experience on the historic Nakki Lake, surrounded by hills and lush greenery. Perfect for families and couples looking for a relaxing activity in Mount Abu.",
+          includes: ["Boat rental", "Life jackets", "Basic rowing instructions"],
+          timeline: ["Choose any 1-hour slot between 8:00 AM and 6:00 PM", "30 minutes: Guided rowing", "30 minutes: Self rowing"],
+          requirements: ["No special requirements", "Children must be accompanied by adults"],
+          location: "Nakki Lake, Mount Abu",
+          meetingPoint: "Nakki Lake Boating Point",
+          cancellationPolicy: "Non-refundable once booked",
+          maxGroupSize: 4,
+          minAge: 3
+        },
+        {
+          id: 4,
+          name: "Overnight Camping",
+          slug: "overnight-camping",
+          type: "Camping",
+          duration: "24 hours",
+          difficulty: "Moderate",
+          price: 2500,
+          image: "https://images.unsplash.com/photo-1517823382935-51bfcb0ec6bc?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3",
+          bookings: 76,
+          rating: 4.9,
+          description: "Experience the magic of camping under the stars in the Aravalli hills. This overnight camping adventure includes trekking, campfire activities, stargazing, and more for an unforgettable outdoor experience.",
+          includes: ["Tent accommodation", "All meals (dinner, breakfast, lunch)", "Guided trek", "Campfire", "Stargazing session", "Basic camping gear"],
+          timeline: ["Day 1, 2:00 PM: Meet at base camp", "3:00 PM: Trek to camping site", "5:00 PM: Set up camp", "7:00 PM: Dinner and campfire", "9:00 PM: Stargazing", "Day 2, 7:00 AM: Breakfast", "9:00 AM: Morning activity", "12:00 PM: Lunch", "2:00 PM: Return trek"],
+          requirements: ["Warm clothing for night", "Personal toiletries", "Comfortable trekking shoes", "Flashlight", "Sleeping bag (can be rented)"],
+          location: "Aravalli Wilderness Area",
+          meetingPoint: "Mount Abu Adventure Center",
+          cancellationPolicy: "75% refund up to 72 hours before the activity",
+          maxGroupSize: 10,
+          minAge: 12
+        },
+      ];
+
+      const selectedAdventure = adventures.find(a => a.slug === adventureSlug);
+      
+      if (selectedAdventure) {
+        setAdventure(selectedAdventure);
+        document.title = `${selectedAdventure.name} - Mount Abu Adventures`;
+        
+        // Get similar adventures (same type or difficulty)
+        const similar = adventures.filter(a => 
+          a.id !== selectedAdventure.id && 
+          (a.type === selectedAdventure.type || a.difficulty === selectedAdventure.difficulty)
+        ).slice(0, 3);
+        
+        setSimilarAdventures(similar);
+      } else {
+        toast({
+          title: "Adventure not found",
+          description: "We couldn't find the adventure you're looking for.",
+          variant: "destructive"
+        });
+      }
+      
+      setLoading(false);
+    };
+
+    fetchAdventure();
+  }, [adventureSlug, toast]);
+
+  const handleWishlist = () => {
+    setIsWishlisted(!isWishlisted);
+    toast({
+      title: isWishlisted ? "Removed from wishlist" : "Added to wishlist",
+      description: isWishlisted 
+        ? "This adventure has been removed from your wishlist" 
+        : "This adventure has been added to your wishlist",
+    });
+  };
 
   const handleBookNow = () => {
-    if (!selectedDate) {
-      toast.error("Please select a date for your adventure");
-      return;
-    }
-
-    toast.success("Booking initiated! We'll contact you to confirm your adventure.");
-    // In a real application, this would submit to a backend
+    toast({
+      title: "Booking initialized",
+      description: "You'll be redirected to complete your booking details.",
+    });
+    // In a real implementation, redirect to booking form or open booking modal
   };
 
-  // Increase number of participants
-  const increaseParticipants = () => {
-    if (participants < 10) {
-      setParticipants(participants + 1);
-    }
-  };
-
-  // Decrease number of participants
-  const decreaseParticipants = () => {
-    if (participants > 1) {
-      setParticipants(participants - 1);
-    }
-  };
-
-  // Adventure features
-  const features = [
-    { icon: <Clock className="h-5 w-5 text-primary" />, text: adventure?.duration || "Duration unknown" },
-    { icon: <AlertCircle className="h-5 w-5 text-amber-500" />, text: adventure?.difficulty || "Difficulty unknown" },
-    { icon: <Users className="h-5 w-5 text-blue-500" />, text: "Age 12+ recommended" },
-    { icon: <CheckCircle className="h-5 w-5 text-green-500" />, text: "Equipment provided" },
-  ];
-
-  // Loading state
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <>
         <Header />
-        <main className="flex-grow pt-32 pb-16">
+        <main className="pt-28 pb-16">
           <div className="container-custom">
-            <div className="animate-pulse">
-              <div className="h-10 bg-stone-200 rounded w-3/4 mb-4"></div>
-              <div className="h-6 bg-stone-200 rounded w-1/2 mb-8"></div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <div className="h-80 bg-stone-200 rounded-xl mb-6"></div>
-                  <div className="space-y-4">
-                    <div className="h-6 bg-stone-200 rounded w-1/3"></div>
-                    <div className="h-4 bg-stone-200 rounded w-full"></div>
-                    <div className="h-4 bg-stone-200 rounded w-full"></div>
-                    <div className="h-4 bg-stone-200 rounded w-2/3"></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="h-80 bg-stone-200 rounded-xl"></div>
-                </div>
-              </div>
+            <div className="animate-pulse space-y-4">
+              <div className="h-10 bg-stone-200 rounded w-3/4"></div>
+              <div className="h-6 bg-stone-200 rounded w-1/2"></div>
+              <div className="h-96 bg-stone-200 rounded"></div>
             </div>
           </div>
         </main>
         <Footer />
-      </div>
+      </>
     );
   }
 
-  // Error state
-  if (error || !adventure) {
+  if (!adventure) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <>
         <Header />
-        <main className="flex-grow pt-32 pb-16">
-          <div className="container-custom">
-            <Card className="max-w-2xl mx-auto p-8 text-center">
-              <h2 className="text-2xl font-semibold mb-4">Adventure Not Found</h2>
-              <p className="text-stone-600 mb-6">
-                We couldn't find the adventure you're looking for. It might have been removed or the URL could be incorrect.
-              </p>
-              <div className="flex justify-center gap-4">
-                <Link to="/adventures">
-                  <Button>View All Adventures</Button>
-                </Link>
-                <Link to="/">
-                  <Button variant="outline">Go Home</Button>
-                </Link>
-              </div>
-            </Card>
+        <main className="pt-28 pb-16 min-h-[70vh] flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-display font-bold mb-4">Adventure Not Found</h1>
+            <p className="text-stone-600 mb-6">The adventure you're looking for doesn't exist or has been moved.</p>
+            <Link to="/adventures">
+              <Button>View All Adventures</Button>
+            </Link>
           </div>
         </main>
         <Footer />
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <Header />
-
-      <main className="flex-grow pt-28 pb-16">
+      <main className="pt-28 pb-16">
         <div className="container-custom">
-          {/* Breadcrumb */}
-          <div className="flex items-center text-sm text-stone-500 mb-6">
-            <Link to="/" className="hover:text-primary transition-colors">
-              Home
-            </Link>
-            <ChevronRight size={14} className="mx-2" />
-            <Link to="/adventures" className="hover:text-primary transition-colors">
-              Adventures
-            </Link>
-            <ChevronRight size={14} className="mx-2" />
-            <span className="text-stone-800">{adventure.name}</span>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column - Adventure Info */}
+            {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Title and Rating */}
+              {/* Adventure Images */}
+              <div className="rounded-xl overflow-hidden h-[400px]">
+                <img 
+                  src={adventure.image} 
+                  alt={adventure.name} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              {/* Adventure Overview */}
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold font-display mb-2">
+                <div className="flex items-center text-primary text-sm font-medium mb-2">
+                  {adventure.type}
+                </div>
+                
+                <h1 className="text-3xl font-display font-bold mb-2">
                   {adventure.name}
                 </h1>
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center">
-                    <MapPin size={16} className="text-stone-500 mr-1" />
-                    <span className="text-stone-600">Mount Abu, Rajasthan</span>
+                
+                <div className="flex items-center text-sm text-stone-500 mb-4">
+                  <MapPin size={16} className="mr-1" />
+                  <span className="mr-4">{adventure.location}</span>
+                  
+                  <Star size={16} className="text-yellow-500 fill-yellow-500 mr-1" />
+                  <span className="mr-1">{adventure.rating}</span>
+                  <span className="mr-4">({adventure.bookings} reviews)</span>
+                  
+                  <Award size={16} className="mr-1" />
+                  <span>{adventure.difficulty}</span>
+                </div>
+                
+                <p className="text-stone-600 leading-relaxed mb-6">
+                  {adventure.description}
+                </p>
+              </div>
+              
+              {/* Activity Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-stone-50 p-4 rounded-lg">
+                  <div className="flex items-center mb-2">
+                    <Clock size={18} className="text-primary mr-2" />
+                    <span className="font-medium">Duration</span>
                   </div>
-                  <div className="flex items-center">
-                    <div className="flex mr-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          size={16}
-                          className={`${
-                            i < Math.floor(adventure.rating)
-                              ? "text-yellow-500 fill-yellow-500"
-                              : "text-stone-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-stone-600">
-                      {adventure.rating} ({adventure.bookings} bookings)
-                    </span>
+                  <p className="text-stone-600">{adventure.duration}</p>
+                </div>
+                
+                <div className="bg-stone-50 p-4 rounded-lg">
+                  <div className="flex items-center mb-2">
+                    <Users size={18} className="text-primary mr-2" />
+                    <span className="font-medium">Group Size</span>
+                  </div>
+                  <p className="text-stone-600">Up to {adventure.maxGroupSize} people</p>
+                </div>
+                
+                <div className="bg-stone-50 p-4 rounded-lg">
+                  <div className="flex items-center mb-2">
+                    <Award size={18} className="text-primary mr-2" />
+                    <span className="font-medium">Difficulty</span>
+                  </div>
+                  <p className="text-stone-600">{adventure.difficulty}</p>
+                </div>
+              </div>
+              
+              {/* What to Expect */}
+              <div>
+                <h2 className="text-xl font-display font-bold mb-4">What to Expect</h2>
+                <div className="prose max-w-none">
+                  <p className="text-stone-600 mb-6">{adventure.description}</p>
+                  
+                  <h3 className="text-lg font-semibold mt-6 mb-3">What's Included</h3>
+                  <ul className="space-y-2 mb-6">
+                    {adventure.includes.map((item, index) => (
+                      <li key={index} className="flex items-start">
+                        <CheckCircle size={18} className="text-green-500 mr-2 mt-0.5 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <h3 className="text-lg font-semibold mt-6 mb-3">Activity Timeline</h3>
+                  <ul className="space-y-3 mb-6">
+                    {adventure.timeline.map((item, index) => (
+                      <li key={index} className="flex items-start">
+                        <div className="bg-primary/10 text-primary rounded-full h-6 w-6 flex items-center justify-center mr-3 shrink-0 mt-0.5">
+                          {index + 1}
+                        </div>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <h3 className="text-lg font-semibold mt-6 mb-3">What to Bring</h3>
+                  <ul className="space-y-2 mb-6">
+                    {adventure.requirements.map((item, index) => (
+                      <li key={index} className="flex items-start">
+                        <Clipboard size={18} className="text-stone-500 mr-2 mt-0.5 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              
+              {/* Meeting Point */}
+              <div className="bg-stone-50 p-6 rounded-xl">
+                <h3 className="text-lg font-semibold mb-3">Meeting Point</h3>
+                <div className="flex items-start">
+                  <MapPin size={20} className="text-primary mr-3 mt-1 shrink-0" />
+                  <div>
+                    <p className="font-medium mb-1">{adventure.meetingPoint}</p>
+                    <p className="text-stone-600 text-sm">{adventure.location}</p>
                   </div>
                 </div>
               </div>
-
-              {/* Main Image */}
-              <div className="rounded-xl overflow-hidden">
-                <img
-                  src={adventure.image}
-                  alt={adventure.name}
-                  className="w-full h-96 object-cover"
-                />
+              
+              {/* Cancellation Policy */}
+              <div className="border border-stone-200 p-6 rounded-xl">
+                <div className="flex items-start">
+                  <AlertCircle size={20} className="text-amber-500 mr-3 mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="text-lg font-semibold mb-1">Cancellation Policy</h3>
+                    <p className="text-stone-600">{adventure.cancellationPolicy}</p>
+                  </div>
+                </div>
               </div>
-
-              {/* Features */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {features.map((feature, index) => (
-                  <div
-                    key={index}
-                    className="bg-stone-50 rounded-lg p-4 flex flex-col items-center text-center"
+            </div>
+            
+            {/* Sidebar */}
+            <div>
+              <div className="bg-white border border-stone-200 rounded-xl p-6 shadow-sm sticky top-28">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-primary text-2xl font-bold">₹{adventure.price}</p>
+                    <p className="text-stone-500 text-sm">per person</p>
+                  </div>
+                  <button 
+                    onClick={handleWishlist}
+                    className="rounded-full p-2 hover:bg-stone-100 transition-colors"
                   >
-                    {feature.icon}
-                    <span className="mt-2 text-sm">{feature.text}</span>
+                    <Heart 
+                      size={20} 
+                      className={isWishlisted ? "fill-red-500 text-red-500" : "text-stone-400"} 
+                    />
+                  </button>
+                </div>
+                
+                <Separator className="my-4" />
+                
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">Duration:</span>
+                    <span className="font-medium">{adventure.duration}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">Difficulty:</span>
+                    <span className="font-medium">{adventure.difficulty}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">Group Size:</span>
+                    <span className="font-medium">Up to {adventure.maxGroupSize} people</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-stone-600">Min. Age:</span>
+                    <span className="font-medium">{adventure.minAge}+ years</span>
+                  </div>
+                </div>
+                
+                <Button onClick={handleBookNow} className="w-full mb-3">
+                  Book Now
+                </Button>
+                
+                <p className="text-xs text-center text-stone-500">
+                  No payment required now - pay at the activity
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Similar Adventures */}
+          {similarAdventures.length > 0 && (
+            <div className="mt-16">
+              <h2 className="text-2xl font-display font-bold mb-6">
+                Similar Adventures You Might Like
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {similarAdventures.map((item) => (
+                  <div key={item.id} className="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
+                    <div className="relative h-48">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-medium">
+                        {item.difficulty}
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-sm text-primary font-medium">{item.type}</p>
+                          <h3 className="font-display font-bold text-xl mb-1">{item.name}</h3>
+                          <p className="text-sm text-stone-500 mb-2">{item.duration}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-primary font-bold text-xl">₹{item.price}</p>
+                          <p className="text-xs text-stone-500">per person</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center text-sm text-stone-500 mt-4 mb-6">
+                        <Star size={16} className="text-yellow-500 fill-yellow-500 mr-1" />
+                        <span className="mr-1">{item.rating}</span>
+                        <span className="mr-3">({item.bookings} reviews)</span>
+                      </div>
+                      
+                      <Link
+                        to={`/adventure/${item.slug}`}
+                        className="block w-full bg-primary hover:bg-primary/90 text-white text-center font-medium py-2 px-4 rounded-lg shadow-sm transition-all"
+                      >
+                        View Details
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>
-
-              {/* Description */}
-              <div>
-                <h2 className="text-xl font-semibold mb-3">About This Adventure</h2>
-                <p className="text-stone-600">
-                  {adventure.description || 
-                    `Join us for an unforgettable ${adventure.name} experience in the beautiful hills of Mount Abu. This ${adventure.difficulty.toLowerCase()} level adventure is perfect for ${adventure.difficulty === 'Easy' ? 'beginners and families' : adventure.difficulty === 'Moderate' ? 'those with some experience' : 'experienced adventurers'}.
-                    
-                    Explore the stunning landscapes and enjoy the thrill of outdoor activities with our expert guides who prioritize your safety and enjoyment throughout the ${adventure.duration.toLowerCase()} journey.`
-                  }
-                </p>
-              </div>
-
-              {/* What to expect */}
-              <div>
-                <h2 className="text-xl font-semibold mb-3">What to Expect</h2>
-                <ul className="space-y-2 text-stone-600">
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Professional guides with extensive local knowledge and safety training</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>All necessary equipment provided for your adventure</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Breathtaking views of Mount Abu's natural landscapes</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Complimentary refreshments and snacks during the adventure</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Photo opportunities at scenic viewpoints</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Recommended adventures */}
-              <div>
-                <h2 className="text-xl font-semibold mb-4">You Might Also Like</h2>
-                <p className="text-stone-600 mb-4">
-                  Check out these other popular adventures in Mount Abu
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Link to="/adventure/sunrise-trekking">
-                    <Card className="overflow-hidden h-full transition-all hover:shadow-md">
-                      <div className="aspect-video relative">
-                        <img
-                          src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&auto=format&fit=crop"
-                          alt="Sunrise Trekking"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold">Sunrise Trekking</h3>
-                        <div className="flex items-center text-sm text-stone-500">
-                          <Clock size={14} className="mr-1" /> 3 hours
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                  <Link to="/adventure/rock-climbing">
-                    <Card className="overflow-hidden h-full transition-all hover:shadow-md">
-                      <div className="aspect-video relative">
-                        <img
-                          src="https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=400&auto=format&fit=crop"
-                          alt="Rock Climbing"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold">Rock Climbing</h3>
-                        <div className="flex items-center text-sm text-stone-500">
-                          <Clock size={14} className="mr-1" /> 4 hours
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </div>
+              
+              <div className="mt-6 text-center">
+                <Link to="/adventures" className="inline-flex items-center text-primary font-medium hover:text-primary/80 transition-colors">
+                  View All Adventures <ArrowRight size={16} className="ml-1" />
+                </Link>
               </div>
             </div>
-
-            {/* Right Column - Booking */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-6 sticky top-28">
-                <h2 className="text-xl font-semibold mb-2">Book This Adventure</h2>
-                <div className="flex items-center text-2xl font-bold mb-6">
-                  ₹{adventure.price}
-                  <span className="text-sm font-normal text-stone-500 ml-2">per person</span>
-                </div>
-
-                <Separator className="mb-6" />
-
-                {/* Date Selection */}
-                <div className="space-y-4 mb-6">
-                  <label className="block text-sm font-medium">
-                    Choose Date
-                  </label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal"
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {selectedDate ? (
-                          format(selectedDate, "PPP")
-                        ) : (
-                          <span>Select a date</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <CalendarUI
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={setSelectedDate}
-                        initialFocus
-                        disabled={(date) => date < new Date()}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {/* Participants */}
-                <div className="space-y-4 mb-6">
-                  <label className="block text-sm font-medium">
-                    Number of Participants
-                  </label>
-                  <div className="flex items-center">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="icon"
-                      onClick={decreaseParticipants}
-                      disabled={participants <= 1}
-                    >
-                      -
-                    </Button>
-                    <Input
-                      className="w-16 text-center mx-2"
-                      value={participants}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        if (!isNaN(value) && value >= 1 && value <= 10) {
-                          setParticipants(value);
-                        }
-                      }}
-                    />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="icon"
-                      onClick={increaseParticipants}
-                      disabled={participants >= 10}
-                    >
-                      +
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Summary */}
-                <div className="space-y-3 mb-6 text-sm">
-                  <div className="flex justify-between">
-                    <span>₹{adventure.price} × {participants} participants</span>
-                    <span>₹{adventure.price * participants}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Service fee</span>
-                    <span>₹{Math.round(adventure.price * participants * 0.1)}</span>
-                  </div>
-                  <Separator className="my-2" />
-                  <div className="flex justify-between font-medium text-base">
-                    <span>Total</span>
-                    <span>₹{adventure.price * participants + Math.round(adventure.price * participants * 0.1)}</span>
-                  </div>
-                </div>
-
-                <Button 
-                  className="w-full" 
-                  size="lg"
-                  onClick={handleBookNow}
-                >
-                  Book Now
-                </Button>
-
-                <p className="text-xs text-stone-500 text-center mt-4">
-                  You won't be charged yet. We'll contact you to confirm availability.
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </main>
-
       <Footer />
-    </div>
+    </>
   );
 };
 

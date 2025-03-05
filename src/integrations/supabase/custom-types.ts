@@ -41,6 +41,15 @@ export interface Adventure {
   description?: string;
   created_at?: string;
   slug?: string;
+  location?: string;
+  meetingPoint?: string;
+  cancellationPolicy?: string;
+  maxGroupSize?: number;
+  minAge?: number;
+  includes?: string[];
+  timeline?: string[];
+  requirements?: string[];
+  reviewCount?: number;
 }
 
 export interface BlogPost {
@@ -71,6 +80,26 @@ export interface Hotel {
   review_count?: number;
   rating?: number;
   featured?: boolean;
+  rooms?: Room[];
+}
+
+export interface Room {
+  type: string;
+  capacity: number;
+  price: number;
+  count: number;
+}
+
+export interface NewHotel {
+  name: string;
+  location: string;
+  stars: number;
+  pricePerNight: number;
+  image: string;
+  description: string;
+  amenities: string[];
+  rooms: Room[];
+  featured: boolean;
 }
 
 export interface Destination {
@@ -81,4 +110,6 @@ export interface Destination {
   activities: string[];
   location: string;
   slug?: string;
+  bestTimeToVisit?: string;
+  highlights?: string[];
 }

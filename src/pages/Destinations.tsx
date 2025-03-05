@@ -16,6 +16,7 @@ const destinations = [
     image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&auto=format&fit=crop",
     activities: ["Boating", "Picnic", "Photography"],
     location: "Central Mount Abu",
+    slug: "nakki-lake"
   },
   {
     id: 2,
@@ -24,6 +25,7 @@ const destinations = [
     image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=800&auto=format&fit=crop",
     activities: ["Temple Visit", "Architecture Tour", "Cultural Experience"],
     location: "2.5 km from Mount Abu",
+    slug: "dilwara-temples"
   },
   {
     id: 3,
@@ -32,6 +34,7 @@ const destinations = [
     image: "https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=800&auto=format&fit=crop",
     activities: ["Sunset Viewing", "Photography", "Nature Walk"],
     location: "3 km from Mount Abu town center",
+    slug: "sunset-point"
   },
   {
     id: 4,
@@ -40,6 +43,7 @@ const destinations = [
     image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&auto=format&fit=crop",
     activities: ["Trekking", "Hiking", "Wildlife Spotting"],
     location: "15 km from Mount Abu",
+    slug: "guru-shikhar"
   },
   {
     id: 5,
@@ -48,6 +52,7 @@ const destinations = [
     image: "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=800&auto=format&fit=crop",
     activities: ["Jungle Safari", "Bird Watching", "Nature Trail"],
     location: "5 km from Mount Abu",
+    slug: "wildlife-sanctuary"
   },
   {
     id: 6,
@@ -56,6 +61,7 @@ const destinations = [
     image: "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=800&auto=format&fit=crop",
     activities: ["Historical Tour", "Photography", "Temple Visit"],
     location: "11 km from Mount Abu",
+    slug: "achalgarh-fort"
   },
   {
     id: 7,
@@ -64,6 +70,7 @@ const destinations = [
     image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?w=800&auto=format&fit=crop",
     activities: ["Scenic Views", "Photography", "Relaxation"],
     location: "2.5 km from Mount Abu town center",
+    slug: "honeymoon-point"
   },
   {
     id: 8,
@@ -72,6 +79,7 @@ const destinations = [
     image: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?w=800&auto=format&fit=crop",
     activities: ["Rock Climbing", "Photography", "Hiking"],
     location: "Near Nakki Lake",
+    slug: "toad-rock"
   },
 ];
 
@@ -103,11 +111,18 @@ const DestinationCard = ({ destination }) => {
             </span>
           ))}
         </div>
-        <Link to={`/adventures?location=${encodeURIComponent(destination.name)}`}>
-          <Button variant="outline" className="w-full gap-1">
-            Explore Activities <ArrowRight size={16} />
-          </Button>
-        </Link>
+        <div className="flex space-x-2">
+          <Link to={`/destination/${destination.slug}`} className="flex-1">
+            <Button variant="outline" className="w-full">
+              View Details
+            </Button>
+          </Link>
+          <Link to={`/adventures?location=${encodeURIComponent(destination.name)}`} className="flex-1">
+            <Button className="w-full gap-1">
+              Explore <ArrowRight size={16} />
+            </Button>
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

@@ -21,6 +21,7 @@ import CancellationPolicy from "./pages/CancellationPolicy";
 import Hotels from "./pages/Hotels";
 import Destinations from "./pages/Destinations";
 import AdventureDetail from "./pages/AdventureDetail";
+import DestinationDetail from "./pages/DestinationDetail";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/hotels" element={<Hotels />} />
           <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
           <Route path="/destinations" element={<Destinations />} />
+          <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
           <Route path="/rentals/car" element={<CarRentals />} />
           <Route path="/rentals/bike" element={<BikeRentals />} />
           <Route path="/adventures" element={<Adventures />} />
