@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Star, MapPin, Calendar, Users, Wifi, Coffee, Tv, Bath, Utensils, Dumbbell, Snowflake, Car } from "lucide-react";
@@ -7,146 +6,8 @@ import Footer from "../components/Footer";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-
-// Mock hotel data
-const hotelDatabase = [
-  {
-    id: 1,
-    slug: "hilltop-luxury-resort",
-    name: "Hilltop Luxury Resort",
-    location: "Near Nakki Lake",
-    description: "Perched on the highest point in Mount Abu, the Hilltop Luxury Resort offers breathtaking panoramic views of the surrounding valleys and Nakki Lake. This 5-star property features elegantly designed rooms with modern amenities, an infinity pool that seems to merge with the horizon, and a world-class spa offering rejuvenating Ayurvedic treatments. The resort's fine dining restaurant serves authentic Rajasthani cuisine prepared with locally sourced ingredients, along with a selection of international dishes. With its dedicated service and luxurious facilities, the resort provides an unforgettable retreat in the lap of nature.",
-    price: 5800,
-    rating: 4.8,
-    reviewCount: 312,
-    images: [
-      "https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1540304453527-62f979142a17?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-    ],
-    amenities: ["Wifi", "Breakfast", "Swimming Pool", "Spa", "Restaurant", "Gym", "Air Conditioning", "Parking"],
-    rooms: [
-      { type: "Deluxe Room", price: 5800, capacity: 2 },
-      { type: "Premium Room", price: 7500, capacity: 2 },
-      { type: "Luxury Suite", price: 12000, capacity: 4 },
-    ],
-    reviews: [
-      { name: "Rahul Sharma", rating: 5, comment: "Absolutely stunning views and exceptional service!" },
-      { name: "Priya Patel", rating: 4, comment: "Loved the infinity pool and the restaurant. Room was spacious and clean." },
-      { name: "David Wilson", rating: 5, comment: "One of the best hotels I've stayed at in India. Highly recommended!" },
-    ]
-  },
-  {
-    id: 2,
-    slug: "palace-heritage-hotel",
-    name: "Palace Heritage Hotel",
-    location: "Central Mount Abu",
-    description: "Housed in a meticulously restored royal palace dating back to the 19th century, the Palace Heritage Hotel is a living testament to the rich cultural heritage of Rajasthan. Each room and suite is uniquely decorated with period furniture, traditional artwork, and modern conveniences discreetly integrated to ensure a comfortable stay. The central courtyard features a beautiful garden with fountains, perfect for evening tea or cultural performances that are regularly hosted here. The hotel's restaurant serves royal recipes passed down through generations, offering guests a taste of authentic royal cuisine. With its warm hospitality and regal ambiance, the Palace Heritage Hotel offers a truly majestic experience.",
-    price: 7200,
-    rating: 4.9,
-    reviewCount: 245,
-    images: [
-      "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1614957004131-9e8f2a13636a?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1605346434674-a440ca2acc6c?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-    ],
-    amenities: ["Wifi", "Breakfast", "Restaurant", "Gym", "Heritage Tours", "Cultural Programs", "Air Conditioning", "Valet Parking"],
-    rooms: [
-      { type: "Heritage Room", price: 7200, capacity: 2 },
-      { type: "Royal Suite", price: 12000, capacity: 2 },
-      { type: "Maharaja Suite", price: 18000, capacity: 4 },
-    ],
-    reviews: [
-      { name: "Amita Desai", rating: 5, comment: "A truly royal experience! The architecture and interiors are breathtaking." },
-      { name: "Michael Brown", rating: 5, comment: "The cultural performances and heritage tours made our stay memorable." },
-      { name: "Sanjay Mehta", rating: 4, comment: "Excellent service and amazing food. A bit pricey but worth it." },
-    ]
-  },
-  {
-    id: 3,
-    slug: "green-valley-resort",
-    name: "Green Valley Resort",
-    location: "Near Wildlife Sanctuary",
-    description: "Nestled amidst the lush greenery near Mount Abu Wildlife Sanctuary, Green Valley Resort is an eco-friendly retreat that blends harmoniously with its natural surroundings. The resort comprises of well-appointed cottages built using sustainable materials, each offering private verandas with stunning forest views. The property features nature trails, bird watching spots, and organic gardens where guests can harvest vegetables for their meals. The resort's restaurant focuses on farm-to-table dining, serving fresh, organic produce in both local and international cuisines. With its emphasis on sustainability and proximity to nature, Green Valley Resort is perfect for eco-conscious travelers and nature enthusiasts.",
-    price: 4300,
-    rating: 4.6,
-    reviewCount: 187,
-    images: [
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1470770903876-2b4779d7a66e?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1561134643-a21550b752e1?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-    ],
-    amenities: ["Wifi", "Parking", "Restaurant", "Garden", "Nature Trails", "Bird Watching", "Organic Farm"],
-    rooms: [
-      { type: "Garden Cottage", price: 4300, capacity: 2 },
-      { type: "Forest View Cottage", price: 5500, capacity: 2 },
-      { type: "Family Cottage", price: 8000, capacity: 4 },
-    ],
-    reviews: [
-      { name: "Neha Gupta", rating: 5, comment: "Perfect place for nature lovers. Peaceful and beautiful!" },
-      { name: "Mark Johnson", rating: 4, comment: "Loved the organic food and nature walks. Cottages are very comfortable." },
-      { name: "Anita Singh", rating: 5, comment: "An amazing eco-friendly resort with wonderful staff." },
-    ]
-  },
-  {
-    id: 4,
-    slug: "mountain-view-cottages",
-    name: "Mountain View Cottages",
-    location: "Sunset Point",
-    description: "Located near the famous Sunset Point, Mountain View Cottages offers charming accommodations with spectacular views of the Aravalli range. These cozy cottages feature rustic wooden interiors, comfortable furnishings, and private balconies where guests can enjoy the cool mountain breeze and scenic vistas. The property has a multi-cuisine restaurant, a bonfire area perfect for evening gatherings, and offers activities like trekking and rock climbing. The friendly staff can arrange guided tours to nearby attractions, making it convenient for guests to explore the region. With its homely atmosphere and stunning location, Mountain View Cottages provides a peaceful retreat away from the hustle and bustle of city life.",
-    price: 3500,
-    rating: 4.5,
-    reviewCount: 156,
-    images: [
-      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1520333789090-1afc82db536a?auto=format&fit=crop&q=80&w=2571&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1571512599285-9ac4fdf3dba9?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-    ],
-    amenities: ["Wifi", "Breakfast", "TV", "Bathroom", "Mountain View", "Bonfire", "Trekking"],
-    rooms: [
-      { type: "Standard Cottage", price: 3500, capacity: 2 },
-      { type: "Deluxe Cottage", price: 4500, capacity: 2 },
-      { type: "Family Cottage", price: 6500, capacity: 4 },
-    ],
-    reviews: [
-      { name: "Vikram Malhotra", rating: 4, comment: "Beautiful views and cozy cottages. Great value for money." },
-      { name: "Sarah Thompson", rating: 5, comment: "The sunset views from our balcony were incredible! Staff was very helpful." },
-      { name: "Rajesh Kumar", rating: 4, comment: "Comfortable stay with good amenities. The bonfire evening was the highlight." },
-    ]
-  },
-  {
-    id: 5,
-    slug: "lakeside-retreat",
-    name: "Lakeside Retreat",
-    location: "Nakki Lake",
-    description: "Situated on the serene shores of Nakki Lake, Lakeside Retreat offers a tranquil getaway with direct access to the lake. The modern rooms feature large windows and balconies that provide stunning lake views and allow natural light to flood in. Guests can enjoy boat rides, lakeside walks, and picnics arranged by the hotel. The in-house restaurant specializes in freshwater fish delicacies along with a variety of Indian and Continental dishes. The hotel also features a spa offering therapeutic treatments, a well-equipped fitness center, and a rooftop infinity pool overlooking the lake. With its idyllic setting and comprehensive facilities, Lakeside Retreat is perfect for a relaxing holiday experience.",
-    price: 4800,
-    rating: 4.7,
-    reviewCount: 203,
-    images: [
-      "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-      "https://images.unsplash.com/photo-1489084917528-a57e68a79a1e?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-    ],
-    amenities: ["Wifi", "Breakfast", "TV", "Lake View", "Swimming Pool", "Spa", "Fitness Center", "Boating"],
-    rooms: [
-      { type: "Lake View Room", price: 4800, capacity: 2 },
-      { type: "Premium Lake View", price: 6000, capacity: 2 },
-      { type: "Lake View Suite", price: 9000, capacity: 4 },
-    ],
-    reviews: [
-      { name: "Anjali Sharma", rating: 5, comment: "The lake views are breathtaking! Room was comfortable and clean." },
-      { name: "Robert Chen", rating: 4, comment: "Great location and facilities. Enjoyed the boat rides and spa treatments." },
-      { name: "Meera Reddy", rating: 5, comment: "Perfect romantic getaway. The restaurant serves amazing food!" },
-    ]
-  }
-];
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const HotelDetail = () => {
   const { hotelSlug } = useParams<{ hotelSlug: string }>();
@@ -159,16 +20,84 @@ const HotelDetail = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // In a real app, this would be an API call
-    const foundHotel = hotelDatabase.find((h) => h.slug === hotelSlug);
-    setHotel(foundHotel || null);
-    setLoading(false);
-    
-    // Set document title
-    if (foundHotel) {
-      document.title = `${foundHotel.name} - HotelInMountAbu`;
-    } else {
-      document.title = "Hotel Not Found - HotelInMountAbu";
+    const fetchHotelData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch hotel data from Supabase
+        const { data: hotelData, error: hotelError } = await supabase
+          .from('hotels')
+          .select('*')
+          .eq('slug', hotelSlug)
+          .single();
+        
+        if (hotelError) {
+          console.error("Error fetching hotel:", hotelError);
+          setHotel(null);
+          setLoading(false);
+          return;
+        }
+
+        if (!hotelData) {
+          setHotel(null);
+          setLoading(false);
+          return;
+        }
+        
+        // Fetch room data for this hotel
+        const { data: roomData, error: roomError } = await supabase
+          .from('rooms')
+          .select('*')
+          .eq('hotel_id', hotelData.id);
+        
+        if (roomError) {
+          console.error("Error fetching rooms:", roomError);
+        }
+        
+        // Format hotel data with rooms
+        const formattedHotel = {
+          id: hotelData.id,
+          name: hotelData.name,
+          slug: hotelData.slug,
+          location: hotelData.location,
+          description: hotelData.description || "",
+          price: parseFloat(hotelData.price_per_night.toString()),
+          stars: hotelData.stars,
+          rating: parseFloat(hotelData.rating?.toString() || "0"),
+          reviewCount: hotelData.review_count || 0,
+          image: hotelData.image,
+          images: [
+            hotelData.image,
+            // Add placeholder images if needed
+            "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
+            "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
+            "https://images.unsplash.com/photo-1540304453527-62f979142a17?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3"
+          ],
+          amenities: hotelData.amenities || ["WiFi", "Breakfast", "TV", "Bathroom"],
+          rooms: roomData ? roomData.map((room: any) => ({
+            type: room.type,
+            price: parseFloat(room.price.toString()),
+            capacity: room.capacity
+          })) : [],
+          reviews: [
+            { name: "Guest Review", rating: 4, comment: "Great hotel with excellent service." }
+          ]
+        };
+        
+        setHotel(formattedHotel);
+        
+        // Set document title
+        document.title = `${formattedHotel.name} - HotelInMountAbu`;
+      } catch (error) {
+        console.error("Error in fetching hotel data:", error);
+        setHotel(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (hotelSlug) {
+      fetchHotelData();
     }
   }, [hotelSlug]);
 
