@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -149,6 +150,30 @@ const AdminHotels = () => {
   };
 
   const handleAddHotel = () => {
+    // Validate required fields
+    if (!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields marked with *",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate room data
+    const invalidRooms = newHotel.rooms.filter(room => 
+      !room.type || room.capacity <= 0 || room.price <= 0 || room.count <= 0
+    );
+    
+    if (invalidRooms.length > 0) {
+      toast({
+        title: "Invalid room data",
+        description: "Please ensure all room types have valid information",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const slug = newHotel.name.toLowerCase()
       .replace(/[^\w\s]/gi, '')
       .replace(/\s+/g, '-');
@@ -164,8 +189,9 @@ const AdminHotels = () => {
       rating: 0
     };
     
-    setHotels([...hotels, hotelToAdd]);
+    setHotels(prevHotels => [...prevHotels, hotelToAdd]);
     
+    // Reset form
     setNewHotel({
       name: "",
       location: "",
@@ -184,10 +210,13 @@ const AdminHotels = () => {
     });
 
     setIsDialogOpen(false);
+    
+    console.log("New hotel added:", hotelToAdd);
+    console.log("Updated hotels list:", [...hotels, hotelToAdd]);
   };
 
   const handleDeleteHotel = (id: number) => {
-    setHotels(hotels.filter(hotel => hotel.id !== id));
+    setHotels(prevHotels => prevHotels.filter(hotel => hotel.id !== id));
     
     toast({
       title: "Hotel deleted",
@@ -197,7 +226,7 @@ const AdminHotels = () => {
   };
 
   const handleToggleHotelStatus = (id: number) => {
-    setHotels(hotels.map(hotel => {
+    setHotels(prevHotels => prevHotels.map(hotel => {
       if (hotel.id === id) {
         const newStatus = hotel.status === "active" ? "inactive" : "active";
         return { ...hotel, status: newStatus };
@@ -206,11 +235,11 @@ const AdminHotels = () => {
     }));
     
     const hotel = hotels.find(h => h.id === id);
-    const action = hotel.status === "active" ? "deactivated" : "activated";
+    const action = hotel?.status === "active" ? "deactivated" : "activated";
     
     toast({
       title: `Hotel ${action}`,
-      description: `${hotel.name} has been ${action} successfully.`,
+      description: `${hotel?.name} has been ${action} successfully.`,
     });
   };
 
@@ -224,18 +253,10 @@ const AdminHotels = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Manage Hotels</h1>
         
-        <AddHotelDialog
-          isOpen={isDialogOpen}
-          setIsOpen={setIsDialogOpen}
-          onAddHotel={handleAddHotel}
-          newHotel={newHotel}
-          setNewHotel={setNewHotel}
-          handleInputChange={handleInputChange}
-          handleAmenityToggle={handleAmenityToggle}
-          handleRoomChange={handleRoomChange}
-          handleAddRoom={handleAddRoom}
-          handleRemoveRoom={handleRemoveRoom}
-        />
+        <Button className="gap-2" onClick={() => setIsDialogOpen(true)}>
+          <Plus size={16} />
+          Add New Hotel
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -251,6 +272,19 @@ const AdminHotels = () => {
           onToggleStatus={handleToggleHotelStatus}
         />
       </div>
+
+      <AddHotelDialog
+        isOpen={isDialogOpen}
+        setIsOpen={setIsDialogOpen}
+        onAddHotel={handleAddHotel}
+        newHotel={newHotel}
+        setNewHotel={setNewHotel}
+        handleInputChange={handleInputChange}
+        handleAmenityToggle={handleAmenityToggle}
+        handleRoomChange={handleRoomChange}
+        handleAddRoom={handleAddRoom}
+        handleRemoveRoom={handleRemoveRoom}
+      />
     </div>
   );
 };

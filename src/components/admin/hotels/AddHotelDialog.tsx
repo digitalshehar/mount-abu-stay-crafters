@@ -9,9 +9,9 @@ import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Tabs,
@@ -55,15 +55,12 @@ const AddHotelDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus size={16} />
-          Add New Hotel
-        </Button>
-      </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Add New Hotel</DialogTitle>
+          <DialogDescription>
+            Fill in the details below to add a new hotel to your inventory.
+          </DialogDescription>
         </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -83,6 +80,7 @@ const AddHotelDialog = ({
                   value={newHotel.name}
                   onChange={handleInputChange}
                   placeholder="Enter hotel name"
+                  required
                 />
               </div>
               
@@ -94,6 +92,7 @@ const AddHotelDialog = ({
                   value={newHotel.location}
                   onChange={handleInputChange}
                   placeholder="Enter location"
+                  required
                 />
               </div>
               
@@ -106,6 +105,8 @@ const AddHotelDialog = ({
                   value={newHotel.pricePerNight}
                   onChange={handleInputChange}
                   placeholder="Enter price"
+                  min="1"
+                  required
                 />
               </div>
               
@@ -117,6 +118,7 @@ const AddHotelDialog = ({
                   value={newHotel.stars}
                   onChange={handleInputChange}
                   className="w-full rounded-md border border-stone-200 px-3 py-2"
+                  required
                 >
                   <option value={1}>1 Star</option>
                   <option value={2}>2 Stars</option>
@@ -134,6 +136,7 @@ const AddHotelDialog = ({
                   value={newHotel.image}
                   onChange={handleInputChange}
                   placeholder="Enter image URL"
+                  required
                 />
               </div>
               
@@ -233,6 +236,7 @@ const AddHotelDialog = ({
                         value={room.type}
                         onChange={(e) => handleRoomChange(index, 'type', e.target.value)}
                         placeholder="e.g. Standard, Deluxe, Suite"
+                        required
                       />
                     </div>
                     
@@ -244,6 +248,7 @@ const AddHotelDialog = ({
                         min="1"
                         value={room.capacity}
                         onChange={(e) => handleRoomChange(index, 'capacity', e.target.value)}
+                        required
                       />
                     </div>
                     
@@ -252,9 +257,10 @@ const AddHotelDialog = ({
                       <Input 
                         id={`price-${index}`}
                         type="number"
-                        min="0"
+                        min="1"
                         value={room.price}
                         onChange={(e) => handleRoomChange(index, 'price', e.target.value)}
+                        required
                       />
                     </div>
                     
@@ -266,6 +272,7 @@ const AddHotelDialog = ({
                         min="1"
                         value={room.count}
                         onChange={(e) => handleRoomChange(index, 'count', e.target.value)}
+                        required
                       />
                     </div>
                   </div>
@@ -277,7 +284,7 @@ const AddHotelDialog = ({
               <Button variant="outline" onClick={() => setActiveTab("amenities")}>Back: Amenities</Button>
               <Button 
                 onClick={onAddHotel}
-                disabled={!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0}
+                disabled={!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image}
               >
                 Add Hotel
               </Button>
