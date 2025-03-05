@@ -10,9 +10,7 @@ interface BikeListProps {
   clearSearch: () => void;
 }
 
-const BikeList = ({ bikes, isLoading, clearSearch }: Bi
-
-keListProps) => {
+const BikeList = ({ bikes, isLoading, clearSearch }: BikeListProps) => {
   return (
     <div className="w-full md:w-3/4">
       <div className="flex justify-between items-center mb-6">

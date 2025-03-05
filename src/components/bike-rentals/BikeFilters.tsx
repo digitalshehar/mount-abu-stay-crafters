@@ -13,10 +13,10 @@ interface BikeFiltersProps {
     dates: string;
     type: string;
   }>>;
-  onSubmit: (e: React.FormEvent) => void;
+  onApplyFilters: (e: React.FormEvent) => void;
 }
 
-const BikeFilters = ({ searchValues, setSearchValues, onSubmit }: BikeFiltersProps) => {
+const BikeFilters = ({ searchValues, setSearchValues, onApplyFilters }: BikeFiltersProps) => {
   return (
     <div className="w-full md:w-1/4 bg-white rounded-xl shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
@@ -74,7 +74,7 @@ const BikeFilters = ({ searchValues, setSearchValues, onSubmit }: BikeFiltersPro
       </div>
 
       <button 
-        onClick={onSubmit}
+        onClick={onApplyFilters}
         className="w-full bg-secondary hover:bg-secondary/80 text-primary font-medium py-2 px-4 rounded-lg transition-all"
       >
         Apply Filters

@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Bike } from "lucide-react";
 import { BikeRental } from "@/integrations/supabase/custom-types";
 
 interface BikeCardProps {
@@ -30,14 +29,9 @@ const BikeCard = ({ bike }: BikeCardProps) => {
           </div>
         </div>
         
-        <div className="flex items-center text-sm text-stone-500 mt-4 mb-6">
-          <Bike size={16} className="mr-1" />
-          <span>{bike.engine}</span>
-        </div>
-        
         <Link
           to={`/rentals/bike/${bike.id}`}
-          className="block w-full bg-primary hover:bg-primary/90 text-white text-center font-medium py-2 px-4 rounded-lg shadow-sm transition-all"
+          className="block w-full bg-primary hover:bg-primary/90 text-white text-center font-medium py-2 px-4 rounded-lg shadow-sm transition-all mt-6"
         >
           Book Now
         </Link>
