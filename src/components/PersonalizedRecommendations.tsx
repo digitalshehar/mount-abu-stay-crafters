@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/context/AuthContext';
-import { Crown, Tag, Clock, Coffee, Tent, Mountains, Landmark, Utensils } from 'lucide-react';
+import { Crown, Tag, Clock, Coffee, Tent, Mountain, Landmark, Utensils } from 'lucide-react';
 
 type RecommendationItem = {
   id: number;
@@ -104,10 +103,8 @@ const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = 
     return recommendationsData.filter(item => 
       item.tags.some(tag => preferences.includes(tag))
     ).sort((a, b) => {
-      // Count matching tags for each item
       const aMatches = a.tags.filter(tag => preferences.includes(tag)).length;
       const bMatches = b.tags.filter(tag => preferences.includes(tag)).length;
-      // Sort by number of matching tags (descending)
       return bMatches - aMatches;
     });
   };
@@ -123,7 +120,7 @@ const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = 
       case 'attraction':
         return <Landmark className="h-4 w-4" />;
       default:
-        return <Mountains className="h-4 w-4" />;
+        return <Mountain className="h-4 w-4" />;
     }
   };
   

@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Family, Briefcase, Heart, Tent, Camera } from 'lucide-react';
+import { Users, Briefcase, Heart, Tent, Camera } from 'lucide-react';
 
 interface TravelGuideProps {
   className?: string;
@@ -24,7 +23,7 @@ const TravelGuide: React.FC<TravelGuideProps> = ({ className = '' }) => {
         <div className="px-6">
           <TabsList className="grid grid-cols-5 mb-2">
             <TabsTrigger value="family" className="flex flex-col items-center py-2 h-auto">
-              <Family className="h-4 w-4 mb-1" />
+              <Users className="h-4 w-4 mb-1" />
               <span className="text-xs">Family</span>
             </TabsTrigger>
             <TabsTrigger value="business" className="flex flex-col items-center py-2 h-auto">

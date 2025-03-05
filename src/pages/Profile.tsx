@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +8,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 // Define the type for favorites
 type Favorite = {
@@ -17,6 +19,8 @@ type Favorite = {
   image?: string;
   price?: number;
   location?: string;
+  created_at?: string;
+  user_id?: string;
 };
 
 const Profile = () => {
@@ -26,6 +30,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState<'hotel' | 'adventure' | 'car' | 'bike'>('hotel');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -50,39 +55,86 @@ const Profile = () => {
       if (favoritesError) throw favoritesError;
 
       // Process favorites to get item details
-      const enrichedFavorites = await Promise.all(
-        favoritesData.map(async (fav) => {
-          const table = fav.item_type === 'hotel' ? 'hotels' : 
-                        fav.item_type === 'adventure' ? 'adventures' : 
-                        fav.item_type === 'car' ? 'car_rentals' : 'bike_rentals';
-          
+      const enrichedFavorites: Favorite[] = [];
+      
+      for (const fav of favoritesData) {
+        // Ensure item_type is one of the allowed types
+        if (!['hotel', 'adventure', 'car', 'bike'].includes(fav.item_type)) {
+          console.error(`Unknown item_type: ${fav.item_type}`);
+          continue;
+        }
+        
+        const itemType = fav.item_type as 'hotel' | 'adventure' | 'car' | 'bike';
+        const table = itemType === 'hotel' ? 'hotels' : 
+                      itemType === 'adventure' ? 'adventures' : 
+                      itemType === 'car' ? 'car_rentals' : 'bike_rentals';
+        
+        try {
           const { data, error } = await supabase
             .from(table)
-            .select('name, image, price, price_per_night, location')
+            .select('*')
             .eq('id', fav.item_id)
             .single();
 
           if (error) {
-            console.error(`Error fetching ${fav.item_type} details:`, error);
-            return fav;
+            console.error(`Error fetching ${itemType} details:`, error);
+            // Still include the favorite with basic info
+            enrichedFavorites.push({
+              ...fav,
+              item_type: itemType
+            });
+          } else {
+            // Add details from the related table
+            enrichedFavorites.push({
+              ...fav,
+              item_type: itemType,
+              name: data.name,
+              image: data.image,
+              price: data.price || data.price_per_night,
+              location: data.location
+            });
           }
-
-          return {
-            ...fav,
-            name: data.name,
-            image: data.image,
-            price: data.price || data.price_per_night,
-            location: data.location
-          };
-        })
-      );
+        } catch (error) {
+          console.error(`Error processing ${itemType}:`, error);
+        }
+      }
 
       setFavorites(enrichedFavorites);
       setFilteredFavorites(enrichedFavorites.filter(fav => fav.item_type === activeTab));
     } catch (error) {
       console.error('Error fetching favorites:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load favorites. Please try again later.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const removeFavorite = async (favoriteId: string) => {
+    try {
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('id', favoriteId);
+
+      if (error) throw error;
+
+      // Update state locally after successful deletion
+      setFavorites(prevFavorites => prevFavorites.filter(fav => fav.id !== favoriteId));
+      toast({
+        title: "Success",
+        description: "Item removed from favorites",
+      });
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove from favorites",
+        variant: "destructive",
+      });
     }
   };
 
@@ -114,7 +166,7 @@ const Profile = () => {
             <div className="bg-white p-6 rounded-xl shadow-sm">
               <h2 className="text-xl font-semibold mb-6">Your Favorites</h2>
               
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'hotel' | 'adventure' | 'car' | 'bike')}>
                 <TabsList className="mb-6">
                   <TabsTrigger value="hotel">Hotels</TabsTrigger>
                   <TabsTrigger value="adventure">Adventures</TabsTrigger>
@@ -122,7 +174,7 @@ const Profile = () => {
                   <TabsTrigger value="bike">Bikes</TabsTrigger>
                 </TabsList>
                 
-                {['hotel', 'adventure', 'car', 'bike'].map((type) => (
+                {(['hotel', 'adventure', 'car', 'bike'] as const).map((type) => (
                   <TabsContent key={type} value={type}>
                     {loading ? (
                       <div className="text-center py-10">Loading favorites...</div>
@@ -149,7 +201,7 @@ const Profile = () => {
                                 <Button 
                                   variant="destructive" 
                                   size="sm"
-                                  onClick={() => {/* Add remove from favorites logic */}}
+                                  onClick={() => removeFavorite(favorite.id)}
                                 >
                                   Remove
                                 </Button>
