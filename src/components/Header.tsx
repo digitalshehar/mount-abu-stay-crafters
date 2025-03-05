@@ -8,6 +8,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isResourcesDropdownOpen, setIsResourcesDropdownOpen] = useState(false);
+  const [isDestinationsDropdownOpen, setIsDestinationsDropdownOpen] = useState(false);
   const location = useLocation();
 
   const toggleMenu = () => {
@@ -31,6 +32,8 @@ const Header = () => {
 
   useEffect(() => {
     setIsMenuOpen(false);
+    setIsResourcesDropdownOpen(false);
+    setIsDestinationsDropdownOpen(false);
   }, [location]);
 
   const isActive = (path) => {
@@ -70,18 +73,42 @@ const Header = () => {
             >
               Home
             </Link>
-            <Link
-              to="/hotels"
-              className={cn(
-                "px-4 py-2 rounded-md transition-colors",
-                isScrolled
-                  ? "text-stone-800 hover:bg-stone-100"
-                  : "text-white hover:bg-white/10",
-                isActive("/hotels") && (isScrolled ? "bg-stone-100" : "bg-white/10")
+            
+            <div className="relative">
+              <button
+                className={cn(
+                  "px-4 py-2 rounded-md transition-colors flex items-center",
+                  isScrolled
+                    ? "text-stone-800 hover:bg-stone-100"
+                    : "text-white hover:bg-white/10",
+                  (isActive("/hotels") || isActive("/destinations")) && 
+                  (isScrolled ? "bg-stone-100" : "bg-white/10")
+                )}
+                onClick={() => setIsDestinationsDropdownOpen(!isDestinationsDropdownOpen)}
+              >
+                Explore <ChevronDown className="ml-1 h-4 w-4" />
+              </button>
+              
+              {isDestinationsDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg py-2 w-48">
+                  <Link
+                    to="/hotels"
+                    className="block px-4 py-2 text-stone-800 hover:bg-stone-100"
+                    onClick={() => setIsDestinationsDropdownOpen(false)}
+                  >
+                    All Hotels
+                  </Link>
+                  <Link
+                    to="/destinations"
+                    className="block px-4 py-2 text-stone-800 hover:bg-stone-100"
+                    onClick={() => setIsDestinationsDropdownOpen(false)}
+                  >
+                    Destinations
+                  </Link>
+                </div>
               )}
-            >
-              Hotels
-            </Link>
+            </div>
+            
             <Link
               to="/rentals/car"
               className={cn(
@@ -253,12 +280,23 @@ const Header = () => {
             >
               Home
             </Link>
-            <Link
-              to="/hotels"
-              className="px-4 py-3 rounded-md hover:bg-stone-100 text-stone-800"
-            >
-              Hotels
-            </Link>
+            
+            <div className="border-t border-stone-100 pt-2">
+              <h3 className="px-4 py-2 text-sm text-stone-500 font-medium">Explore</h3>
+              <Link
+                to="/hotels"
+                className="px-4 py-3 rounded-md hover:bg-stone-100 text-stone-800"
+              >
+                All Hotels
+              </Link>
+              <Link
+                to="/destinations"
+                className="px-4 py-3 rounded-md hover:bg-stone-100 text-stone-800"
+              >
+                Destinations
+              </Link>
+            </div>
+            
             <Link
               to="/rentals/car"
               className="px-4 py-3 rounded-md hover:bg-stone-100 text-stone-800"

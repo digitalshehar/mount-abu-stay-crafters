@@ -40,6 +40,7 @@ export interface Adventure {
   status: 'active' | 'inactive';
   description?: string;
   created_at?: string;
+  slug?: string;
 }
 
 export interface BlogPost {
@@ -53,4 +54,31 @@ export interface BlogPost {
   content: string;
   status: 'published' | 'draft';
   created_at?: string;
+  slug?: string;
+}
+
+export interface Hotel {
+  id: number;
+  name: string;
+  slug: string; 
+  location: string;
+  stars: number;
+  price_per_night: number;
+  image: string;
+  status: 'active' | 'inactive';
+  description?: string;
+  amenities?: string[];
+  review_count?: number;
+  rating?: number;
+  featured?: boolean;
+}
+
+export interface Destination {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  activities: string[];
+  location: string;
+  slug?: string;
 }

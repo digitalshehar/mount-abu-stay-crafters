@@ -18,6 +18,9 @@ import FAQs from "./pages/FAQs";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import CancellationPolicy from "./pages/CancellationPolicy";
+import Hotels from "./pages/Hotels";
+import Destinations from "./pages/Destinations";
+import AdventureDetail from "./pages/AdventureDetail";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -42,11 +45,13 @@ const App = () => (
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Index />} />
-          <Route path="/hotels" element={<Index />} />
+          <Route path="/hotels" element={<Hotels />} />
           <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
+          <Route path="/destinations" element={<Destinations />} />
           <Route path="/rentals/car" element={<CarRentals />} />
           <Route path="/rentals/bike" element={<BikeRentals />} />
           <Route path="/adventures" element={<Adventures />} />
+          <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/contact" element={<Contact />} />
