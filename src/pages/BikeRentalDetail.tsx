@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { BikeRental } from "@/integrations/supabase/custom-types";
+import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const BikeRentalDetail = () => {
   const { id } = useParams();
@@ -15,6 +22,12 @@ const BikeRentalDetail = () => {
   const [bike, setBike] = useState<BikeRental | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [rentalDays, setRentalDays] = useState(1);
+  
+  // Date selection state
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [dateOpen, setDateOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<string>("");
 
   useEffect(() => {
     const fetchBike = async () => {
@@ -27,7 +40,18 @@ const BikeRentalDetail = () => {
           .single();
 
         if (error) throw error;
-        setBike(data as BikeRental);
+        
+        // Create slug from bike name
+        const bikeData = data as BikeRental;
+        const slug = bikeData.name.toLowerCase().replace(/\s+/g, '-');
+        
+        // Update document title with bike name
+        document.title = `${bikeData.name} - Mount Abu Bike Rental`;
+        
+        setBike({
+          ...bikeData,
+          slug: slug
+        });
       } catch (error) {
         console.error("Error fetching bike details:", error);
         toast({
@@ -45,11 +69,48 @@ const BikeRentalDetail = () => {
     }
   }, [id, toast]);
 
+  // Handle date selection
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (!startDate) {
+      setStartDate(selectedDate);
+      setEndDate(undefined);
+    } else if (selectedDate && selectedDate >= startDate) {
+      setEndDate(selectedDate);
+      
+      // Calculate rental days
+      const diffTime = Math.abs(selectedDate.getTime() - startDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both start and end days
+      setRentalDays(diffDays);
+      
+      // Format date range string
+      const formattedRange = `${format(startDate, "MMM dd, yyyy")} — ${format(selectedDate, "MMM dd, yyyy")}`;
+      setDateRange(formattedRange);
+      
+      // Close the popover after selection
+      setDateOpen(false);
+    } else {
+      // If user selects a date before start date, reset the selection
+      setStartDate(selectedDate);
+      setEndDate(undefined);
+    }
+  };
+
   const handleBookNow = () => {
+    if (!startDate || !endDate) {
+      toast({
+        title: "Please select dates",
+        description: "You need to select both pickup and return dates",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     toast({
-      title: "Booking initiated",
-      description: `You are about to book the ${bike?.name} for ${rentalDays} days`,
+      title: "Booking confirmed",
+      description: `You have booked the ${bike?.name} for ${rentalDays} days from ${format(startDate, "MMM dd")} to ${format(endDate, "MMM dd")}`,
     });
+    
+    // Here you would typically submit the booking to your backend
   };
 
   if (isLoading) {
@@ -190,18 +251,38 @@ const BikeRentalDetail = () => {
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Pick-up & Return Date</label>
-                    <div className="flex items-center border rounded-md p-3 bg-stone-50">
-                      <Calendar className="text-stone-400 mr-2 h-5 w-5" />
-                      <span>Select dates</span>
-                    </div>
+                    <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                      <PopoverTrigger asChild>
+                        <div className="flex items-center border rounded-md p-3 bg-stone-50 cursor-pointer">
+                          <Calendar className="text-stone-400 mr-2 h-5 w-5" />
+                          <span>{dateRange || "Select dates"}</span>
+                        </div>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={endDate || startDate}
+                          onSelect={handleDateSelect}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                          footer={
+                            <div className="px-4 pt-2 pb-4 text-sm text-muted-foreground">
+                              {!startDate ? "Select pickup date" : !endDate ? "Now select return date" : ""}
+                            </div>
+                          }
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium mb-1">Rental Duration (Days)</label>
+                    <label className="block text-sm font-medium mb-1">Rental Duration ({rentalDays} {rentalDays === 1 ? 'day' : 'days'})</label>
                     <div className="flex items-center">
                       <button 
                         className="w-10 h-10 rounded-l-md border flex items-center justify-center bg-stone-50 hover:bg-stone-100"
                         onClick={() => setRentalDays(Math.max(1, rentalDays - 1))}
+                        disabled={!!startDate && !!endDate}
                       >-</button>
                       <div className="h-10 w-12 border-t border-b flex items-center justify-center">
                         {rentalDays}
@@ -209,6 +290,7 @@ const BikeRentalDetail = () => {
                       <button 
                         className="w-10 h-10 rounded-r-md border flex items-center justify-center bg-stone-50 hover:bg-stone-100"
                         onClick={() => setRentalDays(rentalDays + 1)}
+                        disabled={!!startDate && !!endDate}
                       >+</button>
                     </div>
                   </div>

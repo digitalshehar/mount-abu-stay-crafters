@@ -1,3 +1,4 @@
+
 // Custom type definitions for our database
 export interface CarRental {
   id: number;
@@ -11,6 +12,7 @@ export interface CarRental {
   status: 'available' | 'booked' | 'maintenance';
   description?: string;
   created_at?: string;
+  slug?: string;
 }
 
 export interface BikeRental {
@@ -24,6 +26,7 @@ export interface BikeRental {
   status: 'available' | 'booked' | 'maintenance';
   description?: string;
   created_at?: string;
+  slug?: string;
 }
 
 export interface Adventure {

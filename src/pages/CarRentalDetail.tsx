@@ -34,6 +34,12 @@ const CarRentalDetail = () => {
             carStatus = data.status;
           }
           
+          // Create slug from car name
+          const slug = data.name.toLowerCase().replace(/\s+/g, '-');
+          
+          // Update document title with car name
+          document.title = `${data.name} - Mount Abu Car Rental`;
+          
           setCar({
             id: data.id,
             name: data.name,
@@ -44,7 +50,8 @@ const CarRentalDetail = () => {
             image: data.image,
             bookings: data.bookings || 0,
             status: carStatus,
-            description: data.description
+            description: data.description,
+            slug: slug
           });
         }
       } catch (error) {

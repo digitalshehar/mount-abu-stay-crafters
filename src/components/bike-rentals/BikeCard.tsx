@@ -8,6 +8,9 @@ interface BikeCardProps {
 }
 
 const BikeCard = ({ bike }: BikeCardProps) => {
+  // Create slug from bike name if not already present
+  const slug = bike.slug || bike.name.toLowerCase().replace(/\s+/g, '-');
+  
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
       <div className="relative h-48">
