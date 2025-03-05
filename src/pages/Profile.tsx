@@ -87,11 +87,17 @@ const Profile = () => {
           } else {
             // Extract price based on item type
             let price: number | undefined;
+            let location: string | undefined = 'No location';
             
             if (itemType === 'hotel' && 'price_per_night' in data) {
               price = data.price_per_night;
             } else if ('price' in data) {
               price = data.price;
+            }
+            
+            // Check if location exists before trying to access it
+            if ('location' in data) {
+              location = data.location;
             }
             
             // Add details from the related table
@@ -101,7 +107,7 @@ const Profile = () => {
               name: data.name,
               image: data.image,
               price: price,
-              location: data.location || 'No location'
+              location: location
             });
           }
         } catch (error) {

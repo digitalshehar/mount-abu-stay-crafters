@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Star, MapPin, Calendar, Users, Wifi, Coffee, Tv, Bath, Utensils, Dumbbell, Snowflake, Car } from "lucide-react";
@@ -10,6 +9,14 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import BookingForm, { BookingFormValues } from "@/components/BookingForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const HotelDetail = () => {
   const { hotelSlug } = useParams<{ hotelSlug: string }>();
@@ -21,6 +28,8 @@ const HotelDetail = () => {
   const [checkOutDate, setCheckOutDate] = useState("");
   const [guests, setGuests] = useState("2");
   const [selectedRoom, setSelectedRoom] = useState("");
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
   const { toast: useToastFn } = useToast();
 
   useEffect(() => {
@@ -37,7 +46,6 @@ const HotelDetail = () => {
 
         console.log("Fetching hotel with slug:", hotelSlug);
         
-        // Fetch hotel data from Supabase
         const { data: hotelData, error: hotelError } = await supabase
           .from('hotels')
           .select('*')
@@ -61,7 +69,6 @@ const HotelDetail = () => {
         
         console.log("Hotel data fetched:", hotelData);
         
-        // Fetch room data for this hotel
         const { data: roomData, error: roomError } = await supabase
           .from('rooms')
           .select('*')
@@ -73,7 +80,6 @@ const HotelDetail = () => {
         
         console.log("Room data fetched:", roomData);
         
-        // Format hotel data with rooms
         const formattedHotel = {
           id: hotelData.id,
           name: hotelData.name,
@@ -87,7 +93,6 @@ const HotelDetail = () => {
           image: hotelData.image,
           images: [
             hotelData.image,
-            // Add placeholder images if needed
             "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
             "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
             "https://images.unsplash.com/photo-1540304453527-62f979142a17?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3"
@@ -105,7 +110,6 @@ const HotelDetail = () => {
         
         setHotel(formattedHotel);
         
-        // Set document title
         document.title = `${formattedHotel.name} - HotelInMountAbu`;
       } catch (error: any) {
         console.error("Error in fetching hotel data:", error);
@@ -121,7 +125,7 @@ const HotelDetail = () => {
     }
   }, [hotelSlug]);
 
-  const handleBookNow = () => {
+  const handleInitiateBooking = () => {
     if (!checkInDate || !checkOutDate || !selectedRoom) {
       toast.error("Please fill in all required fields", {
         description: "Check-in date, check-out date and room type are required."
@@ -129,9 +133,20 @@ const HotelDetail = () => {
       return;
     }
 
-    toast.success("Booking successful!", {
-      description: `Your booking at ${hotel.name} has been confirmed. Check your email for details.`
-    });
+    setShowBookingForm(true);
+  };
+
+  const handleBookingSubmit = (data: BookingFormValues) => {
+    setIsBookingLoading(true);
+    
+    setTimeout(() => {
+      setIsBookingLoading(false);
+      setShowBookingForm(false);
+      
+      toast.success("Booking successful!", {
+        description: `Your booking at ${hotel.name} has been confirmed. Check your email for details.`
+      });
+    }, 1500);
   };
 
   if (loading) {
@@ -164,7 +179,6 @@ const HotelDetail = () => {
     );
   }
 
-  // Function to render amenity icon
   const renderAmenityIcon = (amenity: string) => {
     switch (amenity.toLowerCase()) {
       case "wifi":
@@ -192,9 +206,7 @@ const HotelDetail = () => {
     <div className="min-h-screen bg-stone-50 flex flex-col">
       <Header />
       
-      {/* Hero Section */}
       <main className="flex-1">
-        {/* Hero Section */}
         <div className="relative h-[50vh] overflow-hidden">
           <img 
             src={hotel.images[0]} 
@@ -221,9 +233,7 @@ const HotelDetail = () => {
         
         <div className="container-custom py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            {/* Main Content */}
             <div className="lg:col-span-2 space-y-10">
-              {/* Gallery */}
               <div className="grid grid-cols-3 gap-4">
                 {hotel.images.slice(1, 4).map((image: string, index: number) => (
                   <img 
@@ -235,13 +245,11 @@ const HotelDetail = () => {
                 ))}
               </div>
               
-              {/* Description */}
               <div>
                 <h2 className="text-2xl font-display font-semibold mb-4">About this hotel</h2>
                 <p className="text-stone-600 leading-relaxed">{hotel.description}</p>
               </div>
               
-              {/* Amenities */}
               <div>
                 <h2 className="text-2xl font-display font-semibold mb-6">Amenities</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -254,7 +262,6 @@ const HotelDetail = () => {
                 </div>
               </div>
               
-              {/* Room Types */}
               <div>
                 <h2 className="text-2xl font-display font-semibold mb-6">Available Rooms</h2>
                 <div className="space-y-4">
@@ -272,7 +279,6 @@ const HotelDetail = () => {
                 </div>
               </div>
               
-              {/* Reviews */}
               <div>
                 <h2 className="text-2xl font-display font-semibold mb-6">Guest Reviews</h2>
                 <div className="space-y-6">
@@ -292,7 +298,6 @@ const HotelDetail = () => {
               </div>
             </div>
             
-            {/* Booking Panel */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-xl shadow-md p-6 border border-stone-100 sticky top-24">
                 <h2 className="text-2xl font-display font-semibold mb-2">Book Your Stay</h2>
@@ -381,7 +386,7 @@ const HotelDetail = () => {
                   </div>
                 </div>
                 
-                <Button className="w-full" size="lg" onClick={handleBookNow}>
+                <Button className="w-full" size="lg" onClick={handleInitiateBooking}>
                   Book Now
                 </Button>
               </div>
@@ -389,6 +394,23 @@ const HotelDetail = () => {
           </div>
         </div>
       </main>
+      
+      <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Complete Your Hotel Booking</DialogTitle>
+            <DialogDescription>
+              Please provide your details to confirm your stay at {hotel?.name} from {checkInDate} to {checkOutDate} for {guests} guests.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <BookingForm 
+            onSubmit={handleBookingSubmit} 
+            isLoading={isBookingLoading} 
+            bookingType="hotel" 
+          />
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Calendar, Users, MapPin, ArrowLeft, Car, Settings, CheckCircle } from "lucide-react";
@@ -8,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import FavoriteButton from "@/components/FavoriteButton";
+import BookingForm, { BookingFormValues } from "@/components/BookingForm";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";
 
@@ -17,19 +17,19 @@ const CarRentalDetail = () => {
   const { user } = useAuth();
   const [car, setCar] = useState<CarRental | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
   const [selectedDates, setSelectedDates] = useState<{ pickup: string; dropoff: string }>({
     pickup: "",
     dropoff: ""
   });
   const [totalDays, setTotalDays] = useState(1);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+  const [showBookingForm, setShowBookingForm] = useState(false);
 
   useEffect(() => {
     const fetchCar = async () => {
       setIsLoading(true);
       try {
-        // Convert id from string to number
         const carId = parseInt(id || '0', 10);
         
         const { data, error } = await supabase
@@ -41,17 +41,14 @@ const CarRentalDetail = () => {
         if (error) throw error;
 
         if (data) {
-          // Ensure status is one of the accepted values
           let carStatus: 'available' | 'booked' | 'maintenance' = 'available';
           
           if (data.status === 'booked' || data.status === 'maintenance') {
             carStatus = data.status;
           }
           
-          // Create slug from car name
           const slug = data.name.toLowerCase().replace(/\s+/g, '-');
           
-          // Update document title with car name
           document.title = `${data.name} - Mount Abu Car Rental`;
           
           setCar({
@@ -85,7 +82,6 @@ const CarRentalDetail = () => {
     }
   }, [id, toast]);
 
-  // Generate dates for the next 30 days
   const generateDates = () => {
     const dates = [];
     const today = new Date();
@@ -101,13 +97,11 @@ const CarRentalDetail = () => {
     return dates;
   };
 
-  // Handle date selection
   useEffect(() => {
     if (selectedDates.pickup && selectedDates.dropoff && car) {
       const pickup = new Date(selectedDates.pickup);
       const dropoff = new Date(selectedDates.dropoff);
       
-      // Calculate total days
       const diffTime = Math.abs(dropoff.getTime() - pickup.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
@@ -118,8 +112,7 @@ const CarRentalDetail = () => {
     }
   }, [selectedDates, car]);
 
-  // Handle booking
-  const handleBookNow = () => {
+  const handleInitiateBooking = () => {
     if (!selectedDates.pickup || !selectedDates.dropoff) {
       toast({
         title: "Please select both pickup and drop-off dates",
@@ -137,18 +130,23 @@ const CarRentalDetail = () => {
       return;
     }
     
-    setIsBookingDialogOpen(true);
-  };
-  
-  const confirmBooking = () => {
-    toast({
-      title: "Booking Successful!",
-      description: `Your ${car?.name} is booked from ${selectedDates.pickup} to ${selectedDates.dropoff}.`,
-    });
-    setIsBookingDialogOpen(false);
+    setShowBookingForm(true);
   };
 
-  // Loading state
+  const handleBookingSubmit = (data: BookingFormValues) => {
+    setIsBookingLoading(true);
+    
+    setTimeout(() => {
+      setIsBookingLoading(false);
+      setShowBookingForm(false);
+      
+      toast({
+        title: "Booking Successful!",
+        description: `Your ${car?.name} is booked from ${selectedDates.pickup} to ${selectedDates.dropoff}.`,
+      });
+    }, 1500);
+  };
+
   if (isLoading) {
     return (
       <div className="container-custom py-12">
@@ -162,7 +160,6 @@ const CarRentalDetail = () => {
     );
   }
 
-  // Error state
   if (!car) {
     return (
       <div className="container-custom py-12">
@@ -184,10 +181,8 @@ const CarRentalDetail = () => {
       </Link>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Car Details Section */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            {/* Car Image */}
             <div className="relative h-96">
               <img 
                 src={car.image} 
@@ -209,7 +204,6 @@ const CarRentalDetail = () => {
               </div>
             </div>
             
-            {/* Car Info */}
             <div className="p-6">
               <h1 className="font-display font-bold text-3xl mb-2">{car.name}</h1>
               <div className="flex flex-wrap gap-4 text-sm text-stone-500 mb-6">
@@ -260,7 +254,6 @@ const CarRentalDetail = () => {
           </div>
         </div>
         
-        {/* Booking Section */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-md p-6 border border-stone-100 sticky top-24">
             <h2 className="text-2xl font-display font-semibold mb-2">Book This Car</h2>
@@ -329,7 +322,7 @@ const CarRentalDetail = () => {
             <Button 
               className="w-full" 
               size="lg" 
-              onClick={handleBookNow}
+              onClick={handleInitiateBooking}
               disabled={car.status !== 'available'}
             >
               {car.status === 'available' ? 'Book Now' : 'Not Available'}
@@ -345,59 +338,20 @@ const CarRentalDetail = () => {
         </div>
       </div>
       
-      {/* Booking Confirmation Dialog */}
-      <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
-        <DialogContent>
+      <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Confirm Your Booking</DialogTitle>
+            <DialogTitle>Complete Your Car Rental</DialogTitle>
             <DialogDescription>
-              You're about to book the {car.name} for the following dates.
+              Please provide your details to rent the {car?.name} from {selectedDates.pickup} to {selectedDates.dropoff}.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h4 className="text-sm font-medium mb-1">Pickup Date</h4>
-                <p className="text-sm">{selectedDates.pickup}</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium mb-1">Drop-off Date</h4>
-                <p className="text-sm">{selectedDates.dropoff}</p>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="text-sm font-medium mb-1">Vehicle</h4>
-              <p className="text-sm">{car.name} ({car.type}, {car.transmission}, {car.capacity} seats)</p>
-            </div>
-            
-            <Separator />
-            
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Car rental fee</span>
-                <span>₹{car.price} × {totalDays} {totalDays === 1 ? 'day' : 'days'}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Taxes & fees</span>
-                <span>₹{Math.round(totalPrice * 0.05)}</span>
-              </div>
-              <div className="flex justify-between font-medium">
-                <span>Total Amount</span>
-                <span>₹{Math.round(totalPrice * 1.05)}</span>
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsBookingDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={confirmBooking}>
-              Confirm Booking
-            </Button>
-          </DialogFooter>
+          <BookingForm 
+            onSubmit={handleBookingSubmit} 
+            isLoading={isBookingLoading} 
+            bookingType="car" 
+          />
         </DialogContent>
       </Dialog>
     </div>

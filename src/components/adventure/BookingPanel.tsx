@@ -1,10 +1,17 @@
-
 import React, { useState } from "react";
 import { Users, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { Adventure } from "@/integrations/supabase/custom-types";
+import BookingForm, { BookingFormValues } from "@/components/BookingForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface BookingPanelProps {
   adventure: Adventure;
@@ -13,6 +20,8 @@ interface BookingPanelProps {
 const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [numParticipants, setNumParticipants] = useState("2");
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   // Generate dates for the next 30 days
@@ -36,7 +45,7 @@ const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
     return dates;
   };
 
-  const handleBookNow = () => {
+  const handleInitiateBooking = () => {
     if (!selectedDate) {
       toast({
         title: "Please select a date",
@@ -46,10 +55,22 @@ const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
       return;
     }
     
-    toast({
-      title: "Booking successful!",
-      description: `Your ${adventure?.name} adventure has been booked for ${selectedDate} with ${numParticipants} participants.`,
-    });
+    setShowBookingForm(true);
+  };
+  
+  const handleBookingSubmit = (data: BookingFormValues) => {
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowBookingForm(false);
+      
+      toast({
+        title: "Booking successful!",
+        description: `Your ${adventure?.name} adventure has been booked for ${selectedDate} with ${numParticipants} participants.`,
+      });
+    }, 1500);
   };
 
   return (
@@ -114,7 +135,7 @@ const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
           </div>
         </div>
         
-        <Button className="w-full" size="lg" onClick={handleBookNow}>
+        <Button className="w-full" size="lg" onClick={handleInitiateBooking}>
           Book Now
         </Button>
         
@@ -125,6 +146,24 @@ const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
           </p>
         </div>
       </div>
+      
+      {/* Booking Form Dialog */}
+      <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Complete Your Booking</DialogTitle>
+            <DialogDescription>
+              Please provide your details to confirm your booking for {adventure.name} on {selectedDate} for {numParticipants} {parseInt(numParticipants) === 1 ? 'person' : 'people'}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <BookingForm 
+            onSubmit={handleBookingSubmit} 
+            isLoading={isLoading} 
+            bookingType="adventure" 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "../components/Header";
@@ -10,11 +9,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { BikeRental } from "@/integrations/supabase/custom-types";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import BookingForm, { BookingFormValues } from "@/components/BookingForm";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const BikeRentalDetail = () => {
   const { id } = useParams();
@@ -22,12 +29,12 @@ const BikeRentalDetail = () => {
   const [bike, setBike] = useState<BikeRental | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [rentalDays, setRentalDays] = useState(1);
-  
-  // Date selection state
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [dateOpen, setDateOpen] = useState(false);
   const [dateRange, setDateRange] = useState<string>("");
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
 
   useEffect(() => {
     const fetchBike = async () => {
@@ -41,11 +48,9 @@ const BikeRentalDetail = () => {
 
         if (error) throw error;
         
-        // Create slug from bike name
         const bikeData = data as BikeRental;
         const slug = bikeData.name.toLowerCase().replace(/\s+/g, '-');
         
-        // Update document title with bike name
         document.title = `${bikeData.name} - Mount Abu Bike Rental`;
         
         setBike({
@@ -69,7 +74,6 @@ const BikeRentalDetail = () => {
     }
   }, [id, toast]);
 
-  // Handle date selection
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (!startDate) {
       setStartDate(selectedDate);
@@ -77,25 +81,21 @@ const BikeRentalDetail = () => {
     } else if (selectedDate && selectedDate >= startDate) {
       setEndDate(selectedDate);
       
-      // Calculate rental days
       const diffTime = Math.abs(selectedDate.getTime() - startDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both start and end days
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
       setRentalDays(diffDays);
       
-      // Format date range string
       const formattedRange = `${format(startDate, "MMM dd, yyyy")} — ${format(selectedDate, "MMM dd, yyyy")}`;
       setDateRange(formattedRange);
       
-      // Close the popover after selection
       setDateOpen(false);
     } else {
-      // If user selects a date before start date, reset the selection
       setStartDate(selectedDate);
       setEndDate(undefined);
     }
   };
 
-  const handleBookNow = () => {
+  const handleInitiateBooking = () => {
     if (!startDate || !endDate) {
       toast({
         title: "Please select dates",
@@ -105,12 +105,21 @@ const BikeRentalDetail = () => {
       return;
     }
     
-    toast({
-      title: "Booking confirmed",
-      description: `You have booked the ${bike?.name} for ${rentalDays} days from ${format(startDate, "MMM dd")} to ${format(endDate, "MMM dd")}`,
-    });
+    setShowBookingForm(true);
+  };
+
+  const handleBookingSubmit = (data: BookingFormValues) => {
+    setIsBookingLoading(true);
     
-    // Here you would typically submit the booking to your backend
+    setTimeout(() => {
+      setIsBookingLoading(false);
+      setShowBookingForm(false);
+      
+      toast({
+        title: "Booking confirmed",
+        description: `You have booked the ${bike?.name} for ${rentalDays} days from ${format(startDate, "MMM dd")} to ${format(endDate, "MMM dd")}`,
+      });
+    }, 1500);
   };
 
   if (isLoading) {
@@ -315,7 +324,7 @@ const BikeRentalDetail = () => {
                   </div>
                 </div>
 
-                <Button className="w-full" size="lg" onClick={handleBookNow}>
+                <Button className="w-full" size="lg" onClick={handleInitiateBooking}>
                   Book Now
                 </Button>
                 <p className="text-center text-xs text-stone-500 mt-3">
@@ -326,6 +335,24 @@ const BikeRentalDetail = () => {
           </div>
         </div>
       </main>
+      
+      <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Complete Your Bike Rental</DialogTitle>
+            <DialogDescription>
+              Please provide your details to rent the {bike?.name} from {startDate ? format(startDate, "MMM dd, yyyy") : ""} to {endDate ? format(endDate, "MMM dd, yyyy") : ""}.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <BookingForm 
+            onSubmit={handleBookingSubmit} 
+            isLoading={isBookingLoading} 
+            bookingType="bike" 
+          />
+        </DialogContent>
+      </Dialog>
+      
       <Footer />
     </>
   );
