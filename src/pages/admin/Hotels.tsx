@@ -59,14 +59,14 @@ const AdminHotels = () => {
               slug: hotel.slug,
               location: hotel.location,
               stars: hotel.stars,
-              pricePerNight: parseFloat(hotel.price_per_night),
+              pricePerNight: parseFloat(hotel.price_per_night.toString()),
               image: hotel.image,
-              status: hotel.status,
+              status: hotel.status as 'active' | 'inactive',
               description: hotel.description || "",
               amenities: hotel.amenities || ["WiFi"],
               featured: hotel.featured || false,
               reviewCount: hotel.review_count || 0,
-              rating: parseFloat(hotel.rating) || 0,
+              rating: parseFloat(hotel.rating?.toString() || "0"),
               rooms: []
             };
           }
@@ -75,7 +75,7 @@ const AdminHotels = () => {
           const rooms = roomData.map(room => ({
             type: room.type,
             capacity: room.capacity,
-            price: parseFloat(room.price),
+            price: parseFloat(room.price.toString()),
             count: room.count
           }));
           
@@ -86,14 +86,14 @@ const AdminHotels = () => {
             slug: hotel.slug,
             location: hotel.location,
             stars: hotel.stars,
-            pricePerNight: parseFloat(hotel.price_per_night),
+            pricePerNight: parseFloat(hotel.price_per_night.toString()),
             image: hotel.image,
-            status: hotel.status,
+            status: hotel.status as 'active' | 'inactive',
             description: hotel.description || "",
             amenities: hotel.amenities || ["WiFi"],
             featured: hotel.featured || false,
             reviewCount: hotel.review_count || 0,
-            rating: parseFloat(hotel.rating) || 0,
+            rating: parseFloat(hotel.rating?.toString() || "0"),
             rooms
           };
         })

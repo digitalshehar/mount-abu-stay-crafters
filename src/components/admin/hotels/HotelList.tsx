@@ -2,10 +2,11 @@
 import React from "react";
 import { Edit, Eye, Trash, Star, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Hotel } from "@/components/admin/hotels/types";
 
 interface HotelListProps {
-  hotels: any[];
-  filteredHotels: any[];
+  hotels: Hotel[];
+  filteredHotels: Hotel[];
   onDelete: (id: number) => void;
   onToggleStatus: (id: number) => void;
   isLoading?: boolean;
