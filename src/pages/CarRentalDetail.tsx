@@ -7,10 +7,14 @@ import { CarRental } from "@/integrations/supabase/custom-types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import FavoriteButton from "@/components/FavoriteButton";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAuth } from "@/context/AuthContext";
 
 const CarRentalDetail = () => {
   const { id } = useParams();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [car, setCar] = useState<CarRental | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDates, setSelectedDates] = useState<{ pickup: string; dropoff: string }>({
@@ -19,6 +23,7 @@ const CarRentalDetail = () => {
   });
   const [totalDays, setTotalDays] = useState(1);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchCar = async () => {
@@ -124,10 +129,23 @@ const CarRentalDetail = () => {
       return;
     }
     
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to complete your booking.",
+      });
+      return;
+    }
+    
+    setIsBookingDialogOpen(true);
+  };
+  
+  const confirmBooking = () => {
     toast({
       title: "Booking Successful!",
       description: `Your ${car?.name} is booked from ${selectedDates.pickup} to ${selectedDates.dropoff}.`,
     });
+    setIsBookingDialogOpen(false);
   };
 
   // Loading state
@@ -176,11 +194,19 @@ const CarRentalDetail = () => {
                 alt={car.name} 
                 className="w-full h-full object-cover"
               />
-              {car.status !== 'available' && (
-                <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                  {car.status === 'booked' ? 'Currently Booked' : 'Under Maintenance'}
-                </div>
-              )}
+              <div className="absolute top-4 right-4 flex space-x-2">
+                {car.status !== 'available' && (
+                  <div className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {car.status === 'booked' ? 'Currently Booked' : 'Under Maintenance'}
+                  </div>
+                )}
+                <FavoriteButton 
+                  itemId={car.id} 
+                  itemType="car" 
+                  variant="outline"
+                  className="bg-white/80 hover:bg-white"
+                />
+              </div>
             </div>
             
             {/* Car Info */}
@@ -318,6 +344,62 @@ const CarRentalDetail = () => {
           </div>
         </div>
       </div>
+      
+      {/* Booking Confirmation Dialog */}
+      <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Your Booking</DialogTitle>
+            <DialogDescription>
+              You're about to book the {car.name} for the following dates.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Pickup Date</h4>
+                <p className="text-sm">{selectedDates.pickup}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-1">Drop-off Date</h4>
+                <p className="text-sm">{selectedDates.dropoff}</p>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium mb-1">Vehicle</h4>
+              <p className="text-sm">{car.name} ({car.type}, {car.transmission}, {car.capacity} seats)</p>
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Car rental fee</span>
+                <span>₹{car.price} × {totalDays} {totalDays === 1 ? 'day' : 'days'}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Taxes & fees</span>
+                <span>₹{Math.round(totalPrice * 0.05)}</span>
+              </div>
+              <div className="flex justify-between font-medium">
+                <span>Total Amount</span>
+                <span>₹{Math.round(totalPrice * 1.05)}</span>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsBookingDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmBooking}>
+              Confirm Booking
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
