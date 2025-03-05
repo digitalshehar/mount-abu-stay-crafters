@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { Hotel, Adventure, CarRental, BikeRental } from '@/integrations/supabase/custom-types';
 
 // Define the type for favorites
 type Favorite = {
@@ -59,12 +60,12 @@ const Profile = () => {
       
       for (const fav of favoritesData) {
         // Ensure item_type is one of the allowed types
-        if (!['hotel', 'adventure', 'car', 'bike'].includes(fav.item_type)) {
+        const itemType = fav.item_type as 'hotel' | 'adventure' | 'car' | 'bike';
+        if (!['hotel', 'adventure', 'car', 'bike'].includes(itemType)) {
           console.error(`Unknown item_type: ${fav.item_type}`);
           continue;
         }
         
-        const itemType = fav.item_type as 'hotel' | 'adventure' | 'car' | 'bike';
         const table = itemType === 'hotel' ? 'hotels' : 
                       itemType === 'adventure' ? 'adventures' : 
                       itemType === 'car' ? 'car_rentals' : 'bike_rentals';
@@ -84,14 +85,23 @@ const Profile = () => {
               item_type: itemType
             });
           } else {
+            // Extract price based on item type
+            let price: number | undefined;
+            
+            if (itemType === 'hotel' && 'price_per_night' in data) {
+              price = data.price_per_night;
+            } else if ('price' in data) {
+              price = data.price;
+            }
+            
             // Add details from the related table
             enrichedFavorites.push({
               ...fav,
               item_type: itemType,
               name: data.name,
               image: data.image,
-              price: data.price || data.price_per_night,
-              location: data.location
+              price: price,
+              location: data.location || 'No location'
             });
           }
         } catch (error) {
