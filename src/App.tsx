@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +22,7 @@ import Destinations from "./pages/Destinations";
 import AdventureDetail from "./pages/AdventureDetail";
 import DestinationDetail from "./pages/DestinationDetail";
 import CarRentalDetail from "./pages/CarRentalDetail";
+import BikeRentalDetail from "./pages/BikeRentalDetail";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -54,6 +54,7 @@ const App = () => (
           <Route path="/rentals/car" element={<CarRentals />} />
           <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
           <Route path="/rentals/bike" element={<BikeRentals />} />
+          <Route path="/rentals/bike/:id" element={<BikeRentalDetail />} />
           <Route path="/adventures" element={<Adventures />} />
           <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
           <Route path="/blog" element={<Blog />} />
