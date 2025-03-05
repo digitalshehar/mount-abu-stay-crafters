@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Plus, Check, X, Wifi, Droplets, Coffee, Utensils } from "lucide-react";
+import { Plus, Check, X, Wifi, Droplets, Coffee, Utensils, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,7 @@ interface AddHotelDialogProps {
   handleRoomChange: (index: number, field: string, value: any) => void;
   handleAddRoom: () => void;
   handleRemoveRoom: (index: number) => void;
+  handleImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 const AddHotelDialog = ({
@@ -45,6 +46,7 @@ const AddHotelDialog = ({
   handleRoomChange,
   handleAddRoom,
   handleRemoveRoom,
+  handleImageUpload,
 }: AddHotelDialogProps) => {
   const [activeTab, setActiveTab] = useState("general");
   
@@ -131,14 +133,32 @@ const AddHotelDialog = ({
               
               <div className="space-y-2">
                 <Label htmlFor="image">Main Image URL*</Label>
-                <Input 
-                  id="image"
-                  name="image"
-                  value={newHotel.image}
-                  onChange={handleInputChange}
-                  placeholder="Enter image URL"
-                  required
-                />
+                <div className="flex space-x-2">
+                  <Input 
+                    id="image"
+                    name="image"
+                    value={newHotel.image}
+                    onChange={handleInputChange}
+                    placeholder="Enter image URL"
+                    className="flex-1"
+                    required
+                  />
+                  {handleImageUpload && (
+                    <div className="relative">
+                      <Input
+                        type="file"
+                        id="image-upload"
+                        onChange={handleImageUpload}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        accept="image/*"
+                      />
+                      <Button type="button" variant="outline" className="h-10">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-2 col-span-2">

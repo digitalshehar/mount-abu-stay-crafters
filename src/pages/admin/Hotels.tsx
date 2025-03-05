@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,6 @@ const AdminHotels = () => {
   const fetchHotels = async () => {
     setIsLoading(true);
     try {
-      // Fetch hotels from Supabase
       const { data: hotelData, error: hotelError } = await supabase
         .from('hotels')
         .select('*');
@@ -48,7 +46,6 @@ const AdminHotels = () => {
         return;
       }
       
-      // For each hotel, fetch its rooms
       const hotelsWithRooms = await Promise.all(
         hotelData.map(async (hotel) => {
           const { data: roomData, error: roomError } = await supabase
@@ -76,7 +73,6 @@ const AdminHotels = () => {
             };
           }
           
-          // Transform room data to match our Room interface
           const rooms = roomData ? roomData.map(room => ({
             type: room.type,
             capacity: room.capacity,
@@ -84,7 +80,6 @@ const AdminHotels = () => {
             count: room.count
           })) : [];
           
-          // Transform hotel data to match our Hotel interface
           return {
             id: hotel.id,
             name: hotel.name,
@@ -183,8 +178,54 @@ const AdminHotels = () => {
     });
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image under 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `hotels/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('images')
+        .upload(filePath, file);
+
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath);
+
+      setNewHotel({
+        ...newHotel,
+        image: urlData.publicUrl
+      });
+
+      toast({
+        title: "Image uploaded",
+        description: "Image has been uploaded successfully",
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Upload failed",
+        description: "There was a problem uploading your image. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleAddHotel = async () => {
-    // Validate required fields
     if (!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image) {
       toast({
         title: "Missing required fields",
@@ -194,7 +235,6 @@ const AdminHotels = () => {
       return;
     }
     
-    // Validate room data
     const invalidRooms = newHotel.rooms.filter(room => 
       !room.type || room.capacity <= 0 || room.price <= 0 || room.count <= 0
     );
@@ -208,12 +248,13 @@ const AdminHotels = () => {
       return;
     }
     
-    const slug = newHotel.name.toLowerCase()
+    let slug = newHotel.name.toLowerCase()
       .replace(/[^\w\s]/gi, '')
       .replace(/\s+/g, '-');
     
+    slug = `${slug}-${Math.random().toString(36).substring(2, 7)}`;
+    
     try {
-      // Insert hotel data to Supabase
       const { data: hotelData, error: hotelError } = await supabase
         .from('hotels')
         .insert({
@@ -235,7 +276,6 @@ const AdminHotels = () => {
       
       if (hotelError) throw hotelError;
       
-      // Insert room data to Supabase
       const roomPromises = newHotel.rooms.map(room => 
         supabase.from('rooms').insert({
           hotel_id: hotelData.id,
@@ -248,10 +288,8 @@ const AdminHotels = () => {
       
       await Promise.all(roomPromises);
       
-      // Refresh hotel data
       await fetchHotels();
       
-      // Reset form
       setNewHotel({
         name: "",
         location: "",
@@ -283,7 +321,6 @@ const AdminHotels = () => {
 
   const handleDeleteHotel = async (id: number) => {
     try {
-      // Delete hotel (cascade will delete rooms as well due to our DB setup)
       const { error } = await supabase
         .from('hotels')
         .delete()
@@ -291,7 +328,6 @@ const AdminHotels = () => {
       
       if (error) throw error;
       
-      // Update local state
       setHotels(prevHotels => prevHotels.filter(hotel => hotel.id !== id));
       
       toast({
@@ -311,13 +347,11 @@ const AdminHotels = () => {
 
   const handleToggleHotelStatus = async (id: number) => {
     try {
-      // Get current hotel
       const hotel = hotels.find(h => h.id === id);
       if (!hotel) return;
       
       const newStatus = hotel.status === "active" ? "inactive" : "active";
       
-      // Update status in Supabase
       const { error } = await supabase
         .from('hotels')
         .update({ status: newStatus })
@@ -325,7 +359,6 @@ const AdminHotels = () => {
       
       if (error) throw error;
       
-      // Update local state
       setHotels(prevHotels => prevHotels.map(hotel => {
         if (hotel.id === id) {
           return { ...hotel, status: newStatus as 'active' | 'inactive' };
@@ -391,6 +424,7 @@ const AdminHotels = () => {
         handleRoomChange={handleRoomChange}
         handleAddRoom={handleAddRoom}
         handleRemoveRoom={handleRemoveRoom}
+        handleImageUpload={handleImageUpload}
       />
     </div>
   );
