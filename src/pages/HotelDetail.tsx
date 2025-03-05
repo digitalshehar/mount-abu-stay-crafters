@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Star, MapPin, Calendar, Users, Wifi, Coffee, Tv, Bath, Utensils, Dumbbell, Snowflake, Car } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -8,21 +9,33 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const HotelDetail = () => {
   const { hotelSlug } = useParams<{ hotelSlug: string }>();
+  const navigate = useNavigate();
   const [hotel, setHotel] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
   const [guests, setGuests] = useState("2");
   const [selectedRoom, setSelectedRoom] = useState("");
-  const { toast } = useToast();
+  const { toast: useToastFn } = useToast();
 
   useEffect(() => {
     const fetchHotelData = async () => {
       try {
         setLoading(true);
+        setError(null);
+        
+        if (!hotelSlug) {
+          setError("Hotel slug is missing");
+          setLoading(false);
+          return;
+        }
+
+        console.log("Fetching hotel with slug:", hotelSlug);
         
         // Fetch hotel data from Supabase
         const { data: hotelData, error: hotelError } = await supabase
@@ -33,16 +46,20 @@ const HotelDetail = () => {
         
         if (hotelError) {
           console.error("Error fetching hotel:", hotelError);
+          setError(hotelError.message || "Failed to fetch hotel data");
           setHotel(null);
           setLoading(false);
           return;
         }
 
         if (!hotelData) {
+          setError("Hotel not found");
           setHotel(null);
           setLoading(false);
           return;
         }
+        
+        console.log("Hotel data fetched:", hotelData);
         
         // Fetch room data for this hotel
         const { data: roomData, error: roomError } = await supabase
@@ -53,6 +70,8 @@ const HotelDetail = () => {
         if (roomError) {
           console.error("Error fetching rooms:", roomError);
         }
+        
+        console.log("Room data fetched:", roomData);
         
         // Format hotel data with rooms
         const formattedHotel = {
@@ -88,8 +107,9 @@ const HotelDetail = () => {
         
         // Set document title
         document.title = `${formattedHotel.name} - HotelInMountAbu`;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error in fetching hotel data:", error);
+        setError(error.message || "An unexpected error occurred");
         setHotel(null);
       } finally {
         setLoading(false);
@@ -103,36 +123,37 @@ const HotelDetail = () => {
 
   const handleBookNow = () => {
     if (!checkInDate || !checkOutDate || !selectedRoom) {
-      toast({
-        title: "Please fill in all fields",
-        description: "Check-in date, check-out date and room type are required.",
-        variant: "destructive",
+      toast.error("Please fill in all required fields", {
+        description: "Check-in date, check-out date and room type are required."
       });
       return;
     }
 
-    toast({
-      title: "Booking successful!",
-      description: `Your booking at ${hotel.name} has been confirmed. Check your email for details.`,
+    toast.success("Booking successful!", {
+      description: `Your booking at ${hotel.name} has been confirmed. Check your email for details.`
     });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+      <div className="min-h-screen bg-stone-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-xl">Loading...</div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
-  if (!hotel) {
+  if (error || !hotel) {
     return (
       <div className="min-h-screen bg-stone-50 flex flex-col">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center p-8">
             <h1 className="text-3xl font-bold mb-4">Hotel Not Found</h1>
-            <p className="text-stone-600 mb-6">Sorry, we couldn't find the hotel you're looking for.</p>
+            <p className="text-stone-600 mb-6">{error || "Sorry, we couldn't find the hotel you're looking for."}</p>
             <Button asChild>
               <a href="/hotels">Browse All Hotels</a>
             </Button>
@@ -171,6 +192,7 @@ const HotelDetail = () => {
     <div className="min-h-screen bg-stone-50 flex flex-col">
       <Header />
       
+      {/* Hero Section */}
       <main className="flex-1">
         {/* Hero Section */}
         <div className="relative h-[50vh] overflow-hidden">

@@ -29,23 +29,36 @@ const Hotels = () => {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
 
   // Fetch hotels from Supabase
-  const { data: hotels, isLoading, error } = useQuery({
+  const { data: hotels, isLoading, error, refetch } = useQuery({
     queryKey: ["hotels"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("hotels")
-        .select("*")
-        .eq("status", "active");
-      
-      if (error) throw error;
-      return data || [];
+      console.log("Fetching hotels from Supabase...");
+      try {
+        const { data, error } = await supabase
+          .from("hotels")
+          .select("*")
+          .eq("status", "active");
+        
+        if (error) {
+          console.error("Supabase error:", error);
+          throw error;
+        }
+        
+        console.log("Fetched hotels:", data);
+        return data || [];
+      } catch (error) {
+        console.error("Error in fetchHotels:", error);
+        throw error;
+      }
     },
   });
 
   useEffect(() => {
     if (error) {
-      toast.error("Failed to load hotels. Please try again.");
-      console.error("Error fetching hotels:", error);
+      console.error("Error details:", error);
+      toast.error("Failed to load hotels", {
+        description: "Please try again or contact support."
+      });
     }
   }, [error]);
 
@@ -64,7 +77,12 @@ const Hotels = () => {
 
     const matchesAmenities =
       selectedAmenities.length === 0 ||
-      selectedAmenities.every((amenity) => hotel.amenities?.includes(amenity));
+      selectedAmenities.every((amenity) => 
+        hotel.amenities && Array.isArray(hotel.amenities) && 
+        hotel.amenities.some(hotelAmenity => 
+          hotelAmenity.toLowerCase() === amenity.toLowerCase()
+        )
+      );
 
     return matchesSearch && matchesStars && matchesPrice && matchesAmenities;
   });
