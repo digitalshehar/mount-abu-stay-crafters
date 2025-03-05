@@ -5,6 +5,8 @@ import Footer from "../components/Footer";
 import { Calendar, MapPin, ChevronDown, Filter, Car } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { CarRental } from "@/integrations/supabase/custom-types";
 
 const CarRentals = () => {
   const location = useLocation();
@@ -17,6 +19,9 @@ const CarRentals = () => {
     dates: searchParams.get("dates") || "",
     type: searchParams.get("type") || ""
   });
+  
+  const [cars, setCars] = useState<CarRental[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Update search values when URL changes
@@ -36,44 +41,34 @@ const CarRentals = () => {
     }
   }, [location.search, toast]);
 
-  const cars = [
-    {
-      id: 1,
-      name: "Toyota Innova",
-      type: "SUV",
-      capacity: 7,
-      transmission: "Automatic",
-      price: 2500,
-      image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3"
-    },
-    {
-      id: 2,
-      name: "Honda City",
-      type: "Sedan",
-      capacity: 5,
-      transmission: "Manual",
-      price: 1800,
-      image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=1664&ixlib=rb-4.0.3"
-    },
-    {
-      id: 3,
-      name: "Maruti Swift",
-      type: "Hatchback",
-      capacity: 5,
-      transmission: "Manual",
-      price: 1200,
-      image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=1742&ixlib=rb-4.0.3"
-    },
-    {
-      id: 4,
-      name: "Mahindra Thar",
-      type: "SUV",
-      capacity: 4,
-      transmission: "Manual",
-      price: 3500,
-      image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3"
-    },
-  ];
+  useEffect(() => {
+    fetchCars();
+  }, []);
+
+  const fetchCars = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('car_rentals')
+        .select('*')
+        .eq('status', 'available');
+      
+      if (error) throw error;
+      
+      if (data) {
+        setCars(data as CarRental[]);
+      }
+    } catch (error) {
+      console.error("Error fetching cars:", error);
+      toast({
+        title: "Error fetching cars",
+        description: "There was a problem loading the car data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredCars = cars.filter(car => {
     // If no search parameters, show all cars
@@ -241,7 +236,13 @@ const CarRentals = () => {
 
               <div className="w-full md:w-3/4">
                 <div className="flex justify-between items-center mb-6">
-                  <p className="text-stone-500">Showing {filteredCars.length} cars</p>
+                  <p className="text-stone-500">
+                    {isLoading ? (
+                      "Loading cars..."
+                    ) : (
+                      `Showing ${filteredCars.length} cars`
+                    )}
+                  </p>
                   <div className="flex items-center">
                     <span className="mr-2">Sort by:</span>
                     <button className="flex items-center text-stone-700 hover:text-primary transition-colors">
@@ -252,7 +253,19 @@ const CarRentals = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {filteredCars.length > 0 ? (
+                  {isLoading ? (
+                    // Show loading state
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="bg-white rounded-xl shadow-sm overflow-hidden animate-pulse">
+                        <div className="h-48 bg-stone-200"></div>
+                        <div className="p-6 space-y-3">
+                          <div className="h-6 bg-stone-200 rounded w-2/3"></div>
+                          <div className="h-4 bg-stone-200 rounded w-1/2"></div>
+                          <div className="h-10 bg-stone-200 rounded w-full mt-4"></div>
+                        </div>
+                      </div>
+                    ))
+                  ) : filteredCars.length > 0 ? (
                     filteredCars.map((car) => (
                       <div key={car.id} className="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
                         <div className="relative h-48">
@@ -294,7 +307,7 @@ const CarRentals = () => {
                       <button 
                         onClick={() => {
                           setSearchValues({ location: "", dates: "", type: "" });
-                          window.history.pushState({}, "", location.pathname);
+                          navigate(location.pathname);
                         }}
                         className="mt-4 bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-all"
                       >

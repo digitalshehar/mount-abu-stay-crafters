@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { 
   Plus, 
@@ -18,6 +19,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -28,10 +30,12 @@ import { CarRental } from "@/integrations/supabase/custom-types";
 const AdminCarRentals = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
   const [cars, setCars] = useState<CarRental[]>([]);
+  const [editingCar, setEditingCar] = useState<CarRental | null>(null);
 
   // Form state for new car
   const [newCar, setNewCar] = useState({
@@ -84,11 +88,22 @@ const AdminCarRentals = () => {
     }
   };
 
-  // Handle form input changes
+  // Handle form input changes for new car
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewCar({
       ...newCar,
+      [name]: name === "capacity" || name === "price" ? Number(value) : value
+    });
+  };
+
+  // Handle form input changes for editing car
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    if (!editingCar) return;
+    
+    const { name, value } = e.target;
+    setEditingCar({
+      ...editingCar,
       [name]: name === "capacity" || name === "price" ? Number(value) : value
     });
   };
@@ -155,7 +170,7 @@ const AdminCarRentals = () => {
           description: `${newCar.name} has been added successfully.`,
         });
         
-        setIsDialogOpen(false);
+        setIsAddDialogOpen(false);
       }
     } catch (error) {
       console.error("Error adding car:", error);
@@ -165,6 +180,66 @@ const AdminCarRentals = () => {
         variant: "destructive"
       });
     }
+  };
+
+  // Handle editing a car
+  const handleUpdateCar = async () => {
+    if (!editingCar) return;
+    
+    // Validation
+    if (!editingCar.name || !editingCar.type || editingCar.capacity <= 0 || editingCar.price <= 0 || !editingCar.image) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields marked with *",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('car_rentals')
+        .update({
+          name: editingCar.name,
+          type: editingCar.type,
+          capacity: editingCar.capacity,
+          transmission: editingCar.transmission,
+          price: editingCar.price,
+          image: editingCar.image,
+          description: editingCar.description
+        })
+        .eq('id', editingCar.id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      const updatedCars = cars.map(car => 
+        car.id === editingCar.id ? editingCar : car
+      );
+      
+      setCars(updatedCars);
+      
+      toast({
+        title: "Car updated",
+        description: `${editingCar.name} has been updated successfully.`,
+      });
+      
+      setIsEditDialogOpen(false);
+      setEditingCar(null);
+    } catch (error) {
+      console.error("Error updating car:", error);
+      toast({
+        title: "Error updating car",
+        description: "There was a problem updating the car. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Open edit dialog and set editing car
+  const handleEditClick = (car: CarRental) => {
+    setEditingCar(car);
+    setIsEditDialogOpen(true);
   };
 
   // Handle deleting a car
@@ -254,7 +329,8 @@ const AdminCarRentals = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Manage Car Rentals</h1>
         
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        {/* Add new car dialog */}
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus size={16} />
@@ -264,6 +340,9 @@ const AdminCarRentals = () => {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Add New Car</DialogTitle>
+              <DialogDescription>
+                Fill in the details to add a new car to your rental fleet.
+              </DialogDescription>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4 py-4">
               <div className="space-y-2 col-span-2">
@@ -355,10 +434,118 @@ const AdminCarRentals = () => {
               </div>
               
               <div className="col-span-2 flex justify-end gap-2 mt-4">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleAddCar}>Add Car</Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit car dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Car</DialogTitle>
+              <DialogDescription>
+                Update the details of this car.
+              </DialogDescription>
+            </DialogHeader>
+            {editingCar && (
+              <div className="grid grid-cols-2 gap-4 py-4">
+                <div className="space-y-2 col-span-2">
+                  <Label htmlFor="edit-name">Car Name*</Label>
+                  <Input 
+                    id="edit-name"
+                    name="name"
+                    value={editingCar.name}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter car name"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-type">Car Type*</Label>
+                  <select
+                    id="edit-type"
+                    name="type"
+                    value={editingCar.type}
+                    onChange={handleEditInputChange}
+                    className="w-full rounded-md border border-stone-200 px-3 py-2"
+                  >
+                    <option value="SUV">SUV</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="Hatchback">Hatchback</option>
+                    <option value="Luxury">Luxury</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-transmission">Transmission*</Label>
+                  <select
+                    id="edit-transmission"
+                    name="transmission"
+                    value={editingCar.transmission}
+                    onChange={handleEditInputChange}
+                    className="w-full rounded-md border border-stone-200 px-3 py-2"
+                  >
+                    <option value="Manual">Manual</option>
+                    <option value="Automatic">Automatic</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-capacity">Seating Capacity*</Label>
+                  <Input 
+                    id="edit-capacity"
+                    name="capacity"
+                    type="number"
+                    value={editingCar.capacity}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter capacity"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-price">Price Per Day (₹)*</Label>
+                  <Input 
+                    id="edit-price"
+                    name="price"
+                    type="number"
+                    value={editingCar.price}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter price"
+                  />
+                </div>
+                
+                <div className="space-y-2 col-span-2">
+                  <Label htmlFor="edit-image">Image URL*</Label>
+                  <Input 
+                    id="edit-image"
+                    name="image"
+                    value={editingCar.image}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter image URL"
+                  />
+                </div>
+                
+                <div className="space-y-2 col-span-2">
+                  <Label htmlFor="edit-description">Description</Label>
+                  <Textarea 
+                    id="edit-description"
+                    name="description"
+                    value={editingCar.description || ""}
+                    onChange={handleEditInputChange}
+                    placeholder="Enter car description"
+                    rows={4}
+                  />
+                </div>
+                
+                <div className="col-span-2 flex justify-end gap-2 mt-4">
+                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={handleUpdateCar}>Update Car</Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
@@ -435,7 +622,12 @@ const AdminCarRentals = () => {
                       <Button variant="ghost" size="icon" title="View">
                         <Eye size={16} className="text-blue-500" />
                       </Button>
-                      <Button variant="ghost" size="icon" title="Edit">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        title="Edit" 
+                        onClick={() => handleEditClick(car)}
+                      >
                         <Edit size={16} className="text-amber-500" />
                       </Button>
                       <Button 
