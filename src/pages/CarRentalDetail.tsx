@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,13 @@ const CarRentalDetail = () => {
         if (error) throw error;
 
         if (data) {
+          // Ensure status is one of the accepted values
+          let carStatus: 'available' | 'booked' | 'maintenance' = 'available';
+          
+          if (data.status === 'booked' || data.status === 'maintenance') {
+            carStatus = data.status;
+          }
+          
           setCar({
             id: data.id,
             name: data.name,
@@ -35,7 +43,7 @@ const CarRentalDetail = () => {
             price: parseFloat(data.price.toString()),
             image: data.image,
             bookings: data.bookings || 0,
-            status: data.status,
+            status: carStatus,
             description: data.description
           });
         }
