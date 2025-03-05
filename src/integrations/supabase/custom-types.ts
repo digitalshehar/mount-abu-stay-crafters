@@ -1,4 +1,3 @@
-
 // Custom type definitions for our database
 export interface CarRental {
   id: number;
@@ -30,6 +29,7 @@ export interface BikeRental {
 export interface Adventure {
   id: number;
   name: string;
+  description?: string;
   type: string;
   duration: string;
   difficulty: string;
@@ -38,8 +38,6 @@ export interface Adventure {
   bookings: number;
   rating: number;
   status: 'active' | 'inactive';
-  description?: string;
-  created_at?: string;
   slug?: string;
   location?: string;
   meetingPoint?: string;
@@ -50,6 +48,7 @@ export interface Adventure {
   timeline?: string[];
   requirements?: string[];
   reviewCount?: number;
+  created_at?: string;
 }
 
 export interface BlogPost {

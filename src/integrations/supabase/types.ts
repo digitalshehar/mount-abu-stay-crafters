@@ -12,44 +12,74 @@ export type Database = {
       adventures: {
         Row: {
           bookings: number | null
+          cancellation_policy: string | null
           created_at: string | null
           description: string | null
           difficulty: string
           duration: string
           id: number
           image: string
+          includes: string[] | null
+          location: string | null
+          max_group_size: number | null
+          meeting_point: string | null
+          min_age: number | null
           name: string
           price: number
           rating: number | null
+          requirements: string[] | null
+          review_count: number | null
+          slug: string | null
           status: string
+          timeline: string[] | null
           type: string
         }
         Insert: {
           bookings?: number | null
+          cancellation_policy?: string | null
           created_at?: string | null
           description?: string | null
           difficulty: string
           duration: string
           id?: number
           image: string
+          includes?: string[] | null
+          location?: string | null
+          max_group_size?: number | null
+          meeting_point?: string | null
+          min_age?: number | null
           name: string
           price: number
           rating?: number | null
+          requirements?: string[] | null
+          review_count?: number | null
+          slug?: string | null
           status?: string
+          timeline?: string[] | null
           type: string
         }
         Update: {
           bookings?: number | null
+          cancellation_policy?: string | null
           created_at?: string | null
           description?: string | null
           difficulty?: string
           duration?: string
           id?: number
           image?: string
+          includes?: string[] | null
+          location?: string | null
+          max_group_size?: number | null
+          meeting_point?: string | null
+          min_age?: number | null
           name?: string
           price?: number
           rating?: number | null
+          requirements?: string[] | null
+          review_count?: number | null
+          slug?: string | null
           status?: string
+          timeline?: string[] | null
           type?: string
         }
         Relationships: []
@@ -171,6 +201,45 @@ export type Database = {
           status?: string
           transmission?: string
           type?: string
+        }
+        Relationships: []
+      }
+      destinations: {
+        Row: {
+          activities: string[] | null
+          best_time_to_visit: string | null
+          created_at: string | null
+          description: string
+          highlights: string[] | null
+          id: number
+          image: string
+          location: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          activities?: string[] | null
+          best_time_to_visit?: string | null
+          created_at?: string | null
+          description: string
+          highlights?: string[] | null
+          id?: number
+          image: string
+          location: string
+          name: string
+          slug: string
+        }
+        Update: {
+          activities?: string[] | null
+          best_time_to_visit?: string | null
+          created_at?: string | null
+          description?: string
+          highlights?: string[] | null
+          id?: number
+          image?: string
+          location?: string
+          name?: string
+          slug?: string
         }
         Relationships: []
       }

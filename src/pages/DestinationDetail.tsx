@@ -59,7 +59,7 @@ const DestinationDetail = () => {
       
       setDestination(destination);
       
-      // Fetch related adventures for this destination from Supabase
+      // Fetch related adventures for this destination
       const { data: adventureData, error: adventureError } = await supabase
         .from('adventures')
         .select('*')
@@ -72,7 +72,6 @@ const DestinationDetail = () => {
       const adventures: Adventure[] = adventureData.map(item => ({
         id: item.id,
         name: item.name,
-        slug: item.slug || "",
         type: item.type,
         duration: item.duration,
         difficulty: item.difficulty,
@@ -82,6 +81,8 @@ const DestinationDetail = () => {
         image: item.image,
         location: item.location || "Mount Abu",
         status: item.status as 'active' | 'inactive',
+        bookings: item.bookings || 0,
+        slug: item.slug || ""
       }));
       
       setAdventures(adventures);
