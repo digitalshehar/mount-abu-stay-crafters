@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +26,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -38,7 +36,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -74,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, username: string) => {
+  const signUp = async (email: string, password: string, username: string): Promise<void> => {
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signUp({
@@ -93,8 +90,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         title: "Success!",
         description: "Please check your email for a confirmation link.",
       });
-      
-      return data;
     } catch (error: any) {
       toast({
         title: "Error signing up",
@@ -107,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<void> => {
     try {
       setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -123,7 +118,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       navigate('/');
-      return data;
     } catch (error: any) {
       toast({
         title: "Error signing in",
@@ -136,7 +130,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<void> => {
     try {
       setLoading(true);
       const { error } = await supabase.auth.signOut();
@@ -159,7 +153,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateProfile = async (data: { username?: string; full_name?: string; avatar_url?: string }) => {
+  const updateProfile = async (data: { username?: string; full_name?: string; avatar_url?: string }): Promise<void> => {
     try {
       setLoading(true);
       
@@ -172,7 +166,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) throw error;
 
-      // Refresh the profile data
       fetchProfile(user.id);
 
       toast({
@@ -190,7 +183,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const value = {
+  const value: AuthContextType = {
     session,
     user,
     profile,

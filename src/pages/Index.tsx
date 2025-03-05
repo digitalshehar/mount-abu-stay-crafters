@@ -7,6 +7,10 @@ import DestinationSection from "../components/DestinationSection";
 import TestimonialSection from "../components/TestimonialSection";
 import Footer from "../components/Footer";
 import HotelCard from "../components/HotelCard";
+import WeatherWidget from "../components/WeatherWidget";
+import TravelGuide from "../components/TravelGuide";
+import EventsCalendar from "../components/EventsCalendar";
+import PersonalizedRecommendations from "../components/PersonalizedRecommendations";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -46,28 +50,6 @@ const Index = () => {
       reviewCount: 187,
       amenities: ["Wifi", "Parking", "Restaurant", "Garden"],
     },
-    {
-      id: 4,
-      name: "Mountain View Cottages",
-      slug: "mountain-view-cottages",
-      image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      price: 3500,
-      location: "Sunset Point",
-      rating: 4.5,
-      reviewCount: 156,
-      amenities: ["Wifi", "Breakfast", "TV", "Bathroom"],
-    },
-    {
-      id: 5,
-      name: "Lakeside Retreat",
-      slug: "lakeside-retreat",
-      image: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      price: 4800,
-      location: "Nakki Lake",
-      rating: 4.7,
-      reviewCount: 203,
-      amenities: ["Wifi", "Breakfast", "TV", "Lake View"],
-    },
   ];
 
   useEffect(() => {
@@ -78,6 +60,20 @@ const Index = () => {
     <div className="min-h-screen bg-white">
       <Header />
       <Hero />
+
+      {/* Weather & Travel Guide Section */}
+      <section className="py-10 bg-stone-50">
+        <div className="container-custom">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div>
+              <WeatherWidget />
+            </div>
+            <div className="lg:col-span-2">
+              <TravelGuide />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Featured Hotels */}
       <section className="py-20">
@@ -108,6 +104,17 @@ const Index = () => {
 
       <FeatureSection />
       <DestinationSection />
+
+      {/* Events & Recommendations Section */}
+      <section className="py-16 bg-stone-50">
+        <div className="container-custom">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <EventsCalendar />
+            <PersonalizedRecommendations />
+          </div>
+        </div>
+      </section>
+
       <TestimonialSection />
 
       {/* CTA Section */}
