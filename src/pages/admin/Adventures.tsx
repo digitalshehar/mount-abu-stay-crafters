@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { 
   Plus, 
   Search, 
@@ -7,7 +8,9 @@ import {
   Map,
   Eye,
   Filter,
-  Star
+  Star,
+  Check,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,55 +21,32 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Adventure {
+  id: number;
+  name: string;
+  type: string;
+  duration: string;
+  difficulty: string;
+  price: number;
+  image: string;
+  bookings: number;
+  rating: number;
+  status: 'active' | 'inactive';
+  description?: string;
+}
 
 const AdminAdventures = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Sample adventure data - would typically come from API
-  const [adventures, setAdventures] = useState([
-    {
-      id: 1,
-      name: "Sunset Point Trekking",
-      type: "Trekking",
-      duration: "3 hours",
-      difficulty: "Easy",
-      price: 800,
-      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&q=80&w=1574&ixlib=rb-4.0.3",
-      bookings: 24,
-      rating: 4.8,
-      status: "active"
-    },
-    {
-      id: 2,
-      name: "Wildlife Safari",
-      type: "Sightseeing",
-      duration: "5 hours",
-      difficulty: "Easy",
-      price: 1200,
-      image: "https://images.unsplash.com/photo-1561040594-a1b8785b8d1e?auto=format&fit=crop&q=80&w=1548&ixlib=rb-4.0.3",
-      bookings: 18,
-      rating: 4.5,
-      status: "active"
-    },
-    {
-      id: 3,
-      name: "Overnight Camping Experience",
-      type: "Camping",
-      duration: "24 hours",
-      difficulty: "Moderate",
-      price: 2500,
-      image: "https://images.unsplash.com/photo-1517823382935-51bfcb0ec6bc?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3",
-      bookings: 12,
-      rating: 4.9,
-      status: "inactive"
-    },
-  ]);
+  const [adventures, setAdventures] = useState<Adventure[]>([]);
 
   // Form state for new adventure
   const [newAdventure, setNewAdventure] = useState({
@@ -79,6 +59,47 @@ const AdminAdventures = () => {
     description: ""
   });
 
+  useEffect(() => {
+    fetchAdventures();
+  }, []);
+
+  const fetchAdventures = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('adventures')
+        .select('*');
+      
+      if (error) throw error;
+      
+      if (data) {
+        const formattedAdventures = data.map(adv => ({
+          id: adv.id,
+          name: adv.name,
+          type: adv.type,
+          duration: adv.duration,
+          difficulty: adv.difficulty,
+          price: parseFloat(adv.price.toString()),
+          image: adv.image,
+          bookings: adv.bookings || 0,
+          rating: parseFloat(adv.rating?.toString() || "0"),
+          status: adv.status as 'active' | 'inactive',
+          description: adv.description
+        }));
+        setAdventures(formattedAdventures);
+      }
+    } catch (error) {
+      console.error("Error fetching adventures:", error);
+      toast({
+        title: "Error fetching adventures",
+        description: "There was a problem loading the adventure data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -89,47 +110,138 @@ const AdminAdventures = () => {
   };
 
   // Handle adding a new adventure
-  const handleAddAdventure = () => {
-    // Validation would happen here in a real application
-    const newId = adventures.length > 0 ? Math.max(...adventures.map(adv => adv.id)) + 1 : 1;
+  const handleAddAdventure = async () => {
+    // Validation
+    if (!newAdventure.name || !newAdventure.type || !newAdventure.duration || !newAdventure.difficulty || newAdventure.price <= 0 || !newAdventure.image) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields marked with *",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    const adventureToAdd = {
-      ...newAdventure,
-      id: newId,
-      bookings: 0,
-      rating: 0,
-      status: "active"
-    };
-    
-    setAdventures([...adventures, adventureToAdd]);
-    
-    setNewAdventure({
-      name: "",
-      type: "Trekking",
-      duration: "",
-      difficulty: "Easy",
-      price: 0,
-      image: "",
-      description: ""
-    });
-    
-    toast({
-      title: "Adventure added",
-      description: `${newAdventure.name} has been added successfully.`,
-    });
-    
-    setIsDialogOpen(false);
+    try {
+      const { data, error } = await supabase
+        .from('adventures')
+        .insert({
+          name: newAdventure.name,
+          type: newAdventure.type,
+          duration: newAdventure.duration,
+          difficulty: newAdventure.difficulty,
+          price: newAdventure.price,
+          image: newAdventure.image,
+          description: newAdventure.description,
+          status: 'active'
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        const newAdventureData: Adventure = {
+          id: data.id,
+          name: data.name,
+          type: data.type,
+          duration: data.duration,
+          difficulty: data.difficulty,
+          price: parseFloat(data.price.toString()),
+          image: data.image,
+          bookings: 0,
+          rating: 0,
+          status: 'active',
+          description: data.description
+        };
+        
+        setAdventures([...adventures, newAdventureData]);
+        
+        // Reset form
+        setNewAdventure({
+          name: "",
+          type: "Trekking",
+          duration: "",
+          difficulty: "Easy",
+          price: 0,
+          image: "",
+          description: ""
+        });
+        
+        toast({
+          title: "Adventure added",
+          description: `${newAdventure.name} has been added successfully.`,
+        });
+        
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error adding adventure:", error);
+      toast({
+        title: "Error adding adventure",
+        description: "There was a problem adding the adventure. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Handle deleting an adventure
-  const handleDeleteAdventure = (id: number) => {
-    setAdventures(adventures.filter(adv => adv.id !== id));
-    
-    toast({
-      title: "Adventure deleted",
-      description: "The adventure has been deleted successfully.",
-      variant: "destructive"
-    });
+  const handleDeleteAdventure = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from('adventures')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setAdventures(adventures.filter(adv => adv.id !== id));
+      
+      toast({
+        title: "Adventure deleted",
+        description: "The adventure has been deleted successfully.",
+        variant: "destructive"
+      });
+    } catch (error) {
+      console.error("Error deleting adventure:", error);
+      toast({
+        title: "Error deleting adventure",
+        description: "There was a problem deleting the adventure. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle toggling adventure status
+  const handleToggleStatus = async (id: number) => {
+    try {
+      const adventure = adventures.find(adv => adv.id === id);
+      if (!adventure) return;
+      
+      const newStatus = adventure.status === 'active' ? 'inactive' : 'active';
+      
+      const { error } = await supabase
+        .from('adventures')
+        .update({ status: newStatus })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setAdventures(adventures.map(adv => 
+        adv.id === id ? { ...adv, status: newStatus as 'active' | 'inactive' } : adv
+      ));
+      
+      toast({
+        title: "Status updated",
+        description: `Adventure status has been updated to ${newStatus}.`,
+      });
+    } catch (error) {
+      console.error("Error updating adventure status:", error);
+      toast({
+        title: "Error updating status",
+        description: "There was a problem updating the adventure status. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Filter adventures based on search query
@@ -138,6 +250,22 @@ const AdminAdventures = () => {
     adv.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
     adv.difficulty.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Manage Adventures</h1>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-6 bg-stone-200 rounded w-48 mb-4"></div>
+            <div className="h-4 bg-stone-200 rounded w-64"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -324,6 +452,17 @@ const AdminAdventures = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        title={adventure.status === 'active' ? 'Deactivate' : 'Activate'}
+                        onClick={() => handleToggleStatus(adventure.id)}
+                      >
+                        {adventure.status === 'active' ? 
+                          <X size={16} className="text-amber-500" /> : 
+                          <Check size={16} className="text-green-500" />
+                        }
+                      </Button>
                       <Button variant="ghost" size="icon" title="View">
                         <Eye size={16} className="text-blue-500" />
                       </Button>
@@ -342,7 +481,7 @@ const AdminAdventures = () => {
                   </td>
                 </tr>
               ))}
-              {filteredAdventures.length === 0 && (
+              {filteredAdventures.length === 0 && !isLoading && (
                 <tr>
                   <td colSpan={9} className="px-6 py-8 text-center text-stone-500">
                     No adventures found. Try a different search or add a new adventure.

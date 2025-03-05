@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Plus, 
   Search, 
@@ -7,7 +7,9 @@ import {
   Trash, 
   Car,
   Eye,
-  Filter
+  Filter,
+  Check,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,48 +23,28 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Car {
+  id: number;
+  name: string;
+  type: string;
+  capacity: number;
+  transmission: string;
+  price: number;
+  image: string;
+  bookings: number;
+  status: 'available' | 'booked' | 'maintenance';
+  description?: string;
+}
 
 const AdminCarRentals = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Sample car data - would typically come from API
-  const [cars, setCars] = useState([
-    {
-      id: 1,
-      name: "Toyota Innova",
-      type: "SUV",
-      capacity: 7,
-      transmission: "Automatic",
-      price: 2500,
-      image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3",
-      bookings: 24,
-      status: "available"
-    },
-    {
-      id: 2,
-      name: "Honda City",
-      type: "Sedan",
-      capacity: 5,
-      transmission: "Manual",
-      price: 1800,
-      image: "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=1664&ixlib=rb-4.0.3",
-      bookings: 18,
-      status: "available"
-    },
-    {
-      id: 3,
-      name: "Maruti Swift",
-      type: "Hatchback",
-      capacity: 5,
-      transmission: "Manual",
-      price: 1200,
-      image: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=1742&ixlib=rb-4.0.3",
-      bookings: 32,
-      status: "maintenance"
-    },
-  ]);
+  const [cars, setCars] = useState<Car[]>([]);
 
   // Form state for new car
   const [newCar, setNewCar] = useState({
@@ -75,6 +57,46 @@ const AdminCarRentals = () => {
     description: ""
   });
 
+  useEffect(() => {
+    fetchCars();
+  }, []);
+
+  const fetchCars = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('car_rentals')
+        .select('*');
+      
+      if (error) throw error;
+      
+      if (data) {
+        const formattedCars = data.map(car => ({
+          id: car.id,
+          name: car.name,
+          type: car.type,
+          capacity: car.capacity,
+          transmission: car.transmission,
+          price: parseFloat(car.price.toString()),
+          image: car.image,
+          bookings: car.bookings || 0,
+          status: car.status as 'available' | 'booked' | 'maintenance',
+          description: car.description
+        }));
+        setCars(formattedCars);
+      }
+    } catch (error) {
+      console.error("Error fetching cars:", error);
+      toast({
+        title: "Error fetching cars",
+        description: "There was a problem loading the car data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -85,46 +107,137 @@ const AdminCarRentals = () => {
   };
 
   // Handle adding a new car
-  const handleAddCar = () => {
-    // Validation would happen here in a real application
-    const newId = cars.length > 0 ? Math.max(...cars.map(car => car.id)) + 1 : 1;
+  const handleAddCar = async () => {
+    // Validation
+    if (!newCar.name || !newCar.type || newCar.capacity <= 0 || newCar.price <= 0 || !newCar.image) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields marked with *",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    const carToAdd = {
-      ...newCar,
-      id: newId,
-      bookings: 0,
-      status: "available"
-    };
-    
-    setCars([...cars, carToAdd]);
-    
-    setNewCar({
-      name: "",
-      type: "SUV",
-      capacity: 5,
-      transmission: "Manual",
-      price: 0,
-      image: "",
-      description: ""
-    });
-    
-    toast({
-      title: "Car added",
-      description: `${newCar.name} has been added successfully.`,
-    });
-    
-    setIsDialogOpen(false);
+    try {
+      const { data, error } = await supabase
+        .from('car_rentals')
+        .insert({
+          name: newCar.name,
+          type: newCar.type,
+          capacity: newCar.capacity,
+          transmission: newCar.transmission,
+          price: newCar.price,
+          image: newCar.image,
+          description: newCar.description,
+          status: 'available'
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        const newCarData: Car = {
+          id: data.id,
+          name: data.name,
+          type: data.type,
+          capacity: data.capacity,
+          transmission: data.transmission,
+          price: parseFloat(data.price.toString()),
+          image: data.image,
+          bookings: 0,
+          status: 'available',
+          description: data.description
+        };
+        
+        setCars([...cars, newCarData]);
+        
+        // Reset form
+        setNewCar({
+          name: "",
+          type: "SUV",
+          capacity: 5,
+          transmission: "Manual",
+          price: 0,
+          image: "",
+          description: ""
+        });
+        
+        toast({
+          title: "Car added",
+          description: `${newCar.name} has been added successfully.`,
+        });
+        
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error adding car:", error);
+      toast({
+        title: "Error adding car",
+        description: "There was a problem adding the car. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Handle deleting a car
-  const handleDeleteCar = (id: number) => {
-    setCars(cars.filter(car => car.id !== id));
-    
-    toast({
-      title: "Car deleted",
-      description: "The car has been deleted successfully.",
-      variant: "destructive"
-    });
+  const handleDeleteCar = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from('car_rentals')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setCars(cars.filter(car => car.id !== id));
+      
+      toast({
+        title: "Car deleted",
+        description: "The car has been deleted successfully.",
+        variant: "destructive"
+      });
+    } catch (error) {
+      console.error("Error deleting car:", error);
+      toast({
+        title: "Error deleting car",
+        description: "There was a problem deleting the car. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle toggling car status
+  const handleToggleStatus = async (id: number) => {
+    try {
+      const car = cars.find(c => c.id === id);
+      if (!car) return;
+      
+      const newStatus = car.status === 'available' ? 'maintenance' : 'available';
+      
+      const { error } = await supabase
+        .from('car_rentals')
+        .update({ status: newStatus })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setCars(cars.map(c => 
+        c.id === id ? { ...c, status: newStatus as 'available' | 'booked' | 'maintenance' } : c
+      ));
+      
+      toast({
+        title: "Status updated",
+        description: `Car status has been updated to ${newStatus}.`,
+      });
+    } catch (error) {
+      console.error("Error updating car status:", error);
+      toast({
+        title: "Error updating status",
+        description: "There was a problem updating the car status. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Filter cars based on search query
@@ -132,6 +245,22 @@ const AdminCarRentals = () => {
     car.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     car.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Manage Car Rentals</h1>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-6 bg-stone-200 rounded w-48 mb-4"></div>
+            <div className="h-4 bg-stone-200 rounded w-64"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -305,6 +434,17 @@ const AdminCarRentals = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        title={car.status === 'available' ? 'Mark as Maintenance' : 'Mark as Available'}
+                        onClick={() => handleToggleStatus(car.id)}
+                      >
+                        {car.status === 'available' ? 
+                          <X size={16} className="text-amber-500" /> : 
+                          <Check size={16} className="text-green-500" />
+                        }
+                      </Button>
                       <Button variant="ghost" size="icon" title="View">
                         <Eye size={16} className="text-blue-500" />
                       </Button>
@@ -323,7 +463,7 @@ const AdminCarRentals = () => {
                   </td>
                 </tr>
               ))}
-              {filteredCars.length === 0 && (
+              {filteredCars.length === 0 && !isLoading && (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-stone-500">
                     No cars found. Try a different search or add a new car.

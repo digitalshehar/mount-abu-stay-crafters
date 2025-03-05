@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { 
   Plus, 
   Search, 
@@ -18,49 +19,30 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+
+interface BlogPost {
+  id: number;
+  title: string;
+  excerpt: string;
+  author: string;
+  category: string;
+  date: string;
+  image: string;
+  content: string;
+  status: 'published' | 'draft';
+}
 
 const AdminBlog = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Sample blog data - would typically come from API
-  const [blogs, setBlogs] = useState([
-    {
-      id: 1,
-      title: "Top 10 Places to Visit in Mount Abu",
-      excerpt: "Discover the most beautiful and serene spots in Mount Abu that every tourist must visit.",
-      author: "Rahul Sharma",
-      category: "Travel Guide",
-      date: "2023-09-15",
-      image: "https://images.unsplash.com/photo-1587909209111-5097ee578ec3?auto=format&fit=crop&q=80&w=1664&ixlib=rb-4.0.3",
-      status: "published"
-    },
-    {
-      id: 2,
-      title: "Best Time to Visit Mount Abu",
-      excerpt: "A comprehensive guide on the best seasons to experience the beauty of Mount Abu.",
-      author: "Priya Singh",
-      category: "Travel Tips",
-      date: "2023-08-22",
-      image: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3",
-      status: "published"
-    },
-    {
-      id: 3,
-      title: "Local Cuisine of Mount Abu",
-      excerpt: "Explore the traditional and delicious foods that Mount Abu has to offer.",
-      author: "Amit Kumar",
-      category: "Food",
-      date: "2023-09-02",
-      image: "https://images.unsplash.com/photo-1485921325833-c519f76c4927?auto=format&fit=crop&q=80&w=1724&ixlib=rb-4.0.3",
-      status: "draft"
-    },
-  ]);
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
 
   // Form state for new blog
   const [newBlog, setNewBlog] = useState({
@@ -72,6 +54,45 @@ const AdminBlog = () => {
     content: ""
   });
 
+  useEffect(() => {
+    fetchBlogPosts();
+  }, []);
+
+  const fetchBlogPosts = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*');
+      
+      if (error) throw error;
+      
+      if (data) {
+        const formattedBlogs = data.map(blog => ({
+          id: blog.id,
+          title: blog.title,
+          excerpt: blog.excerpt,
+          author: blog.author,
+          category: blog.category,
+          date: blog.date,
+          image: blog.image,
+          content: blog.content,
+          status: blog.status as 'published' | 'draft'
+        }));
+        setBlogs(formattedBlogs);
+      }
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      toast({
+        title: "Error fetching blog posts",
+        description: "There was a problem loading the blog data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -82,45 +103,134 @@ const AdminBlog = () => {
   };
 
   // Handle adding a new blog
-  const handleAddBlog = () => {
-    // Validation would happen here in a real application
-    const newId = blogs.length > 0 ? Math.max(...blogs.map(blog => blog.id)) + 1 : 1;
+  const handleAddBlog = async () => {
+    // Validation
+    if (!newBlog.title || !newBlog.excerpt || !newBlog.author || !newBlog.category || !newBlog.image || !newBlog.content) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields marked with *",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    const blogToAdd = {
-      ...newBlog,
-      id: newId,
-      date: new Date().toISOString().split('T')[0],
-      status: "draft"
-    };
-    
-    setBlogs([...blogs, blogToAdd]);
-    
-    setNewBlog({
-      title: "",
-      excerpt: "",
-      author: "",
-      category: "Travel Guide",
-      image: "",
-      content: ""
-    });
-    
-    toast({
-      title: "Blog article added",
-      description: `"${newBlog.title}" has been saved as draft.`,
-    });
-    
-    setIsDialogOpen(false);
+    try {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .insert({
+          title: newBlog.title,
+          excerpt: newBlog.excerpt,
+          author: newBlog.author,
+          category: newBlog.category,
+          image: newBlog.image,
+          content: newBlog.content,
+          status: 'draft'
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        const newBlogData: BlogPost = {
+          id: data.id,
+          title: data.title,
+          excerpt: data.excerpt,
+          author: data.author,
+          category: data.category,
+          date: data.date,
+          image: data.image,
+          content: data.content,
+          status: 'draft'
+        };
+        
+        setBlogs([...blogs, newBlogData]);
+        
+        // Reset form
+        setNewBlog({
+          title: "",
+          excerpt: "",
+          author: "",
+          category: "Travel Guide",
+          image: "",
+          content: ""
+        });
+        
+        toast({
+          title: "Blog article added",
+          description: `"${newBlog.title}" has been saved as draft.`,
+        });
+        
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error adding blog post:", error);
+      toast({
+        title: "Error adding blog article",
+        description: "There was a problem adding the article. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Handle deleting a blog
-  const handleDeleteBlog = (id: number) => {
-    setBlogs(blogs.filter(blog => blog.id !== id));
-    
-    toast({
-      title: "Blog article deleted",
-      description: "The article has been deleted successfully.",
-      variant: "destructive"
-    });
+  const handleDeleteBlog = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setBlogs(blogs.filter(blog => blog.id !== id));
+      
+      toast({
+        title: "Blog article deleted",
+        description: "The article has been deleted successfully.",
+        variant: "destructive"
+      });
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      toast({
+        title: "Error deleting article",
+        description: "There was a problem deleting the article. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle publishing/unpublishing a blog post
+  const handleToggleStatus = async (id: number) => {
+    try {
+      const blog = blogs.find(b => b.id === id);
+      if (!blog) return;
+      
+      const newStatus = blog.status === 'published' ? 'draft' : 'published';
+      
+      const { error } = await supabase
+        .from('blog_posts')
+        .update({ status: newStatus })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setBlogs(blogs.map(b => 
+        b.id === id ? { ...b, status: newStatus as 'published' | 'draft' } : b
+      ));
+      
+      toast({
+        title: "Status updated",
+        description: `Article has been ${newStatus === 'published' ? 'published' : 'unpublished'}.`,
+      });
+    } catch (error) {
+      console.error("Error updating blog status:", error);
+      toast({
+        title: "Error updating status",
+        description: "There was a problem updating the article status. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Filter blogs based on search query
@@ -129,6 +239,22 @@ const AdminBlog = () => {
     blog.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
     blog.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Manage Blog</h1>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-6 bg-stone-200 rounded w-48 mb-4"></div>
+            <div className="h-4 bg-stone-200 rounded w-64"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -296,6 +422,17 @@ const AdminBlog = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        title={blog.status === 'published' ? 'Unpublish' : 'Publish'}
+                        onClick={() => handleToggleStatus(blog.id)}
+                      >
+                        {blog.status === 'published' ? 
+                          <X size={16} className="text-amber-500" /> : 
+                          <Check size={16} className="text-green-500" />
+                        }
+                      </Button>
                       <Button variant="ghost" size="icon" title="View">
                         <Eye size={16} className="text-blue-500" />
                       </Button>
@@ -314,7 +451,7 @@ const AdminBlog = () => {
                   </td>
                 </tr>
               ))}
-              {filteredBlogs.length === 0 && (
+              {filteredBlogs.length === 0 && !isLoading && (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-stone-500">
                     No articles found. Try a different search or create a new article.

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Plus, 
   Search, 
@@ -7,7 +7,9 @@ import {
   Trash, 
   Bike,
   Eye,
-  Filter
+  Filter,
+  Check,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,45 +23,27 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Bike {
+  id: number;
+  name: string;
+  type: string;
+  engine: string;
+  price: number;
+  image: string;
+  bookings: number;
+  status: 'available' | 'booked' | 'maintenance';
+  description?: string;
+}
 
 const AdminBikeRentals = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Sample bike data - would typically come from API
-  const [bikes, setBikes] = useState([
-    {
-      id: 1,
-      name: "Royal Enfield Classic 350",
-      type: "Cruiser",
-      engine: "350cc",
-      price: 1200,
-      image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3",
-      bookings: 18,
-      status: "available"
-    },
-    {
-      id: 2,
-      name: "Honda Activa",
-      type: "Scooter",
-      engine: "110cc",
-      price: 500,
-      image: "https://images.unsplash.com/photo-1625897428517-7e2062829ec9?auto=format&fit=crop&q=80&w=1587&ixlib=rb-4.0.3",
-      bookings: 25,
-      status: "available"
-    },
-    {
-      id: 3,
-      name: "TVS Apache RTR 160",
-      type: "Sports",
-      engine: "160cc",
-      price: 800,
-      image: "https://images.unsplash.com/photo-1614551139870-4f35052aadf5?auto=format&fit=crop&q=80&w=1528&ixlib=rb-4.0.3",
-      bookings: 14,
-      status: "maintenance"
-    },
-  ]);
+  const [bikes, setBikes] = useState<Bike[]>([]);
 
   // Form state for new bike
   const [newBike, setNewBike] = useState({
@@ -71,6 +55,45 @@ const AdminBikeRentals = () => {
     description: ""
   });
 
+  useEffect(() => {
+    fetchBikes();
+  }, []);
+
+  const fetchBikes = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('bike_rentals')
+        .select('*');
+      
+      if (error) throw error;
+      
+      if (data) {
+        const formattedBikes = data.map(bike => ({
+          id: bike.id,
+          name: bike.name,
+          type: bike.type,
+          engine: bike.engine,
+          price: parseFloat(bike.price.toString()),
+          image: bike.image,
+          bookings: bike.bookings || 0,
+          status: bike.status as 'available' | 'booked' | 'maintenance',
+          description: bike.description
+        }));
+        setBikes(formattedBikes);
+      }
+    } catch (error) {
+      console.error("Error fetching bikes:", error);
+      toast({
+        title: "Error fetching bikes",
+        description: "There was a problem loading the bike data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -81,45 +104,134 @@ const AdminBikeRentals = () => {
   };
 
   // Handle adding a new bike
-  const handleAddBike = () => {
-    // Validation would happen here in a real application
-    const newId = bikes.length > 0 ? Math.max(...bikes.map(bike => bike.id)) + 1 : 1;
+  const handleAddBike = async () => {
+    // Validation
+    if (!newBike.name || !newBike.type || !newBike.engine || newBike.price <= 0 || !newBike.image) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in all required fields marked with *",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    const bikeToAdd = {
-      ...newBike,
-      id: newId,
-      bookings: 0,
-      status: "available"
-    };
-    
-    setBikes([...bikes, bikeToAdd]);
-    
-    setNewBike({
-      name: "",
-      type: "Scooter",
-      engine: "",
-      price: 0,
-      image: "",
-      description: ""
-    });
-    
-    toast({
-      title: "Bike added",
-      description: `${newBike.name} has been added successfully.`,
-    });
-    
-    setIsDialogOpen(false);
+    try {
+      const { data, error } = await supabase
+        .from('bike_rentals')
+        .insert({
+          name: newBike.name,
+          type: newBike.type,
+          engine: newBike.engine,
+          price: newBike.price,
+          image: newBike.image,
+          description: newBike.description,
+          status: 'available'
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      if (data) {
+        const newBikeData: Bike = {
+          id: data.id,
+          name: data.name,
+          type: data.type,
+          engine: data.engine,
+          price: parseFloat(data.price.toString()),
+          image: data.image,
+          bookings: 0,
+          status: 'available',
+          description: data.description
+        };
+        
+        setBikes([...bikes, newBikeData]);
+        
+        // Reset form
+        setNewBike({
+          name: "",
+          type: "Scooter",
+          engine: "",
+          price: 0,
+          image: "",
+          description: ""
+        });
+        
+        toast({
+          title: "Bike added",
+          description: `${newBike.name} has been added successfully.`,
+        });
+        
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error adding bike:", error);
+      toast({
+        title: "Error adding bike",
+        description: "There was a problem adding the bike. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Handle deleting a bike
-  const handleDeleteBike = (id: number) => {
-    setBikes(bikes.filter(bike => bike.id !== id));
-    
-    toast({
-      title: "Bike deleted",
-      description: "The bike has been deleted successfully.",
-      variant: "destructive"
-    });
+  const handleDeleteBike = async (id: number) => {
+    try {
+      const { error } = await supabase
+        .from('bike_rentals')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setBikes(bikes.filter(bike => bike.id !== id));
+      
+      toast({
+        title: "Bike deleted",
+        description: "The bike has been deleted successfully.",
+        variant: "destructive"
+      });
+    } catch (error) {
+      console.error("Error deleting bike:", error);
+      toast({
+        title: "Error deleting bike",
+        description: "There was a problem deleting the bike. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Handle toggling bike status
+  const handleToggleStatus = async (id: number) => {
+    try {
+      const bike = bikes.find(b => b.id === id);
+      if (!bike) return;
+      
+      const newStatus = bike.status === 'available' ? 'maintenance' : 'available';
+      
+      const { error } = await supabase
+        .from('bike_rentals')
+        .update({ status: newStatus })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setBikes(bikes.map(b => 
+        b.id === id ? { ...b, status: newStatus as 'available' | 'booked' | 'maintenance' } : b
+      ));
+      
+      toast({
+        title: "Status updated",
+        description: `Bike status has been updated to ${newStatus}.`,
+      });
+    } catch (error) {
+      console.error("Error updating bike status:", error);
+      toast({
+        title: "Error updating status",
+        description: "There was a problem updating the bike status. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Filter bikes based on search query
@@ -128,6 +240,22 @@ const AdminBikeRentals = () => {
     bike.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
     bike.engine.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Manage Bike Rentals</h1>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="animate-pulse flex flex-col items-center">
+            <div className="h-6 bg-stone-200 rounded w-48 mb-4"></div>
+            <div className="h-4 bg-stone-200 rounded w-64"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -286,6 +414,17 @@ const AdminBikeRentals = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        title={bike.status === 'available' ? 'Mark as Maintenance' : 'Mark as Available'}
+                        onClick={() => handleToggleStatus(bike.id)}
+                      >
+                        {bike.status === 'available' ? 
+                          <X size={16} className="text-amber-500" /> : 
+                          <Check size={16} className="text-green-500" />
+                        }
+                      </Button>
                       <Button variant="ghost" size="icon" title="View">
                         <Eye size={16} className="text-blue-500" />
                       </Button>
@@ -304,7 +443,7 @@ const AdminBikeRentals = () => {
                   </td>
                 </tr>
               ))}
-              {filteredBikes.length === 0 && (
+              {filteredBikes.length === 0 && !isLoading && (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-stone-500">
                     No bikes found. Try a different search or add a new bike.
