@@ -3,6 +3,7 @@ import React from "react";
 import { Edit, Eye, Trash, Star, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hotel } from "@/components/admin/hotels/types";
+import { useNavigate } from "react-router-dom";
 
 interface HotelListProps {
   hotels: Hotel[];
@@ -13,6 +14,12 @@ interface HotelListProps {
 }
 
 const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus, isLoading = false }: HotelListProps) => {
+  const navigate = useNavigate();
+  
+  const handleView = (slug: string) => {
+    navigate(`/hotel/${slug}`);
+  };
+
   if (isLoading) {
     return (
       <div className="p-8 text-center">
@@ -89,7 +96,12 @@ const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus, isLoading
                       <Check size={16} className="text-green-500" />
                     }
                   </Button>
-                  <Button variant="ghost" size="icon" title="View">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    title="View"
+                    onClick={() => handleView(hotel.slug)}
+                  >
                     <Eye size={16} className="text-blue-500" />
                   </Button>
                   <Button variant="ghost" size="icon" title="Edit">

@@ -19,14 +19,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { Room, NewHotel } from "@/components/admin/hotels/types";
 
 interface AddHotelDialogProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   onAddHotel: () => void;
-  newHotel: any;
-  setNewHotel: (hotel: any) => void;
-  handleInputChange: (e: any) => void;
+  newHotel: NewHotel;
+  setNewHotel: (hotel: NewHotel) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   handleAmenityToggle: (amenity: string) => void;
   handleRoomChange: (index: number, field: string, value: any) => void;
   handleAddRoom: () => void;
@@ -214,7 +215,12 @@ const AddHotelDialog = ({
             <div>
               <div className="flex justify-between items-center mb-4">
                 <Label>Room Types</Label>
-                <Button variant="outline" size="sm" onClick={handleAddRoom}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleAddRoom}
+                  type="button"
+                >
                   <Plus size={16} className="mr-1" /> Add Room Type
                 </Button>
               </div>
@@ -223,7 +229,12 @@ const AddHotelDialog = ({
                 <div key={index} className="p-4 border rounded-lg mb-4">
                   <div className="flex justify-between items-start mb-3">
                     <h4 className="font-medium">Room Type {index + 1}</h4>
-                    <Button variant="ghost" size="icon" onClick={() => handleRemoveRoom(index)}>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleRemoveRoom(index)}
+                      type="button"
+                    >
                       <X size={18} className="text-red-500" />
                     </Button>
                   </div>
@@ -285,6 +296,7 @@ const AddHotelDialog = ({
               <Button 
                 onClick={onAddHotel}
                 disabled={!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image}
+                type="button"
               >
                 Add Hotel
               </Button>

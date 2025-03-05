@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Hotel, NewHotel } from "@/components/admin/hotels/types";
+import { Hotel, NewHotel, Room } from "@/components/admin/hotels/types";
 import HotelList from "@/components/admin/hotels/HotelList";
 import HotelSearchBar from "@/components/admin/hotels/HotelSearchBar";
 import AddHotelDialog from "@/components/admin/hotels/AddHotelDialog";
@@ -42,6 +42,12 @@ const AdminHotels = () => {
       
       if (hotelError) throw hotelError;
       
+      if (!hotelData || hotelData.length === 0) {
+        setHotels([]);
+        setIsLoading(false);
+        return;
+      }
+      
       // For each hotel, fetch its rooms
       const hotelsWithRooms = await Promise.all(
         hotelData.map(async (hotel) => {
@@ -53,7 +59,6 @@ const AdminHotels = () => {
           if (roomError) {
             console.error("Error fetching rooms:", roomError);
             return {
-              ...hotel,
               id: hotel.id,
               name: hotel.name,
               slug: hotel.slug,
@@ -72,12 +77,12 @@ const AdminHotels = () => {
           }
           
           // Transform room data to match our Room interface
-          const rooms = roomData.map(room => ({
+          const rooms = roomData ? roomData.map(room => ({
             type: room.type,
             capacity: room.capacity,
             price: parseFloat(room.price.toString()),
             count: room.count
-          }));
+          })) : [];
           
           // Transform hotel data to match our Hotel interface
           return {
@@ -99,7 +104,7 @@ const AdminHotels = () => {
         })
       );
       
-      setHotels(hotelsWithRooms);
+      setHotels(hotelsWithRooms as Hotel[]);
     } catch (error) {
       console.error("Error fetching hotels:", error);
       toast({
@@ -112,8 +117,10 @@ const AdminHotels = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
     setNewHotel({
       ...newHotel,
       [name]: type === "checkbox" ? checked : 
@@ -321,7 +328,7 @@ const AdminHotels = () => {
       // Update local state
       setHotels(prevHotels => prevHotels.map(hotel => {
         if (hotel.id === id) {
-          return { ...hotel, status: newStatus };
+          return { ...hotel, status: newStatus as 'active' | 'inactive' };
         }
         return hotel;
       }));
@@ -352,7 +359,7 @@ const AdminHotels = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Manage Hotels</h1>
         
-        <Button className="gap-2" onClick={() => setIsDialogOpen(true)}>
+        <Button className="gap-2" onClick={() => setIsDialogOpen(true)} type="button">
           <Plus size={16} />
           Add New Hotel
         </Button>
