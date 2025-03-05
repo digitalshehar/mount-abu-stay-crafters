@@ -24,18 +24,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Bike {
-  id: number;
-  name: string;
-  type: string;
-  engine: string;
-  price: number;
-  image: string;
-  bookings: number;
-  status: 'available' | 'booked' | 'maintenance';
-  description?: string;
-}
+import { BikeRental } from "@/integrations/supabase/custom-types";
 
 const AdminBikeRentals = () => {
   const { toast } = useToast();
@@ -43,7 +32,7 @@ const AdminBikeRentals = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [bikes, setBikes] = useState<Bike[]>([]);
+  const [bikes, setBikes] = useState<BikeRental[]>([]);
 
   // Form state for new bike
   const [newBike, setNewBike] = useState({
@@ -69,7 +58,7 @@ const AdminBikeRentals = () => {
       if (error) throw error;
       
       if (data) {
-        const formattedBikes = data.map(bike => ({
+        const formattedBikes: BikeRental[] = data.map(bike => ({
           id: bike.id,
           name: bike.name,
           type: bike.type,
@@ -133,7 +122,7 @@ const AdminBikeRentals = () => {
       if (error) throw error;
       
       if (data) {
-        const newBikeData: Bike = {
+        const newBikeData: BikeRental = {
           id: data.id,
           name: data.name,
           type: data.type,

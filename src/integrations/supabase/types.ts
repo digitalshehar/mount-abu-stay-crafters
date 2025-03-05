@@ -9,6 +9,171 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      adventures: {
+        Row: {
+          bookings: number | null
+          created_at: string | null
+          description: string | null
+          difficulty: string
+          duration: string
+          id: number
+          image: string
+          name: string
+          price: number
+          rating: number | null
+          status: string
+          type: string
+        }
+        Insert: {
+          bookings?: number | null
+          created_at?: string | null
+          description?: string | null
+          difficulty: string
+          duration: string
+          id?: number
+          image: string
+          name: string
+          price: number
+          rating?: number | null
+          status?: string
+          type: string
+        }
+        Update: {
+          bookings?: number | null
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string
+          duration?: string
+          id?: number
+          image?: string
+          name?: string
+          price?: number
+          rating?: number | null
+          status?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      bike_rentals: {
+        Row: {
+          bookings: number | null
+          created_at: string | null
+          description: string | null
+          engine: string
+          id: number
+          image: string
+          name: string
+          price: number
+          status: string
+          type: string
+        }
+        Insert: {
+          bookings?: number | null
+          created_at?: string | null
+          description?: string | null
+          engine: string
+          id?: number
+          image: string
+          name: string
+          price: number
+          status?: string
+          type: string
+        }
+        Update: {
+          bookings?: number | null
+          created_at?: string | null
+          description?: string | null
+          engine?: string
+          id?: number
+          image?: string
+          name?: string
+          price?: number
+          status?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          author: string
+          category: string
+          content: string
+          created_at: string | null
+          date: string
+          excerpt: string
+          id: number
+          image: string
+          status: string
+          title: string
+        }
+        Insert: {
+          author: string
+          category: string
+          content: string
+          created_at?: string | null
+          date?: string
+          excerpt: string
+          id?: number
+          image: string
+          status?: string
+          title: string
+        }
+        Update: {
+          author?: string
+          category?: string
+          content?: string
+          created_at?: string | null
+          date?: string
+          excerpt?: string
+          id?: number
+          image?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      car_rentals: {
+        Row: {
+          bookings: number | null
+          capacity: number
+          created_at: string | null
+          description: string | null
+          id: number
+          image: string
+          name: string
+          price: number
+          status: string
+          transmission: string
+          type: string
+        }
+        Insert: {
+          bookings?: number | null
+          capacity: number
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          image: string
+          name: string
+          price: number
+          status?: string
+          transmission: string
+          type: string
+        }
+        Update: {
+          bookings?: number | null
+          capacity?: number
+          created_at?: string | null
+          description?: string | null
+          id?: number
+          image?: string
+          name?: string
+          price?: number
+          status?: string
+          transmission?: string
+          type?: string
+        }
+        Relationships: []
+      }
       hotels: {
         Row: {
           amenities: string[] | null

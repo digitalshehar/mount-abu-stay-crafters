@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { 
   Plus, 
@@ -24,19 +23,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Car {
-  id: number;
-  name: string;
-  type: string;
-  capacity: number;
-  transmission: string;
-  price: number;
-  image: string;
-  bookings: number;
-  status: 'available' | 'booked' | 'maintenance';
-  description?: string;
-}
+import { CarRental } from "@/integrations/supabase/custom-types";
 
 const AdminCarRentals = () => {
   const { toast } = useToast();
@@ -44,7 +31,7 @@ const AdminCarRentals = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [cars, setCars] = useState<Car[]>([]);
+  const [cars, setCars] = useState<CarRental[]>([]);
 
   // Form state for new car
   const [newCar, setNewCar] = useState({
@@ -71,7 +58,7 @@ const AdminCarRentals = () => {
       if (error) throw error;
       
       if (data) {
-        const formattedCars = data.map(car => ({
+        const formattedCars: CarRental[] = data.map(car => ({
           id: car.id,
           name: car.name,
           type: car.type,
@@ -137,7 +124,7 @@ const AdminCarRentals = () => {
       if (error) throw error;
       
       if (data) {
-        const newCarData: Car = {
+        const newCarData: CarRental = {
           id: data.id,
           name: data.name,
           type: data.type,

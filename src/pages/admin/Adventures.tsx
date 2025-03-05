@@ -25,20 +25,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Adventure {
-  id: number;
-  name: string;
-  type: string;
-  duration: string;
-  difficulty: string;
-  price: number;
-  image: string;
-  bookings: number;
-  rating: number;
-  status: 'active' | 'inactive';
-  description?: string;
-}
+import { Adventure } from "@/integrations/supabase/custom-types";
 
 const AdminAdventures = () => {
   const { toast } = useToast();
@@ -73,7 +60,7 @@ const AdminAdventures = () => {
       if (error) throw error;
       
       if (data) {
-        const formattedAdventures = data.map(adv => ({
+        const formattedAdventures: Adventure[] = data.map(adv => ({
           id: adv.id,
           name: adv.name,
           type: adv.type,

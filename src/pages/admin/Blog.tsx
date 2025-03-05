@@ -8,7 +8,9 @@ import {
   Calendar, 
   FileText,
   Eye,
-  Filter
+  Filter,
+  Check,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,18 +25,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-
-interface BlogPost {
-  id: number;
-  title: string;
-  excerpt: string;
-  author: string;
-  category: string;
-  date: string;
-  image: string;
-  content: string;
-  status: 'published' | 'draft';
-}
+import { BlogPost } from "@/integrations/supabase/custom-types";
 
 const AdminBlog = () => {
   const { toast } = useToast();
@@ -68,7 +59,7 @@ const AdminBlog = () => {
       if (error) throw error;
       
       if (data) {
-        const formattedBlogs = data.map(blog => ({
+        const formattedBlogs: BlogPost[] = data.map(blog => ({
           id: blog.id,
           title: blog.title,
           excerpt: blog.excerpt,
