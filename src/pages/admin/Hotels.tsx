@@ -1,77 +1,20 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Hotel, NewHotel, Room } from "@/components/admin/hotels/types";
+import { Hotel, NewHotel } from "@/components/admin/hotels/types";
 import HotelList from "@/components/admin/hotels/HotelList";
 import HotelSearchBar from "@/components/admin/hotels/HotelSearchBar";
 import AddHotelDialog from "@/components/admin/hotels/AddHotelDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminHotels = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
-  const [hotels, setHotels] = useState<Hotel[]>([
-    {
-      id: 1,
-      name: "Mount Abu Palace",
-      slug: "mount-abu-palace",
-      location: "Near Nakki Lake",
-      stars: 5,
-      pricePerNight: 6500,
-      image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1640&ixlib=rb-4.0.3",
-      status: "active",
-      description: "Luxury hotel with scenic views of Nakki Lake.",
-      amenities: ["WiFi", "Swimming Pool", "Restaurant", "Spa", "24/7 Room Service"],
-      rooms: [
-        { type: "Deluxe", capacity: 2, price: 6500, count: 20 },
-        { type: "Suite", capacity: 4, price: 12000, count: 10 },
-        { type: "Family Room", capacity: 6, price: 15000, count: 5 }
-      ],
-      featured: true,
-      reviewCount: 247,
-      rating: 4.8
-    },
-    {
-      id: 2,
-      name: "Sunset View Resort",
-      slug: "sunset-view-resort",
-      location: "Sunset Point Road",
-      stars: 4,
-      pricePerNight: 4200,
-      image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3",
-      status: "active",
-      description: "Charming resort with panoramic sunset views.",
-      amenities: ["WiFi", "Restaurant", "Garden", "Terrace"],
-      rooms: [
-        { type: "Standard", capacity: 2, price: 4200, count: 15 },
-        { type: "Deluxe", capacity: 3, price: 5500, count: 8 }
-      ],
-      featured: false,
-      reviewCount: 189,
-      rating: 4.5
-    },
-    {
-      id: 3,
-      name: "Hillview Hotel",
-      slug: "hillview-hotel",
-      location: "Guru Shikhar Road",
-      stars: 3,
-      pricePerNight: 2800,
-      image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1640&ixlib=rb-4.0.3",
-      status: "inactive",
-      description: "Budget-friendly hotel with comfortable accommodations.",
-      amenities: ["WiFi", "Room Service", "Parking"],
-      rooms: [
-        { type: "Standard", capacity: 2, price: 2800, count: 20 }
-      ],
-      featured: false,
-      reviewCount: 124,
-      rating: 3.9
-    },
-  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hotels, setHotels] = useState<Hotel[]>([]);
 
   const [newHotel, setNewHotel] = useState<NewHotel>({
     name: "",
@@ -84,6 +27,90 @@ const AdminHotels = () => {
     rooms: [{ type: "Standard", capacity: 2, price: 0, count: 1 }],
     featured: false,
   });
+
+  useEffect(() => {
+    fetchHotels();
+  }, []);
+
+  const fetchHotels = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch hotels from Supabase
+      const { data: hotelData, error: hotelError } = await supabase
+        .from('hotels')
+        .select('*');
+      
+      if (hotelError) throw hotelError;
+      
+      // For each hotel, fetch its rooms
+      const hotelsWithRooms = await Promise.all(
+        hotelData.map(async (hotel) => {
+          const { data: roomData, error: roomError } = await supabase
+            .from('rooms')
+            .select('*')
+            .eq('hotel_id', hotel.id);
+          
+          if (roomError) {
+            console.error("Error fetching rooms:", roomError);
+            return {
+              ...hotel,
+              id: hotel.id,
+              name: hotel.name,
+              slug: hotel.slug,
+              location: hotel.location,
+              stars: hotel.stars,
+              pricePerNight: parseFloat(hotel.price_per_night),
+              image: hotel.image,
+              status: hotel.status,
+              description: hotel.description || "",
+              amenities: hotel.amenities || ["WiFi"],
+              featured: hotel.featured || false,
+              reviewCount: hotel.review_count || 0,
+              rating: parseFloat(hotel.rating) || 0,
+              rooms: []
+            };
+          }
+          
+          // Transform room data to match our Room interface
+          const rooms = roomData.map(room => ({
+            type: room.type,
+            capacity: room.capacity,
+            price: parseFloat(room.price),
+            count: room.count
+          }));
+          
+          // Transform hotel data to match our Hotel interface
+          return {
+            id: hotel.id,
+            name: hotel.name,
+            slug: hotel.slug,
+            location: hotel.location,
+            stars: hotel.stars,
+            pricePerNight: parseFloat(hotel.price_per_night),
+            image: hotel.image,
+            status: hotel.status,
+            description: hotel.description || "",
+            amenities: hotel.amenities || ["WiFi"],
+            featured: hotel.featured || false,
+            reviewCount: hotel.review_count || 0,
+            rating: parseFloat(hotel.rating) || 0,
+            rooms
+          };
+        })
+      );
+      
+      setHotels(hotelsWithRooms);
+    } catch (error) {
+      console.error("Error fetching hotels:", error);
+      toast({
+        title: "Error fetching hotels",
+        description: "There was a problem loading the hotel data.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -149,7 +176,7 @@ const AdminHotels = () => {
     });
   };
 
-  const handleAddHotel = () => {
+  const handleAddHotel = async () => {
     // Validate required fields
     if (!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image) {
       toast({
@@ -178,69 +205,141 @@ const AdminHotels = () => {
       .replace(/[^\w\s]/gi, '')
       .replace(/\s+/g, '-');
     
-    const newId = hotels.length > 0 ? Math.max(...hotels.map(hotel => hotel.id)) + 1 : 1;
-    
-    const hotelToAdd: Hotel = {
-      ...newHotel,
-      id: newId,
-      slug,
-      status: "active" as const,
-      reviewCount: 0,
-      rating: 0
-    };
-    
-    setHotels(prevHotels => [...prevHotels, hotelToAdd]);
-    
-    // Reset form
-    setNewHotel({
-      name: "",
-      location: "",
-      stars: 4,
-      pricePerNight: 0,
-      image: "",
-      description: "",
-      amenities: ["WiFi"],
-      rooms: [{ type: "Standard", capacity: 2, price: 0, count: 1 }],
-      featured: false,
-    });
-    
-    toast({
-      title: "Hotel added",
-      description: `${newHotel.name} has been added successfully.`,
-    });
+    try {
+      // Insert hotel data to Supabase
+      const { data: hotelData, error: hotelError } = await supabase
+        .from('hotels')
+        .insert({
+          name: newHotel.name,
+          slug: slug,
+          location: newHotel.location,
+          stars: newHotel.stars,
+          price_per_night: newHotel.pricePerNight,
+          image: newHotel.image,
+          status: 'active',
+          description: newHotel.description,
+          amenities: newHotel.amenities,
+          featured: newHotel.featured,
+          review_count: 0,
+          rating: 0
+        })
+        .select()
+        .single();
+      
+      if (hotelError) throw hotelError;
+      
+      // Insert room data to Supabase
+      const roomPromises = newHotel.rooms.map(room => 
+        supabase.from('rooms').insert({
+          hotel_id: hotelData.id,
+          type: room.type,
+          capacity: room.capacity,
+          price: room.price,
+          count: room.count
+        })
+      );
+      
+      await Promise.all(roomPromises);
+      
+      // Refresh hotel data
+      await fetchHotels();
+      
+      // Reset form
+      setNewHotel({
+        name: "",
+        location: "",
+        stars: 4,
+        pricePerNight: 0,
+        image: "",
+        description: "",
+        amenities: ["WiFi"],
+        rooms: [{ type: "Standard", capacity: 2, price: 0, count: 1 }],
+        featured: false,
+      });
+      
+      toast({
+        title: "Hotel added",
+        description: `${newHotel.name} has been added successfully.`,
+      });
 
-    setIsDialogOpen(false);
-    
-    console.log("New hotel added:", hotelToAdd);
-    console.log("Updated hotels list:", [...hotels, hotelToAdd]);
+      setIsDialogOpen(false);
+      
+    } catch (error) {
+      console.error("Error adding hotel:", error);
+      toast({
+        title: "Error adding hotel",
+        description: "There was a problem adding the hotel. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteHotel = (id: number) => {
-    setHotels(prevHotels => prevHotels.filter(hotel => hotel.id !== id));
-    
-    toast({
-      title: "Hotel deleted",
-      description: "The hotel has been deleted successfully.",
-      variant: "destructive"
-    });
+  const handleDeleteHotel = async (id: number) => {
+    try {
+      // Delete hotel (cascade will delete rooms as well due to our DB setup)
+      const { error } = await supabase
+        .from('hotels')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setHotels(prevHotels => prevHotels.filter(hotel => hotel.id !== id));
+      
+      toast({
+        title: "Hotel deleted",
+        description: "The hotel has been deleted successfully.",
+        variant: "destructive"
+      });
+    } catch (error) {
+      console.error("Error deleting hotel:", error);
+      toast({
+        title: "Error deleting hotel",
+        description: "There was a problem deleting the hotel. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleToggleHotelStatus = (id: number) => {
-    setHotels(prevHotels => prevHotels.map(hotel => {
-      if (hotel.id === id) {
-        const newStatus = hotel.status === "active" ? "inactive" : "active";
-        return { ...hotel, status: newStatus };
-      }
-      return hotel;
-    }));
-    
-    const hotel = hotels.find(h => h.id === id);
-    const action = hotel?.status === "active" ? "deactivated" : "activated";
-    
-    toast({
-      title: `Hotel ${action}`,
-      description: `${hotel?.name} has been ${action} successfully.`,
-    });
+  const handleToggleHotelStatus = async (id: number) => {
+    try {
+      // Get current hotel
+      const hotel = hotels.find(h => h.id === id);
+      if (!hotel) return;
+      
+      const newStatus = hotel.status === "active" ? "inactive" : "active";
+      
+      // Update status in Supabase
+      const { error } = await supabase
+        .from('hotels')
+        .update({ status: newStatus })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setHotels(prevHotels => prevHotels.map(hotel => {
+        if (hotel.id === id) {
+          return { ...hotel, status: newStatus };
+        }
+        return hotel;
+      }));
+      
+      const action = newStatus === "active" ? "activated" : "deactivated";
+      
+      toast({
+        title: `Hotel ${action}`,
+        description: `${hotel.name} has been ${action} successfully.`,
+      });
+    } catch (error) {
+      console.error("Error toggling hotel status:", error);
+      toast({
+        title: "Error updating hotel",
+        description: "There was a problem updating the hotel status. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const filteredHotels = hotels.filter(hotel => 
@@ -270,6 +369,7 @@ const AdminHotels = () => {
           filteredHotels={filteredHotels}
           onDelete={handleDeleteHotel}
           onToggleStatus={handleToggleHotelStatus}
+          isLoading={isLoading}
         />
       </div>
 

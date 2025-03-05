@@ -2,16 +2,27 @@
 import React from "react";
 import { Edit, Eye, Trash, Star, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 
 interface HotelListProps {
   hotels: any[];
   filteredHotels: any[];
   onDelete: (id: number) => void;
   onToggleStatus: (id: number) => void;
+  isLoading?: boolean;
 }
 
-const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus }: HotelListProps) => {
+const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus, isLoading = false }: HotelListProps) => {
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-6 bg-stone-200 rounded w-48 mb-4"></div>
+          <div className="h-4 bg-stone-200 rounded w-64"></div>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -95,7 +106,7 @@ const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus }: HotelLi
               </td>
             </tr>
           ))}
-          {filteredHotels.length === 0 && (
+          {filteredHotels.length === 0 && !isLoading && (
             <tr>
               <td colSpan={7} className="px-6 py-8 text-center text-stone-500">
                 No hotels found. Try a different search or add a new hotel.

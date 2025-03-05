@@ -9,7 +9,89 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      hotels: {
+        Row: {
+          amenities: string[] | null
+          description: string | null
+          featured: boolean | null
+          id: number
+          image: string
+          location: string
+          name: string
+          price_per_night: number
+          rating: number | null
+          review_count: number | null
+          slug: string
+          stars: number
+          status: string
+        }
+        Insert: {
+          amenities?: string[] | null
+          description?: string | null
+          featured?: boolean | null
+          id?: number
+          image: string
+          location: string
+          name: string
+          price_per_night: number
+          rating?: number | null
+          review_count?: number | null
+          slug: string
+          stars: number
+          status?: string
+        }
+        Update: {
+          amenities?: string[] | null
+          description?: string | null
+          featured?: boolean | null
+          id?: number
+          image?: string
+          location?: string
+          name?: string
+          price_per_night?: number
+          rating?: number | null
+          review_count?: number | null
+          slug?: string
+          stars?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      rooms: {
+        Row: {
+          capacity: number
+          count: number
+          hotel_id: number
+          id: number
+          price: number
+          type: string
+        }
+        Insert: {
+          capacity: number
+          count: number
+          hotel_id: number
+          id?: number
+          price: number
+          type: string
+        }
+        Update: {
+          capacity?: number
+          count?: number
+          hotel_id?: number
+          id?: number
+          price?: number
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
