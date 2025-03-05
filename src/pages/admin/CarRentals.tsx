@@ -1,18 +1,9 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash, 
-  Car,
-  Eye,
-  Filter,
-  Check,
-  X
+  Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -22,10 +13,12 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { CarRental } from "@/integrations/supabase/custom-types";
+
+import CarRentalForm from "@/components/admin/car-rentals/CarRentalForm";
+import CarRentalTable from "@/components/admin/car-rentals/CarRentalTable";
+import CarRentalSearch from "@/components/admin/car-rentals/CarRentalSearch";
 
 const AdminCarRentals = () => {
   const { toast } = useToast();
@@ -344,100 +337,12 @@ const AdminCarRentals = () => {
                 Fill in the details to add a new car to your rental fleet.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 py-4">
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="name">Car Name*</Label>
-                <Input 
-                  id="name"
-                  name="name"
-                  value={newCar.name}
-                  onChange={handleInputChange}
-                  placeholder="Enter car name"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="type">Car Type*</Label>
-                <select
-                  id="type"
-                  name="type"
-                  value={newCar.type}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-stone-200 px-3 py-2"
-                >
-                  <option value="SUV">SUV</option>
-                  <option value="Sedan">Sedan</option>
-                  <option value="Hatchback">Hatchback</option>
-                  <option value="Luxury">Luxury</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="transmission">Transmission*</Label>
-                <select
-                  id="transmission"
-                  name="transmission"
-                  value={newCar.transmission}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-stone-200 px-3 py-2"
-                >
-                  <option value="Manual">Manual</option>
-                  <option value="Automatic">Automatic</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="capacity">Seating Capacity*</Label>
-                <Input 
-                  id="capacity"
-                  name="capacity"
-                  type="number"
-                  value={newCar.capacity}
-                  onChange={handleInputChange}
-                  placeholder="Enter capacity"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="price">Price Per Day (₹)*</Label>
-                <Input 
-                  id="price"
-                  name="price"
-                  type="number"
-                  value={newCar.price}
-                  onChange={handleInputChange}
-                  placeholder="Enter price"
-                />
-              </div>
-              
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="image">Image URL*</Label>
-                <Input 
-                  id="image"
-                  name="image"
-                  value={newCar.image}
-                  onChange={handleInputChange}
-                  placeholder="Enter image URL"
-                />
-              </div>
-              
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea 
-                  id="description"
-                  name="description"
-                  value={newCar.description}
-                  onChange={handleInputChange}
-                  placeholder="Enter car description"
-                  rows={4}
-                />
-              </div>
-              
-              <div className="col-span-2 flex justify-end gap-2 mt-4">
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddCar}>Add Car</Button>
-              </div>
-            </div>
+            <CarRentalForm 
+              car={newCar} 
+              onInputChange={handleInputChange} 
+              onSubmit={handleAddCar} 
+              onCancel={() => setIsAddDialogOpen(false)} 
+            />
           </DialogContent>
         </Dialog>
 
@@ -451,207 +356,30 @@ const AdminCarRentals = () => {
               </DialogDescription>
             </DialogHeader>
             {editingCar && (
-              <div className="grid grid-cols-2 gap-4 py-4">
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="edit-name">Car Name*</Label>
-                  <Input 
-                    id="edit-name"
-                    name="name"
-                    value={editingCar.name}
-                    onChange={handleEditInputChange}
-                    placeholder="Enter car name"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="edit-type">Car Type*</Label>
-                  <select
-                    id="edit-type"
-                    name="type"
-                    value={editingCar.type}
-                    onChange={handleEditInputChange}
-                    className="w-full rounded-md border border-stone-200 px-3 py-2"
-                  >
-                    <option value="SUV">SUV</option>
-                    <option value="Sedan">Sedan</option>
-                    <option value="Hatchback">Hatchback</option>
-                    <option value="Luxury">Luxury</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="edit-transmission">Transmission*</Label>
-                  <select
-                    id="edit-transmission"
-                    name="transmission"
-                    value={editingCar.transmission}
-                    onChange={handleEditInputChange}
-                    className="w-full rounded-md border border-stone-200 px-3 py-2"
-                  >
-                    <option value="Manual">Manual</option>
-                    <option value="Automatic">Automatic</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="edit-capacity">Seating Capacity*</Label>
-                  <Input 
-                    id="edit-capacity"
-                    name="capacity"
-                    type="number"
-                    value={editingCar.capacity}
-                    onChange={handleEditInputChange}
-                    placeholder="Enter capacity"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="edit-price">Price Per Day (₹)*</Label>
-                  <Input 
-                    id="edit-price"
-                    name="price"
-                    type="number"
-                    value={editingCar.price}
-                    onChange={handleEditInputChange}
-                    placeholder="Enter price"
-                  />
-                </div>
-                
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="edit-image">Image URL*</Label>
-                  <Input 
-                    id="edit-image"
-                    name="image"
-                    value={editingCar.image}
-                    onChange={handleEditInputChange}
-                    placeholder="Enter image URL"
-                  />
-                </div>
-                
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="edit-description">Description</Label>
-                  <Textarea 
-                    id="edit-description"
-                    name="description"
-                    value={editingCar.description || ""}
-                    onChange={handleEditInputChange}
-                    placeholder="Enter car description"
-                    rows={4}
-                  />
-                </div>
-                
-                <div className="col-span-2 flex justify-end gap-2 mt-4">
-                  <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleUpdateCar}>Update Car</Button>
-                </div>
-              </div>
+              <CarRentalForm 
+                car={editingCar} 
+                onInputChange={handleEditInputChange} 
+                onSubmit={handleUpdateCar} 
+                onCancel={() => setIsEditDialogOpen(false)} 
+                isEdit
+              />
             )}
           </DialogContent>
         </Dialog>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 border-b flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400" size={18} />
-            <Input
-              placeholder="Search cars by name or type..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <Button variant="outline" className="gap-2">
-            <Filter size={16} />
-            Filters
-          </Button>
-        </div>
+        <CarRentalSearch 
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery} 
+        />
         
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-xs text-stone-500 border-b">
-                <th className="px-6 py-3 font-medium">Image</th>
-                <th className="px-6 py-3 font-medium">Name</th>
-                <th className="px-6 py-3 font-medium">Type</th>
-                <th className="px-6 py-3 font-medium">Capacity</th>
-                <th className="px-6 py-3 font-medium">Price</th>
-                <th className="px-6 py-3 font-medium">Bookings</th>
-                <th className="px-6 py-3 font-medium">Status</th>
-                <th className="px-6 py-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCars.map((car) => (
-                <tr key={car.id} className="border-b border-stone-100 hover:bg-stone-50">
-                  <td className="px-6 py-4">
-                    <img 
-                      src={car.image} 
-                      alt={car.name} 
-                      className="w-16 h-12 object-cover rounded"
-                    />
-                  </td>
-                  <td className="px-6 py-4 font-medium">{car.name}</td>
-                  <td className="px-6 py-4 text-stone-600">{car.type}</td>
-                  <td className="px-6 py-4 text-stone-600">{car.capacity} seats</td>
-                  <td className="px-6 py-4">₹{car.price.toLocaleString()}/day</td>
-                  <td className="px-6 py-4">{car.bookings}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      car.status === 'available' ? 'bg-green-100 text-green-800' : 
-                      car.status === 'booked' ? 'bg-blue-100 text-blue-800' : 
-                      'bg-amber-100 text-amber-800'
-                    }`}>
-                      {car.status === 'available' ? 'Available' : 
-                       car.status === 'booked' ? 'Booked' : 'Maintenance'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        title={car.status === 'available' ? 'Mark as Maintenance' : 'Mark as Available'}
-                        onClick={() => handleToggleStatus(car.id)}
-                      >
-                        {car.status === 'available' ? 
-                          <X size={16} className="text-amber-500" /> : 
-                          <Check size={16} className="text-green-500" />
-                        }
-                      </Button>
-                      <Button variant="ghost" size="icon" title="View">
-                        <Eye size={16} className="text-blue-500" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        title="Edit" 
-                        onClick={() => handleEditClick(car)}
-                      >
-                        <Edit size={16} className="text-amber-500" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        title="Delete"
-                        onClick={() => handleDeleteCar(car.id)}
-                      >
-                        <Trash size={16} className="text-red-500" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filteredCars.length === 0 && !isLoading && (
-                <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-stone-500">
-                    No cars found. Try a different search or add a new car.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <CarRentalTable 
+          cars={filteredCars} 
+          onEdit={handleEditClick} 
+          onDelete={handleDeleteCar} 
+          onToggleStatus={handleToggleStatus} 
+        />
       </div>
     </div>
   );

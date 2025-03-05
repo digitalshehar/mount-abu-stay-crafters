@@ -22,6 +22,7 @@ import Hotels from "./pages/Hotels";
 import Destinations from "./pages/Destinations";
 import AdventureDetail from "./pages/AdventureDetail";
 import DestinationDetail from "./pages/DestinationDetail";
+import CarRentalDetail from "./pages/CarRentalDetail";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -51,6 +52,7 @@ const App = () => (
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
           <Route path="/rentals/car" element={<CarRentals />} />
+          <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
           <Route path="/rentals/bike" element={<BikeRentals />} />
           <Route path="/adventures" element={<Adventures />} />
           <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
