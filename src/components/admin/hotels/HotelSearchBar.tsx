@@ -8,11 +8,20 @@ interface HotelSearchBarProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   handleFilter?: () => void;
+  // Add onSearch prop to match what's passed in Hotels.tsx
+  onSearch?: (term: string) => void;
 }
 
-const HotelSearchBar = ({ searchQuery, setSearchQuery, handleFilter }: HotelSearchBarProps) => {
+const HotelSearchBar = ({ 
+  searchQuery, 
+  setSearchQuery, 
+  handleFilter,
+  onSearch 
+}: HotelSearchBarProps) => {
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+    // If onSearch is provided, call it with the input value
+    if (onSearch) onSearch(e.target.value);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {

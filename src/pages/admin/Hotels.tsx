@@ -338,7 +338,11 @@ const HotelsManagement = () => {
 
       <div className="bg-white rounded-lg shadow-sm mb-6">
         <div className="p-4 border-b">
-          <HotelSearchBar onSearch={handleSearch} searchTerm={searchTerm} />
+          <HotelSearchBar 
+            searchQuery={searchTerm} 
+            setSearchQuery={setSearchTerm} 
+            onSearch={handleSearch} 
+          />
         </div>
 
         <HotelList
