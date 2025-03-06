@@ -1,197 +1,32 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Session, User } from '@supabase/supabase-js';
-import { useToast } from '@/hooks/use-toast';
+import React, { createContext, useContext, useEffect, ReactNode } from 'react';
+import { useAuthentication } from '@/hooks/useAuthentication';
+import { AuthContextType, UserProfile } from '@/types/auth';
 
-export type UserProfile = {
-  id: string;
-  username?: string;
-  full_name?: string;
-  avatar_url?: string;
-  created_at?: string;
-};
-
-type AuthContextType = {
-  session: Session | null;
-  user: User | null;
-  profile: UserProfile | null;
-  loading: boolean;
-  signUp: (email: string, password: string, username: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  updateProfile: (data: { username?: string; full_name?: string; avatar_url?: string }) => Promise<void>;
-};
-
+// Create context with undefined initial value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Export the Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const {
+    session,
+    user,
+    profile,
+    loading,
+    signUp,
+    signIn,
+    signOut,
+    updateProfile,
+    initializeAuth
+  } = useAuthentication();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    // Initialize authentication
+    const cleanup = initializeAuth();
+    return cleanup;
   }, []);
 
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  const signUp = async (email: string, password: string, username: string): Promise<void> => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-          },
-        },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Please check your email for a confirmation link.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error signing up",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signIn = async (email: string, password: string): Promise<void> => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Welcome back!",
-        description: "You have successfully signed in.",
-      });
-
-      navigate('/');
-    } catch (error: any) {
-      toast({
-        title: "Error signing in",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signOut = async (): Promise<void> => {
-    try {
-      setLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
-      toast({
-        title: "Signed out",
-        description: "You have been successfully signed out.",
-      });
-      
-      navigate('/');
-    } catch (error: any) {
-      toast({
-        title: "Error signing out",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateProfile = async (data: { username?: string; full_name?: string; avatar_url?: string }): Promise<void> => {
-    try {
-      setLoading(true);
-      
-      if (!user) throw new Error("User not authenticated");
-
-      const { error } = await supabase
-        .from('profiles')
-        .update(data)
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      fetchProfile(user.id);
-
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error updating profile",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Create the context value object
   const value: AuthContextType = {
     session,
     user,
@@ -206,6 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// Export the hook for consuming the context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -213,3 +49,6 @@ export const useAuth = () => {
   }
   return context;
 };
+
+// Re-export UserProfile type
+export type { UserProfile };
