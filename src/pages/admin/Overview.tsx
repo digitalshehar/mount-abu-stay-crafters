@@ -10,6 +10,7 @@ import SeoAnalytics from "@/components/admin/SeoAnalytics";
 import DashboardStats from "@/components/admin/DashboardStats";
 import DashboardCharts from "@/components/admin/DashboardCharts";
 import RecentRecords from "@/components/admin/RecentRecords";
+import FeaturedHotels from "@/components/admin/hotels/FeaturedHotels";
 
 const AdminOverview = () => {
   return (
@@ -32,6 +33,12 @@ const AdminOverview = () => {
 
       {/* Charts Section */}
       <DashboardCharts />
+      
+      {/* Featured Hotels */}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-3">Featured Hotels</h2>
+        <FeaturedHotels />
+      </div>
       
       {/* SEO Analytics */}
       <div className="mb-6">

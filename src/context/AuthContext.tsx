@@ -21,9 +21,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   } = useAuthentication();
 
   useEffect(() => {
-    // Initialize authentication
-    const cleanup = initializeAuth();
-    return cleanup;
+    // Initialize authentication - properly handle async function
+    const init = async () => {
+      const cleanup = await initializeAuth();
+      return cleanup;
+    };
+    
+    let cleanupFn: (() => void) | undefined;
+    
+    init().then(cleanup => {
+      cleanupFn = cleanup;
+    });
+    
+    // Return cleanup function
+    return () => {
+      if (cleanupFn) cleanupFn();
+    };
   }, []);
 
   // Create the context value object

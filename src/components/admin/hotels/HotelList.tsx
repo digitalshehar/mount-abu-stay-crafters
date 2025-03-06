@@ -10,10 +10,18 @@ interface HotelListProps {
   filteredHotels: Hotel[];
   onDelete: (id: number) => void;
   onToggleStatus: (id: number) => void;
+  onToggleFeatured: (id: number, currentValue: boolean) => void;
   isLoading?: boolean;
 }
 
-const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus, isLoading = false }: HotelListProps) => {
+const HotelList = ({ 
+  hotels, 
+  filteredHotels, 
+  onDelete, 
+  onToggleStatus, 
+  onToggleFeatured,
+  isLoading = false 
+}: HotelListProps) => {
   const navigate = useNavigate();
   
   const handleView = (slug: string) => {
@@ -42,6 +50,7 @@ const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus, isLoading
             <th className="px-6 py-3 font-medium">Price</th>
             <th className="px-6 py-3 font-medium">Rating</th>
             <th className="px-6 py-3 font-medium">Status</th>
+            <th className="px-6 py-3 font-medium">Featured</th>
             <th className="px-6 py-3 font-medium">Actions</th>
           </tr>
         </thead>
@@ -57,11 +66,6 @@ const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus, isLoading
               </td>
               <td className="px-6 py-4 font-medium">
                 {hotel.name}
-                {hotel.featured && (
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                    Featured
-                  </span>
-                )}
               </td>
               <td className="px-6 py-4 text-stone-600">{hotel.location}</td>
               <td className="px-6 py-4">₹{hotel.pricePerNight.toLocaleString()}</td>
@@ -82,6 +86,17 @@ const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus, isLoading
                 }`}>
                   {hotel.status === 'active' ? 'Active' : 'Inactive'}
                 </span>
+              </td>
+              <td className="px-6 py-4">
+                <Button 
+                  variant={hotel.featured ? "default" : "outline"} 
+                  size="sm"
+                  className={hotel.featured ? "bg-amber-500 hover:bg-amber-600" : ""}
+                  onClick={() => onToggleFeatured(hotel.id, hotel.featured)}
+                >
+                  <Star size={14} className={`mr-1 ${hotel.featured ? "fill-white" : ""}`} />
+                  {hotel.featured ? 'Featured' : 'Feature'}
+                </Button>
               </td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-2">
@@ -121,7 +136,7 @@ const HotelList = ({ hotels, filteredHotels, onDelete, onToggleStatus, isLoading
           ))}
           {filteredHotels.length === 0 && !isLoading && (
             <tr>
-              <td colSpan={7} className="px-6 py-8 text-center text-stone-500">
+              <td colSpan={8} className="px-6 py-8 text-center text-stone-500">
                 No hotels found. Try a different search or add a new hotel.
               </td>
             </tr>
