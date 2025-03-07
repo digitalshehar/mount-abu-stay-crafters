@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Plus, Check, X, Wifi, Droplets, Coffee, Utensils, Upload } from "lucide-react";
+import { Plus, Check, X, Wifi, Droplets, Coffee, Utensils, Upload, HelpCircle, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Tabs,
@@ -19,6 +20,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Room, NewHotel } from "@/components/admin/hotels/types";
 
 interface AddHotelDialogProps {
@@ -49,16 +56,109 @@ const AddHotelDialog = ({
   handleImageUpload,
 }: AddHotelDialogProps) => {
   const [activeTab, setActiveTab] = useState("general");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   
   const availableAmenities = [
     "WiFi", "Swimming Pool", "Restaurant", "Spa", "Gym", "Bar", 
     "24/7 Room Service", "Parking", "Laundry", "Pet Friendly", 
-    "Air Conditioning", "TV", "Breakfast", "Minibar"
+    "Air Conditioning", "TV", "Breakfast", "Minibar", "Balcony",
+    "Ocean View", "Mountain View", "Airport Shuttle", "Concierge Service"
   ];
+
+  const locationSuggestions = [
+    "Mumbai", "Delhi", "Bangalore", "Goa", "Jaipur", 
+    "Chennai", "Kolkata", "Hyderabad", "Udaipur", "Kochi"
+  ];
+
+  const validateGeneral = () => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!newHotel.name.trim()) {
+      errors.name = "Hotel name is required";
+    }
+    
+    if (!newHotel.location.trim()) {
+      errors.location = "Location is required";
+    }
+    
+    if (newHotel.pricePerNight <= 0) {
+      errors.pricePerNight = "Price must be greater than 0";
+    }
+    
+    if (!newHotel.image.trim()) {
+      errors.image = "Image URL is required";
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  
+  const handleNavigateToTab = (nextTab: string) => {
+    if (activeTab === "general" && nextTab === "amenities") {
+      if (!validateGeneral()) {
+        return;
+      }
+    }
+    
+    setActiveTab(nextTab);
+  };
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewHotel({ ...newHotel, image: value });
+    
+    // Set preview image
+    if (value.trim()) {
+      setPreviewImage(value);
+    } else {
+      setPreviewImage(null);
+    }
+  };
+  
+  const handleLocationSelect = (location: string) => {
+    setNewHotel({ ...newHotel, location });
+  };
+  
+  const handleSubmit = async () => {
+    if (!validateGeneral()) {
+      setActiveTab("general");
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      await onAddHotel();
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+    }
+  };
+
+  const roomPriceAnalysis = (roomType: string, price: number) => {
+    const basePrice = newHotel.pricePerNight;
+    if (price < basePrice * 0.7) {
+      return "Low price compared to base rate";
+    } else if (price > basePrice * 1.5) {
+      return "High price compared to base rate";
+    }
+    return "Price is within normal range";
+  };
+  
+  const getAmenityIcon = (amenity: string) => {
+    switch (amenity) {
+      case "WiFi": return <Wifi className="h-5 w-5 text-stone-500" />;
+      case "Swimming Pool": return <Droplets className="h-5 w-5 text-stone-500" />;
+      case "Restaurant": return <Utensils className="h-5 w-5 text-stone-500" />;
+      case "Breakfast": return <Coffee className="h-5 w-5 text-stone-500" />;
+      default: return <Check className="h-5 w-5 text-stone-500" />;
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Hotel</DialogTitle>
           <DialogDescription>
@@ -74,33 +174,75 @@ const AddHotelDialog = ({
           </TabsList>
           
           <TabsContent value="general" className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="name">Hotel Name*</Label>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="name" className={validationErrors.name ? "text-red-500" : ""}>
+                    Hotel Name*
+                  </Label>
+                  {validationErrors.name && (
+                    <span className="text-xs text-red-500">{validationErrors.name}</span>
+                  )}
+                </div>
                 <Input 
                   id="name"
                   name="name"
                   value={newHotel.name}
                   onChange={handleInputChange}
                   placeholder="Enter hotel name"
+                  className={validationErrors.name ? "border-red-500" : ""}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="location">Location*</Label>
-                <Input 
-                  id="location"
-                  name="location"
-                  value={newHotel.location}
-                  onChange={handleInputChange}
-                  placeholder="Enter location"
-                  required
-                />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="location" className={validationErrors.location ? "text-red-500" : ""}>
+                    Location*
+                  </Label>
+                  {validationErrors.location && (
+                    <span className="text-xs text-red-500">{validationErrors.location}</span>
+                  )}
+                </div>
+                <div className="relative">
+                  <Input 
+                    id="location"
+                    name="location"
+                    value={newHotel.location}
+                    onChange={handleInputChange}
+                    placeholder="Enter location"
+                    className={validationErrors.location ? "border-red-500" : ""}
+                    required
+                  />
+                  {newHotel.location === "" && (
+                    <div className="mt-1">
+                      <div className="text-xs text-stone-500 mb-1">Popular locations:</div>
+                      <div className="flex flex-wrap gap-1">
+                        {locationSuggestions.slice(0, 5).map((location) => (
+                          <button
+                            key={location}
+                            type="button"
+                            onClick={() => handleLocationSelect(location)}
+                            className="px-2 py-1 text-xs bg-stone-100 rounded hover:bg-stone-200"
+                          >
+                            {location}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="pricePerNight">Base Price Per Night (₹)*</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="pricePerNight" className={validationErrors.pricePerNight ? "text-red-500" : ""}>
+                    Base Price Per Night (₹)*
+                  </Label>
+                  {validationErrors.pricePerNight && (
+                    <span className="text-xs text-red-500">{validationErrors.pricePerNight}</span>
+                  )}
+                </div>
                 <Input 
                   id="pricePerNight"
                   name="pricePerNight"
@@ -109,12 +251,25 @@ const AddHotelDialog = ({
                   onChange={handleInputChange}
                   placeholder="Enter price"
                   min="1"
+                  className={validationErrors.pricePerNight ? "border-red-500" : ""}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="stars">Star Rating*</Label>
+                <div className="flex items-center gap-1">
+                  <Label htmlFor="stars">Star Rating*</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-stone-400" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="w-[200px] text-xs">Star rating affects pricing expectations and search filters.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <select
                   id="stars"
                   name="stars"
@@ -131,16 +286,23 @@ const AddHotelDialog = ({
                 </select>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="image">Main Image URL*</Label>
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="image" className={validationErrors.image ? "text-red-500" : ""}>
+                    Main Image URL*
+                  </Label>
+                  {validationErrors.image && (
+                    <span className="text-xs text-red-500">{validationErrors.image}</span>
+                  )}
+                </div>
                 <div className="flex space-x-2">
                   <Input 
                     id="image"
                     name="image"
                     value={newHotel.image}
-                    onChange={handleInputChange}
+                    onChange={handleImageChange}
                     placeholder="Enter image URL"
-                    className="flex-1"
+                    className={`flex-1 ${validationErrors.image ? "border-red-500" : ""}`}
                     required
                   />
                   {handleImageUpload && (
@@ -159,9 +321,26 @@ const AddHotelDialog = ({
                     </div>
                   )}
                 </div>
+                
+                {/* Image preview */}
+                {(previewImage || newHotel.image) && (
+                  <div className="mt-2 relative">
+                    <div className="h-[150px] rounded-md overflow-hidden border border-stone-200">
+                      <img 
+                        src={previewImage || newHotel.image} 
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/placeholder.svg";
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               
-              <div className="space-y-2 col-span-2">
+              <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="description">Description</Label>
                 <Textarea 
                   id="description"
@@ -171,9 +350,15 @@ const AddHotelDialog = ({
                   placeholder="Enter hotel description"
                   rows={4}
                 />
+                {newHotel.description && (
+                  <div className="flex justify-between text-xs text-stone-500">
+                    <span>{newHotel.description.length} characters</span>
+                    <span>{250 - newHotel.description.length} characters remaining</span>
+                  </div>
+                )}
               </div>
               
-              <div className="space-y-1 col-span-2">
+              <div className="space-y-1 md:col-span-2">
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -185,17 +370,23 @@ const AddHotelDialog = ({
                   />
                   <Label htmlFor="featured">Feature this hotel on the homepage</Label>
                 </div>
+                <p className="text-xs text-stone-500 ml-6">Featured hotels receive more visibility and appear in special sections.</p>
               </div>
             </div>
             
             <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => setActiveTab("amenities")}>Next: Amenities</Button>
+              <Button variant="outline" onClick={() => handleNavigateToTab("amenities")}>Next: Amenities</Button>
             </div>
           </TabsContent>
           
           <TabsContent value="amenities" className="space-y-4">
             <div>
-              <Label className="block mb-3">Select Amenities</Label>
+              <div className="flex items-center justify-between mb-3">
+                <Label className="block">Select Amenities</Label>
+                <span className="text-sm text-stone-500">
+                  {newHotel.amenities.length} selected
+                </span>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 {availableAmenities.map((amenity) => (
                   <div 
@@ -207,12 +398,7 @@ const AddHotelDialog = ({
                     onClick={() => handleAmenityToggle(amenity)}
                   >
                     <div className="mr-3">
-                      {amenity === "WiFi" && <Wifi className="h-5 w-5 text-stone-500" />}
-                      {amenity === "Swimming Pool" && <Droplets className="h-5 w-5 text-stone-500" />}
-                      {amenity === "Restaurant" && <Utensils className="h-5 w-5 text-stone-500" />}
-                      {amenity === "Breakfast" && <Coffee className="h-5 w-5 text-stone-500" />}
-                      {!["WiFi", "Swimming Pool", "Restaurant", "Breakfast"].includes(amenity) && 
-                        <Check className="h-5 w-5 text-stone-500" />}
+                      {getAmenityIcon(amenity)}
                     </div>
                     <span>{amenity}</span>
                     {newHotel.amenities.includes(amenity) && (
@@ -223,11 +409,34 @@ const AddHotelDialog = ({
                   </div>
                 ))}
               </div>
+              
+              {newHotel.amenities.length > 0 && (
+                <div className="mt-4 p-4 border border-stone-200 rounded-lg bg-stone-50">
+                  <h4 className="text-sm font-medium mb-2">Selected Amenities</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {newHotel.amenities.map((amenity) => (
+                      <div 
+                        key={amenity}
+                        className="bg-white px-2 py-1 rounded border border-stone-200 text-sm flex items-center"
+                      >
+                        {amenity}
+                        <button 
+                          type="button" 
+                          onClick={() => handleAmenityToggle(amenity)}
+                          className="ml-1.5 text-stone-400 hover:text-red-500"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="flex justify-between gap-2 mt-4">
-              <Button variant="outline" onClick={() => setActiveTab("general")}>Back: General</Button>
-              <Button variant="outline" onClick={() => setActiveTab("rooms")}>Next: Rooms</Button>
+              <Button variant="outline" onClick={() => handleNavigateToTab("general")}>Back: General</Button>
+              <Button variant="outline" onClick={() => handleNavigateToTab("rooms")}>Next: Rooms</Button>
             </div>
           </TabsContent>
           
@@ -248,11 +457,11 @@ const AddHotelDialog = ({
               {/* Add Hotel button at the top of the rooms tab */}
               <div className="flex justify-end mb-4">
                 <Button 
-                  onClick={onAddHotel}
-                  disabled={!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image}
+                  onClick={handleSubmit}
+                  disabled={isLoading || !newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image}
                   type="button"
                 >
-                  Add Hotel
+                  {isLoading ? "Adding..." : "Add Hotel"}
                 </Button>
               </div>
               
@@ -266,6 +475,7 @@ const AddHotelDialog = ({
                         size="icon" 
                         onClick={() => handleRemoveRoom(index)}
                         type="button"
+                        disabled={newHotel.rooms.length === 1}
                       >
                         <X size={18} className="text-red-500" />
                       </Button>
@@ -274,13 +484,19 @@ const AddHotelDialog = ({
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor={`roomType-${index}`}>Room Type*</Label>
-                        <Input 
+                        <select
                           id={`roomType-${index}`}
                           value={room.type}
                           onChange={(e) => handleRoomChange(index, 'type', e.target.value)}
-                          placeholder="e.g. Standard, Deluxe, Suite"
-                          required
-                        />
+                          className="w-full rounded-md border border-stone-200 px-3 py-2"
+                        >
+                          <option value="Standard">Standard</option>
+                          <option value="Deluxe">Deluxe</option>
+                          <option value="Suite">Suite</option>
+                          <option value="Family">Family</option>
+                          <option value="Executive">Executive</option>
+                          <option value="Presidential">Presidential</option>
+                        </select>
                       </div>
                       
                       <div className="space-y-2">
@@ -305,6 +521,11 @@ const AddHotelDialog = ({
                           onChange={(e) => handleRoomChange(index, 'price', e.target.value)}
                           required
                         />
+                        {room.price > 0 && (
+                          <p className="text-xs text-stone-500">
+                            {roomPriceAnalysis(room.type, room.price)}
+                          </p>
+                        )}
                       </div>
                       
                       <div className="space-y-2">
@@ -325,17 +546,40 @@ const AddHotelDialog = ({
             </div>
             
             <div className="flex justify-between gap-2 mt-4">
-              <Button variant="outline" onClick={() => setActiveTab("amenities")}>Back: Amenities</Button>
+              <Button variant="outline" onClick={() => handleNavigateToTab("amenities")}>Back: Amenities</Button>
               <Button 
-                onClick={onAddHotel}
-                disabled={!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image}
+                onClick={handleSubmit}
+                disabled={isLoading || !newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image}
                 type="button"
               >
-                Add Hotel
+                {isLoading ? "Adding..." : "Add Hotel"}
               </Button>
             </div>
           </TabsContent>
         </Tabs>
+        
+        <DialogFooter className="mt-4">
+          <div className="flex justify-between w-full items-center">
+            <div className="text-xs text-stone-500">
+              {!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image ? (
+                <span className="text-amber-500">* Required fields must be filled</span>
+              ) : (
+                <span className="text-green-500">✓ All required fields complete</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubmit}
+                disabled={isLoading || !newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image}
+              >
+                {isLoading ? "Adding..." : "Add Hotel"}
+              </Button>
+            </div>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
