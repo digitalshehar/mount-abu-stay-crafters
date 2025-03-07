@@ -16,7 +16,7 @@ export const addHotel = async (newHotel: NewHotel) => {
     description: newHotel.description,
     amenities: newHotel.amenities,
     featured: newHotel.featured,
-    gallery: newHotel.gallery,
+    gallery: Array.isArray(newHotel.gallery) ? newHotel.gallery : [],
     categories: newHotel.categories,
     status: "active" as const
   };

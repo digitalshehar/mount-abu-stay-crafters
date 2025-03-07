@@ -273,6 +273,7 @@ export type Database = {
           categories: string[] | null
           description: string | null
           featured: boolean | null
+          gallery: string[] | null
           id: number
           image: string
           location: string
@@ -289,6 +290,7 @@ export type Database = {
           categories?: string[] | null
           description?: string | null
           featured?: boolean | null
+          gallery?: string[] | null
           id?: number
           image: string
           location: string
@@ -305,6 +307,7 @@ export type Database = {
           categories?: string[] | null
           description?: string | null
           featured?: boolean | null
+          gallery?: string[] | null
           id?: number
           image?: string
           location?: string
