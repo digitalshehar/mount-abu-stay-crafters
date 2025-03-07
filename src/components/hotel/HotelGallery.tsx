@@ -33,7 +33,7 @@ const HotelGallery = ({ name, images }: HotelGalleryProps) => {
           <div className="w-full h-full bg-stone-200 flex items-center justify-center">
             <div className="text-center">
               <ImageOff className="h-16 w-16 mx-auto text-stone-500 mb-4" />
-              <p className="text-stone-600 text-lg">Main image not available</p>
+              <p className="text-stone-600 text-lg">Image not available</p>
             </div>
           </div>
         )}

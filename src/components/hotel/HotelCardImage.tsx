@@ -39,7 +39,7 @@ const HotelCardImage = ({ image, name, featured, hotelSlug }: HotelCardImageProp
           <div className="w-full h-full flex items-center justify-center bg-stone-100">
             <div className="text-center p-4">
               <ImageOff className="w-10 h-10 mx-auto mb-2 text-stone-400" />
-              <span className="text-sm text-stone-500">{name}</span>
+              <span className="text-sm text-stone-500">Image not available</span>
             </div>
           </div>
         )}

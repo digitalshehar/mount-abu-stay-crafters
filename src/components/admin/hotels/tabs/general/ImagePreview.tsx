@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Upload } from "lucide-react";
+import { Upload, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,8 @@ const ImagePreview = ({
     if (imageUrl) {
       setPreviewImage(imageUrl);
       setImageError(false);
+    } else {
+      setPreviewImage(null);
     }
   }, [imageUrl]);
   
