@@ -11,19 +11,24 @@ interface HotelCardImageProps {
 
 const HotelCardImage = ({ image, name, featured, hotelSlug }: HotelCardImageProps) => {
   return (
-    <div className={`relative overflow-hidden ${featured ? "h-full" : "h-40 sm:h-48 md:h-52"}`}>
+    <div className={`relative overflow-hidden rounded-t-lg ${featured ? "h-full" : "h-40 sm:h-48 md:h-52"}`}>
       {featured && (
         <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10">
-          <span className="text-xs font-medium bg-primary text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full">
+          <span className="text-xs font-medium bg-primary text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full shadow-sm">
             Featured
           </span>
         </div>
       )}
-      <Link to={`/hotel/${hotelSlug}`}>
+      <Link to={`/hotel/${hotelSlug}`} className="block h-full">
         <img
           src={image}
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 bg-stone-100"
+          loading="lazy"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "/placeholder.svg";
+          }}
         />
       </Link>
     </div>
