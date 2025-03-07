@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { NewHotel, Room } from "@/components/admin/hotels/types";
 
@@ -13,6 +12,7 @@ export const useNewHotel = () => {
     amenities: [],
     rooms: [{ type: "Standard", capacity: 2, price: 0, count: 1 }],
     featured: false,
+    gallery: [],
   });
 
   const resetNewHotel = () => {
@@ -26,6 +26,7 @@ export const useNewHotel = () => {
       amenities: [],
       rooms: [{ type: "Standard", capacity: 2, price: 0, count: 1 }],
       featured: false,
+      gallery: [],
     });
   };
 
@@ -112,6 +113,21 @@ export const useNewHotel = () => {
     setNewHotel({ ...newHotel, rooms: updatedRooms });
   };
 
+  const addGalleryImage = (imageUrl: string) => {
+    if (imageUrl && !newHotel.gallery.includes(imageUrl)) {
+      setNewHotel({
+        ...newHotel,
+        gallery: [...newHotel.gallery, imageUrl]
+      });
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    const updatedGallery = [...newHotel.gallery];
+    updatedGallery.splice(index, 1);
+    setNewHotel({ ...newHotel, gallery: updatedGallery });
+  };
+
   const isFormValid = () => {
     return (
       newHotel.name.trim() !== "" &&
@@ -130,6 +146,8 @@ export const useNewHotel = () => {
     handleRoomChange,
     handleAddRoom,
     handleRemoveRoom,
+    addGalleryImage,
+    removeGalleryImage,
     isFormValid
   };
 };

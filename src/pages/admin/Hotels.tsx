@@ -46,7 +46,9 @@ const HotelsManagement = () => {
     handleAmenityToggle,
     handleRoomChange,
     handleAddRoom,
-    handleRemoveRoom
+    handleRemoveRoom,
+    addGalleryImage,
+    removeGalleryImage
   } = useNewHotel();
 
   const onAddHotel = async () => {

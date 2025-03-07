@@ -23,6 +23,7 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
         description: newHotel.description,
         amenities: newHotel.amenities,
         featured: newHotel.featured,
+        gallery: newHotel.gallery,
         status: "active",
       };
 

@@ -15,6 +15,7 @@ export interface Hotel {
   featured: boolean;
   reviewCount: number;
   rating: number;
+  gallery?: string[];
 }
 
 export interface Room {
@@ -34,6 +35,7 @@ export interface NewHotel {
   amenities: string[];
   rooms: Room[];
   featured: boolean;
+  gallery: string[];
 }
 
 export interface FilterOptions {
