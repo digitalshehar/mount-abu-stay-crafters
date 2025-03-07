@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { NewHotel } from "@/components/admin/hotels/types";
 
