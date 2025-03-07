@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { NewHotel } from "@/components/admin/hotels/types";
 
@@ -17,7 +18,7 @@ export const addHotel = async (newHotel: NewHotel) => {
     featured: newHotel.featured,
     gallery: newHotel.gallery,
     categories: newHotel.categories,
-    status: "active"
+    status: "active" as const
   };
 
   const { data, error } = await supabase
@@ -70,7 +71,7 @@ export const updateHotelStatus = async (id: number, currentStatus: string) => {
 
   return supabase
     .from("hotels")
-    .update({ status: newStatus })
+    .update({ status: newStatus as "active" | "inactive" })
     .eq("id", id);
 };
 

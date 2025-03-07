@@ -30,7 +30,7 @@ export const useHotels = () => {
 
       if (data) {
         // Transform data to match the Hotel type
-        const mappedHotels: Hotel[] = data.map(item => ({
+        const mappedHotels: Hotel[] = data.map((item: any) => ({
           id: item.id,
           name: item.name,
           slug: item.slug,
@@ -44,6 +44,7 @@ export const useHotels = () => {
           featured: item.featured || false,
           reviewCount: item.review_count || 0,
           rating: item.rating || 0,
+          // Ensure gallery is an array regardless of what comes from the database
           gallery: Array.isArray(item.gallery) ? item.gallery : [],
           categories: item.categories || [],
           rooms: item.rooms?.map((room: any) => ({

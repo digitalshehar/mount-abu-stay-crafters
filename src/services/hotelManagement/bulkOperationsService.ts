@@ -36,7 +36,7 @@ export const bulkToggleStatus = async (hotelIds: number[]) => {
     const newStatus = hotel.status === "active" ? "inactive" : "active";
     return supabase
       .from("hotels")
-      .update({ status: newStatus })
+      .update({ status: newStatus as "active" | "inactive" })
       .eq("id", hotel.id);
   });
   
