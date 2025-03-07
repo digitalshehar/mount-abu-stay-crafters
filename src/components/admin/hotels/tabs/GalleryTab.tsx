@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Plus, Images, Camera, Trash } from "lucide-react";
+import { Plus, Images, Camera, Trash, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,7 @@ const GalleryTab = ({
   onNext
 }: GalleryTabProps) => {
   const [newGalleryImage, setNewGalleryImage] = useState("");
+  const [imageErrors, setImageErrors] = useState<{[key: number]: boolean}>({});
 
   const handleAddGalleryImage = () => {
     if (newGalleryImage.trim()) {
@@ -32,6 +33,10 @@ const GalleryTab = ({
         alert("This image is already in the gallery");
       }
     }
+  };
+
+  const handleImageError = (index: number) => {
+    setImageErrors(prev => ({...prev, [index]: true}));
   };
 
   return (
@@ -72,15 +77,21 @@ const GalleryTab = ({
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {newHotel.gallery.map((image, index) => (
                 <div key={index} className="relative group rounded-md overflow-hidden border border-stone-200">
-                  <img 
-                    src={image} 
-                    alt={`Gallery image ${index + 1}`}
-                    className="w-full h-40 object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/placeholder.svg";
-                    }}
-                  />
+                  {!imageErrors[index] ? (
+                    <img 
+                      src={image} 
+                      alt={`Gallery image ${index + 1}`}
+                      className="w-full h-40 object-cover"
+                      onError={() => handleImageError(index)}
+                    />
+                  ) : (
+                    <div className="w-full h-40 bg-stone-100 flex items-center justify-center">
+                      <div className="text-center">
+                        <ImageOff className="h-8 w-8 mx-auto text-stone-400 mb-1" />
+                        <p className="text-xs text-stone-500">Image not available</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Button 
                       variant="destructive" 

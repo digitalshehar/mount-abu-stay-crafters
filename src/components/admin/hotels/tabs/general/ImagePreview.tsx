@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,15 @@ const ImagePreview = ({
   handleImageUpload,
   validationErrors 
 }: ImagePreviewProps) => {
-  const [previewImage, setPreviewImage] = React.useState<string | null>(imageUrl || null);
+  const [previewImage, setPreviewImage] = useState<string | null>(imageUrl || null);
+  const [imageError, setImageError] = useState<boolean>(false);
+  
+  useEffect(() => {
+    if (imageUrl) {
+      setPreviewImage(imageUrl);
+      setImageError(false);
+    }
+  }, [imageUrl]);
   
   const onImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleImageChange(e);
@@ -26,9 +34,14 @@ const ImagePreview = ({
     const value = e.target.value;
     if (value.trim()) {
       setPreviewImage(value);
+      setImageError(false);
     } else {
       setPreviewImage(null);
     }
+  };
+  
+  const handleImageError = () => {
+    setImageError(true);
   };
   
   return (
@@ -68,18 +81,26 @@ const ImagePreview = ({
         )}
       </div>
       
-      {(previewImage || imageUrl) && (
+      {previewImage && !imageError && (
         <div className="mt-2 relative">
           <div className="h-[150px] rounded-md overflow-hidden border border-stone-200">
             <img 
-              src={previewImage || imageUrl} 
+              src={previewImage} 
               alt="Preview"
               className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "/placeholder.svg";
-              }}
+              onError={handleImageError}
             />
+          </div>
+        </div>
+      )}
+      
+      {imageError && (
+        <div className="mt-2 relative">
+          <div className="h-[150px] rounded-md overflow-hidden border border-stone-200 bg-stone-100 flex items-center justify-center">
+            <div className="text-center text-stone-500">
+              <p>Image could not be loaded</p>
+              <p className="text-xs mt-1">Please check the URL and try again</p>
+            </div>
           </div>
         </div>
       )}

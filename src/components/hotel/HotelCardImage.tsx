@@ -1,6 +1,7 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { ImageOff } from "lucide-react";
 
 interface HotelCardImageProps {
   image: string;
@@ -10,6 +11,12 @@ interface HotelCardImageProps {
 }
 
 const HotelCardImage = ({ image, name, featured, hotelSlug }: HotelCardImageProps) => {
+  const [imageError, setImageError] = useState(false);
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   return (
     <div className={`relative overflow-hidden rounded-t-lg ${featured ? "h-full" : "h-40 sm:h-48 md:h-52"}`}>
       {featured && (
@@ -20,16 +27,22 @@ const HotelCardImage = ({ image, name, featured, hotelSlug }: HotelCardImageProp
         </div>
       )}
       <Link to={`/hotel/${hotelSlug}`} className="block h-full">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 bg-stone-100"
-          loading="lazy"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = "/placeholder.svg";
-          }}
-        />
+        {!imageError ? (
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 bg-stone-100"
+            loading="lazy"
+            onError={handleImageError}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-stone-100">
+            <div className="text-center p-4">
+              <ImageOff className="w-10 h-10 mx-auto mb-2 text-stone-400" />
+              <span className="text-sm text-stone-500">{name}</span>
+            </div>
+          </div>
+        )}
       </Link>
     </div>
   );
