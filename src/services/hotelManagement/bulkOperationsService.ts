@@ -7,7 +7,7 @@ export const bulkDeleteHotels = async (hotelIds: number[]) => {
   for (const id of hotelIds) {
     await supabase.rpc('delete_seasonal_pricing_by_hotel', {
       p_hotel_id: id
-    } as any); // Use type assertion to bypass type checking for RPC parameters
+    } as any); // Type assertion to bypass TypeScript's type checking for RPC parameters
       
     await supabase
       .from("rooms")
