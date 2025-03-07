@@ -245,70 +245,83 @@ const AddHotelDialog = ({
                 </Button>
               </div>
               
-              {newHotel.rooms.map((room, index) => (
-                <div key={index} className="p-4 border rounded-lg mb-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="font-medium">Room Type {index + 1}</h4>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => handleRemoveRoom(index)}
-                      type="button"
-                    >
-                      <X size={18} className="text-red-500" />
-                    </Button>
+              {/* Add Hotel button at the top of the rooms tab */}
+              <div className="flex justify-end mb-4">
+                <Button 
+                  onClick={onAddHotel}
+                  disabled={!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image}
+                  type="button"
+                >
+                  Add Hotel
+                </Button>
+              </div>
+              
+              <div className="max-h-[400px] overflow-y-auto">
+                {newHotel.rooms.map((room, index) => (
+                  <div key={index} className="p-4 border rounded-lg mb-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-medium">Room Type {index + 1}</h4>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleRemoveRoom(index)}
+                        type="button"
+                      >
+                        <X size={18} className="text-red-500" />
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor={`roomType-${index}`}>Room Type*</Label>
+                        <Input 
+                          id={`roomType-${index}`}
+                          value={room.type}
+                          onChange={(e) => handleRoomChange(index, 'type', e.target.value)}
+                          placeholder="e.g. Standard, Deluxe, Suite"
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor={`capacity-${index}`}>Capacity (Guests)*</Label>
+                        <Input 
+                          id={`capacity-${index}`}
+                          type="number"
+                          min="1"
+                          value={room.capacity}
+                          onChange={(e) => handleRoomChange(index, 'capacity', e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor={`price-${index}`}>Price Per Night (₹)*</Label>
+                        <Input 
+                          id={`price-${index}`}
+                          type="number"
+                          min="1"
+                          value={room.price}
+                          onChange={(e) => handleRoomChange(index, 'price', e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor={`count-${index}`}>Number of Rooms*</Label>
+                        <Input 
+                          id={`count-${index}`}
+                          type="number"
+                          min="1"
+                          value={room.count}
+                          onChange={(e) => handleRoomChange(index, 'count', e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor={`roomType-${index}`}>Room Type*</Label>
-                      <Input 
-                        id={`roomType-${index}`}
-                        value={room.type}
-                        onChange={(e) => handleRoomChange(index, 'type', e.target.value)}
-                        placeholder="e.g. Standard, Deluxe, Suite"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor={`capacity-${index}`}>Capacity (Guests)*</Label>
-                      <Input 
-                        id={`capacity-${index}`}
-                        type="number"
-                        min="1"
-                        value={room.capacity}
-                        onChange={(e) => handleRoomChange(index, 'capacity', e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor={`price-${index}`}>Price Per Night (₹)*</Label>
-                      <Input 
-                        id={`price-${index}`}
-                        type="number"
-                        min="1"
-                        value={room.price}
-                        onChange={(e) => handleRoomChange(index, 'price', e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor={`count-${index}`}>Number of Rooms*</Label>
-                      <Input 
-                        id={`count-${index}`}
-                        type="number"
-                        min="1"
-                        value={room.count}
-                        onChange={(e) => handleRoomChange(index, 'count', e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
             
             <div className="flex justify-between gap-2 mt-4">
