@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -20,7 +19,6 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
-import SEO from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 
 const Hotels = () => {
@@ -32,7 +30,6 @@ const Hotels = () => {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [activeFilterCount, setActiveFilterCount] = useState(0);
 
-  // Fetch hotels from Supabase
   const { data: hotels, isLoading, error, refetch } = useQuery({
     queryKey: ["hotels"],
     queryFn: async () => {
@@ -66,7 +63,6 @@ const Hotels = () => {
     }
   }, [error]);
 
-  // Update active filter count
   useEffect(() => {
     let count = 0;
     if (searchQuery) count++;
@@ -76,7 +72,6 @@ const Hotels = () => {
     setActiveFilterCount(count);
   }, [searchQuery, selectedStars, selectedAmenities, priceRange]);
 
-  // Filter hotels based on search and filters
   const filteredHotels = hotels?.filter((hotel) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -101,7 +96,6 @@ const Hotels = () => {
     return matchesSearch && matchesStars && matchesPrice && matchesAmenities;
   });
 
-  // Common amenities
   const commonAmenities = [
     "Wifi",
     "Breakfast",
@@ -151,7 +145,6 @@ const Hotels = () => {
     setSearchParams({});
   };
 
-  // Schema.org JSON-LD structured data for hotel listing
   const hotelListingSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -182,17 +175,6 @@ const Hotels = () => {
   return (
     <>
       <div className="min-h-screen flex flex-col">
-        {/* SEO Metadata */}
-        <SEO 
-          title="Hotels in Mount Abu - Best Luxury & Budget Accommodations"
-          description="Discover the best hotels in Mount Abu for your perfect stay. From luxury resorts to budget-friendly options, find accommodations with stunning views and excellent amenities."
-        />
-        
-        {/* Structured data for search engines */}
-        <script type="application/ld+json">
-          {JSON.stringify(hotelListingSchema)}
-        </script>
-        
         <Header />
 
         <main className="flex-grow pt-28 pb-16">
@@ -224,7 +206,6 @@ const Hotels = () => {
                 </form>
               </div>
 
-              {/* Active filters display */}
               {activeFilterCount > 0 && (
                 <div className="bg-stone-50 p-4 rounded-lg flex flex-wrap items-center gap-2">
                   <span className="text-sm font-medium text-stone-600">Active filters:</span>
@@ -264,7 +245,6 @@ const Hotels = () => {
               )}
 
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Filters - Desktop */}
                 <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm space-y-6 h-fit">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-lg">Filters</h3>
@@ -280,7 +260,6 @@ const Hotels = () => {
 
                   <Separator />
 
-                  {/* Price Range */}
                   <div>
                     <h4 className="font-medium mb-3">Price Range (₹)</h4>
                     <Slider
@@ -303,7 +282,6 @@ const Hotels = () => {
 
                   <Separator />
 
-                  {/* Star Rating */}
                   <div>
                     <h4 className="font-medium mb-3">Star Rating</h4>
                     <div className="space-y-2">
@@ -335,7 +313,6 @@ const Hotels = () => {
 
                   <Separator />
 
-                  {/* Amenities */}
                   <div>
                     <h4 className="font-medium mb-3">Amenities</h4>
                     <div className="space-y-2">
@@ -358,9 +335,7 @@ const Hotels = () => {
                   </div>
                 </div>
 
-                {/* Hotel List */}
                 <div className="lg:col-span-3">
-                  {/* Mobile Filters Button */}
                   <div className="lg:hidden mb-4">
                     <Button
                       onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -371,7 +346,6 @@ const Hotels = () => {
                       Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
                     </Button>
 
-                    {/* Mobile Filters Panel */}
                     {isFilterOpen && (
                       <div className="fixed inset-0 bg-white z-50 p-6 overflow-y-auto">
                         <div className="flex items-center justify-between mb-4">
@@ -387,7 +361,6 @@ const Hotels = () => {
 
                         <Separator className="mb-6" />
 
-                        {/* Price Range */}
                         <div className="mb-6">
                           <h4 className="font-medium mb-3">Price Range (₹)</h4>
                           <Slider
@@ -410,7 +383,6 @@ const Hotels = () => {
 
                         <Separator className="mb-6" />
 
-                        {/* Star Rating */}
                         <div className="mb-6">
                           <h4 className="font-medium mb-3">Star Rating</h4>
                           <div className="space-y-2">
@@ -442,7 +414,6 @@ const Hotels = () => {
 
                         <Separator className="mb-6" />
 
-                        {/* Amenities */}
                         <div className="mb-6">
                           <h4 className="font-medium mb-3">Amenities</h4>
                           <div className="space-y-2">
@@ -483,7 +454,6 @@ const Hotels = () => {
                     )}
                   </div>
 
-                  {/* Info banner */}
                   <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 flex items-start">
                     <Info className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
                     <div>
@@ -497,7 +467,6 @@ const Hotels = () => {
                     </div>
                   </div>
 
-                  {/* Hotel Results */}
                   {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {Array.from({ length: 6 }).map((_, index) => (
@@ -558,7 +527,6 @@ const Hotels = () => {
                     </div>
                   )}
                   
-                  {/* SEO Content */}
                   <div className="mt-12 bg-white rounded-xl p-8 shadow-sm">
                     <h2 className="text-2xl font-semibold mb-4">Discover Mount Abu's Finest Hotels</h2>
                     <div className="prose max-w-none text-stone-600">
@@ -622,7 +590,6 @@ const Hotels = () => {
                     </div>
                   </div>
                   
-                  {/* FAQ Section for SEO */}
                   <div className="mt-8 bg-white rounded-xl p-8 shadow-sm">
                     <h2 className="text-2xl font-semibold mb-6">Frequently Asked Questions About Mount Abu Hotels</h2>
                     

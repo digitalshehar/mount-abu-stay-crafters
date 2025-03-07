@@ -1,6 +1,9 @@
 
-import { Star, MapPin, Wifi, Coffee, Tv, Bath } from "lucide-react";
+import { Star, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import HotelCardAmenities from "./hotel/HotelCardAmenities";
+import HotelCardImage from "./hotel/HotelCardImage";
+import HotelCardRating from "./hotel/HotelCardRating";
 
 interface HotelCardProps {
   id: number;
@@ -30,22 +33,6 @@ const HotelCard = ({
   // Generate a slug from the hotel name if not provided
   const hotelSlug = slug || name.toLowerCase().replace(/\s+/g, '-');
 
-  // Function to render amenity icon
-  const renderAmenityIcon = (amenity: string) => {
-    switch (amenity.toLowerCase()) {
-      case "wifi":
-        return <Wifi className="h-4 w-4" />;
-      case "breakfast":
-        return <Coffee className="h-4 w-4" />;
-      case "tv":
-        return <Tv className="h-4 w-4" />;
-      case "bathroom":
-        return <Bath className="h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div
       className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group ${
@@ -54,33 +41,19 @@ const HotelCard = ({
           : "flex flex-col"
       }`}
     >
-      <div className={`relative overflow-hidden ${featured ? "h-full" : "h-52"}`}>
-        {featured && (
-          <div className="absolute top-4 left-4 z-10">
-            <span className="text-xs font-medium bg-primary text-white px-3 py-1 rounded-full">
-              Featured
-            </span>
-          </div>
-        )}
-        <Link to={`/hotel/${hotelSlug}`}>
-          <img
-            src={image}
-            alt={name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        </Link>
-      </div>
+      <HotelCardImage 
+        image={image} 
+        name={name} 
+        featured={featured} 
+        hotelSlug={hotelSlug} 
+      />
 
       <div className="p-6 flex flex-col flex-grow">
         <div className="flex items-start justify-between mb-2">
           <Link to={`/hotel/${hotelSlug}`} className="hover:opacity-80 transition-opacity">
             <h3 className="text-lg font-display font-semibold">{name}</h3>
           </Link>
-          <div className="flex items-center bg-primary/5 rounded-lg px-2 py-1">
-            <Star className="h-4 w-4 text-yellow-500 mr-1" />
-            <span className="text-sm font-medium">{rating}</span>
-            <span className="text-xs text-stone-500 ml-1">({reviewCount})</span>
-          </div>
+          <HotelCardRating rating={rating} reviewCount={reviewCount} />
         </div>
 
         <div className="flex items-center text-stone-500 text-sm mb-4">
@@ -88,17 +61,7 @@ const HotelCard = ({
         </div>
 
         {/* Amenities */}
-        <div className="flex items-center space-x-3 mb-5">
-          {amenities.slice(0, 4).map((amenity, index) => (
-            <div
-              key={index}
-              className="flex items-center text-stone-600 bg-stone-50 rounded-full px-3 py-1 text-xs"
-            >
-              {renderAmenityIcon(amenity)}
-              <span className="ml-1">{amenity}</span>
-            </div>
-          ))}
-        </div>
+        <HotelCardAmenities amenities={amenities.slice(0, 4)} />
 
         <div className="mt-auto flex items-center justify-between">
           <div>

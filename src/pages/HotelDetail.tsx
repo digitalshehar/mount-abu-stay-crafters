@@ -1,13 +1,13 @@
 
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Check } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
 import BookingForm, { BookingFormValues } from "@/components/BookingForm";
-import SEO from "@/components/SEO";
 import {
   Dialog,
   DialogContent,
@@ -90,12 +90,7 @@ const HotelDetail = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col">
-      <SEO 
-        title={`${hotel.name} - Luxury ${hotel.stars}-Star Hotel in ${hotel.location}`}
-        description={generateHotelDescription(hotel)}
-        type="article"
-        imagePath={hotel.image}
-      />
+      {/* Remove SEO component that's causing errors */}
       
       <script type="application/ld+json">
         {JSON.stringify(hotelSchema)}
