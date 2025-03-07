@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { PlusCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import HotelList from "@/components/admin/hotels/HotelList";
 import HotelSearchBar from "@/components/admin/hotels/HotelSearchBar";
+import HotelFilterPanel, { FilterOptions } from "@/components/admin/hotels/HotelFilterPanel";
 import AddHotelDialog from "@/components/admin/hotels/AddHotelDialog";
 import { Room, NewHotel, Hotel } from "@/components/admin/hotels/types";
 import {
@@ -27,7 +27,20 @@ const HotelsManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedHotelId, setSelectedHotelId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const { toast } = useToast();
+
+  const getMaxPrice = () => {
+    if (hotels.length === 0) return 10000;
+    return Math.max(...hotels.map(hotel => hotel.pricePerNight)) + 1000;
+  };
+
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    priceRange: [0, getMaxPrice()],
+    starRating: [],
+    amenities: [],
+    maxPrice: getMaxPrice()
+  });
 
   const [newHotel, setNewHotel] = useState<NewHotel>({
     name: "",
@@ -51,7 +64,6 @@ const HotelsManagement = () => {
 
       if (error) throw error;
 
-      // Convert from database format to component format
       const formattedHotels = data.map((hotel: any) => ({
         id: hotel.id,
         name: hotel.name,
@@ -66,11 +78,18 @@ const HotelsManagement = () => {
         featured: hotel.featured || false,
         reviewCount: hotel.review_count || 0,
         rating: hotel.rating || 0,
-        rooms: [], // Would need another query to get rooms
+        rooms: [],
       }));
 
       setHotels(formattedHotels);
       setFilteredHotels(formattedHotels);
+      
+      const maxPrice = Math.max(...formattedHotels.map(hotel => hotel.pricePerNight)) + 1000;
+      setFilterOptions(prev => ({
+        ...prev,
+        priceRange: [prev.priceRange[0], maxPrice],
+        maxPrice: maxPrice
+      }));
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -86,27 +105,76 @@ const HotelsManagement = () => {
     fetchHotels();
   }, []);
 
+  const applyFilters = (hotels: Hotel[]) => {
+    if (!hotels.length) return [];
+    
+    return hotels.filter(hotel => {
+      const priceInRange = hotel.pricePerNight >= filterOptions.priceRange[0] && 
+                          hotel.pricePerNight <= filterOptions.priceRange[1];
+      
+      const starMatch = filterOptions.starRating.length === 0 || 
+                        filterOptions.starRating.includes(hotel.stars);
+      
+      const amenitiesMatch = filterOptions.amenities.length === 0 || 
+                            filterOptions.amenities.every(amenity => 
+                              hotel.amenities.includes(amenity));
+      
+      return priceInRange && starMatch && amenitiesMatch;
+    });
+  };
+
+  const applySearchAndFilters = () => {
+    let result = [...hotels];
+    
+    if (searchTerm.trim()) {
+      result = result.filter(
+        hotel =>
+          hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          hotel.location.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    result = applyFilters(result);
+    
+    setFilteredHotels(result);
+  };
+
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-    if (!term.trim()) {
-      setFilteredHotels(hotels);
-      return;
-    }
-
-    const filtered = hotels.filter(
-      (hotel) =>
-        hotel.name.toLowerCase().includes(term.toLowerCase()) ||
-        hotel.location.toLowerCase().includes(term.toLowerCase())
-    );
-    setFilteredHotels(filtered);
+    applySearchAndFilters();
   };
+
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilterOptions(newFilters);
+    
+    setTimeout(() => {
+      applySearchAndFilters();
+    }, 0);
+  };
+
+  const handleClearFilters = () => {
+    const resetFilters = {
+      priceRange: [0, getMaxPrice()],
+      starRating: [],
+      amenities: [],
+      maxPrice: getMaxPrice()
+    };
+    
+    setFilterOptions(resetFilters);
+    
+    setTimeout(() => {
+      applySearchAndFilters();
+    }, 0);
+  };
+
+  useEffect(() => {
+    applySearchAndFilters();
+  }, [filterOptions]);
 
   const handleAddHotel = async () => {
     try {
-      // Generate a slug from the hotel name
       const slug = newHotel.name.toLowerCase().replace(/\s+/g, "-");
 
-      // Convert to database format
       const hotelData = {
         name: newHotel.name,
         slug: slug,
@@ -127,11 +195,9 @@ const HotelsManagement = () => {
 
       if (error) throw error;
 
-      // Add rooms for the new hotel
       if (data && data[0]?.id) {
         const hotelId = data[0].id;
         
-        // Insert all rooms
         const roomsPromises = newHotel.rooms.map(room => {
           return supabase.from("rooms").insert({
             hotel_id: hotelId,
@@ -150,7 +216,6 @@ const HotelsManagement = () => {
         description: "The hotel has been added successfully",
       });
 
-      // Reset form and close dialog
       setNewHotel({
         name: "",
         location: "",
@@ -164,7 +229,6 @@ const HotelsManagement = () => {
       });
       setIsAddHotelOpen(false);
       
-      // Refresh the hotels list
       fetchHotels();
     } catch (error: any) {
       toast({
@@ -184,7 +248,6 @@ const HotelsManagement = () => {
     if (!selectedHotelId) return;
 
     try {
-      // First delete rooms
       const { error: roomsError } = await supabase
         .from("rooms")
         .delete()
@@ -192,7 +255,6 @@ const HotelsManagement = () => {
 
       if (roomsError) throw roomsError;
 
-      // Then delete hotel
       const { error } = await supabase
         .from("hotels")
         .delete()
@@ -220,11 +282,9 @@ const HotelsManagement = () => {
 
   const handleToggleStatus = async (id: number) => {
     try {
-      // Find the hotel
       const hotel = hotels.find((h) => h.id === id);
       if (!hotel) return;
 
-      // Toggle status
       const newStatus = hotel.status === "active" ? "inactive" : "active";
 
       const { error } = await supabase
@@ -337,13 +397,14 @@ const HotelsManagement = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm mb-6">
-        <div className="p-4 border-b">
-          <HotelSearchBar 
-            searchQuery={searchTerm} 
-            setSearchQuery={setSearchTerm} 
-            onSearch={handleSearch} 
-          />
-        </div>
+        <HotelSearchBar 
+          searchQuery={searchTerm} 
+          setSearchQuery={setSearchTerm} 
+          handleFilter={() => setIsFilterPanelOpen(true)} 
+          onSearch={handleSearch}
+          activeFilters={filterOptions}
+          onClearFilters={handleClearFilters}
+        />
 
         <HotelList
           hotels={hotels}
@@ -355,7 +416,13 @@ const HotelsManagement = () => {
         />
       </div>
 
-      {/* Add Hotel Dialog */}
+      <HotelFilterPanel 
+        isOpen={isFilterPanelOpen}
+        onClose={() => setIsFilterPanelOpen(false)}
+        onApplyFilters={handleFilterChange}
+        currentFilters={filterOptions}
+      />
+
       <AddHotelDialog
         isOpen={isAddHotelOpen}
         setIsOpen={setIsAddHotelOpen}
@@ -369,7 +436,6 @@ const HotelsManagement = () => {
         handleRemoveRoom={handleRemoveRoom}
       />
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
