@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
@@ -19,7 +18,8 @@ import {
   Phone,
   Mail,
   Award,
-  Shield
+  Shield,
+  Check
 } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -201,7 +201,6 @@ const HotelDetail = () => {
     }, 1500);
   };
 
-  // Calculate a dynamic description for SEO
   const generateDescription = (hotel: any) => {
     if (!hotel) return "";
     
@@ -261,7 +260,6 @@ const HotelDetail = () => {
     );
   }
 
-  // Schema.org JSON-LD structured data for the hotel
   const hotelSchema = {
     "@context": "https://schema.org",
     "@type": "Hotel",
@@ -295,7 +293,6 @@ const HotelDetail = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col">
-      {/* SEO Metadata */}
       <SEO 
         title={`${hotel.name} - Luxury ${hotel.stars}-Star Hotel in ${hotel.location}`}
         description={generateDescription(hotel)}
@@ -303,7 +300,6 @@ const HotelDetail = () => {
         imagePath={hotel.image}
       />
       
-      {/* Structured data for search engines */}
       <script type="application/ld+json">
         {JSON.stringify(hotelSchema)}
       </script>
