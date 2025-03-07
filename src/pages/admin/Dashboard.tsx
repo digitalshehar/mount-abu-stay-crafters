@@ -21,7 +21,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
 
 const AdminDashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -100,22 +100,30 @@ const AdminDashboard = () => {
         </Button>
       </div>
 
+      {/* Sidebar overlay for mobile */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-30 md:hidden"
+          onClick={toggleSidebar}
+        ></div>
+      )}
+
       {/* Sidebar */}
       <aside 
         className={cn(
-          "bg-white text-stone-800 w-64 fixed inset-y-0 left-0 z-40 transition-transform duration-300 shadow-md",
+          "bg-white text-stone-800 w-[280px] fixed inset-y-0 left-0 z-40 transition-transform duration-300 shadow-md",
           !sidebarOpen && "-translate-x-full md:translate-x-0",
           sidebarOpen && "translate-x-0"
         )}
       >
-        <div className="p-6 border-b border-stone-200">
+        <div className="p-4 sm:p-6 border-b border-stone-200">
           <Link to="/admin" className="flex items-center gap-2">
             <span className="bg-primary text-white text-xl p-2 rounded font-bold">HM</span>
             <h1 className="text-xl font-bold">Admin Dashboard</h1>
           </Link>
         </div>
         
-        <nav className="p-4">
+        <nav className="p-4 overflow-y-auto max-h-[calc(100vh-80px)]">
           <div className="mb-2 px-4 py-2 text-xs uppercase text-stone-500 font-semibold">Content Management</div>
           <ul className="space-y-1 mb-6">
             {navItems.slice(0, 6).map((item) => (
@@ -123,6 +131,7 @@ const AdminDashboard = () => {
                 <Link 
                   to={item.path}
                   className="flex items-center gap-3 px-4 py-3 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+                  onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}
                 >
                   <item.icon size={18} />
                   <span>{item.label}</span>
@@ -140,6 +149,7 @@ const AdminDashboard = () => {
                 <Link 
                   to={item.path}
                   className="flex items-center gap-3 px-4 py-3 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors"
+                  onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}
                 >
                   <item.icon size={18} />
                   <span>{item.label}</span>
@@ -149,7 +159,11 @@ const AdminDashboard = () => {
           </ul>
           
           <div className="px-4 mt-8">
-            <Link to="/" className="block w-full px-4 py-2 text-sm text-center text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors mb-3">
+            <Link 
+              to="/" 
+              className="block w-full px-4 py-2 text-sm text-center text-primary border border-primary rounded-lg hover:bg-primary/5 transition-colors mb-3"
+              onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}
+            >
               View Website
             </Link>
           </div>
@@ -168,8 +182,8 @@ const AdminDashboard = () => {
 
       {/* Main content */}
       <main className={cn(
-        "flex-1 p-6 transition-all duration-300",
-        sidebarOpen ? "md:ml-64" : "ml-0"
+        "flex-1 p-4 sm:p-6 transition-all duration-300 pt-16 md:pt-6",
+        "md:ml-[280px]"
       )}>
         <Outlet />
       </main>

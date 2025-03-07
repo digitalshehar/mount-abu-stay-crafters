@@ -11,10 +11,10 @@ interface HotelCardImageProps {
 
 const HotelCardImage = ({ image, name, featured, hotelSlug }: HotelCardImageProps) => {
   return (
-    <div className={`relative overflow-hidden ${featured ? "h-full" : "h-52"}`}>
+    <div className={`relative overflow-hidden ${featured ? "h-full" : "h-40 sm:h-48 md:h-52"}`}>
       {featured && (
-        <div className="absolute top-4 left-4 z-10">
-          <span className="text-xs font-medium bg-primary text-white px-3 py-1 rounded-full">
+        <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10">
+          <span className="text-xs font-medium bg-primary text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full">
             Featured
           </span>
         </div>

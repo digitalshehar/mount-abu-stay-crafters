@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Users, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -75,18 +76,18 @@ const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
 
   return (
     <div className="lg:col-span-1">
-      <div className="bg-white rounded-xl shadow-md p-6 border border-stone-100 sticky top-24">
-        <h2 className="text-2xl font-display font-semibold mb-2">Book This Adventure</h2>
-        <p className="text-2xl font-bold text-primary mb-6">₹{adventure.price.toLocaleString()}<span className="text-sm font-normal text-stone-500">/person</span></p>
+      <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-stone-100 sticky top-16 sm:top-24">
+        <h2 className="text-xl sm:text-2xl font-display font-semibold mb-2">Book This Adventure</h2>
+        <p className="text-xl sm:text-2xl font-bold text-primary mb-4 sm:mb-6">₹{adventure.price.toLocaleString()}<span className="text-sm font-normal text-stone-500">/person</span></p>
         
-        <div className="space-y-4 mb-6">
+        <div className="space-y-4 mb-4 sm:mb-6">
           <div>
             <label htmlFor="date" className="block text-sm font-medium text-stone-600 mb-1">Select Date</label>
             <select
               id="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full px-4 py-2 rounded-md border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
+              className="w-full px-3 sm:px-4 py-2 rounded-md border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none text-sm"
             >
               <option value="">Select a date</option>
               {generateDates().map((date) => (
@@ -105,7 +106,7 @@ const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
                 id="participants"
                 value={numParticipants}
                 onChange={(e) => setNumParticipants(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-md border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none"
+                className="w-full pl-10 pr-3 sm:pr-4 py-2 rounded-md border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent appearance-none text-sm"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                   <option key={num} value={num.toString()}>
@@ -117,9 +118,9 @@ const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
           </div>
         </div>
         
-        <Separator className="my-6" />
+        <Separator className="my-4 sm:my-6" />
         
-        <div className="space-y-2 mb-6">
+        <div className="space-y-2 mb-4 sm:mb-6 text-sm">
           <div className="flex justify-between">
             <span className="text-stone-600">Adventure price</span>
             <span>₹{adventure.price.toLocaleString()} × {numParticipants}</span>
@@ -139,7 +140,7 @@ const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
           Book Now
         </Button>
         
-        <div className="mt-4 text-sm text-stone-500">
+        <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-stone-500">
           <p className="flex items-center mb-1">
             <Calendar className="h-3 w-3 mr-1" />
             <span>Free cancellation {adventure.cancellationPolicy}</span>
@@ -149,7 +150,7 @@ const BookingPanel: React.FC<BookingPanelProps> = ({ adventure }) => {
       
       {/* Booking Form Dialog */}
       <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-w-[90%] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Complete Your Booking</DialogTitle>
             <DialogDescription>

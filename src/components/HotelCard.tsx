@@ -1,5 +1,5 @@
 
-import { Star, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import HotelCardAmenities from "./hotel/HotelCardAmenities";
 import HotelCardImage from "./hotel/HotelCardImage";
@@ -37,7 +37,7 @@ const HotelCard = ({
     <div
       className={`bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group ${
         featured
-          ? "md:col-span-2 md:grid md:grid-cols-2 md:gap-6"
+          ? "md:col-span-2 md:grid md:grid-cols-1 md:grid-rows-1 lg:grid-cols-2 lg:gap-6"
           : "flex flex-col"
       }`}
     >
@@ -48,16 +48,16 @@ const HotelCard = ({
         hotelSlug={hotelSlug} 
       />
 
-      <div className="p-6 flex flex-col flex-grow">
+      <div className="p-4 sm:p-6 flex flex-col flex-grow">
         <div className="flex items-start justify-between mb-2">
           <Link to={`/hotel/${hotelSlug}`} className="hover:opacity-80 transition-opacity">
-            <h3 className="text-lg font-display font-semibold">{name}</h3>
+            <h3 className="text-base sm:text-lg font-display font-semibold line-clamp-2">{name}</h3>
           </Link>
           <HotelCardRating rating={rating} reviewCount={reviewCount} />
         </div>
 
-        <div className="flex items-center text-stone-500 text-sm mb-4">
-          <MapPin className="h-4 w-4 mr-1" /> {location}
+        <div className="flex items-center text-stone-500 text-xs sm:text-sm mb-3 sm:mb-4">
+          <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1" /> {location}
         </div>
 
         {/* Amenities */}
@@ -65,12 +65,12 @@ const HotelCard = ({
 
         <div className="mt-auto flex items-center justify-between">
           <div>
-            <span className="text-lg font-semibold">₹{price}</span>
-            <span className="text-stone-500 text-sm">/night</span>
+            <span className="text-base sm:text-lg font-semibold">₹{price}</span>
+            <span className="text-xs sm:text-sm text-stone-500">/night</span>
           </div>
           <Link
             to={`/hotel/${hotelSlug}`}
-            className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg transition-colors hover:bg-primary/90"
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-white text-xs sm:text-sm font-medium rounded-lg transition-colors hover:bg-primary/90"
           >
             View Details
           </Link>

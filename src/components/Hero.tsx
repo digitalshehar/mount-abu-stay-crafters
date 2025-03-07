@@ -1,10 +1,9 @@
 
-import { useEffect } from "react";
 import SearchContainer from "./hero/SearchContainer";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[85vh] sm:min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/20 z-10" />
@@ -16,15 +15,15 @@ const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="container-custom relative z-20 pt-32 pb-20">
+      <div className="container-custom relative z-20 pt-20 md:pt-32 pb-16 md:pb-20">
         <div className="max-w-3xl mx-auto text-center">
           <h1
-            className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6 animate-fade-in-down"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-4 sm:mb-6 animate-fade-in-down"
           >
             Discover the Serenity of Mount Abu
           </h1>
           <p
-            className="text-xl text-white/90 mb-12 animate-fade-in-down animation-delay-200"
+            className="text-base sm:text-lg md:text-xl text-white/90 mb-8 sm:mb-12 animate-fade-in-down animation-delay-200"
           >
             Find the perfect accommodations, adventures, and experiences for your dream getaway
           </p>

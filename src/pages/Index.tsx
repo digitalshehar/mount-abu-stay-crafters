@@ -62,9 +62,9 @@ const Index = () => {
       <Hero />
 
       {/* Weather & Travel Guide Section */}
-      <section className="py-10 bg-stone-50">
+      <section className="py-8 sm:py-10 bg-stone-50">
         <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <div>
               <WeatherWidget />
             </div>
@@ -76,25 +76,25 @@ const Index = () => {
       </section>
 
       {/* Featured Hotels */}
-      <section className="py-20">
+      <section className="py-12 sm:py-16 md:py-20">
         <div className="container-custom">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12">
             <div className="max-w-2xl">
-              <h2 className="title-medium mb-6">Featured Hotels in Mount Abu</h2>
-              <p className="subtitle">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold mb-3 md:mb-6">Featured Hotels in Mount Abu</h2>
+              <p className="text-sm md:text-base text-muted-foreground">
                 Discover our handpicked selection of the finest accommodations in Mount Abu, offering
                 comfort, luxury, and unforgettable experiences.
               </p>
             </div>
             <Link
               to="/hotels"
-              className="mt-6 md:mt-0 px-5 py-3 border border-primary text-primary font-medium rounded-lg hover:bg-primary hover:text-white transition-colors"
+              className="mt-4 md:mt-0 px-4 py-2 sm:px-5 sm:py-3 border border-primary text-primary font-medium rounded-lg hover:bg-primary hover:text-white transition-colors text-sm sm:text-base"
             >
               View All Hotels
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {featuredHotels.map((hotel) => (
               <HotelCard key={hotel.id} {...hotel} />
             ))}
@@ -106,9 +106,9 @@ const Index = () => {
       <DestinationSection />
 
       {/* Events & Recommendations Section */}
-      <section className="py-16 bg-stone-50">
+      <section className="py-10 sm:py-16 bg-stone-50">
         <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             <EventsCalendar />
             <PersonalizedRecommendations />
           </div>
@@ -118,7 +118,7 @@ const Index = () => {
       <TestimonialSection />
 
       {/* CTA Section */}
-      <section className="py-24 relative">
+      <section className="py-16 sm:py-20 md:py-24 relative">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-primary/60 z-10" />
           <img
@@ -129,22 +129,22 @@ const Index = () => {
         </div>
         <div className="container-custom relative z-20">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-6">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white mb-4 sm:mb-6">
               Ready for an Unforgettable Mount Abu Experience?
             </h2>
-            <p className="text-xl text-white/90 mb-10">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 sm:mb-10">
               Book your perfect getaway today and create memories that will last a lifetime.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <Link
                 to="/hotels"
-                className="px-8 py-4 bg-white text-primary font-medium rounded-lg shadow-lg hover:bg-stone-100 transition-colors"
+                className="px-6 py-3 sm:px-8 sm:py-4 bg-white text-primary font-medium rounded-lg shadow-lg hover:bg-stone-100 transition-colors text-sm sm:text-base"
               >
                 Find Hotels
               </Link>
               <Link
                 to="/adventures"
-                className="px-8 py-4 bg-transparent border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors"
+                className="px-6 py-3 sm:px-8 sm:py-4 bg-transparent border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors text-sm sm:text-base"
               >
                 Explore Adventures
               </Link>

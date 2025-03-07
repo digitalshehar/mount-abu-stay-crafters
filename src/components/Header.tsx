@@ -21,21 +21,20 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm">
-      <div className="container-custom py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
+      <div className="container-custom py-3 md:py-4 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-1 md:gap-2">
           <Logo />
-          <span className="font-bold text-xl">Mount Abu</span>
+          <span className="font-bold text-lg md:text-xl">Mount Abu</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
-          {/* Make sure car rentals link uses the correct path */}
-          <Link to="/" className="text-stone-700 hover:text-primary transition-colors">Home</Link>
-          <Link to="/hotels" className="text-stone-700 hover:text-primary transition-colors">Hotels</Link>
-          <Link to="/destinations" className="text-stone-700 hover:text-primary transition-colors">Destinations</Link>
-          <Link to="/rentals/car" className="text-stone-700 hover:text-primary transition-colors">Car Rentals</Link>
-          <Link to="/rentals/bike" className="text-stone-700 hover:text-primary transition-colors">Bike Rentals</Link>
-          <Link to="/adventures" className="text-stone-700 hover:text-primary transition-colors">Adventures</Link>
-          <Link to="/blog" className="text-stone-700 hover:text-primary transition-colors">Blog</Link>
+        <nav className="hidden md:flex items-center gap-4 lg:gap-6">
+          <Link to="/" className="text-sm lg:text-base text-stone-700 hover:text-primary transition-colors">Home</Link>
+          <Link to="/hotels" className="text-sm lg:text-base text-stone-700 hover:text-primary transition-colors">Hotels</Link>
+          <Link to="/destinations" className="text-sm lg:text-base text-stone-700 hover:text-primary transition-colors">Destinations</Link>
+          <Link to="/rentals/car" className="text-sm lg:text-base text-stone-700 hover:text-primary transition-colors">Car Rentals</Link>
+          <Link to="/rentals/bike" className="text-sm lg:text-base text-stone-700 hover:text-primary transition-colors">Bike Rentals</Link>
+          <Link to="/adventures" className="text-sm lg:text-base text-stone-700 hover:text-primary transition-colors">Adventures</Link>
+          <Link to="/blog" className="text-sm lg:text-base text-stone-700 hover:text-primary transition-colors">Blog</Link>
         </nav>
 
         <Sheet>

@@ -11,27 +11,30 @@ const HotelCardAmenities = ({ amenities }: HotelCardAmenitiesProps) => {
   const renderAmenityIcon = (amenity: string) => {
     switch (amenity.toLowerCase()) {
       case "wifi":
-        return <Wifi className="h-4 w-4" />;
+        return <Wifi className="h-3 w-3 sm:h-4 sm:w-4" />;
       case "breakfast":
-        return <Coffee className="h-4 w-4" />;
+        return <Coffee className="h-3 w-3 sm:h-4 sm:w-4" />;
       case "tv":
-        return <Tv className="h-4 w-4" />;
+        return <Tv className="h-3 w-3 sm:h-4 sm:w-4" />;
       case "bathroom":
-        return <Bath className="h-4 w-4" />;
+        return <Bath className="h-3 w-3 sm:h-4 sm:w-4" />;
       default:
         return null;
     }
   };
 
+  // On mobile, show only the first 3 amenities
+  const displayAmenities = window.innerWidth < 640 ? amenities.slice(0, 3) : amenities;
+
   return (
-    <div className="flex items-center space-x-3 mb-5">
-      {amenities.map((amenity, index) => (
+    <div className="flex flex-wrap items-center gap-2 sm:space-x-3 mb-3 sm:mb-5">
+      {displayAmenities.map((amenity, index) => (
         <div
           key={index}
-          className="flex items-center text-stone-600 bg-stone-50 rounded-full px-3 py-1 text-xs"
+          className="flex items-center text-stone-600 bg-stone-50 rounded-full px-2 sm:px-3 py-1 text-xs"
         >
           {renderAmenityIcon(amenity)}
-          <span className="ml-1">{amenity}</span>
+          <span className="ml-1 text-xs">{amenity}</span>
         </div>
       ))}
     </div>

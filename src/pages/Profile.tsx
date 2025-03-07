@@ -15,14 +15,14 @@ const Profile = () => {
   return (
     <div className="min-h-screen flex flex-col bg-stone-50">
       <Header />
-      <main className="flex-1 container-custom py-12">
+      <main className="flex-1 container-custom py-8 md:py-12">
         {/* Profile section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          <div className="col-span-1 order-2 md:order-1">
             <ProfileCard profile={profile} userEmail={user?.email} />
           </div>
           
-          <div className="col-span-1 md:col-span-2">
+          <div className="col-span-1 md:col-span-2 order-1 md:order-2">
             <FavoritesList 
               favorites={favorites}
               activeTab={activeTab}
