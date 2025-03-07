@@ -270,6 +270,7 @@ export type Database = {
       hotels: {
         Row: {
           amenities: string[] | null
+          categories: string[] | null
           description: string | null
           featured: boolean | null
           id: number
@@ -285,6 +286,7 @@ export type Database = {
         }
         Insert: {
           amenities?: string[] | null
+          categories?: string[] | null
           description?: string | null
           featured?: boolean | null
           id?: number
@@ -300,6 +302,7 @@ export type Database = {
         }
         Update: {
           amenities?: string[] | null
+          categories?: string[] | null
           description?: string | null
           featured?: boolean | null
           id?: number
@@ -403,6 +406,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "rooms_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasonal_pricing: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          hotel_id: number | null
+          id: number
+          name: string
+          price_multiplier: number
+          start_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          hotel_id?: number | null
+          id?: number
+          name: string
+          price_multiplier?: number
+          start_date: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          hotel_id?: number | null
+          id?: number
+          name?: string
+          price_multiplier?: number
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasonal_pricing_hotel_id_fkey"
             columns: ["hotel_id"]
             isOneToOne: false
             referencedRelation: "hotels"
