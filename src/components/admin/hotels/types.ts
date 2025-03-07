@@ -16,7 +16,7 @@ export interface Hotel {
   reviewCount: number;
   rating: number;
   gallery?: string[];
-  categories?: string[];
+  categories: string[];
   seasonalPricing?: SeasonalPrice[];
 }
 
@@ -63,4 +63,3 @@ export interface BulkActionOptions {
   toggleStatus: boolean;
   toggleFeatured: boolean;
 }
-

@@ -54,7 +54,7 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
         // Add seasonal pricing if any
         if (newHotel.seasonalPricing && newHotel.seasonalPricing.length > 0) {
           const seasonalPricingPromises = newHotel.seasonalPricing.map(season => {
-            // Using raw SQL query for now until types are updated
+            // Using RPC to avoid type errors
             return supabase.rpc('insert_seasonal_pricing', {
               p_hotel_id: hotelId,
               p_name: season.name,

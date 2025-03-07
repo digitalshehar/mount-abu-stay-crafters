@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Plus, Check, X, Wifi, Droplets, Coffee, Utensils, Upload, HelpCircle, Camera, Trash, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Room, NewHotel } from "@/components/admin/hotels/types";
+import { Room, NewHotel, SeasonalPrice } from "@/components/admin/hotels/types";
 
 interface AddHotelDialogProps {
   isOpen: boolean;
@@ -39,6 +40,14 @@ interface AddHotelDialogProps {
   handleAddRoom: () => void;
   handleRemoveRoom: (index: number) => void;
   handleImageUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleCategoryToggle: (category: string) => void;
+  handleAddCategory: (category: string) => void;
+  handleRemoveCategory: (category: string) => void;
+  addGalleryImage: (imageUrl: string) => void;
+  removeGalleryImage: (index: number) => void;
+  handleAddSeasonalPrice: (season: SeasonalPrice) => void;
+  handleUpdateSeasonalPrice: (index: number, field: string, value: any) => void;
+  handleRemoveSeasonalPrice: (index: number) => void;
 }
 
 const AddHotelDialog = ({
