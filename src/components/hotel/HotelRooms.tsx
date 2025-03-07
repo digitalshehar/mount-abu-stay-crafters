@@ -1,63 +1,41 @@
 
 import React from "react";
-import { Users, ChevronsRight } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Room {
   type: string;
   capacity: number;
   price: number;
-  count: number;
 }
 
 interface HotelRoomsProps {
   rooms: Room[];
-  onSelectRoom?: (room: Room) => void;
 }
 
-const HotelRooms: React.FC<HotelRoomsProps> = ({ rooms, onSelectRoom }) => {
+const HotelRooms = ({ rooms }: HotelRoomsProps) => {
   return (
     <div>
-      <h3 className="text-xl font-semibold mb-4">Available Rooms</h3>
+      <h2 className="text-2xl font-display font-semibold mb-6">Available Rooms</h2>
       <div className="space-y-4">
-        {rooms.map((room, index) => (
-          <div
-            key={index}
-            className="p-5 border border-stone-200 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-          >
+        {rooms.map((room: Room, index: number) => (
+          <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-stone-100 flex justify-between items-center">
             <div>
-              <h4 className="font-semibold text-lg">{room.type}</h4>
-              <div className="flex items-center text-stone-600 mt-1">
-                <Users className="h-4 w-4 mr-1" />
-                <span>Up to {room.capacity} guests</span>
-              </div>
-              {room.count > 0 && (
-                <p className="text-sm text-primary mt-1">
-                  {room.count} rooms available
-                </p>
-              )}
+              <h3 className="font-semibold text-lg">{room.type}</h3>
+              <p className="text-stone-500">Max {room.capacity} guests</p>
+              <ul className="mt-2 text-sm text-stone-600">
+                <li className="flex items-center"><Check className="h-3 w-3 mr-1 text-green-500" /> {room.type === 'Deluxe' ? 'King sized bed' : 'Queen sized bed'}</li>
+                <li className="flex items-center"><Check className="h-3 w-3 mr-1 text-green-500" /> {room.type === 'Deluxe' ? 'Mountain view' : 'Garden view'}</li>
+                <li className="flex items-center"><Check className="h-3 w-3 mr-1 text-green-500" /> {room.type === 'Deluxe' ? 'Premium amenities' : 'Standard amenities'}</li>
+              </ul>
             </div>
-
-            <div className="md:text-right mt-2 md:mt-0">
-              <div className="text-lg font-semibold">₹{room.price}</div>
-              <div className="text-sm text-stone-500">per night</div>
-              {onSelectRoom && (
-                <Button
-                  className="mt-2 md:mt-3 gap-1"
-                  onClick={() => onSelectRoom(room)}
-                >
-                  Select <ChevronsRight className="h-4 w-4" />
-                </Button>
-              )}
+            <div className="text-right">
+              <div className="text-lg font-semibold">₹{room.price}<span className="text-sm font-normal">/night</span></div>
+              <div className="text-xs text-green-600 mb-2">Breakfast included</div>
+              <Button size="sm" variant="outline" className="text-xs">View Details</Button>
             </div>
           </div>
         ))}
-
-        {rooms.length === 0 && (
-          <div className="p-5 text-center text-stone-500 border border-dashed border-stone-200 rounded-lg">
-            No rooms are currently available for this hotel.
-          </div>
-        )}
       </div>
     </div>
   );

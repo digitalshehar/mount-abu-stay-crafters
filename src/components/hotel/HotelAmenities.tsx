@@ -1,39 +1,43 @@
 
 import React from "react";
-import { Check, Wifi, Coffee, Utensils, Waves, DumbbellIcon } from "lucide-react";
+import { Wifi, Coffee, Tv, Bath, Utensils, Dumbbell, Snowflake, Car } from "lucide-react";
 
 interface HotelAmenitiesProps {
   amenities: string[];
 }
 
-const HotelAmenities: React.FC<HotelAmenitiesProps> = ({ amenities }) => {
-  // Helper function to render amenity icon
-  const getAmenityIcon = (amenity: string) => {
+const HotelAmenities = ({ amenities }: HotelAmenitiesProps) => {
+  const renderAmenityIcon = (amenity: string) => {
     switch (amenity.toLowerCase()) {
       case "wifi":
-        return <Wifi className="h-5 w-5 text-primary" />;
+        return <Wifi className="h-4 w-4" />;
       case "breakfast":
-      case "24/7 room service":
-        return <Coffee className="h-5 w-5 text-primary" />;
+        return <Coffee className="h-4 w-4" />;
+      case "tv":
+        return <Tv className="h-4 w-4" />;
+      case "bathroom":
+        return <Bath className="h-4 w-4" />;
       case "restaurant":
-        return <Utensils className="h-5 w-5 text-primary" />;
-      case "swimming pool":
-        return <Waves className="h-5 w-5 text-primary" />;
+        return <Utensils className="h-4 w-4" />;
       case "gym":
-        return <DumbbellIcon className="h-5 w-5 text-primary" />;
+        return <Dumbbell className="h-4 w-4" />;
+      case "air conditioning":
+        return <Snowflake className="h-4 w-4" />;
+      case "parking":
+        return <Car className="h-4 w-4" />;
       default:
-        return <Check className="h-5 w-5 text-primary" />;
+        return null;
     }
   };
 
   return (
-    <div className="p-6 bg-stone-50 rounded-xl">
-      <h3 className="text-lg font-semibold mb-4">Amenities</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {amenities.map((amenity, index) => (
-          <div key={index} className="flex items-center space-x-2">
-            {getAmenityIcon(amenity)}
-            <span className="text-stone-700">{amenity}</span>
+    <div>
+      <h2 className="text-2xl font-display font-semibold mb-6">Amenities</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4">
+        {amenities.map((amenity: string, index: number) => (
+          <div key={index} className="flex items-center space-x-2 text-stone-600">
+            {renderAmenityIcon(amenity)}
+            <span>{amenity}</span>
           </div>
         ))}
       </div>
