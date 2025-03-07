@@ -35,7 +35,9 @@ const HotelsManagement = () => {
     handleDeleteHotel,
     confirmDelete,
     handleToggleStatus,
-    handleToggleFeatured
+    handleToggleFeatured,
+    handleBulkAction,
+    handleCloneHotel
   } = useHotelOperations(fetchHotels);
 
   const {
@@ -44,11 +46,17 @@ const HotelsManagement = () => {
     resetNewHotel,
     handleInputChange,
     handleAmenityToggle,
+    handleCategoryToggle,
+    handleAddCategory,
+    handleRemoveCategory,
     handleRoomChange,
     handleAddRoom,
     handleRemoveRoom,
     addGalleryImage,
-    removeGalleryImage
+    removeGalleryImage,
+    handleAddSeasonalPrice,
+    handleUpdateSeasonalPrice,
+    handleRemoveSeasonalPrice
   } = useNewHotel();
 
   const onAddHotel = async () => {
@@ -89,6 +97,8 @@ const HotelsManagement = () => {
             }
           }}
           onToggleFeatured={handleToggleFeatured}
+          onClone={handleCloneHotel}
+          onBulkAction={handleBulkAction}
           isLoading={loading}
         />
       </div>
@@ -111,6 +121,14 @@ const HotelsManagement = () => {
         handleRoomChange={handleRoomChange}
         handleAddRoom={handleAddRoom}
         handleRemoveRoom={handleRemoveRoom}
+        handleCategoryToggle={handleCategoryToggle}
+        handleAddCategory={handleAddCategory}
+        handleRemoveCategory={handleRemoveCategory}
+        addGalleryImage={addGalleryImage}
+        removeGalleryImage={removeGalleryImage}
+        handleAddSeasonalPrice={handleAddSeasonalPrice}
+        handleUpdateSeasonalPrice={handleUpdateSeasonalPrice}
+        handleRemoveSeasonalPrice={handleRemoveSeasonalPrice}
       />
 
       <DeleteHotelDialog

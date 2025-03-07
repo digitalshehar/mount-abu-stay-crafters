@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { NewHotel, Room } from "@/components/admin/hotels/types";
+import { NewHotel, Room, SeasonalPrice } from "@/components/admin/hotels/types";
 
 export const useNewHotel = () => {
   const [newHotel, setNewHotel] = useState<NewHotel>({
@@ -13,6 +14,8 @@ export const useNewHotel = () => {
     rooms: [{ type: "Standard", capacity: 2, price: 0, count: 1 }],
     featured: false,
     gallery: [],
+    categories: [],
+    seasonalPricing: []
   });
 
   const resetNewHotel = () => {
@@ -27,6 +30,8 @@ export const useNewHotel = () => {
       rooms: [{ type: "Standard", capacity: 2, price: 0, count: 1 }],
       featured: false,
       gallery: [],
+      categories: [],
+      seasonalPricing: []
     });
   };
 
@@ -55,6 +60,36 @@ export const useNewHotel = () => {
         amenities: [...newHotel.amenities, amenity],
       });
     }
+  };
+
+  const handleCategoryToggle = (category: string) => {
+    if (newHotel.categories.includes(category)) {
+      setNewHotel({
+        ...newHotel,
+        categories: newHotel.categories.filter((c) => c !== category),
+      });
+    } else {
+      setNewHotel({
+        ...newHotel,
+        categories: [...newHotel.categories, category],
+      });
+    }
+  };
+
+  const handleAddCategory = (category: string) => {
+    if (category && !newHotel.categories.includes(category)) {
+      setNewHotel({
+        ...newHotel,
+        categories: [...newHotel.categories, category],
+      });
+    }
+  };
+
+  const handleRemoveCategory = (category: string) => {
+    setNewHotel({
+      ...newHotel,
+      categories: newHotel.categories.filter((c) => c !== category),
+    });
   };
 
   const handleRoomChange = (index: number, field: string, value: any) => {
@@ -128,6 +163,35 @@ export const useNewHotel = () => {
     setNewHotel({ ...newHotel, gallery: updatedGallery });
   };
 
+  // Seasonal pricing functions
+  const handleAddSeasonalPrice = (season: SeasonalPrice) => {
+    setNewHotel({
+      ...newHotel,
+      seasonalPricing: [...newHotel.seasonalPricing, season]
+    });
+  };
+
+  const handleUpdateSeasonalPrice = (index: number, field: string, value: any) => {
+    const updatedPricing = [...newHotel.seasonalPricing];
+    updatedPricing[index] = {
+      ...updatedPricing[index],
+      [field]: field === 'priceMultiplier' ? Number(value) : value
+    };
+    setNewHotel({
+      ...newHotel,
+      seasonalPricing: updatedPricing
+    });
+  };
+
+  const handleRemoveSeasonalPrice = (index: number) => {
+    const updatedPricing = [...newHotel.seasonalPricing];
+    updatedPricing.splice(index, 1);
+    setNewHotel({
+      ...newHotel,
+      seasonalPricing: updatedPricing
+    });
+  };
+
   const isFormValid = () => {
     return (
       newHotel.name.trim() !== "" &&
@@ -143,11 +207,17 @@ export const useNewHotel = () => {
     resetNewHotel,
     handleInputChange,
     handleAmenityToggle,
+    handleCategoryToggle,
+    handleAddCategory,
+    handleRemoveCategory,
     handleRoomChange,
     handleAddRoom,
     handleRemoveRoom,
     addGalleryImage,
     removeGalleryImage,
+    handleAddSeasonalPrice,
+    handleUpdateSeasonalPrice,
+    handleRemoveSeasonalPrice,
     isFormValid
   };
 };

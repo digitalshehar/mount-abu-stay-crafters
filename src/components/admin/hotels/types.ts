@@ -16,6 +16,8 @@ export interface Hotel {
   reviewCount: number;
   rating: number;
   gallery?: string[];
+  categories?: string[];
+  seasonalPricing?: SeasonalPrice[];
 }
 
 export interface Room {
@@ -36,6 +38,8 @@ export interface NewHotel {
   rooms: Room[];
   featured: boolean;
   gallery: string[];
+  categories: string[];
+  seasonalPricing: SeasonalPrice[];
 }
 
 export interface FilterOptions {
@@ -44,3 +48,19 @@ export interface FilterOptions {
   amenities: string[];
   maxPrice: number;
 }
+
+export interface SeasonalPrice {
+  id?: number;
+  hotelId?: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+  priceMultiplier: number;
+}
+
+export interface BulkActionOptions {
+  delete: boolean;
+  toggleStatus: boolean;
+  toggleFeatured: boolean;
+}
+
