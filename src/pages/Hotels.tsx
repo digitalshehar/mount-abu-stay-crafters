@@ -7,7 +7,8 @@ import {
   MapPin, 
   Star, 
   SlidersHorizontal, 
-  X 
+  X,
+  Info 
 } from "lucide-react";
 import { toast } from "sonner";
 import Header from "@/components/Header";
@@ -19,6 +20,8 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
+import SEO from "@/components/SEO";
+import { Badge } from "@/components/ui/badge";
 
 const Hotels = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,6 +30,7 @@ const Hotels = () => {
   const [priceRange, setPriceRange] = useState([1000, 15000]);
   const [selectedStars, setSelectedStars] = useState<number[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [activeFilterCount, setActiveFilterCount] = useState(0);
 
   // Fetch hotels from Supabase
   const { data: hotels, isLoading, error, refetch } = useQuery({
@@ -61,6 +65,16 @@ const Hotels = () => {
       });
     }
   }, [error]);
+
+  // Update active filter count
+  useEffect(() => {
+    let count = 0;
+    if (searchQuery) count++;
+    if (selectedStars.length > 0) count++;
+    if (selectedAmenities.length > 0) count++;
+    if (priceRange[0] !== 1000 || priceRange[1] !== 15000) count++;
+    setActiveFilterCount(count);
+  }, [searchQuery, selectedStars, selectedAmenities, priceRange]);
 
   // Filter hotels based on search and filters
   const filteredHotels = hotels?.filter((hotel) => {
@@ -97,6 +111,8 @@ const Hotels = () => {
     "Pool",
     "Air Conditioning",
     "Restaurant",
+    "Gym",
+    "Spa",
   ];
 
   const handleStarFilter = (star: number) => {
@@ -135,9 +151,48 @@ const Hotels = () => {
     setSearchParams({});
   };
 
+  // Schema.org JSON-LD structured data for hotel listing
+  const hotelListingSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": filteredHotels?.map((hotel, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Hotel",
+        "name": hotel.name,
+        "url": `${window.location.origin}/hotel/${hotel.slug}`,
+        "image": hotel.image,
+        "description": hotel.description || `A ${hotel.stars}-star hotel in ${hotel.location}, Mount Abu`,
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": hotel.location,
+          "addressRegion": "Rajasthan",
+          "addressCountry": "IN"
+        },
+        "priceRange": `₹${hotel.price_per_night} - ₹${hotel.price_per_night * 2}`,
+        "starRating": {
+          "@type": "Rating",
+          "ratingValue": hotel.stars
+        }
+      }
+    })) || []
+  };
+
   return (
     <>
       <div className="min-h-screen flex flex-col">
+        {/* SEO Metadata */}
+        <SEO 
+          title="Hotels in Mount Abu - Best Luxury & Budget Accommodations"
+          description="Discover the best hotels in Mount Abu for your perfect stay. From luxury resorts to budget-friendly options, find accommodations with stunning views and excellent amenities."
+        />
+        
+        {/* Structured data for search engines */}
+        <script type="application/ld+json">
+          {JSON.stringify(hotelListingSchema)}
+        </script>
+        
         <Header />
 
         <main className="flex-grow pt-28 pb-16">
@@ -168,6 +223,45 @@ const Hotels = () => {
                   </Button>
                 </form>
               </div>
+
+              {/* Active filters display */}
+              {activeFilterCount > 0 && (
+                <div className="bg-stone-50 p-4 rounded-lg flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-stone-600">Active filters:</span>
+                  
+                  {searchQuery && (
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      Search: {searchQuery}
+                      <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchQuery("")} />
+                    </Badge>
+                  )}
+                  
+                  {selectedStars.length > 0 && (
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      Stars: {selectedStars.sort().join(", ")}
+                      <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedStars([])} />
+                    </Badge>
+                  )}
+                  
+                  {selectedAmenities.length > 0 && (
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      Amenities: {selectedAmenities.length}
+                      <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedAmenities([])} />
+                    </Badge>
+                  )}
+                  
+                  {(priceRange[0] !== 1000 || priceRange[1] !== 15000) && (
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      Price: ₹{priceRange[0]} - ₹{priceRange[1]}
+                      <X className="h-3 w-3 cursor-pointer" onClick={() => setPriceRange([1000, 15000])} />
+                    </Badge>
+                  )}
+                  
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="ml-auto">
+                    Clear all filters
+                  </Button>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Filters - Desktop */}
@@ -274,7 +368,7 @@ const Hotels = () => {
                       className="w-full gap-2"
                     >
                       <SlidersHorizontal size={16} />
-                      Filters
+                      Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
                     </Button>
 
                     {/* Mobile Filters Panel */}
@@ -389,6 +483,20 @@ const Hotels = () => {
                     )}
                   </div>
 
+                  {/* Info banner */}
+                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 flex items-start">
+                    <Info className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-medium text-blue-700 mb-1">About Mount Abu Hotels</h3>
+                      <p className="text-sm text-blue-600">
+                        Mount Abu offers a range of accommodations from luxurious resorts to budget-friendly hotels. 
+                        Most hotels are located near Nakki Lake and offer beautiful views of the surrounding Aravalli Hills.
+                        The high season runs from October to March with peak rates, while the monsoon season (July-September) 
+                        offers lush landscapes at lower prices.
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Hotel Results */}
                   {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -418,23 +526,28 @@ const Hotels = () => {
                       ))}
                     </div>
                   ) : filteredHotels && filteredHotels.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {filteredHotels.map((hotel) => (
-                        <HotelCard
-                          key={hotel.id}
-                          id={hotel.id}
-                          name={hotel.name}
-                          image={hotel.image}
-                          price={hotel.price_per_night}
-                          location={hotel.location}
-                          rating={hotel.rating || 0}
-                          reviewCount={hotel.review_count || 0}
-                          amenities={hotel.amenities || []}
-                          featured={hotel.featured}
-                          slug={hotel.slug}
-                        />
-                      ))}
-                    </div>
+                    <>
+                      <p className="text-stone-600 mb-6">
+                        Showing {filteredHotels.length} {filteredHotels.length === 1 ? 'hotel' : 'hotels'} {activeFilterCount > 0 ? 'matching your filters' : 'in Mount Abu'}
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {filteredHotels.map((hotel) => (
+                          <HotelCard
+                            key={hotel.id}
+                            id={hotel.id}
+                            name={hotel.name}
+                            image={hotel.image}
+                            price={hotel.price_per_night}
+                            location={hotel.location}
+                            rating={hotel.rating || 0}
+                            reviewCount={hotel.review_count || 0}
+                            amenities={hotel.amenities || []}
+                            featured={hotel.featured}
+                            slug={hotel.slug}
+                          />
+                        ))}
+                      </div>
+                    </>
                   ) : (
                     <div className="bg-white rounded-xl p-8 text-center shadow-sm">
                       <h3 className="text-xl font-semibold mb-2">No hotels found</h3>
@@ -444,6 +557,119 @@ const Hotels = () => {
                       <Button onClick={clearFilters}>Clear Filters</Button>
                     </div>
                   )}
+                  
+                  {/* SEO Content */}
+                  <div className="mt-12 bg-white rounded-xl p-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold mb-4">Discover Mount Abu's Finest Hotels</h2>
+                    <div className="prose max-w-none text-stone-600">
+                      <p>
+                        Mount Abu, Rajasthan's only hill station, is a serene retreat nestled in the Aravalli Range. 
+                        Known for its stunning landscapes, sacred temples, and pleasant climate, Mount Abu offers the 
+                        perfect escape from the desert heat of Rajasthan.
+                      </p>
+                      
+                      <h3 className="text-xl font-medium mt-6 mb-3">Choosing the Perfect Accommodation</h3>
+                      <p>
+                        Whether you're planning a family vacation, a romantic getaway, or a spiritual retreat, Mount Abu 
+                        has accommodations to suit every need and budget. From luxury resorts overlooking Nakki Lake to 
+                        budget-friendly guesthouses in the town center, you'll find the perfect place to stay.
+                      </p>
+                      
+                      <h3 className="text-xl font-medium mt-6 mb-3">Best Areas to Stay</h3>
+                      <p>
+                        The most popular areas to stay in Mount Abu include:
+                      </p>
+                      <ul className="list-disc pl-6 space-y-2 mt-3">
+                        <li>
+                          <span className="font-medium">Nakki Lake Area</span> - The heart of Mount Abu, offering stunning 
+                          lake views and easy access to boat rides, shopping, and restaurants.
+                        </li>
+                        <li>
+                          <span className="font-medium">Sunset Point Road</span> - Perfect for those seeking peaceful surroundings 
+                          and spectacular sunset views.
+                        </li>
+                        <li>
+                          <span className="font-medium">Near Dilwara Temples</span> - Ideal for spiritual seekers wanting easy 
+                          access to these magnificent Jain temples.
+                        </li>
+                      </ul>
+                      
+                      <h3 className="text-xl font-medium mt-6 mb-3">When to Visit</h3>
+                      <p>
+                        The best time to visit Mount Abu is from October to March when the weather is pleasant and perfect for 
+                        sightseeing. Summer (April to June) can be warm but still cooler than the plains below. Monsoon season 
+                        (July to September) transforms the landscape into a lush green paradise, though some outdoor activities 
+                        may be limited.
+                      </p>
+                      
+                      <h3 className="text-xl font-medium mt-6 mb-3">Popular Attractions Near Hotels</h3>
+                      <p>
+                        Most hotels in Mount Abu provide easy access to popular attractions including:
+                      </p>
+                      <ul className="list-disc pl-6 space-y-2 mt-3">
+                        <li>Nakki Lake - A sacred lake with boating facilities</li>
+                        <li>Dilwara Temples - Exquisite Jain temples known for incredible marble carvings</li>
+                        <li>Sunset Point - Offering breathtaking views of the sunset</li>
+                        <li>Guru Shikhar - The highest peak in the Aravalli Range</li>
+                        <li>Trevor's Tank - A delight for nature and wildlife enthusiasts</li>
+                        <li>Mount Abu Wildlife Sanctuary - Home to diverse flora and fauna</li>
+                      </ul>
+                      
+                      <p className="mt-6">
+                        Browse our carefully selected hotels and find your perfect stay in Mount Abu. Filter by amenities, 
+                        price range, or star rating to customize your search based on your preferences and budget.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* FAQ Section for SEO */}
+                  <div className="mt-8 bg-white rounded-xl p-8 shadow-sm">
+                    <h2 className="text-2xl font-semibold mb-6">Frequently Asked Questions About Mount Abu Hotels</h2>
+                    
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="font-medium text-lg mb-2">What is the average price of hotels in Mount Abu?</h3>
+                        <p className="text-stone-600">
+                          Hotel prices in Mount Abu vary by season. Budget accommodations start from ₹1,000 per night, mid-range 
+                          hotels range from ₹2,500 to ₹5,000, while luxury resorts can cost ₹7,000 and above per night.
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <h3 className="font-medium text-lg mb-2">Which hotels in Mount Abu offer the best views?</h3>
+                        <p className="text-stone-600">
+                          Hotels around Nakki Lake and those located at higher elevations typically offer the best views 
+                          of the surrounding landscapes. Many luxury hotels feature rooms with private balconies overlooking 
+                          the Aravalli hills or the lake.
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <h3 className="font-medium text-lg mb-2">Is it necessary to book hotels in advance?</h3>
+                        <p className="text-stone-600">
+                          It's highly recommended to book in advance, especially during peak tourist seasons (October to March and 
+                          during holidays). Last-minute bookings may result in higher prices or limited availability.
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <h3 className="font-medium text-lg mb-2">Do Mount Abu hotels provide transportation to local attractions?</h3>
+                        <p className="text-stone-600">
+                          Many hotels offer transportation services to popular attractions, either included in the package or for 
+                          an additional fee. Some luxury hotels provide complimentary shuttle services to nearby points of interest.
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <h3 className="font-medium text-lg mb-2">Are there any eco-friendly or sustainable hotels in Mount Abu?</h3>
+                        <p className="text-stone-600">
+                          Yes, several hotels in Mount Abu have adopted eco-friendly practices, such as solar power, water 
+                          conservation, and waste management. Look for properties that mention sustainability initiatives in 
+                          their descriptions.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

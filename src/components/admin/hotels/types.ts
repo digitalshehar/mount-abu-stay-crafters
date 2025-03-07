@@ -35,3 +35,10 @@ export interface NewHotel {
   rooms: Room[];
   featured: boolean;
 }
+
+export interface FilterOptions {
+  priceRange: [number, number];
+  starRating: number[];
+  amenities: string[];
+  maxPrice: number;
+}
