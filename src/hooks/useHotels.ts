@@ -38,7 +38,7 @@ export const useHotels = () => {
           stars: item.stars,
           pricePerNight: item.price_per_night,
           image: item.image,
-          status: item.status,
+          status: item.status as "active" | "inactive",
           description: item.description || "",
           amenities: item.amenities || [],
           featured: item.featured || false,
