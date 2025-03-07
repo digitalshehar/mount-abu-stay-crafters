@@ -80,8 +80,8 @@ const HotelFilterPanel = ({
 
   // Reset filters
   const resetFilters = () => {
-    const resetFilters = {
-      priceRange: [0, currentFilters.maxPrice],
+    const resetFilters: FilterOptions = {
+      priceRange: [0, currentFilters.maxPrice] as [number, number],
       starRating: [],
       amenities: [],
       maxPrice: currentFilters.maxPrice
