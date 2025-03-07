@@ -1,151 +1,129 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Hotel, FilterOptions, NewHotel } from "@/components/admin/hotels/types";
-import { useToast } from "@/components/ui/use-toast";
+import { Hotel, FilterOptions } from "@/components/admin/hotels/types";
 
 export const useHotels = () => {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [filteredHotels, setFilteredHotels] = useState<Hotel[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-
-  const getMaxPrice = () => {
-    if (hotels.length === 0) return 10000;
-    return Math.max(...hotels.map(hotel => hotel.pricePerNight)) + 1000;
-  };
-
+  const [searchTerm, setSearchTerm] = useState("");
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    priceRange: [0, getMaxPrice()] as [number, number],
+    priceRange: [0, 50000],
     starRating: [],
     amenities: [],
-    maxPrice: getMaxPrice()
+    maxPrice: 50000
   });
-
-  const fetchHotels = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("hotels")
-        .select("*")
-        .order("name");
-
-      if (error) throw error;
-
-      const formattedHotels = data.map((hotel: any) => ({
-        id: hotel.id,
-        name: hotel.name,
-        slug: hotel.slug || hotel.name.toLowerCase().replace(/\s+/g, "-"),
-        location: hotel.location,
-        stars: hotel.stars,
-        pricePerNight: hotel.price_per_night,
-        image: hotel.image,
-        status: hotel.status,
-        description: hotel.description || "",
-        amenities: hotel.amenities || [],
-        featured: hotel.featured || false,
-        reviewCount: hotel.review_count || 0,
-        rating: hotel.rating || 0,
-        rooms: [],
-      }));
-
-      setHotels(formattedHotels);
-      setFilteredHotels(formattedHotels);
-      
-      const maxPrice = Math.max(...formattedHotels.map(hotel => hotel.pricePerNight)) + 1000;
-      setFilterOptions(prev => ({
-        ...prev,
-        priceRange: [prev.priceRange[0], maxPrice] as [number, number],
-        maxPrice: maxPrice
-      }));
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error fetching hotels",
-        description: error.message,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const applyFilters = (hotels: Hotel[]) => {
-    if (!hotels.length) return [];
-    
-    return hotels.filter(hotel => {
-      const priceInRange = hotel.pricePerNight >= filterOptions.priceRange[0] && 
-                          hotel.pricePerNight <= filterOptions.priceRange[1];
-      
-      const starMatch = filterOptions.starRating.length === 0 || 
-                        filterOptions.starRating.includes(hotel.stars);
-      
-      const amenitiesMatch = filterOptions.amenities.length === 0 || 
-                            filterOptions.amenities.every(amenity => 
-                              hotel.amenities.includes(amenity));
-      
-      return priceInRange && starMatch && amenitiesMatch;
-    });
-  };
-
-  const applySearchAndFilters = () => {
-    let result = [...hotels];
-    
-    if (searchTerm.trim()) {
-      result = result.filter(
-        hotel =>
-          hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          hotel.location.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    result = applyFilters(result);
-    
-    setFilteredHotels(result);
-  };
-
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    applySearchAndFilters();
-  };
-
-  const handleFilterChange = (newFilters: FilterOptions) => {
-    setFilterOptions(newFilters);
-    
-    setTimeout(() => {
-      applySearchAndFilters();
-    }, 0);
-  };
-
-  const handleClearFilters = () => {
-    const resetFilters = {
-      priceRange: [0, getMaxPrice()] as [number, number],
-      starRating: [],
-      amenities: [],
-      maxPrice: getMaxPrice()
-    };
-    
-    setFilterOptions(resetFilters);
-    
-    setTimeout(() => {
-      applySearchAndFilters();
-    }, 0);
-  };
 
   useEffect(() => {
     fetchHotels();
   }, []);
 
-  useEffect(() => {
-    applySearchAndFilters();
-  }, [filterOptions]);
+  const fetchHotels = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("hotels")
+        .select("*, rooms(*)");
+
+      if (error) throw error;
+
+      if (data) {
+        // Transform data to match the Hotel type
+        const mappedHotels: Hotel[] = data.map(item => ({
+          id: item.id,
+          name: item.name,
+          slug: item.slug,
+          location: item.location,
+          stars: item.stars,
+          pricePerNight: item.price_per_night,
+          image: item.image,
+          status: item.status,
+          description: item.description || "",
+          amenities: item.amenities || [],
+          featured: item.featured || false,
+          reviewCount: item.review_count || 0,
+          rating: item.rating || 0,
+          gallery: item.gallery || [],
+          categories: item.categories || [],
+          rooms: item.rooms?.map((room: any) => ({
+            type: room.type,
+            capacity: room.capacity,
+            price: room.price,
+            count: room.count
+          })) || []
+        }));
+
+        setHotels(mappedHotels);
+        setFilteredHotels(mappedHotels);
+      }
+    } catch (error) {
+      console.error("Error fetching hotels:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      setFilteredHotels(hotels);
+      return;
+    }
+
+    const filtered = hotels.filter(hotel => 
+      hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hotel.location.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setFilteredHotels(filtered);
+  };
+
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilterOptions(newFilters);
+
+    let filtered = [...hotels];
+
+    // Filter by price range
+    filtered = filtered.filter(
+      hotel => hotel.pricePerNight >= newFilters.priceRange[0] && 
+               hotel.pricePerNight <= newFilters.priceRange[1]
+    );
+
+    // Filter by star rating if any selected
+    if (newFilters.starRating.length > 0) {
+      filtered = filtered.filter(hotel => 
+        newFilters.starRating.includes(hotel.stars)
+      );
+    }
+
+    // Filter by amenities if any selected
+    if (newFilters.amenities.length > 0) {
+      filtered = filtered.filter(hotel => 
+        newFilters.amenities.every(amenity => 
+          hotel.amenities.includes(amenity)
+        )
+      );
+    }
+
+    setFilteredHotels(filtered);
+  };
+
+  const handleClearFilters = () => {
+    setFilterOptions({
+      priceRange: [0, 50000],
+      starRating: [],
+      amenities: [],
+      maxPrice: 50000
+    });
+    setFilteredHotels(hotels);
+  };
 
   return {
     hotels,
     filteredHotels,
+    loading,
     searchTerm,
     setSearchTerm,
-    loading,
     filterOptions,
     fetchHotels,
     handleSearch,
