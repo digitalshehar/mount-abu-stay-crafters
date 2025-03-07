@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // Perform bulk delete operation
@@ -37,7 +36,7 @@ export const bulkToggleStatus = async (hotelIds: number[]) => {
     const newStatus = hotel.status === "active" ? "inactive" : "active";
     return supabase
       .from("hotels")
-      .update({ status: newStatus as "active" | "inactive" })
+      .update({ status: newStatus })
       .eq("id", hotel.id);
   });
   

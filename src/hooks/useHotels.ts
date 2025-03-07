@@ -44,6 +44,7 @@ export const useHotels = () => {
           featured: item.featured || false,
           reviewCount: item.review_count || 0,
           rating: item.rating || 0,
+          // Add the gallery property with a default empty array if it doesn't exist
           gallery: item.gallery || [],
           categories: item.categories || [],
           rooms: item.rooms?.map((room: any) => ({

@@ -18,7 +18,7 @@ export const addHotel = async (newHotel: NewHotel) => {
     featured: newHotel.featured,
     gallery: newHotel.gallery,
     categories: newHotel.categories,
-    status: "active" as "active" | "inactive",
+    status: "active"
   };
 
   const { data, error } = await supabase
@@ -71,7 +71,7 @@ export const updateHotelStatus = async (id: number, currentStatus: string) => {
 
   return supabase
     .from("hotels")
-    .update({ status: newStatus as "active" | "inactive" })
+    .update({ status: newStatus })
     .eq("id", id);
 };
 
