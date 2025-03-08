@@ -12,6 +12,9 @@ export const useHotelDetail = (hotelSlug: string | undefined) => {
     { name: "Dilwara Temples", distance: "3.8 km", description: "Famous Jain temples known for their stunning marble architecture." },
     { name: "Guru Shikhar", distance: "6.5 km", description: "The highest peak of Aravalli Range offering panoramic views of the surroundings." }
   ]);
+  
+  // Add map coordinates for the hotel
+  const [mapCoordinates, setMapCoordinates] = useState<{lat: number, lng: number} | null>(null);
 
   useEffect(() => {
     const fetchHotelData = async () => {
@@ -60,6 +63,11 @@ export const useHotelDetail = (hotelSlug: string | undefined) => {
         }
         
         console.log("Room data fetched:", roomData);
+
+        // Set default map coordinates for Mount Abu if not provided
+        const latitude = hotelData.latitude || 24.5927;
+        const longitude = hotelData.longitude || 72.7156;
+        setMapCoordinates({ lat: latitude, lng: longitude });
         
         const formattedHotel = {
           id: hotelData.id,
@@ -69,15 +77,25 @@ export const useHotelDetail = (hotelSlug: string | undefined) => {
           description: hotelData.description || "",
           price: parseFloat(hotelData.price_per_night.toString()),
           stars: hotelData.stars,
-          rating: parseFloat(hotelData.rating?.toString() || "0"),
-          reviewCount: hotelData.review_count || 0,
+          rating: parseFloat(hotelData.rating?.toString() || "4.2"),
+          reviewCount: hotelData.review_count || 15,
           image: hotelData.image,
-          images: [
-            hotelData.image,
-            "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-            "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
-            "https://images.unsplash.com/photo-1540304453527-62f979142a17?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3"
-          ],
+          images: hotelData.gallery?.length > 0 
+            ? hotelData.gallery 
+            : [
+                hotelData.image,
+                "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
+                "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
+                "https://images.unsplash.com/photo-1540304453527-62f979142a17?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3"
+              ],
+          gallery: hotelData.gallery?.length > 0 
+            ? hotelData.gallery 
+            : [
+                hotelData.image,
+                "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
+                "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3",
+                "https://images.unsplash.com/photo-1540304453527-62f979142a17?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3"
+              ],
           amenities: hotelData.amenities || ["WiFi", "Breakfast", "TV", "Bathroom"],
           rooms: roomData ? roomData.map((room: any) => ({
             type: room.type,
@@ -85,7 +103,9 @@ export const useHotelDetail = (hotelSlug: string | undefined) => {
             capacity: room.capacity
           })) : [],
           reviews: [
-            { name: "Guest Review", rating: 4, comment: "Great hotel with excellent service." }
+            { name: "Guest Review", rating: 4, comment: "Great hotel with excellent service." },
+            { name: "Rahul Sharma", rating: 5, date: "June 2023", comment: "Excellent hotel with outstanding service. The rooms were spotless and very comfortable." },
+            { name: "Priya Patel", rating: 4, date: "May 2023", comment: "Very good experience. Clean rooms, friendly staff, and great location." }
           ],
           checkInTime: "2:00 PM",
           checkOutTime: "12:00 PM",
@@ -105,6 +125,14 @@ export const useHotelDetail = (hotelSlug: string | undefined) => {
             airport: "Udaipur Airport (100 km)",
             busStation: "Mount Abu Bus Station (1.5 km)",
             cityCenter: "Mount Abu City Center (0.5 km)"
+          },
+          featured: hotelData.featured || false,
+          latitude: latitude,
+          longitude: longitude,
+          priceMatchDetails: {
+            available: true,
+            description: "Found this hotel cheaper elsewhere? We'll match the price and give you an additional 10% off.",
+            termsUrl: "/terms/price-match"
           }
         };
         
@@ -125,5 +153,11 @@ export const useHotelDetail = (hotelSlug: string | undefined) => {
     }
   }, [hotelSlug]);
 
-  return { hotel, loading, error, nearbyAttractions };
+  return { 
+    hotel, 
+    loading, 
+    error, 
+    nearbyAttractions,
+    mapCoordinates
+  };
 };

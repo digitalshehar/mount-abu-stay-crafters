@@ -20,8 +20,8 @@ const HotelGallery: React.FC<HotelGalleryProps> = ({
   const [showLightbox, setShowLightbox] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
 
-  // Ensure we have at least one image
-  const galleryImages = images.length > 0 ? images : ["/placeholder.svg"];
+  // Ensure we have at least one image and handle empty array cases properly
+  const galleryImages = images && images.length > 0 ? images : ["/placeholder.svg"];
 
   const handleOpenLightbox = (index: number) => {
     setCurrentImage(index);
@@ -50,6 +50,9 @@ const HotelGallery: React.FC<HotelGalleryProps> = ({
                 src={galleryImages[currentImage]}
                 alt={`${name} - Image ${currentImage + 1}`}
                 className="object-contain w-full h-full"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                }}
               />
               
               <Button
@@ -88,6 +91,9 @@ const HotelGallery: React.FC<HotelGalleryProps> = ({
                     src={image}
                     alt={`${name} - Thumbnail ${idx + 1}`}
                     className="aspect-square object-cover w-full h-full"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
                   />
                 </div>
               ))}
@@ -111,6 +117,9 @@ const HotelGallery: React.FC<HotelGalleryProps> = ({
             src={galleryImages[currentImage]}
             alt={`${name} - Image ${currentImage + 1}`}
             className="object-contain h-full max-w-full"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/placeholder.svg";
+            }}
           />
           
           <div className="absolute bottom-4 left-0 right-0 text-center text-white">
@@ -155,6 +164,9 @@ const HotelGallery: React.FC<HotelGalleryProps> = ({
               src={galleryImages[0]}
               alt={`${name} - Main Image`}
               className="w-full h-full object-cover rounded-l-lg cursor-pointer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/placeholder.svg";
+              }}
             />
             <div className="absolute inset-0 bg-black bg-opacity-10 hover:bg-opacity-0 transition-opacity duration-300 rounded-l-lg"></div>
           </div>
@@ -170,6 +182,9 @@ const HotelGallery: React.FC<HotelGalleryProps> = ({
                 src={image}
                 alt={`${name} - Image ${idx + 2}`}
                 className={`w-full h-full object-cover cursor-pointer ${idx === 2 ? 'rounded-tr-lg' : ''} ${idx === 3 ? 'rounded-br-lg' : ''}`}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                }}
               />
               <div className={`absolute inset-0 bg-black bg-opacity-10 hover:bg-opacity-0 transition-opacity duration-300 ${idx === 2 ? 'rounded-tr-lg' : ''} ${idx === 3 ? 'rounded-br-lg' : ''}`}></div>
               
