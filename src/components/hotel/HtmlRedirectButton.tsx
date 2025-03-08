@@ -5,10 +5,9 @@ import { ExternalLink } from "lucide-react";
 
 interface HtmlRedirectButtonProps {
   hotelSlug: string;
-  hotelName: string;
 }
 
-const HtmlRedirectButton = ({ hotelSlug, hotelName }: HtmlRedirectButtonProps) => {
+const HtmlRedirectButton = ({ hotelSlug }: HtmlRedirectButtonProps) => {
   const handleRedirect = () => {
     // Create SEO-friendly URL with .html extension
     const htmlUrl = `/hotel/${hotelSlug}.html`;

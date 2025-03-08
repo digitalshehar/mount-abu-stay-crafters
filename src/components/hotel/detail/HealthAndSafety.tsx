@@ -2,6 +2,15 @@
 import React from "react";
 import { Info, Check } from "lucide-react";
 
+const healthMeasures = [
+  "Enhanced cleaning practices",
+  "Social distancing measures",
+  "Staff trained in safety protocol",
+  "Temperature checks for staff",
+  "Contactless check-in/out available",
+  "Hand sanitizer provided"
+];
+
 const HealthAndSafety = () => {
   return (
     <div className="mt-8 bg-green-50 p-6 rounded-lg border border-green-100">
@@ -10,14 +19,7 @@ const HealthAndSafety = () => {
         Health & Safety Measures
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
-        {[
-          "Enhanced cleaning practices",
-          "Social distancing measures",
-          "Staff trained in safety protocol",
-          "Temperature checks for staff",
-          "Contactless check-in/out available",
-          "Hand sanitizer provided"
-        ].map((measure, idx) => (
+        {healthMeasures.map((measure, idx) => (
           <div key={idx} className="flex items-start">
             <Check className="h-4 w-4 text-green-600 mt-1 mr-2 flex-shrink-0" />
             <span className="text-sm text-green-800">{measure}</span>
