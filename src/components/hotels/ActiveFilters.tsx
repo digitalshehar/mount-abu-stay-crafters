@@ -34,36 +34,41 @@ const ActiveFilters = ({
   }
 
   return (
-    <div className="bg-stone-50 p-4 rounded-lg flex flex-wrap items-center gap-2">
-      <span className="text-sm font-medium text-stone-600">Active filters:</span>
+    <div className="bg-stone-50 p-4 rounded-lg flex flex-col sm:flex-row flex-wrap items-center gap-2">
+      <span className="text-sm font-medium text-stone-600 mr-2">Active filters:</span>
       
-      {searchQuery && (
-        <Badge variant="outline" className="flex items-center gap-1">
-          Search: {searchQuery}
-          <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchQuery("")} />
-        </Badge>
-      )}
-      
-      {selectedStars.length > 0 && (
-        <Badge variant="outline" className="flex items-center gap-1">
-          Stars: {selectedStars.sort().join(", ")}
-          <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedStars([])} />
-        </Badge>
-      )}
-      
-      {selectedAmenities.length > 0 && (
-        <Badge variant="outline" className="flex items-center gap-1">
-          Amenities: {selectedAmenities.length}
-          <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedAmenities([])} />
-        </Badge>
-      )}
-      
-      {(priceRange[0] !== 1000 || priceRange[1] !== 15000) && (
-        <Badge variant="outline" className="flex items-center gap-1">
-          Price: ₹{priceRange[0]} - ₹{priceRange[1]}
-          <X className="h-3 w-3 cursor-pointer" onClick={() => setPriceRange([1000, 15000])} />
-        </Badge>
-      )}
+      <div className="flex flex-wrap gap-2">
+        {searchQuery && (
+          <Badge variant="outline" className="flex items-center gap-1 bg-white">
+            Search: {searchQuery}
+            <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchQuery("")} />
+          </Badge>
+        )}
+        
+        {selectedStars.length > 0 && (
+          <Badge variant="outline" className="flex items-center gap-1 bg-white">
+            Stars: {selectedStars.sort().join(", ")}
+            <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedStars([])} />
+          </Badge>
+        )}
+        
+        {selectedAmenities.map(amenity => (
+          <Badge key={amenity} variant="outline" className="flex items-center gap-1 bg-white">
+            {amenity}
+            <X 
+              className="h-3 w-3 cursor-pointer" 
+              onClick={() => setSelectedAmenities(selectedAmenities.filter(a => a !== amenity))} 
+            />
+          </Badge>
+        ))}
+        
+        {(priceRange[0] !== 1000 || priceRange[1] !== 15000) && (
+          <Badge variant="outline" className="flex items-center gap-1 bg-white">
+            Price: ₹{priceRange[0]} - ₹{priceRange[1]}
+            <X className="h-3 w-3 cursor-pointer" onClick={() => setPriceRange([1000, 15000])} />
+          </Badge>
+        )}
+      </div>
       
       <Button variant="ghost" size="sm" onClick={clearFilters} className="ml-auto">
         Clear all filters

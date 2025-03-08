@@ -27,29 +27,31 @@ const RoomCard: React.FC<RoomCardProps> = ({
   uploadingRoom
 }) => {
   return (
-    <Card className="relative">
+    <Card className="relative transition-shadow hover:shadow-md">
       <Button
         variant="destructive"
         size="icon"
-        className="absolute right-2 top-2 h-6 w-6"
+        className="absolute right-2 top-2 h-7 w-7 z-10"
         onClick={() => handleRemoveRoom(index)}
       >
         <Trash className="h-4 w-4" />
       </Button>
       <CardContent className="pt-6 pb-4">
-        <RoomDetailsForm 
-          room={room}
-          index={index}
-          handleRoomChange={handleRoomChange}
-        />
-        
-        <RoomImageGallery
-          roomIndex={index}
-          images={room.images || []}
-          handleRemoveImage={handleRemoveImage}
-          handleAddImage={handleAddImage}
-          uploadingRoom={uploadingRoom}
-        />
+        <div className="grid md:grid-cols-2 gap-4">
+          <RoomDetailsForm 
+            room={room}
+            index={index}
+            handleRoomChange={handleRoomChange}
+          />
+          
+          <RoomImageGallery
+            roomIndex={index}
+            images={room.images || []}
+            handleRemoveImage={handleRemoveImage}
+            handleAddImage={handleAddImage}
+            uploadingRoom={uploadingRoom}
+          />
+        </div>
       </CardContent>
     </Card>
   );
