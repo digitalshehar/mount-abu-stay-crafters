@@ -34,6 +34,7 @@ import HotelQuestions from "@/components/hotel/HotelQuestions";
 import HotelAccessibility from "@/components/hotel/HotelAccessibility";
 import TransportOptions from "@/components/hotel/TransportOptions";
 import LocalEvents from "@/components/hotel/LocalEvents";
+import HtmlRedirectButton from "@/components/hotel/HtmlRedirectButton";
 
 // Import custom hooks and utilities
 import { useHotelDetail } from "@/hooks/useHotelDetail";
@@ -269,6 +270,11 @@ const HotelDetail = () => {
                   <Camera className="h-4 w-4" />
                   <span>All Photos</span>
                 </Button>
+
+                <HtmlRedirectButton 
+                  hotelSlug={hotel.slug} 
+                  hotelName={hotel.name} 
+                />
               </div>
             </div>
           </div>

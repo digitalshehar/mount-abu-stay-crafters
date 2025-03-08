@@ -12,6 +12,7 @@ import BikeRentals from "./pages/BikeRentals";
 import Adventures from "./pages/Adventures";
 import Blog from "./pages/Blog";
 import HotelDetail from "./pages/HotelDetail";
+import HotelHtmlView from "./pages/HotelHtmlView";
 import AboutUs from "./pages/AboutUs";
 import Contact from "./pages/Contact";
 import TravelGuide from "./pages/TravelGuide";
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/hotels" element={<Hotels />} />
             <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
+            <Route path="/hotel/:hotelSlug/html" element={<HotelHtmlView />} />
             <Route path="/destinations" element={<Destinations />} />
             <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
             <Route path="/rentals/car" element={<CarRentals />} />
