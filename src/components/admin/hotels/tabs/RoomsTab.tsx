@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface RoomsTabProps {
   rooms: Room[];
-  handleRoomChange: (index: number, field: keyof Room, value: string | number) => void;
+  handleRoomChange: (index: number, field: keyof Room, value: any) => void;
   handleAddRoom: () => void;
   handleRemoveRoom: (index: number) => void;
   onBack?: () => void;
@@ -114,7 +114,7 @@ const RoomsTab: React.FC<RoomsTabProps> = ({
                 />
               </div>
               <div>
-                <Label htmlFor={`room-price-${index}`}>Price (per night)</Label>
+                <Label htmlFor={`room-price-${index}`}>Price (per night in ₹)</Label>
                 <Input
                   id={`room-price-${index}`}
                   type="number"
@@ -145,6 +145,9 @@ const RoomsTab: React.FC<RoomsTabProps> = ({
                       src={image} 
                       alt={`${room.type} view ${imgIndex + 1}`} 
                       className="h-full w-full object-cover" 
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "https://placehold.co/80x80/f3f4f6/6b7280?text=Not+Found";
+                      }}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 flex items-center justify-center">
                       <Button

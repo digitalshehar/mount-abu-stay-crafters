@@ -43,6 +43,7 @@ const ImagePreview = ({
   };
   
   const handleImageError = () => {
+    console.log("Image failed to load:", previewImage);
     setImageError(true);
   };
   
@@ -91,6 +92,7 @@ const ImagePreview = ({
               alt="Preview"
               className="w-full h-full object-cover"
               onError={handleImageError}
+              crossOrigin="anonymous"
             />
           </div>
         </div>
@@ -100,8 +102,10 @@ const ImagePreview = ({
         <div className="mt-2 relative">
           <div className="h-[150px] rounded-md overflow-hidden border border-stone-200 bg-stone-100 flex items-center justify-center">
             <div className="text-center text-stone-500">
+              <ImageOff className="h-10 w-10 mx-auto mb-2 text-stone-400" />
               <p>Image could not be loaded</p>
               <p className="text-xs mt-1">Please check the URL and try again</p>
+              <p className="text-xs mt-1">Ensure the image allows cross-origin access</p>
             </div>
           </div>
         </div>

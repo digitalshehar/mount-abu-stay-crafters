@@ -33,17 +33,20 @@ const PriceRatingFields = ({
             <span className="text-xs text-red-500">{validationErrors.pricePerNight}</span>
           )}
         </div>
-        <Input 
-          id="pricePerNight"
-          name="pricePerNight"
-          type="number"
-          value={newHotel.pricePerNight}
-          onChange={handleInputChange}
-          placeholder="Enter price"
-          min="1"
-          className={validationErrors.pricePerNight ? "border-red-500" : ""}
-          required
-        />
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+          <Input 
+            id="pricePerNight"
+            name="pricePerNight"
+            type="number"
+            value={newHotel.pricePerNight}
+            onChange={handleInputChange}
+            placeholder="Enter price"
+            min="1"
+            className={`pl-7 ${validationErrors.pricePerNight ? "border-red-500" : ""}`}
+            required
+          />
+        </div>
       </div>
       
       <div className="space-y-2">
