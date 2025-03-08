@@ -6,7 +6,7 @@ export const bulkDeleteHotels = async (hotelIds: number[]) => {
   // First delete all related data using an RPC function
   await supabase.rpc('bulk_delete_hotel_related_data', {
     p_hotel_ids: hotelIds
-  } as any); // Using type assertion to bypass TypeScript's strict typing
+  });
   
   // Then delete the hotels themselves
   return supabase

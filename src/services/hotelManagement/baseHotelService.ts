@@ -50,7 +50,7 @@ export const deleteHotel = async (hotelId: number) => {
   // Delete seasonal pricing
   await supabase.rpc('delete_seasonal_pricing_by_hotel', {
     p_hotel_id: hotelId
-  } as any); // Using type assertion to bypass TypeScript's strict typing
+  });
 
   // Delete rooms
   await supabase
