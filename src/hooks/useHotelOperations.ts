@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Hotel, NewHotel, SeasonalPrice } from "@/components/admin/hotels/types";
@@ -69,9 +70,10 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
         const seasonalPricingPromises = newHotel.seasonalPricing.map(price => {
           return supabase.from("seasonal_pricing").insert({
             hotel_id: hotelId,
+            name: price.name,
             start_date: price.startDate,
             end_date: price.endDate,
-            price: price.price
+            price_multiplier: price.priceMultiplier
           });
         });
 
@@ -161,9 +163,10 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
         const seasonalPricingPromises = hotel.seasonalPricing.map(price => {
           return supabase.from("seasonal_pricing").insert({
             hotel_id: hotelId,
+            name: price.name,
             start_date: price.startDate,
             end_date: price.endDate,
-            price: price.price
+            price_multiplier: price.priceMultiplier
           });
         });
 
@@ -364,26 +367,15 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
             return;
           }
 
-          // Determine new statuses
-          const updates = currentHotels.map(hotel => ({
-            id: hotel.id,
-            status: hotel.status === 'active' ? 'inactive' : 'active'
-          }));
-
-          // Bulk update statuses
-          const { error: updateError } = await supabase
-            .from('hotels')
-            .upsert(updates);
-
-          if (updateError) {
-            console.error("Error bulk updating hotel statuses:", updateError);
-            toast({
-              variant: "destructive",
-              title: "Failed to Bulk Toggle Status",
-              description: "There was an error updating the hotel statuses.",
-            });
-            return;
+          // Update each hotel individually
+          for (const hotel of currentHotels) {
+            const newStatus = hotel.status === 'active' ? 'inactive' : 'active';
+            await supabase
+              .from('hotels')
+              .update({ status: newStatus })
+              .eq('id', hotel.id);
           }
+
           toast({
             title: "Hotel Statuses Updated",
             description: "The selected hotel statuses have been updated successfully.",
@@ -407,26 +399,14 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
             return;
           }
 
-          // Determine new featured statuses
-          const featuredUpdates = currentFeaturedHotels.map(hotel => ({
-            id: hotel.id,
-            featured: !hotel.featured
-          }));
-
-          // Bulk update featured statuses
-          const { error: updateFeaturedError } = await supabase
-            .from('hotels')
-            .upsert(featuredUpdates);
-
-          if (updateFeaturedError) {
-            console.error("Error bulk updating hotel featured statuses:", updateFeaturedError);
-            toast({
-              variant: "destructive",
-              title: "Failed to Bulk Toggle Featured",
-              description: "There was an error updating the hotel featured statuses.",
-            });
-            return;
+          // Update each hotel individually
+          for (const hotel of currentFeaturedHotels) {
+            await supabase
+              .from('hotels')
+              .update({ featured: !hotel.featured })
+              .eq('id', hotel.id);
           }
+
           toast({
             title: "Hotel Featured Statuses Updated",
             description: "The selected hotel featured statuses have been updated successfully.",
@@ -453,19 +433,28 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
     setIsSubmitting(true);
     try {
       // Prepare the data for cloning
-      const { id, slug, ...hotelData } = hotel;
+      const { id, ...hotelData } = hotel;
       const newSlug = `${hotelData.name.toLowerCase().replace(/\s+/g, "-")}-clone`;
 
       const newHotelData = {
-        ...hotelData,
+        name: `${hotelData.name} (Clone)`,
         slug: newSlug,
-        name: `${hotelData.name} (Clone)`
+        location: hotelData.location,
+        stars: hotelData.stars,
+        price_per_night: hotelData.pricePerNight,
+        image: hotelData.image,
+        description: hotelData.description || "",
+        amenities: hotelData.amenities || [],
+        featured: hotelData.featured || false,
+        gallery: hotelData.gallery || [],
+        categories: hotelData.categories || [],
+        status: hotelData.status
       };
 
       // Insert the cloned hotel
       const { data, error } = await supabase
         .from("hotels")
-        .insert([newHotelData])
+        .insert(newHotelData)
         .select();
 
       if (error) {
@@ -523,11 +512,12 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
       }
 
       if (seasonalPricing && seasonalPricing.length > 0) {
-        const newSeasonalPricing = seasonalPricing.map(price => ({
+        const newSeasonalPricing = seasonalPricing.map(pricing => ({
           hotel_id: newHotelId,
-          start_date: price.start_date,
-          end_date: price.end_date,
-          price: price.price
+          name: pricing.name,
+          start_date: pricing.start_date,
+          end_date: pricing.end_date,
+          price_multiplier: pricing.price_multiplier
         }));
 
         const { error: newSeasonalPricingError } = await supabase

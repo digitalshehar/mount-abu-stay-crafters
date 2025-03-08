@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Check, Map, Phone, Mail, Calendar, Info, X, ChevronRight } from "lucide-react";
@@ -43,7 +42,6 @@ const HotelDetail = () => {
   const [activeTab, setActiveTab] = useState("rooms");
   const { toast: useToastFn } = useToast();
 
-  // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -60,7 +58,7 @@ const HotelDetail = () => {
       setShowBookingForm(false);
       
       toast.success("Booking successful!", {
-        description: `Your booking at ${hotel.name} has been confirmed. Check your email for details.`
+        description: `Your booking at ${hotel?.name} has been confirmed. Check your email for details.`
       });
     }, 1500);
   };
@@ -122,7 +120,6 @@ const HotelDetail = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col">
-      {/* SEO Meta Tags */}
       <title>{pageTitle}</title>
       <meta name="description" content={metaDescription} />
       {hotel.seoKeywords && <meta name="keywords" content={hotel.seoKeywords} />}
@@ -134,7 +131,6 @@ const HotelDetail = () => {
       <Header />
       
       <main className="flex-1">
-        {/* Breadcrumbs */}
         <div className="bg-white border-b border-stone-200">
           <div className="container-custom py-3">
             <div className="flex items-center text-sm text-stone-500">
@@ -149,7 +145,6 @@ const HotelDetail = () => {
           </div>
         </div>
         
-        {/* Hotel Name */}
         <div className="bg-white border-b border-stone-200 py-5">
           <div className="container-custom">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -188,15 +183,11 @@ const HotelDetail = () => {
           </div>
         </div>
         
-        {/* Gallery */}
         <HotelGallery name={hotel.name} images={hotel.images || [hotel.image]} />
         
-        {/* Content */}
         <div className="container-custom py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
             <div className="lg:col-span-2">
-              {/* Tabs Navigation */}
               <Tabs defaultValue="rooms" className="w-full" onValueChange={setActiveTab} value={activeTab}>
                 <div className="bg-white rounded-t-lg border border-b-0 border-stone-200">
                   <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-stone-200 p-0">
@@ -249,18 +240,18 @@ const HotelDetail = () => {
                     <HotelReviews 
                       rating={hotel.rating} 
                       reviewCount={hotel.reviewCount}
-                      reviews={hotel.reviews}
+                      reviews={hotel.reviews || []}
                     />
                   </TabsContent>
                   
                   <TabsContent value="policies" className="mt-0 p-0">
                     <HotelPolicies 
-                      checkInTime={hotel.checkInTime}
-                      checkOutTime={hotel.checkOutTime}
-                      policies={hotel.policies}
-                      contactInfo={hotel.contactInfo}
-                      address={hotel.address}
-                      landmarks={hotel.landmarks}
+                      checkInTime={hotel.checkInTime || "2:00 PM"}
+                      checkOutTime={hotel.checkOutTime || "12:00 PM"}
+                      policies={hotel.policies || []}
+                      contactInfo={hotel.contactInfo || {}}
+                      address={hotel.address || ""}
+                      landmarks={hotel.landmarks || {}}
                     />
                   </TabsContent>
                   
@@ -281,7 +272,6 @@ const HotelDetail = () => {
                 </div>
               </Tabs>
               
-              {/* Health & Safety Measures */}
               <div className="mt-8 bg-green-50 p-6 rounded-lg border border-green-100">
                 <h3 className="text-lg font-semibold text-green-800 mb-4 flex items-center">
                   <Info className="h-5 w-5 mr-2 text-green-700" />
@@ -305,10 +295,8 @@ const HotelDetail = () => {
               </div>
             </div>
             
-            {/* Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-24 space-y-6">
-                {/* Price Overview */}
                 <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="font-semibold text-lg">Price Overview</h3>
@@ -341,7 +329,6 @@ const HotelDetail = () => {
                   </div>
                 </div>
 
-                {/* Contact Information */}
                 <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
                   <h3 className="font-semibold text-lg mb-4">Contact & Location</h3>
                   <div className="space-y-4">
@@ -349,7 +336,7 @@ const HotelDetail = () => {
                       <Map className="h-5 w-5 text-primary mt-1 mr-3 flex-shrink-0" />
                       <div>
                         <p className="font-medium">Address</p>
-                        <p className="text-sm text-stone-600">{hotel.address}</p>
+                        <p className="text-sm text-stone-600">{hotel.address || `${hotel.location}, India`}</p>
                       </div>
                     </div>
                     
@@ -373,7 +360,11 @@ const HotelDetail = () => {
                     
                     <div className="space-y-3">
                       <p className="font-medium">Nearby Landmarks</p>
-                      {Object.entries(hotel.landmarks || {}).map(([key, value], idx) => (
+                      {Object.entries(hotel.landmarks || {
+                        "Airport": "100 km",
+                        "Bus Station": "1.5 km",
+                        "City Center": "0.5 km"
+                      }).map(([key, value], idx) => (
                         <div key={idx} className="flex justify-between text-sm">
                           <span className="text-stone-600">{key}</span>
                           <span className="text-stone-800">{value}</span>
@@ -383,7 +374,6 @@ const HotelDetail = () => {
                   </div>
                 </div>
                 
-                {/* Why Book With Us */}
                 <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
                   <h3 className="font-semibold text-lg mb-4">Why Book With Us</h3>
                   <ul className="space-y-3">
@@ -413,7 +403,7 @@ const HotelDetail = () => {
           <DialogHeader>
             <DialogTitle>Complete Your Hotel Booking</DialogTitle>
             <DialogDescription>
-              Please provide your details to confirm your stay at {hotel?.name}.
+              Please provide your details to confirm your stay at {hotel.name}.
             </DialogDescription>
           </DialogHeader>
           
