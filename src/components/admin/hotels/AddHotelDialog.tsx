@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -188,7 +187,7 @@ const AddHotelDialog = ({
           
           <TabsContent value="rooms">
             <RoomsTab 
-              newHotel={newHotel}
+              rooms={newHotel.rooms}
               handleRoomChange={handleRoomChange}
               handleAddRoom={handleAddRoom}
               handleRemoveRoom={handleRemoveRoom}

@@ -7,13 +7,15 @@ export const addSeasonalPricing = async (hotelId: number, seasonalPricing: Seaso
   if (!seasonalPricing?.length) return;
   
   const seasonalPricingPromises = seasonalPricing.map(season => {
-    return supabase.rpc('insert_seasonal_pricing', {
-      p_hotel_id: hotelId,
-      p_name: season.name,
-      p_start_date: season.startDate,
-      p_end_date: season.endDate,
-      p_price_multiplier: season.priceMultiplier
-    } as Record<string, unknown>);
+    return supabase
+      .from("seasonal_pricing")
+      .insert({
+        hotel_id: hotelId,
+        name: season.name,
+        start_date: season.startDate,
+        end_date: season.endDate,
+        price_multiplier: season.priceMultiplier
+      });
   });
   
   return Promise.all(seasonalPricingPromises);
