@@ -153,44 +153,44 @@ const HotelGallery: React.FC<HotelGalleryProps> = ({
     return renderFullScreenGallery();
   }
 
-  // Main gallery component
+  // Main gallery component - now contained in a fixed height with clear boundaries
   return (
     <>
       <div className="container-custom py-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[400px]">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[400px] border border-stone-200 rounded-lg overflow-hidden shadow-sm">
           {/* Main large image */}
           <div className="col-span-2 md:col-span-2 row-span-2 relative" onClick={() => handleOpenLightbox(0)}>
             <img
               src={galleryImages[0]}
               alt={`${name} - Main Image`}
-              className="w-full h-full object-cover rounded-l-lg cursor-pointer"
+              className="w-full h-full object-cover cursor-pointer"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "/placeholder.svg";
               }}
             />
-            <div className="absolute inset-0 bg-black bg-opacity-10 hover:bg-opacity-0 transition-opacity duration-300 rounded-l-lg"></div>
+            <div className="absolute inset-0 bg-black bg-opacity-10 hover:bg-opacity-0 transition-opacity duration-300"></div>
           </div>
 
           {/* Secondary images */}
           {galleryImages.slice(1, 5).map((image, idx) => (
             <div 
               key={idx} 
-              className={`relative ${idx === 2 ? 'rounded-tr-lg' : ''} ${idx === 3 ? 'rounded-br-lg' : ''}`}
+              className="relative"
               onClick={() => handleOpenLightbox(idx + 1)}
             >
               <img
                 src={image}
                 alt={`${name} - Image ${idx + 2}`}
-                className={`w-full h-full object-cover cursor-pointer ${idx === 2 ? 'rounded-tr-lg' : ''} ${idx === 3 ? 'rounded-br-lg' : ''}`}
+                className="w-full h-full object-cover cursor-pointer"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
                 }}
               />
-              <div className={`absolute inset-0 bg-black bg-opacity-10 hover:bg-opacity-0 transition-opacity duration-300 ${idx === 2 ? 'rounded-tr-lg' : ''} ${idx === 3 ? 'rounded-br-lg' : ''}`}></div>
+              <div className="absolute inset-0 bg-black bg-opacity-10 hover:bg-opacity-0 transition-opacity duration-300"></div>
               
               {idx === 3 && galleryImages.length > 5 && (
                 <div 
-                  className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer rounded-br-lg"
+                  className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
                     onClose && onClose();
