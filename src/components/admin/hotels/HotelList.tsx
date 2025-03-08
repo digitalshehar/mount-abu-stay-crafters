@@ -94,7 +94,7 @@ const HotelList: React.FC<HotelListProps> = ({
                   <HotelTableRow
                     key={hotel.id}
                     hotel={hotel}
-                    onDelete={() => onDelete(hotel.id)}
+                    onDeleteHotel={() => onDelete(hotel.id)}
                     onToggleStatus={() => onToggleStatus(hotel.id)}
                     onToggleFeatured={() => onToggleFeatured(hotel.id, hotel.featured)}
                     onClone={() => onClone(hotel)}

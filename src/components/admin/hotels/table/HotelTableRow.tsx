@@ -27,19 +27,21 @@ import { Badge } from "@/components/ui/badge";
 interface HotelTableRowProps {
   hotel: Hotel;
   isSelected: boolean;
-  onToggleSelect: (id: number) => void;
-  onDeleteHotel: (id: number) => void;
-  onToggleStatus: (id: number) => void;
-  onToggleFeatured: (id: number, isFeatured: boolean) => void;
-  onViewHistory: (id: number) => void;
-  onViewAuditLog: (id: number) => void;
-  onClone: (hotel: Hotel) => void;
+  onSelectHotel: (checked: boolean) => void;
+  onDeleteHotel?: (id: number) => void;
+  onToggleStatus?: (id: number) => void;
+  onToggleFeatured?: (id: number, isFeatured: boolean) => void;
+  onViewHistory?: (id: number) => void;
+  onViewAuditLog?: (id: number) => void;
+  onClone?: (hotel: Hotel) => void;
+  onDelete?: (id: number) => void;
+  onToggleSelect?: (id: number) => void;
 }
 
 const HotelTableRow = ({
   hotel,
   isSelected,
-  onToggleSelect,
+  onSelectHotel,
   onDeleteHotel,
   onToggleStatus,
   onToggleFeatured,
@@ -70,7 +72,7 @@ const HotelTableRow = ({
       <td className="p-3">
         <Checkbox
           checked={isSelected}
-          onCheckedChange={() => onToggleSelect(id)}
+          onCheckedChange={(checked) => onSelectHotel(!!checked)}
         />
       </td>
       <td className="p-3">
@@ -124,7 +126,7 @@ const HotelTableRow = ({
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onToggleFeatured(id, featured)}
+          onClick={() => onToggleFeatured && onToggleFeatured(id, featured)}
           className={featured ? "text-amber-500" : "text-gray-400"}
         >
           {featured ? (
@@ -151,21 +153,21 @@ const HotelTableRow = ({
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onToggleStatus(id)}
+              onClick={() => onToggleStatus && onToggleStatus(id)}
               className="cursor-pointer"
             >
               <Clock className="h-4 w-4 mr-2" />
               {status === "active" ? "Deactivate" : "Activate"}
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onViewHistory(id)}
+              onClick={() => onViewHistory && onViewHistory(id)}
               className="cursor-pointer"
             >
               <History className="h-4 w-4 mr-2" />
               View History
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onViewAuditLog(id)}
+              onClick={() => onViewAuditLog && onViewAuditLog(id)}
               className="cursor-pointer"
             >
               <Eye className="h-4 w-4 mr-2" />
@@ -173,7 +175,7 @@ const HotelTableRow = ({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => onClone(hotel)}
+              onClick={() => onClone && onClone(hotel)}
               className="cursor-pointer"
             >
               <Copy className="h-4 w-4 mr-2" />
@@ -181,7 +183,7 @@ const HotelTableRow = ({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => onDeleteHotel(id)}
+              onClick={() => onDeleteHotel && onDeleteHotel(id)}
               className="cursor-pointer text-red-600"
             >
               <Trash className="h-4 w-4 mr-2" />

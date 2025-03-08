@@ -1,25 +1,15 @@
+
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 import { NewHotel, SeasonalPrice } from "@/components/admin/hotels/types";
-import GeneralInfoTab from "@/components/admin/hotels/tabs/GeneralInfoTab";
-import AmenitiesTab from "@/components/admin/hotels/tabs/AmenitiesTab";
-import GalleryTab from "@/components/admin/hotels/tabs/GalleryTab";
-import RoomsTab from "@/components/admin/hotels/tabs/RoomsTab";
-import SeoTab from "@/components/admin/hotels/tabs/SeoTab";
+import AddHotelTabs from "./dialog/AddHotelTabs";
+import AddHotelFooter from "./dialog/AddHotelFooter";
 
 interface AddHotelDialogProps {
   isOpen: boolean;
@@ -48,21 +38,14 @@ const AddHotelDialog = ({
   setIsOpen,
   onAddHotel,
   newHotel,
-  setNewHotel,
   handleInputChange,
   handleAmenityToggle,
   handleRoomChange,
   handleAddRoom,
   handleRemoveRoom,
   handleImageUpload,
-  handleCategoryToggle,
-  handleAddCategory,
-  handleRemoveCategory,
   addGalleryImage,
   removeGalleryImage,
-  handleAddSeasonalPrice,
-  handleUpdateSeasonalPrice,
-  handleRemoveSeasonalPrice
 }: AddHotelDialogProps) => {
   const [activeTab, setActiveTab] = useState("general");
   const [isLoading, setIsLoading] = useState(false);
@@ -137,6 +120,15 @@ const AddHotelDialog = ({
     }
   };
 
+  const isFormValid = () => {
+    return (
+      newHotel.name.trim() !== "" &&
+      newHotel.location.trim() !== "" &&
+      newHotel.pricePerNight > 0 &&
+      newHotel.image.trim() !== ""
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -147,90 +139,34 @@ const AddHotelDialog = ({
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-5 mb-6">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="amenities">Amenities</TabsTrigger>
-            <TabsTrigger value="gallery">Gallery</TabsTrigger>
-            <TabsTrigger value="rooms">Rooms</TabsTrigger>
-            <TabsTrigger value="seo">SEO</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="general">
-            <GeneralInfoTab 
-              newHotel={newHotel}
-              handleInputChange={handleInputChange}
-              validationErrors={validationErrors}
-              handleImageUpload={handleImageUpload}
-              onNext={() => handleNavigateToTab("amenities")}
-            />
-          </TabsContent>
-          
-          <TabsContent value="amenities">
-            <AmenitiesTab 
-              newHotel={newHotel}
-              handleAmenityToggle={handleAmenityToggle}
-              onBack={() => handleNavigateToTab("general")}
-              onNext={() => handleNavigateToTab("gallery")}
-            />
-          </TabsContent>
-          
-          <TabsContent value="gallery">
-            <GalleryTab 
-              newHotel={newHotel}
-              addGalleryImage={addGalleryImage}
-              removeGalleryImage={removeGalleryImage}
-              onBack={() => handleNavigateToTab("amenities")}
-              onNext={() => handleNavigateToTab("rooms")}
-            />
-          </TabsContent>
-          
-          <TabsContent value="rooms">
-            <RoomsTab 
-              rooms={newHotel.rooms}
-              handleRoomChange={handleRoomChange}
-              handleAddRoom={handleAddRoom}
-              handleRemoveRoom={handleRemoveRoom}
-              onBack={() => handleNavigateToTab("gallery")}
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
-            />
-          </TabsContent>
-
-          <TabsContent value="seo">
-            <SeoTab 
-              seoTitle={seoTitle || newHotel.name}
-              seoDescription={seoDescription}
-              seoKeywords={seoKeywords}
-              handleInputChange={handleSeoInputChange}
-              onBack={() => handleNavigateToTab("rooms")}
-              onSave={handleSubmit}
-            />
-          </TabsContent>
-        </Tabs>
+        <AddHotelTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          newHotel={newHotel}
+          handleInputChange={handleInputChange}
+          handleAmenityToggle={handleAmenityToggle}
+          handleRoomChange={handleRoomChange}
+          handleAddRoom={handleAddRoom}
+          handleRemoveRoom={handleRemoveRoom}
+          handleImageUpload={handleImageUpload}
+          addGalleryImage={addGalleryImage}
+          removeGalleryImage={removeGalleryImage}
+          seoTitle={seoTitle}
+          seoDescription={seoDescription}
+          seoKeywords={seoKeywords}
+          handleSeoInputChange={handleSeoInputChange}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+          validationErrors={validationErrors}
+          handleNavigateToTab={handleNavigateToTab}
+        />
         
-        <DialogFooter className="mt-4">
-          <div className="flex justify-between w-full items-center">
-            <div className="text-xs text-stone-500">
-              {!newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image ? (
-                <span className="text-amber-500">* Required fields must be filled</span>
-              ) : (
-                <span className="text-green-500">✓ All required fields complete</span>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSubmit}
-                disabled={isLoading || !newHotel.name || !newHotel.location || newHotel.pricePerNight <= 0 || !newHotel.image}
-              >
-                {isLoading ? "Adding..." : "Add Hotel"}
-              </Button>
-            </div>
-          </div>
-        </DialogFooter>
+        <AddHotelFooter 
+          isLoading={isLoading}
+          isFormValid={isFormValid()}
+          onCancel={() => setIsOpen(false)}
+          onSubmit={handleSubmit}
+        />
       </DialogContent>
     </Dialog>
   );
