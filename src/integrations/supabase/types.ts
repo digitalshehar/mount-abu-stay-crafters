@@ -346,7 +346,9 @@ export type Database = {
           image: string
           last_modified_at: string | null
           last_modified_by: string | null
+          latitude: number | null
           location: string
+          longitude: number | null
           name: string
           price_per_night: number
           rating: number | null
@@ -365,7 +367,9 @@ export type Database = {
           image: string
           last_modified_at?: string | null
           last_modified_by?: string | null
+          latitude?: number | null
           location: string
+          longitude?: number | null
           name: string
           price_per_night: number
           rating?: number | null
@@ -384,7 +388,9 @@ export type Database = {
           image?: string
           last_modified_at?: string | null
           last_modified_by?: string | null
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           name?: string
           price_per_night?: number
           rating?: number | null

@@ -64,7 +64,7 @@ export const useHotelDetail = (hotelSlug: string | undefined) => {
         
         console.log("Room data fetched:", roomData);
 
-        // Set default map coordinates for Mount Abu if not provided
+        // Set map coordinates from the database or use defaults if not available
         const latitude = hotelData.latitude || 24.5927;
         const longitude = hotelData.longitude || 72.7156;
         setMapCoordinates({ lat: latitude, lng: longitude });
