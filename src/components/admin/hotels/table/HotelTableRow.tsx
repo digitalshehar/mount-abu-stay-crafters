@@ -8,7 +8,8 @@ import {
   Copy, 
   BarChart3, 
   Power, 
-  Star 
+  Star,
+  Heart
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Hotel } from "@/components/admin/hotels/types";
+import { useAuth } from "@/context/AuthContext";
+import { useFavorites } from "@/hooks/useFavorites";
+import { cn } from "@/lib/utils";
 
 export interface HotelTableRowProps {
   hotel: Hotel;
@@ -47,6 +51,29 @@ const HotelTableRow = ({
   isSelected,
   onSelectHotel
 }: HotelTableRowProps) => {
+  const { user } = useAuth();
+  const { addFavorite, removeFavorite, isFavorite, getFavoriteId } = useFavorites(user);
+  
+  const isHotelFavorite = isFavorite(hotel.id, 'hotel');
+  
+  const handleToggleFavorite = async () => {
+    if (isHotelFavorite) {
+      const favoriteId = getFavoriteId(hotel.id, 'hotel');
+      if (favoriteId) {
+        await removeFavorite(favoriteId);
+      }
+    } else {
+      await addFavorite({
+        id: hotel.id,
+        name: hotel.name,
+        type: 'hotel',
+        image: hotel.image,
+        location: hotel.location,
+        price: hotel.pricePerNight
+      });
+    }
+  };
+
   return (
     <tr className="hover:bg-gray-50">
       <td className="pl-4 py-4 text-center">
@@ -111,6 +138,21 @@ const HotelTableRow = ({
       
       <td className="p-4">
         <div className="flex items-center justify-end gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={cn(
+              "h-8 w-8 p-0",
+              isHotelFavorite && "text-red-500 hover:text-red-600"
+            )}
+            onClick={handleToggleFavorite}
+          >
+            <Heart className={cn("h-4 w-4", isHotelFavorite && "fill-red-500")} />
+            <span className="sr-only">
+              {isHotelFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+            </span>
+          </Button>
+          
           <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={onToggleStatus}>
             <Power className="h-4 w-4" />
             <span className="sr-only">Toggle Status</span>
@@ -137,6 +179,10 @@ const HotelTableRow = ({
               <DropdownMenuItem onClick={onToggleFeatured}>
                 <Star className="mr-2 h-4 w-4" />
                 {hotel.featured ? 'Remove from Featured' : 'Mark as Featured'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleToggleFavorite}>
+                <Heart className={cn("mr-2 h-4 w-4", isHotelFavorite && "fill-red-500")} />
+                {isHotelFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onClone}>
                 <Copy className="mr-2 h-4 w-4" />

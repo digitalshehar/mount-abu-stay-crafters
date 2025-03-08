@@ -6,6 +6,8 @@ import EmptyState from "./table/EmptyState";
 import LoadingState from "./table/LoadingState";
 import BulkActionsBar from "./table/BulkActionsBar";
 import { Hotel } from "./types";
+import { useAuth } from "@/context/AuthContext";
+import { useFavorites } from "@/hooks/useFavorites";
 
 export interface HotelListProps {
   hotels: Hotel[];
@@ -35,6 +37,8 @@ const HotelList: React.FC<HotelListProps> = ({
   isLoading
 }) => {
   const [selectedHotels, setSelectedHotels] = useState<number[]>([]);
+  const { user } = useAuth();
+  const { favorites } = useFavorites(user);
   
   const handleSelectAll = (checked: boolean) => {
     if (checked) {

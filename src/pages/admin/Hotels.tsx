@@ -17,7 +17,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useHotelDialogs } from "@/hooks/useHotelDialogs";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { useNotifications } from "@/hooks/useNotifications";
-import { Bell } from "lucide-react";
+import { useFavorites } from "@/hooks/useFavorites";
+import { Bell, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -36,10 +37,12 @@ const HotelsManagement = () => {
     setSearchTerm,
     loading,
     filterOptions,
+    showFavoritesOnly,
     fetchHotels,
     handleSearch,
     handleFilterChange,
-    handleClearFilters
+    handleClearFilters,
+    toggleFavoritesFilter
   } = useHotels();
 
   const {
@@ -107,6 +110,9 @@ const HotelsManagement = () => {
     markAllAsRead,
     addNotification
   } = useNotifications();
+
+  // Add favorites hook
+  const { favorites, loading: favoritesLoading } = useFavorites(user);
 
   const [isNotificationsPanelOpen, setIsNotificationsPanelOpen] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
@@ -217,7 +223,24 @@ const HotelsManagement = () => {
         />
         
         {/* Notification Bell */}
-        <div className="relative">
+        <div className="relative flex gap-2">
+          {user && favorites.length > 0 && (
+            <Button 
+              variant={showFavoritesOnly ? "default" : "ghost"} 
+              size="icon"
+              className="relative"
+              onClick={toggleFavoritesFilter}
+            >
+              <Heart className={showFavoritesOnly ? "fill-red-500" : ""} />
+              <Badge 
+                variant="secondary" 
+                className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs"
+              >
+                {favorites.filter(f => f.item_type === 'hotel').length}
+              </Badge>
+            </Button>
+          )}
+          
           <Button 
             variant="ghost" 
             size="icon"
@@ -238,7 +261,11 @@ const HotelsManagement = () => {
           {/* Notifications panel - shown when button is clicked */}
           {isNotificationsPanelOpen && (
             <div className="absolute top-full right-0 mt-2 w-80 md:w-96 bg-white rounded-lg shadow-lg z-50">
-              <NotificationsPanel />
+              <NotificationsPanel 
+                notifications={notifications}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={markAllAsRead}
+              />
             </div>
           )}
         </div>
@@ -253,6 +280,8 @@ const HotelsManagement = () => {
             onSearch={handleSearch}
             activeFilters={filterOptions}
             onClearFilters={handleClearFilters}
+            showFavoritesOnly={showFavoritesOnly}
+            onToggleFavoritesFilter={toggleFavoritesFilter}
           />
 
           <HotelList

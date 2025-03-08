@@ -174,5 +174,14 @@ export const useFavorites = (user: User | null) => {
     }
   };
 
-  return { favorites, loading, removeFavorite, addFavorite };
+  const isFavorite = (itemId: number, itemType: 'hotel' | 'adventure' | 'car' | 'bike'): boolean => {
+    return favorites.some(fav => fav.item_id === itemId && fav.item_type === itemType);
+  };
+
+  const getFavoriteId = (itemId: number, itemType: 'hotel' | 'adventure' | 'car' | 'bike'): string | null => {
+    const favorite = favorites.find(fav => fav.item_id === itemId && fav.item_type === itemType);
+    return favorite ? favorite.id : null;
+  };
+
+  return { favorites, loading, removeFavorite, addFavorite, isFavorite, getFavoriteId };
 };

@@ -1,128 +1,131 @@
 
 import React from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Search, Filter, X, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { FilterOptions } from "@/components/admin/hotels/types";
 import { Badge } from "@/components/ui/badge";
-import { FilterOptions } from "./HotelFilterPanel";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 interface HotelSearchBarProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   handleFilter: () => void;
-  onSearch?: (term: string) => void;
-  activeFilters?: FilterOptions;
-  onClearFilters?: () => void;
+  onSearch: () => void;
+  activeFilters: FilterOptions;
+  onClearFilters: () => void;
+  showFavoritesOnly?: boolean;
+  onToggleFavoritesFilter?: () => void;
 }
 
-const HotelSearchBar = ({ 
-  searchQuery, 
-  setSearchQuery, 
+const HotelSearchBar: React.FC<HotelSearchBarProps> = ({
+  searchQuery,
+  setSearchQuery,
   handleFilter,
   onSearch,
   activeFilters,
-  onClearFilters
-}: HotelSearchBarProps) => {
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    if (onSearch) onSearch(e.target.value);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (handleFilter) handleFilter();
-    }
-  };
-
-  // Count active filters
+  onClearFilters,
+  showFavoritesOnly = false,
+  onToggleFavoritesFilter
+}) => {
+  const { user } = useAuth();
+  
+  // Count number of active filters
   const getActiveFilterCount = () => {
-    if (!activeFilters) return 0;
-    
     let count = 0;
+    
     if (activeFilters.starRating.length > 0) count++;
     if (activeFilters.amenities.length > 0) count++;
-    if (activeFilters.priceRange[0] > 0 || 
-        activeFilters.priceRange[1] < activeFilters.maxPrice) count++;
+    if (
+      activeFilters.priceRange[0] > 0 ||
+      activeFilters.priceRange[1] < activeFilters.maxPrice
+    ) {
+      count++;
+    }
     
     return count;
   };
+  
+  const activeFilterCount = getActiveFilterCount();
 
-  const filterCount = getActiveFilterCount();
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onSearch();
+    }
+  };
 
   return (
-    <div className="p-4 border-b flex flex-col gap-4">
-      <div className="flex flex-col sm:flex-row gap-4">
+    <div className="flex flex-wrap gap-3 items-center justify-between bg-white p-4 rounded-lg border shadow-sm">
+      <div className="w-full md:w-auto flex items-center flex-1 gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400" size={18} />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
+            type="text"
             placeholder="Search hotels by name or location..."
-            className="pl-10"
             value={searchQuery}
-            onChange={handleSearchInputChange}
-            onKeyPress={handleKeyPress}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="pl-10 w-full"
           />
-        </div>
-        <Button 
-          variant="outline" 
-          className="gap-2" 
-          onClick={handleFilter}
-        >
-          <SlidersHorizontal size={16} />
-          Filters
-          {filterCount > 0 && (
-            <Badge variant="secondary" className="ml-1 rounded-full">
-              {filterCount}
-            </Badge>
-          )}
-        </Button>
-      </div>
-
-      {/* Active filters display */}
-      {filterCount > 0 && activeFilters && (
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-xs text-stone-500">Active filters:</span>
-          
-          {/* Price range filter */}
-          {(activeFilters.priceRange[0] > 0 || 
-            activeFilters.priceRange[1] < activeFilters.maxPrice) && (
-            <Badge variant="outline" className="text-xs">
-              ₹{activeFilters.priceRange[0].toLocaleString()} - 
-              ₹{activeFilters.priceRange[1].toLocaleString()}
-            </Badge>
-          )}
-          
-          {/* Star rating filter */}
-          {activeFilters.starRating.length > 0 && (
-            <Badge variant="outline" className="text-xs">
-              {activeFilters.starRating.length === 1 
-                ? `${activeFilters.starRating[0]} Star` 
-                : `${activeFilters.starRating.join(', ')} Stars`}
-            </Badge>
-          )}
-          
-          {/* Amenities filter */}
-          {activeFilters.amenities.length > 0 && (
-            <Badge variant="outline" className="text-xs">
-              {activeFilters.amenities.length === 1 
-                ? activeFilters.amenities[0] 
-                : `${activeFilters.amenities.length} Amenities`}
-            </Badge>
-          )}
-          
-          {/* Clear filters button */}
-          {onClearFilters && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-xs text-stone-500 hover:text-stone-700"
-              onClick={onClearFilters}
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              onClick={() => {
+                setSearchQuery('');
+                onSearch();
+              }}
             >
-              Clear all
+              <X className="h-3 w-3" />
             </Button>
           )}
         </div>
-      )}
+        <Button onClick={onSearch}>Search</Button>
+      </div>
+      
+      <div className="flex gap-2 flex-wrap mt-3 md:mt-0">
+        {user && onToggleFavoritesFilter && (
+          <Button 
+            variant={showFavoritesOnly ? "default" : "outline"} 
+            size="sm"
+            onClick={onToggleFavoritesFilter}
+            className={cn(
+              "gap-1",
+              showFavoritesOnly && "bg-red-100 hover:bg-red-200 text-red-800 border-red-200"
+            )}
+          >
+            <Heart className={cn("h-4 w-4", showFavoritesOnly && "fill-red-500")} />
+            {showFavoritesOnly ? "Showing Favorites" : "Show Favorites"}
+          </Button>
+        )}
+      
+        <Button
+          variant="outline"
+          onClick={handleFilter}
+          className="gap-1 relative"
+        >
+          <Filter className="h-4 w-4" />
+          Filters
+          {activeFilterCount > 0 && (
+            <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center">
+              {activeFilterCount}
+            </Badge>
+          )}
+        </Button>
+        
+        {(activeFilterCount > 0 || searchQuery || showFavoritesOnly) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClearFilters}
+            className="text-xs text-gray-500 hover:text-gray-700"
+          >
+            Clear All
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

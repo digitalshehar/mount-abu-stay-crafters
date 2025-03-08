@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Hotel, FilterOptions } from "@/components/admin/hotels/types";
+import { useAuth } from "@/context/AuthContext";
+import { useFavorites } from "@/hooks/useFavorites";
 
 export const useHotels = () => {
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -14,10 +16,19 @@ export const useHotels = () => {
     amenities: [],
     maxPrice: 50000
   });
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const { user } = useAuth();
+  const { favorites, loading: favoritesLoading } = useFavorites(user);
 
   useEffect(() => {
     fetchHotels();
   }, []);
+
+  useEffect(() => {
+    if (!favoritesLoading) {
+      applyFilters();
+    }
+  }, [showFavoritesOnly, favorites, favoritesLoading]);
 
   const fetchHotels = async () => {
     setLoading(true);
@@ -67,47 +78,59 @@ export const useHotels = () => {
   };
 
   const handleSearch = () => {
-    if (!searchTerm.trim()) {
-      setFilteredHotels(hotels);
-      return;
-    }
-
-    const filtered = hotels.filter(hotel => 
-      hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      hotel.location.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    
-    setFilteredHotels(filtered);
+    applyFilters();
   };
 
-  const handleFilterChange = (newFilters: FilterOptions) => {
-    setFilterOptions(newFilters);
-
+  const applyFilters = () => {
     let filtered = [...hotels];
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(hotel => 
+        hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        hotel.location.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
     // Filter by price range
     filtered = filtered.filter(
-      hotel => hotel.pricePerNight >= newFilters.priceRange[0] && 
-               hotel.pricePerNight <= newFilters.priceRange[1]
+      hotel => hotel.pricePerNight >= filterOptions.priceRange[0] && 
+               hotel.pricePerNight <= filterOptions.priceRange[1]
     );
 
     // Filter by star rating if any selected
-    if (newFilters.starRating.length > 0) {
+    if (filterOptions.starRating.length > 0) {
       filtered = filtered.filter(hotel => 
-        newFilters.starRating.includes(hotel.stars)
+        filterOptions.starRating.includes(hotel.stars)
       );
     }
 
     // Filter by amenities if any selected
-    if (newFilters.amenities.length > 0) {
+    if (filterOptions.amenities.length > 0) {
       filtered = filtered.filter(hotel => 
-        newFilters.amenities.every(amenity => 
+        filterOptions.amenities.every(amenity => 
           hotel.amenities.includes(amenity)
         )
       );
     }
 
+    // Filter by favorites
+    if (showFavoritesOnly && user) {
+      const favoriteHotelIds = favorites
+        .filter(fav => fav.item_type === 'hotel')
+        .map(fav => fav.item_id);
+      
+      filtered = filtered.filter(hotel => 
+        favoriteHotelIds.includes(hotel.id)
+      );
+    }
+
     setFilteredHotels(filtered);
+  };
+
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilterOptions(newFilters);
+    setTimeout(() => applyFilters(), 0);
   };
 
   const handleClearFilters = () => {
@@ -117,7 +140,13 @@ export const useHotels = () => {
       amenities: [],
       maxPrice: 50000
     });
+    setSearchTerm("");
+    setShowFavoritesOnly(false);
     setFilteredHotels(hotels);
+  };
+
+  const toggleFavoritesFilter = () => {
+    setShowFavoritesOnly(!showFavoritesOnly);
   };
 
   return {
@@ -127,9 +156,11 @@ export const useHotels = () => {
     searchTerm,
     setSearchTerm,
     filterOptions,
+    showFavoritesOnly,
     fetchHotels,
     handleSearch,
     handleFilterChange,
-    handleClearFilters
+    handleClearFilters,
+    toggleFavoritesFilter
   };
 };
