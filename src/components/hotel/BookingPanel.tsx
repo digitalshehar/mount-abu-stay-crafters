@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar, Users, Shield, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -26,6 +26,19 @@ const BookingPanel = ({ hotel, onInitiateBooking }: BookingPanelProps) => {
   const [checkOutDate, setCheckOutDate] = useState("");
   const [guests, setGuests] = useState("2");
   const [selectedRoom, setSelectedRoom] = useState("");
+  const [roomPrice, setRoomPrice] = useState(hotel.price);
+
+  // Update room price when selected room changes
+  useEffect(() => {
+    if (selectedRoom) {
+      const room = hotel.rooms.find(r => r.type === selectedRoom);
+      if (room) {
+        setRoomPrice(room.price);
+      }
+    } else {
+      setRoomPrice(hotel.price);
+    }
+  }, [selectedRoom, hotel.rooms, hotel.price]);
 
   const handleBookNow = () => {
     if (!checkInDate || !checkOutDate || !selectedRoom) {
@@ -38,10 +51,14 @@ const BookingPanel = ({ hotel, onInitiateBooking }: BookingPanelProps) => {
     onInitiateBooking();
   };
 
+  // Calculate taxes
+  const taxes = Math.round(roomPrice * 0.18);
+  const totalPrice = roomPrice + taxes;
+
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 border border-stone-100 sticky top-24">
+    <div className="bg-white rounded-xl shadow-lg p-6 border border-stone-100 sticky top-24 hover:shadow-xl transition-shadow duration-300">
       <h2 className="text-2xl font-display font-semibold mb-2">Book Your Stay</h2>
-      <p className="text-2xl font-bold text-primary mb-6">₹{hotel.price}<span className="text-sm font-normal text-stone-500">/night</span></p>
+      <p className="text-2xl font-bold text-primary mb-6">₹{roomPrice}<span className="text-sm font-normal text-stone-500">/night</span></p>
       
       <div className="space-y-4 mb-6">
         <div>
@@ -113,20 +130,20 @@ const BookingPanel = ({ hotel, onInitiateBooking }: BookingPanelProps) => {
       <div className="space-y-2 mb-6">
         <div className="flex justify-between">
           <span className="text-stone-600">Room charges</span>
-          <span>₹{hotel.price}</span>
+          <span>₹{roomPrice}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-stone-600">Taxes & fees</span>
-          <span>₹{Math.round(hotel.price * 0.18)}</span>
+          <span>₹{taxes}</span>
         </div>
         <Separator className="my-2" />
         <div className="flex justify-between font-semibold">
           <span>Total (per night)</span>
-          <span>₹{hotel.price + Math.round(hotel.price * 0.18)}</span>
+          <span>₹{totalPrice}</span>
         </div>
       </div>
       
-      <Button className="w-full" size="lg" onClick={handleBookNow}>
+      <Button className="w-full bg-primary hover:bg-primary/90 transition-colors" size="lg" onClick={handleBookNow}>
         Book Now
       </Button>
       

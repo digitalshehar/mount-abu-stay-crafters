@@ -1,66 +1,58 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-// Perform bulk delete operation
+// Bulk delete hotels
 export const bulkDeleteHotels = async (hotelIds: number[]) => {
-  // First delete associated rooms and seasonal pricing for all hotels
-  for (const id of hotelIds) {
-    await supabase.rpc('delete_seasonal_pricing_by_hotel', {
-      p_hotel_id: id
-    } as any); // Type assertion to bypass TypeScript's type checking for RPC parameters
-      
-    await supabase
-      .from("rooms")
-      .delete()
-      .eq("hotel_id", id);
-  }
+  // First delete all related data using an RPC function
+  await supabase.rpc('bulk_delete_hotel_related_data', {
+    p_hotel_ids: hotelIds
+  } as any); // Using type assertion to bypass TypeScript's strict typing
   
-  // Then delete the hotels
+  // Then delete the hotels themselves
   return supabase
     .from("hotels")
     .delete()
     .in("id", hotelIds);
 };
 
-// Perform bulk status toggle operation
+// Bulk toggle status
 export const bulkToggleStatus = async (hotelIds: number[]) => {
-  // Get current statuses
-  const { data } = await supabase
+  // We need to first get the current status of each hotel
+  const { data: hotels } = await supabase
     .from("hotels")
     .select("id, status")
     .in("id", hotelIds);
-    
-  if (!data) return;
   
-  // Update each hotel with the opposite status
-  const updatePromises = data.map(hotel => {
-    const newStatus = hotel.status === "active" ? "inactive" : "active";
+  if (!hotels || !hotels.length) return;
+  
+  // Prepare the updates (toggle each hotel's status)
+  const updates = hotels.map(hotel => {
     return supabase
       .from("hotels")
-      .update({ status: newStatus as "active" | "inactive" })
+      .update({ status: hotel.status === "active" ? "inactive" : "active" })
       .eq("id", hotel.id);
   });
   
-  return Promise.all(updatePromises);
+  return Promise.all(updates);
 };
 
-// Perform bulk featured toggle operation
+// Bulk toggle featured
 export const bulkToggleFeatured = async (hotelIds: number[]) => {
-  // Get current featured statuses
-  const { data } = await supabase
+  // Get current featured status for each hotel
+  const { data: hotels } = await supabase
     .from("hotels")
     .select("id, featured")
     .in("id", hotelIds);
-    
-  if (!data) return;
   
-  // Update each hotel with the opposite featured status
-  const updatePromises = data.map(hotel => {
+  if (!hotels || !hotels.length) return;
+  
+  // Prepare updates (toggle each hotel's featured status)
+  const updates = hotels.map(hotel => {
     return supabase
       .from("hotels")
       .update({ featured: !hotel.featured })
       .eq("id", hotel.id);
   });
   
-  return Promise.all(updatePromises);
+  return Promise.all(updates);
 };
