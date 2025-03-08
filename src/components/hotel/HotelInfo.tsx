@@ -1,6 +1,7 @@
 
 import React from "react";
-import { Star, MapPin, Coffee, Check } from "lucide-react";
+import { Star, MapPin, Coffee, Check, Award, Clock, Shield } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 interface HotelInfoProps {
   name: string;
@@ -13,81 +14,135 @@ interface HotelInfoProps {
 
 const HotelInfo = ({ name, location, rating, reviewCount, stars, description }: HotelInfoProps) => {
   return (
-    <div className="relative">
-      {/* Hotel status badge */}
-      <div className="absolute -top-6 right-0">
-        <div className="bg-primary text-white px-4 py-1 rounded-full text-sm font-medium shadow-md">
-          Recommended
-        </div>
-      </div>
-      
-      {/* Location and ratings */}
-      <div className="flex flex-wrap items-center gap-4 mb-6">
-        <div className="flex items-center bg-stone-100 px-3 py-1.5 rounded-full">
-          <MapPin className="w-4 h-4 text-primary mr-1.5" />
-          <span className="text-stone-700 font-medium">{location}</span>
-        </div>
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xl font-semibold mb-4">About This Property</h2>
+        <div 
+          className="text-stone-600 leading-relaxed space-y-4"
+          dangerouslySetInnerHTML={{ __html: description }}
+        />
         
-        <div className="flex items-center bg-amber-50 px-3 py-1.5 rounded-full">
-          <Star className="w-4 h-4 text-amber-500 fill-amber-500 mr-1.5" />
-          <span className="font-medium text-stone-700">{rating}</span>
-          <span className="text-sm text-stone-500 ml-1">({reviewCount} reviews)</span>
-        </div>
-        
-        <div className="flex items-center">
-          {Array.from({ length: 5 }).map((_, idx) => (
-            <Star 
-              key={idx} 
-              className={`w-4 h-4 ${idx < stars ? "text-amber-500 fill-amber-500" : "text-stone-300"}`} 
-            />
-          ))}
-        </div>
-      </div>
-      
-      {/* Hotel information */}
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-display font-semibold mb-4 border-b pb-2">About {name}</h2>
-          <div 
-            className="text-stone-600 leading-relaxed space-y-4"
-            dangerouslySetInnerHTML={{ __html: description }}
-          />
-        </div>
-        
-        <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
-          <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <Coffee className="w-5 h-5 mr-2 text-primary" />
-            Why Choose Us
-          </h3>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="bg-stone-50 p-4 rounded-lg border border-stone-100">
+            <div className="flex items-center mb-3">
+              <Award className="h-5 w-5 text-amber-500 mr-2" />
+              <h3 className="font-medium">Hotel Category</h3>
+            </div>
+            <div className="flex">
+              {Array.from({ length: 5 }).map((_, idx) => (
+                <Star 
+                  key={idx} 
+                  className={`w-5 h-5 ${idx < stars ? "text-amber-500 fill-amber-500" : "text-stone-300"}`} 
+                />
+              ))}
+            </div>
+            <p className="text-sm text-stone-500 mt-2">{stars}-star hotel in {location}</p>
+          </div>
           
-          <div className="grid md:grid-cols-2 gap-3">
-            {[
-              "Complimentary breakfast buffet",
-              "Free high-speed WiFi",
-              "24/7 concierge service",
-              "Daily housekeeping",
-              "Prime location near attractions",
-              "Special discounts for longer stays"
-            ].map((feature, idx) => (
-              <div key={idx} className="flex items-start">
-                <div className="mt-1 mr-2 bg-primary/10 rounded-full p-1">
-                  <Check className="w-3 h-3 text-primary" />
-                </div>
-                <span className="text-stone-700 text-sm">{feature}</span>
+          <div className="bg-stone-50 p-4 rounded-lg border border-stone-100">
+            <div className="flex items-center mb-3">
+              <Clock className="h-5 w-5 text-primary mr-2" />
+              <h3 className="font-medium">Check-in & Check-out</h3>
+            </div>
+            <div className="space-y-2 text-stone-600 text-sm">
+              <div className="flex justify-between">
+                <span>Check-in:</span>
+                <span className="font-medium">2:00 PM - 10:00 PM</span>
               </div>
-            ))}
+              <div className="flex justify-between">
+                <span>Check-out:</span>
+                <span className="font-medium">Until 12:00 PM</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Reception:</span>
+                <span className="font-medium">24/7</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-stone-50 p-4 rounded-lg border border-stone-100">
+            <div className="flex items-center mb-3">
+              <Shield className="h-5 w-5 text-green-600 mr-2" />
+              <h3 className="font-medium">Policies</h3>
+            </div>
+            <div className="space-y-2 text-stone-600 text-sm">
+              <div className="flex items-start">
+                <Check className="h-4 w-4 text-green-600 mt-0.5 mr-1.5 flex-shrink-0" />
+                <span>Free cancellation (before 48 hours)</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="h-4 w-4 text-green-600 mt-0.5 mr-1.5 flex-shrink-0" />
+                <span>No smoking rooms available</span>
+              </div>
+              <div className="flex items-start">
+                <Check className="h-4 w-4 text-green-600 mt-0.5 mr-1.5 flex-shrink-0" />
+                <span>Pets not allowed</span>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div className="p-5 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl">
-          <p className="text-stone-600 italic font-light text-sm">
-            "{name} is located in the heart of {location}, offering a perfect blend of luxury and comfort. 
-            With stunning views and easy access to major attractions, 
-            our hotel is the ideal choice for both leisure and business travelers. 
-            We pride ourselves on exceptional service and attention to detail, 
-            ensuring a memorable stay for all our guests."
-          </p>
+      </div>
+      
+      <Separator />
+      
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Why Choose This Hotel</h2>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <div className="flex items-start">
+              <div className="mt-1 mr-3 bg-primary/10 rounded-full p-1.5">
+                <MapPin className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-medium mb-1">Prime Location</h3>
+                <p className="text-sm text-stone-600">Located in the heart of {location}, offering easy access to major attractions and scenic spots.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="mt-1 mr-3 bg-primary/10 rounded-full p-1.5">
+                <Coffee className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-medium mb-1">Exceptional Service</h3>
+                <p className="text-sm text-stone-600">Our staff is dedicated to providing personalized service to make your stay comfortable and memorable.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-start">
+              <div className="mt-1 mr-3 bg-primary/10 rounded-full p-1.5">
+                <Star className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-medium mb-1">Highly Rated</h3>
+                <p className="text-sm text-stone-600">Consistently rated {rating}/5 by our guests for cleanliness, comfort, and overall experience.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start">
+              <div className="mt-1 mr-3 bg-primary/10 rounded-full p-1.5">
+                <Shield className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-medium mb-1">Safe & Clean</h3>
+                <p className="text-sm text-stone-600">Enhanced cleaning protocols and safety measures to ensure a worry-free stay for all guests.</p>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+      
+      <div className="bg-primary/5 p-6 rounded-xl">
+        <h3 className="font-semibold mb-3">Guest Testimonial</h3>
+        <p className="text-stone-600 italic">
+          "{name} exceeded our expectations in every way. The staff was incredibly attentive, 
+          the rooms were spotless, and the location couldn't be more perfect. 
+          We especially enjoyed the beautiful views from our room and the delicious breakfast. 
+          We'll definitely be coming back on our next visit to {location}."
+        </p>
+        <p className="text-right mt-3 text-sm font-medium">- Recent Guest</p>
       </div>
     </div>
   );
