@@ -1,5 +1,15 @@
 
 import React from "react";
+import { 
+  Edit, 
+  Trash2, 
+  MoreHorizontal, 
+  Clock, 
+  Copy, 
+  BarChart3, 
+  Power, 
+  Star 
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,187 +20,137 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Copy,
-  Edit,
-  MoreHorizontal,
-  Star,
-  StarOff,
-  Clock,
-  Trash,
-  Eye,
-  History,
-} from "lucide-react";
-import { Hotel } from "../types";
-import { Badge } from "@/components/ui/badge";
+import { Hotel } from "@/components/admin/hotels/types";
 
-interface HotelTableRowProps {
+export interface HotelTableRowProps {
   hotel: Hotel;
+  onDeleteHotel: () => void;
+  onToggleStatus: () => void;
+  onToggleFeatured: () => void;
+  onClone: () => void;
+  onViewHistory: () => void;
+  onViewAuditLog: () => void;
   isSelected: boolean;
   onSelectHotel: (checked: boolean) => void;
-  onDeleteHotel?: (id: number) => void;
-  onToggleStatus?: (id: number) => void;
-  onToggleFeatured?: (id: number, isFeatured: boolean) => void;
-  onViewHistory?: (id: number) => void;
-  onViewAuditLog?: (id: number) => void;
-  onClone?: (hotel: Hotel) => void;
-  onDelete?: (id: number) => void;
-  onToggleSelect?: (id: number) => void;
 }
 
 const HotelTableRow = ({
   hotel,
-  isSelected,
-  onSelectHotel,
   onDeleteHotel,
   onToggleStatus,
   onToggleFeatured,
+  onClone,
   onViewHistory,
   onViewAuditLog,
-  onClone,
+  isSelected,
+  onSelectHotel
 }: HotelTableRowProps) => {
-  const {
-    id,
-    name,
-    location,
-    stars,
-    pricePerNight,
-    status,
-    image,
-    featured,
-  } = hotel;
-
-  // Format the price in INR format
-  const formattedPrice = new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0
-  }).format(pricePerNight);
-
   return (
-    <tr className="border-b border-gray-200 hover:bg-gray-50">
-      <td className="p-3">
-        <Checkbox
+    <tr className="hover:bg-gray-50">
+      <td className="pl-4 py-4 text-center">
+        <Checkbox 
           checked={isSelected}
-          onCheckedChange={(checked) => onSelectHotel(!!checked)}
+          onCheckedChange={onSelectHotel}
         />
       </td>
-      <td className="p-3">
+      
+      <td className="p-4">
         <div className="flex items-center gap-3">
-          <img
-            src={image}
-            alt={name}
-            className="w-10 h-10 rounded-md object-cover border border-gray-200"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "https://placehold.co/40x40/f3f4f6/6b7280?text=Image";
-            }}
-          />
+          <div className="h-12 w-12 rounded-md overflow-hidden bg-gray-100">
+            {hotel.image ? (
+              <img 
+                src={hotel.image} 
+                alt={hotel.name} 
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = '/placeholder.svg';
+                }}
+              />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center bg-gray-200 text-gray-500">
+                No img
+              </div>
+            )}
+          </div>
           <div>
-            <p className="font-medium text-gray-800">{name}</p>
-            <p className="text-xs text-gray-500">{location}</p>
+            <div className="font-medium">{hotel.name}</div>
+            <div className="text-xs text-gray-500">{hotel.location}</div>
           </div>
         </div>
       </td>
-      <td className="p-3">
+      
+      <td className="p-4">
         <div className="flex items-center">
-          {Array.from({ length: stars }).map((_, i) => (
-            <Star
-              key={i}
-              className="w-4 h-4 text-amber-400 fill-amber-400"
-              strokeWidth={0}
-            />
-          ))}
-          {Array.from({ length: 5 - stars }).map((_, i) => (
-            <Star
-              key={i + stars}
-              className="w-4 h-4 text-gray-200 fill-gray-200"
-              strokeWidth={0}
-            />
+          {Array.from({ length: hotel.stars }).map((_, index) => (
+            <Star key={index} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
           ))}
         </div>
       </td>
-      <td className="p-3 font-medium">{formattedPrice}</td>
-      <td className="p-3">
-        <Badge
-          variant={status === "active" ? "outline" : "secondary"}
-          className={
-            status === "active"
-              ? "bg-green-50 text-green-700 hover:bg-green-50"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-100"
-          }
-        >
-          {status === "active" ? "Active" : "Inactive"}
-        </Badge>
+      
+      <td className="p-4">
+        <div className="font-medium">₹{hotel.pricePerNight.toLocaleString('en-IN')}</div>
       </td>
-      <td className="p-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onToggleFeatured && onToggleFeatured(id, featured)}
-          className={featured ? "text-amber-500" : "text-gray-400"}
-        >
-          {featured ? (
-            <Star className="h-5 w-5 fill-amber-500" />
-          ) : (
-            <StarOff className="h-5 w-5" />
-          )}
-        </Button>
+      
+      <td className="p-4">
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          hotel.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {hotel.status === 'active' ? 'Active' : 'Inactive'}
+        </span>
       </td>
-      <td className="p-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => console.log("Edit hotel", id)}
-              className="cursor-pointer"
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onToggleStatus && onToggleStatus(id)}
-              className="cursor-pointer"
-            >
-              <Clock className="h-4 w-4 mr-2" />
-              {status === "active" ? "Deactivate" : "Activate"}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onViewHistory && onViewHistory(id)}
-              className="cursor-pointer"
-            >
-              <History className="h-4 w-4 mr-2" />
-              View History
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onViewAuditLog && onViewAuditLog(id)}
-              className="cursor-pointer"
-            >
-              <Eye className="h-4 w-4 mr-2" />
-              View Audit Log
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onClone && onClone(hotel)}
-              className="cursor-pointer"
-            >
-              <Copy className="h-4 w-4 mr-2" />
-              Clone
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDeleteHotel && onDeleteHotel(id)}
-              className="cursor-pointer text-red-600"
-            >
-              <Trash className="h-4 w-4 mr-2" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      
+      <td className="p-4">
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          hotel.featured ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'
+        }`}>
+          {hotel.featured ? 'Featured' : 'Standard'}
+        </span>
+      </td>
+      
+      <td className="p-4">
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={onToggleStatus}>
+            <Power className="h-4 w-4" />
+            <span className="sr-only">Toggle Status</span>
+          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={onToggleFeatured}>
+                <Star className="mr-2 h-4 w-4" />
+                {hotel.featured ? 'Remove from Featured' : 'Mark as Featured'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onClone}>
+                <Copy className="mr-2 h-4 w-4" />
+                Clone Hotel
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onViewHistory}>
+                <Clock className="mr-2 h-4 w-4" />
+                View History
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onViewAuditLog}>
+                <BarChart3 className="mr-2 h-4 w-4" />
+                View Audit Log
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={onDeleteHotel}
+                className="text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Hotel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </td>
     </tr>
   );
