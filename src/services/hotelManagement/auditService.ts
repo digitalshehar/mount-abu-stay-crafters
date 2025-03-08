@@ -12,8 +12,7 @@ export const addAuditLog = async (auditData: Omit<AuditLog, 'id' | 'timestamp'>)
       details: auditData.details,
       user_id: auditData.userId,
       user_name: auditData.userName
-    })
-    .select();
+    });
 
   if (error) throw error;
   return data;
@@ -46,5 +45,5 @@ export const getAuditLogs = async (entityType?: string, entityId?: number, limit
     userId: log.user_id,
     userName: log.user_name,
     timestamp: log.created_at
-  }));
+  })) as AuditLog[];
 };

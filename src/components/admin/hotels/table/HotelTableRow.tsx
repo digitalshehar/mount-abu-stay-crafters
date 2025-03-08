@@ -1,141 +1,142 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Hotel } from "../types";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Hotel } from "@/components/admin/hotels/types";
-import { Edit, Eye, Trash, Star, Check, X, Copy, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { 
+  Star, 
+  MoreHorizontal, 
+  Trash, 
+  Power, 
+  Copy, 
+  ArrowUpDown,
+  History,
+  FileText
+} from "lucide-react";
 
 interface HotelTableRowProps {
   hotel: Hotel;
+  onDelete: () => void;
+  onToggleStatus: () => void;
+  onToggleFeatured: () => void;
+  onClone: () => void;
+  onViewHistory: () => void;
+  onViewAuditLog: () => void;
   isSelected: boolean;
-  onSelect: (id: number) => void;
-  onView: (slug: string) => void;
-  onDelete: (id: number) => void;
-  onToggleStatus: (id: number) => void;
-  onToggleFeatured: (id: number, currentValue: boolean) => void;
-  onClone?: (hotel: Hotel) => void;
+  onSelectHotel: (checked: boolean) => void;
 }
 
-const HotelTableRow = ({ 
-  hotel, 
-  isSelected, 
-  onSelect, 
-  onView, 
-  onDelete, 
-  onToggleStatus, 
+const HotelTableRow: React.FC<HotelTableRowProps> = ({
+  hotel,
+  onDelete,
+  onToggleStatus,
   onToggleFeatured,
-  onClone
-}: HotelTableRowProps) => {
+  onClone,
+  onViewHistory,
+  onViewAuditLog,
+  isSelected,
+  onSelectHotel,
+}) => {
   return (
-    <tr className="border-b border-stone-100 hover:bg-stone-50">
-      <td className="px-2 py-4">
-        <Checkbox 
-          checked={isSelected} 
-          onCheckedChange={() => onSelect(hotel.id)} 
-          aria-label={`Select ${hotel.name}`}
+    <tr>
+      <td className="whitespace-nowrap pl-4 pr-3 py-3 text-sm">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={onSelectHotel}
+          aria-label="Select hotel"
         />
       </td>
-      <td className="px-6 py-4">
-        <img 
-          src={hotel.image} 
-          alt={hotel.name} 
-          className="w-16 h-12 object-cover rounded"
-        />
-      </td>
-      <td className="px-6 py-4 font-medium">
-        {hotel.name}
-      </td>
-      <td className="px-6 py-4 text-stone-600">{hotel.location}</td>
-      <td className="px-6 py-4">₹{hotel.pricePerNight.toLocaleString()}</td>
-      <td className="px-6 py-4">
+      <td className="whitespace-nowrap pl-4 pr-3 py-3">
         <div className="flex items-center">
-          <Star size={16} className="text-yellow-500 fill-yellow-500" />
-          <span className="ml-1">{hotel.stars}</span>
-          {hotel.rating > 0 && (
-            <span className="ml-2 text-sm text-stone-500">
-              ({hotel.rating} from {hotel.reviewCount} reviews)
-            </span>
-          )}
+          <img
+            src={hotel.image}
+            alt={hotel.name}
+            className="h-10 w-10 rounded-md object-cover mr-3"
+          />
+          <div>
+            <div className="font-medium text-sm">{hotel.name}</div>
+            <div className="text-gray-500 text-xs">{hotel.location}</div>
+          </div>
         </div>
       </td>
-      <td className="px-6 py-4">
-        <div className="flex flex-wrap gap-1">
-          {hotel.categories && hotel.categories.length > 0 ? (
-            hotel.categories.map((category, idx) => (
-              <span 
-                key={idx} 
-                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-              >
-                {category}
-              </span>
-            ))
-          ) : (
-            <span className="text-xs text-stone-400">No categories</span>
-          )}
+      <td className="whitespace-nowrap px-3 py-3 text-sm">
+        <div className="flex items-center">
+          {Array.from({ length: hotel.stars }).map((_, i) => (
+            <Star key={i} fill="currentColor" className="h-4 w-4 text-yellow-400" />
+          ))}
         </div>
       </td>
-      <td className="px-6 py-4">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          hotel.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-800'
-        }`}>
-          {hotel.status === 'active' ? 'Active' : 'Inactive'}
-        </span>
+      <td className="whitespace-nowrap px-3 py-3 text-sm">
+        <div className="text-sm font-medium">${hotel.pricePerNight}</div>
       </td>
-      <td className="px-6 py-4">
-        <Button 
-          variant={hotel.featured ? "default" : "outline"} 
-          size="sm"
-          className={hotel.featured ? "bg-amber-500 hover:bg-amber-600" : ""}
-          onClick={() => onToggleFeatured(hotel.id, hotel.featured)}
+      <td className="whitespace-nowrap px-3 py-3 text-sm">
+        <Badge
+          variant={hotel.status === "active" ? "default" : "secondary"}
+          className="capitalize"
         >
-          <Star size={14} className={`mr-1 ${hotel.featured ? "fill-white" : ""}`} />
-          {hotel.featured ? 'Featured' : 'Feature'}
-        </Button>
+          {hotel.status}
+        </Badge>
       </td>
-      <td className="px-6 py-4">
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal size={16} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onView(hotel.slug)}>
-                <Eye size={14} className="mr-2 text-blue-500" /> View
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Edit size={14} className="mr-2 text-amber-500" /> Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onToggleStatus(hotel.id)}>
-                {hotel.status === 'active' ? 
-                  <X size={14} className="mr-2 text-amber-500" /> : 
-                  <Check size={14} className="mr-2 text-green-500" />}
-                {hotel.status === 'active' ? 'Deactivate' : 'Activate'}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onClone && onClone(hotel)}>
-                <Copy size={14} className="mr-2 text-violet-500" /> Clone
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onDelete(hotel.id)}
-                className="text-red-500 focus:text-red-500 focus:bg-red-50"
-              >
-                <Trash size={14} className="mr-2" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      <td className="whitespace-nowrap px-3 py-3 text-sm">
+        <Badge
+          variant={hotel.featured ? "outline" : "secondary"}
+          className={hotel.featured ? "border-purple-500 text-purple-500" : ""}
+        >
+          {hotel.featured ? "Featured" : "Regular"}
+        </Badge>
+      </td>
+      <td className="whitespace-nowrap pl-3 pr-4 py-3 text-right text-sm">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              aria-label="Open menu"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onToggleStatus}>
+              <Power className="mr-2 h-4 w-4" />
+              {hotel.status === "active" ? "Deactivate" : "Activate"}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onToggleFeatured}>
+              <ArrowUpDown className="mr-2 h-4 w-4" />
+              {hotel.featured ? "Unfeature" : "Feature"}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onClone}>
+              <Copy className="mr-2 h-4 w-4" />
+              Clone
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem onClick={onViewHistory}>
+              <History className="mr-2 h-4 w-4" />
+              View History
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onViewAuditLog}>
+              <FileText className="mr-2 h-4 w-4" />
+              View Audit Log
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem onClick={onDelete} className="text-red-500">
+              <Trash className="mr-2 h-4 w-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </td>
     </tr>
   );

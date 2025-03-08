@@ -84,6 +84,39 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: string | null
+          entity_id: number
+          entity_type: string
+          id: number
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: string | null
+          entity_id: number
+          entity_type: string
+          id?: number
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: string | null
+          entity_id?: number
+          entity_type?: string
+          id?: number
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       bike_rentals: {
         Row: {
           bookings: number | null
@@ -267,6 +300,41 @@ export type Database = {
         }
         Relationships: []
       }
+      hotel_versions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          created_by_name: string | null
+          hotel_id: number
+          id: number
+          version_data: Json
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          created_by_name?: string | null
+          hotel_id: number
+          id?: number
+          version_data: Json
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          created_by_name?: string | null
+          hotel_id?: number
+          id?: number
+          version_data?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotel_versions_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hotels: {
         Row: {
           amenities: string[] | null
@@ -276,6 +344,8 @@ export type Database = {
           gallery: string[] | null
           id: number
           image: string
+          last_modified_at: string | null
+          last_modified_by: string | null
           location: string
           name: string
           price_per_night: number
@@ -293,6 +363,8 @@ export type Database = {
           gallery?: string[] | null
           id?: number
           image: string
+          last_modified_at?: string | null
+          last_modified_by?: string | null
           location: string
           name: string
           price_per_night: number
@@ -310,6 +382,8 @@ export type Database = {
           gallery?: string[] | null
           id?: number
           image?: string
+          last_modified_at?: string | null
+          last_modified_by?: string | null
           location?: string
           name?: string
           price_per_night?: number
@@ -387,6 +461,7 @@ export type Database = {
           count: number
           hotel_id: number
           id: number
+          images: string[] | null
           price: number
           type: string
         }
@@ -395,6 +470,7 @@ export type Database = {
           count: number
           hotel_id: number
           id?: number
+          images?: string[] | null
           price: number
           type: string
         }
@@ -403,6 +479,7 @@ export type Database = {
           count?: number
           hotel_id?: number
           id?: number
+          images?: string[] | null
           price?: number
           type?: string
         }
@@ -454,12 +531,38 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: number
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      bulk_delete_seasonal_pricing: {
+        Args: {
+          p_hotel_ids: number[]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

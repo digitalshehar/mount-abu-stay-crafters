@@ -32,8 +32,7 @@ export const assignUserRole = async (userId: string, roleId: string) => {
     const { data, error } = await supabase
       .from('user_roles')
       .update({ role: roleId })
-      .eq('user_id', userId)
-      .select();
+      .eq('user_id', userId);
       
     if (error) throw error;
     return data;
@@ -41,8 +40,7 @@ export const assignUserRole = async (userId: string, roleId: string) => {
     // Insert new role
     const { data, error } = await supabase
       .from('user_roles')
-      .insert({ user_id: userId, role: roleId })
-      .select();
+      .insert({ user_id: userId, role: roleId });
       
     if (error) throw error;
     return data;

@@ -1,107 +1,108 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Hotel } from "@/components/admin/hotels/types";
 import HotelTableHeader from "./table/HotelTableHeader";
 import HotelTableRow from "./table/HotelTableRow";
-import BulkActionsBar from "./table/BulkActionsBar";
-import LoadingState from "./table/LoadingState";
 import EmptyState from "./table/EmptyState";
+import LoadingState from "./table/LoadingState";
+import BulkActionsBar from "./table/BulkActionsBar";
+import { Hotel } from "./types";
 
-interface HotelListProps {
+export interface HotelListProps {
   hotels: Hotel[];
   filteredHotels: Hotel[];
   onDelete: (id: number) => void;
   onToggleStatus: (id: number) => void;
   onToggleFeatured: (id: number, currentValue: boolean) => void;
-  onClone?: (hotel: Hotel) => void;
-  onBulkAction?: (actionType: string, hotelIds: number[]) => void;
-  isLoading?: boolean;
+  onClone: (hotel: Hotel) => void;
+  onBulkAction: (actionType: string, hotelIds: number[]) => void;
+  onViewHistory: (id: number) => void;
+  onViewAuditLog: (id: number) => void;
+  isLoading: boolean;
 }
 
-const HotelList = ({ 
-  hotels, 
-  filteredHotels, 
-  onDelete, 
-  onToggleStatus, 
+const HotelList: React.FC<HotelListProps> = ({ 
+  hotels,
+  filteredHotels,
+  onDelete,
+  onToggleStatus,
   onToggleFeatured,
   onClone,
   onBulkAction,
-  isLoading = false 
-}: HotelListProps) => {
-  const navigate = useNavigate();
+  onViewHistory,
+  onViewAuditLog,
+  isLoading
+}) => {
   const [selectedHotels, setSelectedHotels] = useState<number[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
   
-  const handleView = (slug: string) => {
-    navigate(`/hotel/${slug}`);
-  };
-
-  const handleSelectAll = () => {
-    if (selectAll) {
-      setSelectedHotels([]);
-    } else {
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
       setSelectedHotels(filteredHotels.map(hotel => hotel.id));
-    }
-    setSelectAll(!selectAll);
-  };
-
-  const handleSelectHotel = (id: number) => {
-    if (selectedHotels.includes(id)) {
-      setSelectedHotels(selectedHotels.filter(hotelId => hotelId !== id));
-      if (selectAll) setSelectAll(false);
     } else {
-      setSelectedHotels([...selectedHotels, id]);
-      if (selectedHotels.length + 1 === filteredHotels.length) {
-        setSelectAll(true);
-      }
-    }
-  };
-
-  const handleBulkAction = (actionType: string) => {
-    if (selectedHotels.length > 0 && onBulkAction) {
-      onBulkAction(actionType, selectedHotels);
-      // Reset selections after action
       setSelectedHotels([]);
-      setSelectAll(false);
     }
   };
-
-  if (isLoading) {
-    return <LoadingState />;
-  }
   
+  const handleSelectHotel = (id: number, checked: boolean) => {
+    if (checked) {
+      setSelectedHotels(prev => [...prev, id]);
+    } else {
+      setSelectedHotels(prev => prev.filter(hotelId => hotelId !== id));
+    }
+  };
+  
+  const handleBulkAction = (actionType: string) => {
+    if (selectedHotels.length === 0) return;
+    
+    onBulkAction(actionType, selectedHotels);
+    setSelectedHotels([]);
+  };
+
   return (
-    <div className="overflow-x-auto">
-      <BulkActionsBar 
-        selectedCount={selectedHotels.length}
-        onBulkDelete={() => handleBulkAction('delete')}
-        onBulkToggleStatus={() => handleBulkAction('toggleStatus')}
-        onBulkToggleFeatured={() => handleBulkAction('toggleFeatured')}
-      />
-      
-      <table className="w-full">
-        <HotelTableHeader 
-          selectAll={selectAll} 
-          onSelectAll={handleSelectAll} 
+    <div className="overflow-hidden rounded-md border">
+      {selectedHotels.length > 0 && (
+        <BulkActionsBar 
+          selectedCount={selectedHotels.length}
+          onBulkDelete={() => handleBulkAction('delete')}
+          onBulkToggleStatus={() => handleBulkAction('toggleStatus')}
+          onBulkToggleFeatured={() => handleBulkAction('toggleFeatured')}
+          onCancelSelection={() => setSelectedHotels([])}
         />
-        <tbody>
-          {filteredHotels.map((hotel) => (
-            <HotelTableRow 
-              key={hotel.id}
-              hotel={hotel}
-              isSelected={selectedHotels.includes(hotel.id)}
-              onSelect={handleSelectHotel}
-              onView={handleView}
-              onDelete={onDelete}
-              onToggleStatus={onToggleStatus}
-              onToggleFeatured={onToggleFeatured}
-              onClone={onClone}
+      )}
+      
+      <div className="overflow-x-auto">
+        <div className="inline-block min-w-full align-middle">
+          <table className="min-w-full divide-y divide-gray-200">
+            <HotelTableHeader 
+              onSelectAll={handleSelectAll} 
+              allSelected={filteredHotels.length > 0 && selectedHotels.length === filteredHotels.length}
+              indeterminate={selectedHotels.length > 0 && selectedHotels.length < filteredHotels.length}
             />
-          ))}
-          {filteredHotels.length === 0 && !isLoading && <EmptyState />}
-        </tbody>
-      </table>
+            
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {isLoading ? (
+                <LoadingState columns={7} />
+              ) : filteredHotels.length === 0 ? (
+                <EmptyState columns={7} filtered={hotels.length > 0} />
+              ) : (
+                filteredHotels.map((hotel) => (
+                  <HotelTableRow
+                    key={hotel.id}
+                    hotel={hotel}
+                    onDelete={() => onDelete(hotel.id)}
+                    onToggleStatus={() => onToggleStatus(hotel.id)}
+                    onToggleFeatured={() => onToggleFeatured(hotel.id, hotel.featured)}
+                    onClone={() => onClone(hotel)}
+                    onViewHistory={() => onViewHistory(hotel.id)}
+                    onViewAuditLog={() => onViewAuditLog(hotel.id)}
+                    isSelected={selectedHotels.includes(hotel.id)}
+                    onSelectHotel={(checked) => handleSelectHotel(hotel.id, checked)}
+                  />
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,19 +1,13 @@
 
 import React, { useState, useEffect } from "react";
-import { 
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetClose,
-} from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import { Hotel, HotelVersion } from "@/components/admin/hotels/types";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { getHotelVersions, restoreHotelVersion } from "@/services/hotelManagement/versionHistoryService";
+import { HotelVersion } from "./types";
+import { History, Clock, RefreshCw } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
-import { ClockRewind, Info } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 
@@ -24,29 +18,29 @@ interface VersionHistoryPanelProps {
   onVersionRestored: () => void;
 }
 
-const VersionHistoryPanel = ({ 
+const VersionHistoryPanel: React.FC<VersionHistoryPanelProps> = ({ 
   isOpen, 
   onClose, 
   hotelId,
   onVersionRestored
-}: VersionHistoryPanelProps) => {
+}) => {
   const [versions, setVersions] = useState<HotelVersion[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [restoring, setRestoring] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [restoring, setRestoring] = useState<number | null>(null);
   const { toast } = useToast();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (isOpen && hotelId) {
+    if (isOpen) {
       fetchVersions();
     }
   }, [isOpen, hotelId]);
 
   const fetchVersions = async () => {
-    setLoading(true);
     try {
-      const data = await getHotelVersions(hotelId);
-      setVersions(data);
+      setLoading(true);
+      const fetchedVersions = await getHotelVersions(hotelId);
+      setVersions(fetchedVersions);
     } catch (error) {
       console.error("Error fetching versions:", error);
       toast({
@@ -60,26 +54,15 @@ const VersionHistoryPanel = ({
   };
 
   const handleRestore = async (versionId: number) => {
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Authentication Required",
-        description: "You must be logged in to restore a version"
-      });
-      return;
-    }
-
-    setRestoring(true);
+    if (!user) return;
+    
     try {
-      await restoreHotelVersion(
-        versionId, 
-        user.id, 
-        profile?.username || user.email || 'Unknown user'
-      );
+      setRestoring(versionId);
+      await restoreHotelVersion(versionId, user.id, user.email || "Unknown user");
       
       toast({
-        title: "Version Restored",
-        description: "The hotel has been restored to the selected version"
+        title: "Success",
+        description: "Hotel version restored successfully"
       });
       
       onVersionRestored();
@@ -89,70 +72,85 @@ const VersionHistoryPanel = ({
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to restore version"
+        description: "Failed to restore hotel version"
       });
     } finally {
-      setRestoring(false);
+      setRestoring(null);
     }
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-full md:max-w-md overflow-y-hidden">
+    <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
+      <SheetContent className="w-full md:max-w-xl">
         <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
-            <ClockRewind size={18} />
+          <SheetTitle className="flex items-center">
+            <History className="h-5 w-5 mr-2" />
             Version History
           </SheetTitle>
-          <SheetDescription>
-            View and restore previous versions of this hotel
-          </SheetDescription>
         </SheetHeader>
         
-        <ScrollArea className="h-[calc(100vh-180px)] mt-6 pr-4">
+        <ScrollArea className="h-[calc(100vh-120px)] mt-6">
           {loading ? (
-            <div className="flex justify-center items-center h-40">
-              <p>Loading version history...</p>
+            <div className="flex justify-center my-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
             </div>
           ) : versions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-center">
-              <Info size={40} className="text-gray-300 mb-2" />
-              <p className="text-gray-500">No previous versions found</p>
+            <div className="text-center my-8 text-gray-500">
+              No version history found.
             </div>
           ) : (
             <div className="space-y-4">
               {versions.map((version) => (
-                <div key={version.id} className="border rounded-md p-4 bg-white shadow-sm">
-                  <div className="flex justify-between items-start">
-                    <span className="text-sm font-medium">
-                      Version from {format(new Date(version.createdAt), 'MMM d, yyyy HH:mm')}
-                    </span>
-                  </div>
-                  <div className="mt-3 space-y-2 text-sm text-gray-700">
-                    <div>
-                      <span className="font-medium">Name:</span> {version.versionData.name}
+                <div key={version.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="font-medium">Version {version.id}</span>
                     </div>
-                    <div>
-                      <span className="font-medium">Price:</span> ₹{version.versionData.pricePerNight}
-                    </div>
-                    <div>
-                      <span className="font-medium">Rating:</span> {version.versionData.stars} ★
-                    </div>
-                    <div>
-                      <span className="font-medium">Status:</span> {version.versionData.status}
+                    <div className="text-sm text-gray-500">
+                      {format(new Date(version.createdAt), 'MMM d, yyyy h:mm a')}
                     </div>
                   </div>
-                  <div className="mt-3 pt-2 border-t text-xs text-gray-500">
-                    By {version.createdBy || 'Unknown user'}
+                  
+                  <Separator className="my-2" />
+                  
+                  <div className="grid grid-cols-2 gap-2 my-2">
+                    <div className="text-sm">
+                      <span className="font-semibold">Name:</span> {version.versionData.name}
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-semibold">Price:</span> ${version.versionData.pricePerNight}
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-semibold">Location:</span> {version.versionData.location}
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-semibold">Status:</span> {version.versionData.status}
+                    </div>
                   </div>
-                  <div className="mt-3">
+                  
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="text-sm text-gray-500">
+                      By: {version.createdBy || 'Unknown user'}
+                    </div>
                     <Button 
-                      size="sm" 
                       variant="outline" 
+                      size="sm"
                       onClick={() => handleRestore(version.id)}
-                      disabled={restoring}
+                      disabled={restoring !== null}
+                      className="flex items-center"
                     >
-                      Restore This Version
+                      {restoring === version.id ? (
+                        <>
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-900 mr-2"></div>
+                          Restoring...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-3 w-3 mr-2" />
+                          Restore
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -160,12 +158,6 @@ const VersionHistoryPanel = ({
             </div>
           )}
         </ScrollArea>
-        
-        <div className="mt-4 flex justify-end">
-          <SheetClose asChild>
-            <Button variant="outline">Close</Button>
-          </SheetClose>
-        </div>
       </SheetContent>
     </Sheet>
   );

@@ -1,166 +1,100 @@
 
-import React, { useState, useEffect } from "react";
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+import React, { useState } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Shield, CheckCircle } from "lucide-react";
+import { assignUserRole, getAllRoles } from "@/services/hotelManagement/userPermissionsService";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserRole } from "@/components/admin/hotels/types";
-import { getAllRoles, assignUserRole } from "@/services/hotelManagement/userPermissionsService";
 import { useToast } from "@/components/ui/use-toast";
-import { Shield, User } from "lucide-react";
 
 interface UserRolePanelProps {
   isOpen: boolean;
   onClose: () => void;
-  users: Array<{
-    id: string;
-    email: string;
-    role?: string;
-  }>;
+  users: Array<{id: string; email: string; role?: string}>;
   onRoleAssigned: () => void;
 }
 
-const UserRolePanel = ({ isOpen, onClose, users, onRoleAssigned }: UserRolePanelProps) => {
-  const [roles, setRoles] = useState<UserRole[]>([]);
-  const [userRoles, setUserRoles] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+const UserRolePanel: React.FC<UserRolePanelProps> = ({ isOpen, onClose, users, onRoleAssigned }) => {
+  const [updatingUser, setUpdatingUser] = useState<string | null>(null);
   const { toast } = useToast();
+  const roles = getAllRoles();
 
-  useEffect(() => {
-    if (isOpen) {
-      loadRoles();
-      initializeUserRoles();
-    }
-  }, [isOpen, users]);
-
-  const loadRoles = () => {
-    const availableRoles = getAllRoles();
-    setRoles(availableRoles);
-  };
-
-  const initializeUserRoles = () => {
-    const initialRoles: Record<string, string> = {};
-    users.forEach(user => {
-      initialRoles[user.id] = user.role || 'viewer';
-    });
-    setUserRoles(initialRoles);
-  };
-
-  const handleRoleChange = (userId: string, roleId: string) => {
-    setUserRoles(prev => ({
-      ...prev,
-      [userId]: roleId
-    }));
-  };
-
-  const handleSaveRoles = async () => {
-    setLoading(true);
+  const handleRoleChange = async (userId: string, newRoleId: string) => {
     try {
-      // Process all role assignments
-      const promises = Object.entries(userRoles).map(([userId, roleId]) => 
-        assignUserRole(userId, roleId)
-      );
-      
-      await Promise.all(promises);
+      setUpdatingUser(userId);
+      await assignUserRole(userId, newRoleId);
       
       toast({
-        title: "Roles updated",
-        description: "User roles have been successfully updated"
+        title: "Role updated",
+        description: "User role has been updated successfully",
       });
       
       onRoleAssigned();
-      onClose();
     } catch (error) {
-      console.error("Error assigning roles:", error);
+      console.error("Error updating role:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update user roles"
+        description: "Failed to update user role",
       });
     } finally {
-      setLoading(false);
+      setUpdatingUser(null);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Shield size={18} />
+    <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
+      <SheetContent className="w-full md:max-w-xl">
+        <SheetHeader>
+          <SheetTitle className="flex items-center">
+            <Shield className="h-5 w-5 mr-2" />
             User Role Management
-          </DialogTitle>
-          <DialogDescription>
-            Assign roles to users to control their access to hotel management features
-          </DialogDescription>
-        </DialogHeader>
+          </SheetTitle>
+        </SheetHeader>
         
-        <div className="mt-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Current Role</TableHead>
-                <TableHead>New Role</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="flex items-center gap-2">
-                    <User size={16} className="text-gray-400" />
-                    {user.email}
-                  </TableCell>
-                  <TableCell>
-                    {user.role || "Viewer"}
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={userRoles[user.id]}
-                      onValueChange={(value) => handleRoleChange(user.id, value)}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role.id} value={role.id}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSaveRoles} disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <ScrollArea className="h-[calc(100vh-120px)] mt-6">
+          <div className="space-y-4">
+            {users.length === 0 ? (
+              <div className="text-center my-8 text-gray-500">
+                No users found.
+              </div>
+            ) : (
+              users.map((user) => (
+                <div key={user.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <h4 className="font-medium">{user.email}</h4>
+                      <p className="text-sm text-gray-500">{user.id}</p>
+                    </div>
+                    <div className="flex-1 max-w-[180px]">
+                      <Select
+                        value={user.role || 'viewer'}
+                        onValueChange={(value) => handleRoleChange(user.id, value)}
+                        disabled={updatingUser === user.id}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roles.map((role) => (
+                            <SelectItem key={role.id} value={role.id}>
+                              <div className="flex items-center">
+                                {user.role === role.id && <CheckCircle className="h-3 w-3 mr-2 text-green-500" />}
+                                {role.name}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
   );
 };
 

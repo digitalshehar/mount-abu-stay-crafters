@@ -93,29 +93,39 @@ const HotelsManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data: users, error } = await supabase.auth.admin.listUsers();
+      // Get auth users
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
       
-      if (error) throw error;
+      if (authError) {
+        console.error("Error fetching auth users:", authError);
+        return;
+      }
       
-      // Get roles for each user
-      const { data: roles } = await supabase
+      // Get user roles
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('user_id, role');
+        .select('*');
       
-      const rolesMap = (roles || []).reduce((acc, curr) => {
+      if (rolesError) {
+        console.error("Error fetching user roles:", rolesError);
+      }
+      
+      // Map roles to users
+      const rolesMap = (userRoles || []).reduce((acc: Record<string, string>, curr: any) => {
         acc[curr.user_id] = curr.role;
         return acc;
-      }, {} as Record<string, string>);
+      }, {});
       
-      const mappedUsers = users.users.map(user => ({
+      // Map users with their roles
+      const mappedUsers = authUsers?.users.map(user => ({
         id: user.id,
         email: user.email || '',
         role: rolesMap[user.id]
-      }));
+      })) || [];
       
       setUsers(mappedUsers);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error in fetchUsers:", error);
     }
   };
 
@@ -178,7 +188,7 @@ const HotelsManagement = () => {
           hotels={hotels}
           filteredHotels={filteredHotels}
           onDelete={handleDeleteHotel}
-          onToggleStatus={(id) => {
+          onToggleStatus={id => {
             const hotel = hotels.find(h => h.id === id);
             if (hotel) {
               handleToggleStatus(id, hotel.status);
@@ -187,8 +197,8 @@ const HotelsManagement = () => {
           onToggleFeatured={handleToggleFeatured}
           onClone={handleCloneHotel}
           onBulkAction={handleBulkAction}
-          onViewHistory={(id) => handleOpenVersionHistory(id)}
-          onViewAuditLog={(id) => handleOpenAuditLog(id)}
+          onViewHistory={handleOpenVersionHistory}
+          onViewAuditLog={handleOpenAuditLog}
           isLoading={loading}
         />
       </div>
@@ -230,8 +240,8 @@ const HotelsManagement = () => {
       <AuditLogPanel
         isOpen={isAuditLogOpen}
         onClose={() => setIsAuditLogOpen(false)}
-        entityId={selectedHotelId || undefined}
         entityType={selectedHotelId ? "hotel" : undefined}
+        entityId={selectedHotelId || undefined}
       />
 
       {selectedHotelId && (

@@ -10,14 +10,13 @@ export const addHotelVersion = async (hotel: Hotel, userId: string, userName: st
       version_data: hotel,
       created_by: userId,
       created_by_name: userName
-    })
-    .select();
+    });
 
   if (error) throw error;
   return data;
 };
 
-export const getHotelVersions = async (hotelId: number) => {
+export const getHotelVersions = async (hotelId: number): Promise<HotelVersion[]> => {
   const { data, error } = await supabase
     .from('hotel_versions')
     .select('*')
