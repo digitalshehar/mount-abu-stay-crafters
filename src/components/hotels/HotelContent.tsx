@@ -1,8 +1,10 @@
 
 import React from "react";
-import { Info } from "lucide-react";
+import { Info, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import HotelCard from "@/components/HotelCard";
+import { Separator } from "@/components/ui/separator";
 
 interface HotelContentProps {
   isLoading: boolean;
@@ -17,6 +19,10 @@ const HotelContent = ({
   activeFilterCount,
   clearFilters,
 }: HotelContentProps) => {
+  // Separate featured hotels
+  const featuredHotels = filteredHotels.filter(hotel => hotel.featured);
+  const regularHotels = filteredHotels.filter(hotel => !hotel.featured);
+
   return (
     <>
       <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 flex items-start">
@@ -64,23 +70,61 @@ const HotelContent = ({
           <p className="text-stone-600 mb-6">
             Showing {filteredHotels.length} {filteredHotels.length === 1 ? 'hotel' : 'hotels'} {activeFilterCount > 0 ? 'matching your filters' : 'in Mount Abu'}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredHotels.map((hotel) => (
-              <HotelCard
-                key={hotel.id}
-                id={hotel.id}
-                name={hotel.name}
-                image={hotel.image}
-                price={hotel.price_per_night}
-                location={hotel.location}
-                rating={hotel.rating || 0}
-                reviewCount={hotel.review_count || 0}
-                amenities={hotel.amenities || []}
-                featured={hotel.featured}
-                slug={hotel.slug}
-              />
-            ))}
-          </div>
+          
+          {featuredHotels.length > 0 && (
+            <>
+              <div className="mb-4 flex items-center">
+                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 mr-2">
+                  <Star className="h-3 w-3 mr-1 fill-yellow-500 text-yellow-500" />
+                  Featured
+                </Badge>
+                <h3 className="text-lg font-semibold">Recommended Properties</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-6 mb-8">
+                {featuredHotels.map((hotel) => (
+                  <HotelCard
+                    key={hotel.id}
+                    id={hotel.id}
+                    name={hotel.name}
+                    image={hotel.image}
+                    price={hotel.price_per_night}
+                    location={hotel.location}
+                    rating={hotel.rating || 0}
+                    reviewCount={hotel.review_count || 0}
+                    amenities={hotel.amenities || []}
+                    featured={hotel.featured}
+                    slug={hotel.slug}
+                  />
+                ))}
+              </div>
+              
+              {regularHotels.length > 0 && <Separator className="my-6" />}
+            </>
+          )}
+          
+          {regularHotels.length > 0 && (
+            <>
+              <h3 className="text-lg font-semibold mb-4">All Properties</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {regularHotels.map((hotel) => (
+                  <HotelCard
+                    key={hotel.id}
+                    id={hotel.id}
+                    name={hotel.name}
+                    image={hotel.image}
+                    price={hotel.price_per_night}
+                    location={hotel.location}
+                    rating={hotel.rating || 0}
+                    reviewCount={hotel.review_count || 0}
+                    amenities={hotel.amenities || []}
+                    featured={false}
+                    slug={hotel.slug}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </>
       ) : (
         <div className="bg-white rounded-xl p-8 text-center shadow-sm">

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { MapPin, Info, Filter, Search, Sparkles } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +14,8 @@ import MobileFilter from "@/components/hotels/MobileFilter";
 import HotelContent from "@/components/hotels/HotelContent";
 import HotelInfoSections from "@/components/hotels/HotelInfoSections";
 import { useHotelFilters } from "@/components/hotels/useHotelFilters";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 const Hotels = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -42,20 +45,6 @@ const Hotels = () => {
     },
   });
 
-  // Common amenities for filter
-  const commonAmenities = [
-    "Wifi",
-    "Breakfast",
-    "TV",
-    "Bathroom",
-    "Parking",
-    "Pool",
-    "Air Conditioning",
-    "Restaurant",
-    "Gym",
-    "Spa",
-  ];
-
   // Use custom hook for filtering
   const {
     priceRange,
@@ -68,7 +57,9 @@ const Hotels = () => {
     filteredHotels,
     handleStarFilter,
     handleAmenityFilter,
-    clearFilters
+    clearFilters,
+    commonAmenities,
+    toggleFilterDrawer
   } = useHotelFilters(hotels || [], searchQuery);
 
   // Handle error notifications
@@ -99,8 +90,29 @@ const Hotels = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
 
-        <main className="flex-grow pt-28 pb-16">
-          <div className="container-custom">
+        <main className="flex-grow pt-28 pb-16 bg-stone-50">
+          <div className="container-custom mb-8">
+            {/* Hero section */}
+            <div className="relative mb-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg overflow-hidden">
+              <div className="absolute inset-0 opacity-20 bg-pattern-dots"></div>
+              <div className="relative z-10 px-6 py-12 md:py-16 text-white text-center">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                  Hotels in Mount Abu
+                </h1>
+                <p className="text-lg md:text-xl max-w-3xl mx-auto mb-6 text-blue-100">
+                  Find the perfect accommodation for your stay in Rajasthan's only hill station
+                </p>
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <MapPin className="h-4 w-4" />
+                  <span>Mount Abu, Rajasthan, India</span>
+                  <span className="mx-2">•</span>
+                  <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30 border-none">
+                    {filteredHotels.length} properties
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-col space-y-6">
               <HotelSearchSection 
                 searchQuery={searchQuery}
@@ -154,6 +166,8 @@ const Hotels = () => {
                     activeFilterCount={activeFilterCount}
                     clearFilters={clearFilters}
                   />
+                  
+                  <Separator className="my-10" />
                   
                   <HotelInfoSections />
                 </div>
