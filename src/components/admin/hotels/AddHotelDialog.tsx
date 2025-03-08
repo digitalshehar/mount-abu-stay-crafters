@@ -20,6 +20,7 @@ import GeneralInfoTab from "@/components/admin/hotels/tabs/GeneralInfoTab";
 import AmenitiesTab from "@/components/admin/hotels/tabs/AmenitiesTab";
 import GalleryTab from "@/components/admin/hotels/tabs/GalleryTab";
 import RoomsTab from "@/components/admin/hotels/tabs/RoomsTab";
+import SeoTab from "@/components/admin/hotels/tabs/SeoTab";
 
 interface AddHotelDialogProps {
   isOpen: boolean;
@@ -67,6 +68,9 @@ const AddHotelDialog = ({
   const [activeTab, setActiveTab] = useState("general");
   const [isLoading, setIsLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [seoKeywords, setSeoKeywords] = useState("");
 
   const validateGeneral = () => {
     const errors: {[key: string]: string} = {};
@@ -116,6 +120,24 @@ const AddHotelDialog = ({
     }
   };
 
+  const handleSeoInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    switch (name) {
+      case "seoTitle":
+        setSeoTitle(value);
+        break;
+      case "seoDescription":
+        setSeoDescription(value);
+        break;
+      case "seoKeywords":
+        setSeoKeywords(value);
+        break;
+      default:
+        handleInputChange(e);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -127,11 +149,12 @@ const AddHotelDialog = ({
         </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 mb-6">
+          <TabsList className="grid grid-cols-5 mb-6">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="amenities">Amenities</TabsTrigger>
             <TabsTrigger value="gallery">Gallery</TabsTrigger>
             <TabsTrigger value="rooms">Rooms</TabsTrigger>
+            <TabsTrigger value="seo">SEO</TabsTrigger>
           </TabsList>
           
           <TabsContent value="general">
@@ -170,8 +193,18 @@ const AddHotelDialog = ({
               handleAddRoom={handleAddRoom}
               handleRemoveRoom={handleRemoveRoom}
               onBack={() => handleNavigateToTab("gallery")}
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
+              onNext={() => handleNavigateToTab("seo")}
+            />
+          </TabsContent>
+
+          <TabsContent value="seo">
+            <SeoTab 
+              seoTitle={seoTitle || newHotel.name}
+              seoDescription={seoDescription}
+              seoKeywords={seoKeywords}
+              handleInputChange={handleSeoInputChange}
+              onBack={() => handleNavigateToTab("rooms")}
+              onSave={handleSubmit}
             />
           </TabsContent>
         </Tabs>

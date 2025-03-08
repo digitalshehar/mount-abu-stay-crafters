@@ -18,6 +18,11 @@ export interface Hotel {
   gallery?: string[];
   categories: string[];
   seasonalPricing?: SeasonalPrice[];
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface Room {
@@ -40,6 +45,11 @@ export interface NewHotel {
   gallery: string[];
   categories: string[];
   seasonalPricing: SeasonalPrice[];
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface FilterOptions {

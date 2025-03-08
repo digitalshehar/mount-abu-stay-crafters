@@ -7,6 +7,7 @@ import PriceRatingFields from "./general/PriceRatingFields";
 import ImagePreview from "./general/ImagePreview";
 import DescriptionField from "./general/DescriptionField";
 import FeaturedToggle from "./general/FeaturedToggle";
+import LocationMap from "./general/LocationMap";
 
 interface GeneralInfoTabProps {
   newHotel: NewHotel;
@@ -61,6 +62,13 @@ const GeneralInfoTab = ({
           description={newHotel.description}
           handleInputChange={handleInputChange}
         />
+        
+        <div className="md:col-span-2">
+          <LocationMap
+            location={newHotel.location}
+            handleLocationChange={handleLocationSelect}
+          />
+        </div>
         
         <FeaturedToggle 
           isFeatured={newHotel.featured}
