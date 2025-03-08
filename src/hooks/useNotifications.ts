@@ -1,111 +1,86 @@
 
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface Notification {
-  id: number;
-  type: 'alert' | 'message' | 'system';
+  id: string;
   title: string;
   message: string;
-  time: string;
+  timestamp: Date;
   read: boolean;
+  type: 'system' | 'alert' | 'info';
 }
 
 export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Mock data for now - in a real app, these would come from an API/database
+  // Initialize with some example notifications
   useEffect(() => {
-    // Simulating fetching notifications
-    const mockNotifications: Notification[] = [
+    const initialNotifications: Notification[] = [
       {
-        id: 1,
-        type: 'alert',
-        title: 'Low inventory alert',
-        message: 'Some hotel rooms are running low on availability for next week',
-        time: '10 minutes ago',
+        id: uuidv4(),
+        title: 'New Hotel Added',
+        message: 'The Grand Hotel has been successfully added to the system.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
         read: false,
+        type: 'system'
       },
       {
-        id: 2,
-        type: 'message',
-        title: 'New customer inquiry',
-        message: 'John Doe has sent a message about booking details',
-        time: '1 hour ago',
+        id: uuidv4(),
+        title: 'System Maintenance',
+        message: 'The system will undergo maintenance on Sunday at 2 AM.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+        read: true,
+        type: 'info'
+      },
+      {
+        id: uuidv4(),
+        title: 'Booking Alert',
+        message: 'There are 5 pending bookings that require your attention.',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
         read: false,
-      },
-      {
-        id: 3,
-        type: 'system',
-        title: 'System update completed',
-        message: 'The website has been updated to the latest version',
-        time: '2 hours ago',
-        read: true,
-      },
-      {
-        id: 4,
-        type: 'alert',
-        title: 'Payment processing error',
-        message: 'There was an issue processing the latest transaction',
-        time: 'Yesterday',
-        read: true,
-      },
-      {
-        id: 5,
-        type: 'message',
-        title: 'Feedback received',
-        message: 'A customer has left a 5-star review for their stay',
-        time: '2 days ago',
-        read: true,
-      },
+        type: 'alert'
+      }
     ];
-    
-    setNotifications(mockNotifications);
+
+    setNotifications(initialNotifications);
   }, []);
 
   // Update unread count whenever notifications change
   useEffect(() => {
-    setUnreadCount(notifications.filter(n => !n.read).length);
+    const count = notifications.filter(notification => !notification.read).length;
+    setUnreadCount(count);
   }, [notifications]);
 
-  const markAsRead = (id: number) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification
+  // Mark a specific notification as read
+  const markAsRead = (id: string) => {
+    setNotifications(prevNotifications =>
+      prevNotifications.map(notification =>
+        notification.id === id
+          ? { ...notification, read: true }
+          : notification
       )
     );
   };
 
+  // Mark all notifications as read
   const markAllAsRead = () => {
-    setNotifications(
-      notifications.map((notification) => ({
-        ...notification,
-        read: true,
-      }))
+    setNotifications(prevNotifications =>
+      prevNotifications.map(notification => ({ ...notification, read: true }))
     );
   };
 
-  const addNotification = (notification: Omit<Notification, 'id' | 'time' | 'read'>) => {
+  // Add a new notification
+  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     const newNotification: Notification = {
+      id: uuidv4(),
       ...notification,
-      id: Date.now(),
-      time: 'Just now',
-      read: false,
+      timestamp: new Date(),
+      read: false
     };
-    
-    setNotifications(prev => [newNotification, ...prev]);
-    
-    // Also show a toast for immediate visibility
-    toast(notification.title, {
-      description: notification.message,
-    });
-    
-    return newNotification.id;
-  };
 
-  const dismissNotification = (id: number) => {
-    setNotifications(notifications.filter(n => n.id !== id));
+    setNotifications(prevNotifications => [newNotification, ...prevNotifications]);
   };
 
   return {
@@ -113,7 +88,6 @@ export const useNotifications = () => {
     unreadCount,
     markAsRead,
     markAllAsRead,
-    addNotification,
-    dismissNotification
+    addNotification
   };
 };

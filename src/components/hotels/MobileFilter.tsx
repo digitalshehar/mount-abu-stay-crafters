@@ -2,15 +2,23 @@
 import React from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FilterSidebarProps } from "./FilterSidebar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Star } from "lucide-react";
 
-interface MobileFilterProps extends FilterSidebarProps {
+// Define the interface directly here rather than importing it
+interface MobileFilterProps {
   isOpen: boolean;
   onClose: () => void;
+  priceRange: [number, number];
+  setPriceRange: (range: [number, number]) => void;
+  selectedStars: number[];
+  handleStarFilter: (star: number) => void;
+  selectedAmenities: string[];
+  handleAmenityFilter: (amenity: string) => void;
+  clearFilters: () => void;
+  commonAmenities: string[];
 }
 
 const MobileFilter = ({
