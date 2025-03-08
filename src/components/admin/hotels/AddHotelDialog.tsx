@@ -193,7 +193,8 @@ const AddHotelDialog = ({
               handleAddRoom={handleAddRoom}
               handleRemoveRoom={handleRemoveRoom}
               onBack={() => handleNavigateToTab("gallery")}
-              onNext={() => handleNavigateToTab("seo")}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
             />
           </TabsContent>
 

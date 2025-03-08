@@ -1,20 +1,19 @@
 
 import React, { useState } from "react";
-import { Label } from "@/components/ui/label";
-import {
-  Bold,
-  Italic,
-  List,
-  ListOrdered,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Underline,
-  Heading1,
-  Heading2,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { 
+  Bold, 
+  Italic, 
+  List, 
+  ListOrdered, 
+  Heading1, 
+  Heading2, 
+  Link, 
+  AlignLeft, 
+  AlignCenter, 
+  AlignRight 
+} from "lucide-react";
 
 interface RichTextDescriptionProps {
   description: string;
@@ -22,186 +21,171 @@ interface RichTextDescriptionProps {
 }
 
 const RichTextDescription = ({ description, onChange }: RichTextDescriptionProps) => {
-  const [textAreaRef, setTextAreaRef] = useState<HTMLTextAreaElement | null>(null);
-
-  const handleButtonClick = (tag: string) => {
-    if (!textAreaRef) return;
-
-    const start = textAreaRef.selectionStart;
-    const end = textAreaRef.selectionEnd;
+  const [preview, setPreview] = useState(false);
+  
+  const insertTag = (startTag: string, endTag: string) => {
+    const textarea = document.getElementById('description') as HTMLTextAreaElement;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
     const selectedText = description.substring(start, end);
     
-    let newText = "";
+    const textBefore = description.substring(0, start);
+    const textAfter = description.substring(end);
     
-    switch (tag) {
-      case "b":
-        newText = `<b>${selectedText}</b>`;
-        break;
-      case "i":
-        newText = `<i>${selectedText}</i>`;
-        break;
-      case "u":
-        newText = `<u>${selectedText}</u>`;
-        break;
-      case "h1":
-        newText = `<h1>${selectedText}</h1>`;
-        break;
-      case "h2":
-        newText = `<h2>${selectedText}</h2>`;
-        break;
-      case "ul":
-        newText = `<ul>\n  <li>${selectedText}</li>\n</ul>`;
-        break;
-      case "ol":
-        newText = `<ol>\n  <li>${selectedText}</li>\n</ol>`;
-        break;
-      case "center":
-        newText = `<div style="text-align: center">${selectedText}</div>`;
-        break;
-      case "right":
-        newText = `<div style="text-align: right">${selectedText}</div>`;
-        break;
-      default:
-        newText = selectedText;
-    }
+    const newText = `${textBefore}${startTag}${selectedText}${endTag}${textAfter}`;
+    onChange(newText);
     
-    const newValue = description.substring(0, start) + newText + description.substring(end);
-    onChange(newValue);
-    
-    // Set focus back to textarea after button click
+    // Focus back on textarea and set selection after insert
     setTimeout(() => {
-      if (textAreaRef) {
-        textAreaRef.focus();
-        textAreaRef.setSelectionRange(start + newText.length, start + newText.length);
-      }
-    }, 0);
+      textarea.focus();
+      textarea.setSelectionRange(
+        start + startTag.length,
+        start + startTag.length + selectedText.length
+      );
+    }, 10);
   };
-
+  
+  const renderPreview = () => {
+    let html = description;
+    
+    // Replace markdown-like syntax with HTML
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    html = html.replace(/## (.*?)(?:\n|$)/g, '<h2>$1</h2>');
+    html = html.replace(/# (.*?)(?:\n|$)/g, '<h1>$1</h1>');
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    
+    // Handle lists
+    html = html.replace(/^\* (.*?)(?:\n|$)/gm, '<li>$1</li>');
+    html = html.replace(/^(\d+)\. (.*?)(?:\n|$)/gm, '<li>$2</li>');
+    html = html.replace(/(<li>.*?<\/li>)+/g, '<ul>$&</ul>');
+    
+    // Handle paragraphs
+    html = html.replace(/(?:\r\n|\r|\n)/g, '<br>');
+    
+    return { __html: html };
+  };
+  
   return (
-    <div className="space-y-2 md:col-span-2">
-      <Label htmlFor="description">Description</Label>
-      
-      <div className="bg-muted/50 p-1 rounded-md border border-border flex flex-wrap gap-1 mb-2">
+    <div className="space-y-2">
+      <div className="flex justify-between items-center">
+        <div className="flex flex-wrap gap-1">
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => insertTag('**', '**')}
+            title="Bold"
+          >
+            <Bold size={16} />
+          </Button>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => insertTag('*', '*')}
+            title="Italic"
+          >
+            <Italic size={16} />
+          </Button>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => insertTag('# ', '\n')}
+            title="Heading 1"
+          >
+            <Heading1 size={16} />
+          </Button>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => insertTag('## ', '\n')}
+            title="Heading 2"
+          >
+            <Heading2 size={16} />
+          </Button>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => insertTag('* ', '\n')}
+            title="Bullet List"
+          >
+            <List size={16} />
+          </Button>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => insertTag('1. ', '\n')}
+            title="Numbered List"
+          >
+            <ListOrdered size={16} />
+          </Button>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => insertTag('[', '](https://example.com)')}
+            title="Link"
+          >
+            <Link size={16} />
+          </Button>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => {/* Add centering logic */}}
+            title="Align Left"
+          >
+            <AlignLeft size={16} />
+          </Button>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => {/* Add centering logic */}}
+            title="Align Center"
+          >
+            <AlignCenter size={16} />
+          </Button>
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost"
+            onClick={() => {/* Add right align logic */}}
+            title="Align Right"
+          >
+            <AlignRight size={16} />
+          </Button>
+        </div>
         <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => handleButtonClick("b")}
+          type="button"
+          variant="outline" 
+          size="sm"
+          onClick={() => setPreview(!preview)}
         >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => handleButtonClick("i")}
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => handleButtonClick("u")}
-        >
-          <Underline className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-8 bg-border mx-1"></div>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => handleButtonClick("h1")}
-        >
-          <Heading1 className="h-4 w-4" />
-        </Button>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => handleButtonClick("h2")}
-        >
-          <Heading2 className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-8 bg-border mx-1"></div>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => handleButtonClick("ul")}
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => handleButtonClick("ol")}
-        >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
-        <div className="w-px h-8 bg-border mx-1"></div>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => {/* Default is left aligned */}}
-        >
-          <AlignLeft className="h-4 w-4" />
-        </Button>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => handleButtonClick("center")}
-        >
-          <AlignCenter className="h-4 w-4" />
-        </Button>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 w-8 p-0"
-          onClick={() => handleButtonClick("right")}
-        >
-          <AlignRight className="h-4 w-4" />
+          {preview ? "Edit" : "Preview"}
         </Button>
       </div>
-      
-      <Textarea 
-        ref={(ref) => setTextAreaRef(ref)}
-        id="description"
-        name="description"
-        value={description}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Enter hotel description with formatting"
-        rows={6}
-      />
-      
-      {description && (
-        <div className="flex justify-between text-xs text-stone-500">
-          <span>{description.length} characters</span>
-          <span>{250 - description.length} characters remaining</span>
-        </div>
-      )}
-      
-      {description && (
-        <div className="mt-4">
-          <h3 className="text-sm font-medium mb-2">Preview</h3>
-          <div 
-            className="p-4 border rounded-md bg-white text-sm prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: description }}
-          />
-        </div>
+
+      {preview ? (
+        <div 
+          className="min-h-[200px] p-3 border rounded-md bg-white overflow-y-auto"
+          dangerouslySetInnerHTML={renderPreview()}
+        />
+      ) : (
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Enter a detailed description of the hotel..."
+          className="min-h-[200px]"
+        />
       )}
     </div>
   );

@@ -3,56 +3,82 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Bulk delete hotels
 export const bulkDeleteHotels = async (hotelIds: number[]) => {
-  // First delete all related data using an RPC function
-  await supabase.rpc('bulk_delete_hotel_related_data', {
+  // First delete seasonal pricing for all hotels
+  await supabase.rpc('bulk_delete_seasonal_pricing', {
     p_hotel_ids: hotelIds
   } as Record<string, unknown>);
   
-  // Then delete the hotels themselves
+  // Delete rooms for all hotels
+  await supabase
+    .from("rooms")
+    .delete()
+    .in("hotel_id", hotelIds);
+  
+  // Delete the hotels
   return supabase
     .from("hotels")
     .delete()
     .in("id", hotelIds);
 };
 
-// Bulk toggle status
+// Bulk toggle hotel status
 export const bulkToggleStatus = async (hotelIds: number[]) => {
-  // We need to first get the current status of each hotel
+  // Get current statuses
   const { data: hotels } = await supabase
     .from("hotels")
     .select("id, status")
     .in("id", hotelIds);
   
-  if (!hotels || !hotels.length) return;
+  // Group by current status
+  const activeIds = hotels?.filter(h => h.status === "active").map(h => h.id) || [];
+  const inactiveIds = hotels?.filter(h => h.status === "inactive").map(h => h.id) || [];
   
-  // Prepare the updates (toggle each hotel's status)
-  const updates = hotels.map(hotel => {
-    return supabase
+  // Update active to inactive
+  if (activeIds.length > 0) {
+    await supabase
       .from("hotels")
-      .update({ status: hotel.status === "active" ? "inactive" : "active" })
-      .eq("id", hotel.id);
-  });
+      .update({ status: "inactive" })
+      .in("id", activeIds);
+  }
   
-  return Promise.all(updates);
+  // Update inactive to active
+  if (inactiveIds.length > 0) {
+    await supabase
+      .from("hotels")
+      .update({ status: "active" })
+      .in("id", inactiveIds);
+  }
+  
+  return true;
 };
 
-// Bulk toggle featured
+// Bulk toggle featured status
 export const bulkToggleFeatured = async (hotelIds: number[]) => {
-  // Get current featured status for each hotel
+  // Get current featured status
   const { data: hotels } = await supabase
     .from("hotels")
     .select("id, featured")
     .in("id", hotelIds);
   
-  if (!hotels || !hotels.length) return;
+  // Group by current featured status
+  const featuredIds = hotels?.filter(h => h.featured).map(h => h.id) || [];
+  const unfeaturedIds = hotels?.filter(h => !h.featured).map(h => h.id) || [];
   
-  // Prepare updates (toggle each hotel's featured status)
-  const updates = hotels.map(hotel => {
-    return supabase
+  // Update featured to unfeatured
+  if (featuredIds.length > 0) {
+    await supabase
       .from("hotels")
-      .update({ featured: !hotel.featured })
-      .eq("id", hotel.id);
-  });
+      .update({ featured: false })
+      .in("id", featuredIds);
+  }
   
-  return Promise.all(updates);
+  // Update unfeatured to featured
+  if (unfeaturedIds.length > 0) {
+    await supabase
+      .from("hotels")
+      .update({ featured: true })
+      .in("id", unfeaturedIds);
+  }
+  
+  return true;
 };

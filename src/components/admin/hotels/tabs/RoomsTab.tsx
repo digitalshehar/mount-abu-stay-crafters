@@ -1,10 +1,10 @@
 
 import React from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NewHotel } from "@/components/admin/hotels/types";
+import { NewHotel, Room } from "@/components/admin/hotels/types";
 
 interface RoomsTabProps {
   newHotel: NewHotel;
@@ -33,6 +33,22 @@ const RoomsTab = ({
       return "High price compared to base rate";
     }
     return "Price is within normal range";
+  };
+
+  const handleAddRoomImage = (roomIndex: number, imageUrl: string) => {
+    const currentRoom = newHotel.rooms[roomIndex];
+    const currentImages = currentRoom.images || [];
+    
+    if (imageUrl && !currentImages.includes(imageUrl)) {
+      handleRoomChange(roomIndex, 'images', [...currentImages, imageUrl]);
+    }
+  };
+
+  const handleRemoveRoomImage = (roomIndex: number, imageIndex: number) => {
+    const currentRoom = newHotel.rooms[roomIndex];
+    const currentImages = [...(currentRoom.images || [])];
+    currentImages.splice(imageIndex, 1);
+    handleRoomChange(roomIndex, 'images', currentImages);
   };
 
   return (
@@ -133,6 +149,41 @@ const RoomsTab = ({
                     onChange={(e) => handleRoomChange(index, 'count', e.target.value)}
                     required
                   />
+                </div>
+
+                <div className="col-span-2 mt-4">
+                  <Label>Room Images</Label>
+                  <div className="flex flex-wrap mt-2 gap-2">
+                    {(room.images || []).map((image, imgIndex) => (
+                      <div key={imgIndex} className="relative group">
+                        <img 
+                          src={image} 
+                          alt={`Room ${index + 1} image ${imgIndex + 1}`} 
+                          className="w-20 h-20 object-cover rounded"
+                        />
+                        <button
+                          onClick={() => handleRemoveRoomImage(index, imgIndex)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          type="button"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="w-20 h-20 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
+                      <input
+                        type="text"
+                        placeholder="Image URL"
+                        className="w-full p-1 text-xs"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleAddRoomImage(index, e.currentTarget.value);
+                            e.currentTarget.value = '';
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

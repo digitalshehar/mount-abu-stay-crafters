@@ -38,7 +38,8 @@ export const addRooms = async (hotelId: number, rooms: NewHotel['rooms']) => {
       type: room.type,
       capacity: room.capacity,
       price: room.price,
-      count: room.count
+      count: room.count,
+      images: room.images || []
     });
   });
   
