@@ -1,17 +1,16 @@
 
 import React, { useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useHotelDetail } from "@/hooks/useHotelDetail";
 
 const HotelHtmlView = () => {
   const { hotelSlug } = useParams<{ hotelSlug: string }>();
-  const [searchParams] = useSearchParams();
   const { hotel, loading, error } = useHotelDetail(hotelSlug);
 
   useEffect(() => {
     // Set the HTML title
     if (hotel) {
-      document.title = `${hotel.name} - HTML View`;
+      document.title = `${hotel.name} - ${hotel.location} | Book Now`;
     }
   }, [hotel]);
 
@@ -23,105 +22,71 @@ const HotelHtmlView = () => {
     return <div>Error loading hotel: {error || "Hotel not found"}</div>;
   }
 
-  // Create a printable HTML version
+  // Create SEO-friendly HTML version with Schema.org structured data
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="text-right mb-4">
-        <button 
-          onClick={() => window.print()}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          Print
-        </button>
-      </div>
+    <div className="hotel-html-view">
+      {/* Add structured data for SEO */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ 
+        __html: JSON.stringify({
+          "@context": "https://schema.org/",
+          "@type": "Hotel",
+          "name": hotel.name,
+          "description": hotel.description,
+          "url": window.location.href,
+          "image": hotel.image,
+          "address": {
+            "@type": "PostalAddress",
+            "addressRegion": "Rajasthan",
+            "addressCountry": "India",
+            "addressLocality": hotel.location
+          },
+          "starRating": {
+            "@type": "Rating",
+            "ratingValue": hotel.stars
+          },
+          "aggregateRating": hotel.rating ? {
+            "@type": "AggregateRating",
+            "ratingValue": hotel.rating,
+            "reviewCount": hotel.reviewCount
+          } : undefined,
+          "priceRange": `₹${hotel.price} per night`,
+          "telephone": hotel.contactInfo?.phone
+        })
+      }} />
 
-      <h1 className="text-3xl font-bold mb-4">{hotel.name}</h1>
+      <h1>{hotel.name}</h1>
+      <div className="hotel-location">{hotel.location}, Mount Abu, Rajasthan, India</div>
       
-      <div className="mb-4">
-        <strong>Location:</strong> {hotel.location}
-      </div>
+      <meta name="description" content={`Book ${hotel.name} in ${hotel.location}. ${hotel.stars} star accommodation with best rates and amenities. Book directly for best price guaranteed.`} />
+      <meta name="keywords" content={`${hotel.name}, hotel in ${hotel.location}, Mount Abu hotels, Rajasthan hotels, ${hotel.stars} star hotel, hotel booking`} />
       
-      <div className="mb-4">
-        <strong>Rating:</strong> {hotel.stars} Stars 
-        {hotel.rating && (
-          <span> | {hotel.rating}/5 ({hotel.reviewCount} reviews)</span>
-        )}
-      </div>
-
-      <div className="mb-4">
-        <strong>Price:</strong> ₹{hotel.price} per night
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Description</h2>
+      {/* Hidden content for SEO */}
+      <div style={{ display: "none" }}>
         <p>{hotel.description}</p>
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Amenities</h2>
-        <ul className="list-disc pl-5">
+        <h2>Amenities at {hotel.name}</h2>
+        <ul>
           {hotel.amenities.map((amenity, index) => (
             <li key={index}>{amenity}</li>
           ))}
         </ul>
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Available Rooms</h2>
-        {hotel.rooms && hotel.rooms.length > 0 ? (
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border border-gray-300 p-2 text-left">Room Type</th>
-                <th className="border border-gray-300 p-2 text-left">Capacity</th>
-                <th className="border border-gray-300 p-2 text-left">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {hotel.rooms.map((room, index) => (
-                <tr key={index}>
-                  <td className="border border-gray-300 p-2">{room.type}</td>
-                  <td className="border border-gray-300 p-2">{room.capacity} Person(s)</td>
-                  <td className="border border-gray-300 p-2">₹{room.price}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>No room information available</p>
-        )}
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Hotel Policies</h2>
-        <div className="mb-2">
-          <strong>Check-in:</strong> {hotel.checkInTime}
-        </div>
-        <div className="mb-2">
-          <strong>Check-out:</strong> {hotel.checkOutTime}
-        </div>
-        <ul className="list-disc pl-5">
-          {hotel.policies && hotel.policies.map((policy, index) => (
-            <li key={index}>{policy}</li>
+        <h2>Rooms at {hotel.name}</h2>
+        <ul>
+          {hotel.rooms && hotel.rooms.map((room, index) => (
+            <li key={index}>{room.type} - ₹{room.price} per night</li>
           ))}
         </ul>
       </div>
       
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">Contact Information</h2>
-        {hotel.contactInfo && (
-          <>
-            <div><strong>Phone:</strong> {hotel.contactInfo.phone}</div>
-            <div><strong>Email:</strong> {hotel.contactInfo.email}</div>
-            <div><strong>Website:</strong> {hotel.contactInfo.website}</div>
-          </>
-        )}
-        <div className="mt-2"><strong>Address:</strong> {hotel.address}</div>
-      </div>
-      
-      <div className="text-sm text-gray-500 mt-8 pt-4 border-t border-gray-300">
-        <p>This information was generated from HotelInMountAbu.com on {new Date().toLocaleDateString()}</p>
-      </div>
+      {/* Redirect to main hotel page - improves user experience while preserving SEO value */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            setTimeout(function() {
+              window.location.href = "/hotel/${hotelSlug}";
+            }, 100);
+          `
+        }}
+      />
     </div>
   );
 };

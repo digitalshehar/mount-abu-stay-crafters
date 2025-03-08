@@ -1,0 +1,94 @@
+
+import React from "react";
+import { Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import BookingForm, { BookingFormValues } from "@/components/BookingForm";
+
+interface BookingDialogProps {
+  hotel: {
+    name: string;
+  };
+  selectedRoom: string | null;
+  isLoading: boolean;
+  onSubmit: (data: BookingFormValues) => void;
+  onClose: () => void;
+}
+
+export const BookingDialog = ({ 
+  hotel, 
+  selectedRoom, 
+  isLoading, 
+  onSubmit, 
+  onClose 
+}: BookingDialogProps) => {
+  return (
+    <DialogContent className="sm:max-w-[500px]">
+      <DialogHeader>
+        <DialogTitle>Complete Your Hotel Booking</DialogTitle>
+        <DialogDescription>
+          {selectedRoom 
+            ? `Please provide your details to book the ${selectedRoom} room at ${hotel.name}.`
+            : `Please provide your details to confirm your stay at ${hotel.name}.`}
+        </DialogDescription>
+      </DialogHeader>
+      
+      <BookingForm 
+        onSubmit={onSubmit} 
+        isLoading={isLoading} 
+        bookingType="hotel" 
+      />
+    </DialogContent>
+  );
+};
+
+export const BookingSuccessDialog = ({ 
+  hotel, 
+  selectedRoom, 
+  onClose, 
+  onBookTransport 
+}: { 
+  hotel: any; 
+  selectedRoom: string | null; 
+  onClose: () => void; 
+  onBookTransport: () => void;
+}) => {
+  return (
+    <DialogContent className="sm:max-w-[500px]">
+      <DialogHeader>
+        <DialogTitle className="text-green-600 flex items-center">
+          <Check className="mr-2 h-6 w-6" />
+          Booking Confirmed!
+        </DialogTitle>
+        <DialogDescription>
+          Your booking at {hotel.name} has been successfully confirmed.
+        </DialogDescription>
+      </DialogHeader>
+      
+      <div className="bg-green-50 p-4 rounded-md border border-green-100 mb-4">
+        <h4 className="font-medium text-green-800 mb-2">Booking Details</h4>
+        <div className="space-y-2 text-sm text-green-700">
+          <p><span className="font-medium">Hotel:</span> {hotel.name}</p>
+          {selectedRoom && <p><span className="font-medium">Room Type:</span> {selectedRoom}</p>}
+          <p><span className="font-medium">Confirmation #:</span> {Math.random().toString(36).substring(2, 10).toUpperCase()}</p>
+        </div>
+      </div>
+      
+      <p className="text-sm text-stone-600 mb-4">
+        A confirmation email has been sent to your email address with all the details of your booking.
+      </p>
+      
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={onClose}>Close</Button>
+        <Button onClick={onBookTransport}>
+          Book Transportation
+        </Button>
+      </div>
+    </DialogContent>
+  );
+};

@@ -10,8 +10,8 @@ interface HtmlRedirectButtonProps {
 
 const HtmlRedirectButton = ({ hotelSlug, hotelName }: HtmlRedirectButtonProps) => {
   const handleRedirect = () => {
-    // Create a basic URL with query parameters for the HTML version
-    const htmlUrl = `/hotel/${hotelSlug}/html?name=${encodeURIComponent(hotelName)}`;
+    // Create SEO-friendly URL with .html extension
+    const htmlUrl = `/hotel/${hotelSlug}.html`;
     
     // Open in a new tab
     window.open(htmlUrl, "_blank");
