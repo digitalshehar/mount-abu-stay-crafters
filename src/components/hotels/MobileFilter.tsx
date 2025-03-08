@@ -7,10 +7,11 @@ import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Star } from "lucide-react";
 
-// Define the interface directly here rather than importing it
+// Define the interface directly here to match what's being passed from Hotels.tsx
 interface MobileFilterProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isFilterOpen: boolean;
+  setIsFilterOpen: (open: boolean) => void;
+  activeFilterCount: number;
   priceRange: [number, number];
   setPriceRange: (range: [number, number]) => void;
   selectedStars: number[];
@@ -22,8 +23,8 @@ interface MobileFilterProps {
 }
 
 const MobileFilter = ({
-  isOpen,
-  onClose,
+  isFilterOpen,
+  setIsFilterOpen,
   priceRange,
   setPriceRange,
   selectedStars,
@@ -33,14 +34,14 @@ const MobileFilter = ({
   clearFilters,
   commonAmenities
 }: MobileFilterProps) => {
-  if (!isOpen) return null;
+  if (!isFilterOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 lg:hidden">
       <div className="absolute right-0 top-0 h-full w-full max-w-xs bg-white flex flex-col">
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-semibold">Filters</h3>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={() => setIsFilterOpen(false)} className="h-8 w-8">
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -125,7 +126,7 @@ const MobileFilter = ({
           <Button variant="outline" className="flex-1" onClick={clearFilters}>
             Clear
           </Button>
-          <Button className="flex-1" onClick={onClose}>
+          <Button className="flex-1" onClick={() => setIsFilterOpen(false)}>
             Apply
           </Button>
         </div>
