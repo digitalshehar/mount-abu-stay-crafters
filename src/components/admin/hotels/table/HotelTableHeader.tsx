@@ -18,12 +18,9 @@ const HotelTableHeader = ({ selectAll, onSelectAll }: HotelTableHeaderProps) => 
             aria-label="Select all hotels"
           />
         </th>
-        <th className="px-6 py-3 font-medium">Image</th>
-        <th className="px-6 py-3 font-medium">Name</th>
-        <th className="px-6 py-3 font-medium">Location</th>
+        <th className="px-6 py-3 font-medium">Hotel</th>
+        <th className="px-6 py-3 font-medium">Stars</th>
         <th className="px-6 py-3 font-medium">Price</th>
-        <th className="px-6 py-3 font-medium">Rating</th>
-        <th className="px-6 py-3 font-medium">Categories</th>
         <th className="px-6 py-3 font-medium">Status</th>
         <th className="px-6 py-3 font-medium">Featured</th>
         <th className="px-6 py-3 font-medium">Actions</th>

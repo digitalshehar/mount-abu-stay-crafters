@@ -1,7 +1,5 @@
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, History, FileText, Shield } from "lucide-react";
+import React from "react";
 import HotelList from "@/components/admin/hotels/HotelList";
 import HotelSearchBar from "@/components/admin/hotels/HotelSearchBar";
 import HotelFilterPanel from "@/components/admin/hotels/HotelFilterPanel";
@@ -10,25 +8,18 @@ import DeleteHotelDialog from "@/components/admin/hotels/DeleteHotelDialog";
 import AuditLogPanel from "@/components/admin/hotels/AuditLogPanel";
 import VersionHistoryPanel from "@/components/admin/hotels/VersionHistoryPanel";
 import UserRolePanel from "@/components/admin/hotels/UserRolePanel";
+import HotelManagementHeader from "@/components/admin/hotels/HotelManagementHeader";
 import { useHotels } from "@/hooks/useHotels";
 import { useHotelOperations } from "@/hooks/useHotelOperations";
 import { useNewHotel } from "@/hooks/useNewHotel";
 import { useAuth } from "@/context/AuthContext";
-import { checkPermission } from "@/services/hotelManagement/userPermissionsService";
-import { supabase } from "@/integrations/supabase/client";
+import { useHotelDialogs } from "@/hooks/useHotelDialogs";
+import { useUserManagement } from "@/hooks/useUserManagement";
 
 const HotelsManagement = () => {
-  const [isAddHotelOpen, setIsAddHotelOpen] = useState(false);
-  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
-  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
-  const [isUserRolePanelOpen, setIsUserRolePanelOpen] = useState(false);
-  const [selectedHotelId, setSelectedHotelId] = useState<number | null>(null);
-  const [users, setUsers] = useState<Array<{id: string; email: string; role?: string}>>([]);
-  const [canManageRoles, setCanManageRoles] = useState(false);
-  
   const { user } = useAuth();
   
+  // Custom hooks to manage different aspects of the page
   const {
     hotels,
     filteredHotels,
@@ -73,61 +64,27 @@ const HotelsManagement = () => {
     handleRemoveSeasonalPrice
   } = useNewHotel();
 
-  useEffect(() => {
-    if (user) {
-      checkUserPermissions();
-      fetchUsers();
-    }
-  }, [user]);
+  const {
+    isAddHotelOpen,
+    setIsAddHotelOpen,
+    isFilterPanelOpen,
+    setIsFilterPanelOpen,
+    isAuditLogOpen,
+    setIsAuditLogOpen,
+    isVersionHistoryOpen,
+    setIsVersionHistoryOpen,
+    isUserRolePanelOpen,
+    setIsUserRolePanelOpen,
+    selectedHotelId,
+    handleOpenAuditLog,
+    handleOpenVersionHistory
+  } = useHotelDialogs();
 
-  const checkUserPermissions = async () => {
-    if (!user) return;
-    
-    try {
-      const hasPermission = await checkPermission(user.id, 'hotels', 'update');
-      setCanManageRoles(hasPermission);
-    } catch (error) {
-      console.error("Error checking permissions:", error);
-    }
-  };
-
-  const fetchUsers = async () => {
-    try {
-      // Get auth users
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      
-      if (authError) {
-        console.error("Error fetching auth users:", authError);
-        return;
-      }
-      
-      // Get user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('*');
-      
-      if (rolesError) {
-        console.error("Error fetching user roles:", rolesError);
-      }
-      
-      // Map roles to users
-      const rolesMap = (userRoles || []).reduce((acc: Record<string, string>, curr: any) => {
-        acc[curr.user_id] = curr.role;
-        return acc;
-      }, {});
-      
-      // Map users with their roles
-      const mappedUsers = authUsers?.users.map(user => ({
-        id: user.id,
-        email: user.email || '',
-        role: rolesMap[user.id]
-      })) || [];
-      
-      setUsers(mappedUsers);
-    } catch (error) {
-      console.error("Error in fetchUsers:", error);
-    }
-  };
+  const {
+    users,
+    canManageRoles,
+    fetchUsers
+  } = useUserManagement(user?.id);
 
   const onAddHotel = async () => {
     const success = await handleAddHotel(newHotel);
@@ -137,42 +94,14 @@ const HotelsManagement = () => {
     }
   };
 
-  const handleOpenAuditLog = (hotelId?: number) => {
-    setSelectedHotelId(hotelId || null);
-    setIsAuditLogOpen(true);
-  };
-
-  const handleOpenVersionHistory = (hotelId: number) => {
-    setSelectedHotelId(hotelId);
-    setIsVersionHistoryOpen(true);
-  };
-
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Hotel Management</h1>
-        <div className="flex gap-2">
-          {canManageRoles && (
-            <Button 
-              variant="outline" 
-              onClick={() => setIsUserRolePanelOpen(true)}
-              className="gap-1"
-            >
-              <Shield className="h-4 w-4" /> User Roles
-            </Button>
-          )}
-          <Button 
-            variant="outline" 
-            onClick={() => handleOpenAuditLog()}
-            className="gap-1"
-          >
-            <FileText className="h-4 w-4" /> Audit Logs
-          </Button>
-          <Button onClick={() => setIsAddHotelOpen(true)} className="gap-1">
-            <PlusCircle className="h-4 w-4" /> Add New Hotel
-          </Button>
-        </div>
-      </div>
+      <HotelManagementHeader 
+        onAddHotel={() => setIsAddHotelOpen(true)}
+        onOpenAuditLog={() => handleOpenAuditLog()}
+        onOpenUserRoles={() => setIsUserRolePanelOpen(true)}
+        canManageRoles={canManageRoles}
+      />
 
       <div className="bg-white rounded-lg shadow-sm mb-6">
         <HotelSearchBar 

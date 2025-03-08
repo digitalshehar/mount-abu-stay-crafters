@@ -49,9 +49,9 @@ export const addRooms = async (hotelId: number, rooms: NewHotel['rooms']) => {
 // Delete a hotel and all associated data
 export const deleteHotel = async (hotelId: number) => {
   // Delete seasonal pricing
-  await supabase.rpc('delete_seasonal_pricing_by_hotel', {
-    p_hotel_id: hotelId
-  } as Record<string, unknown>);
+  await supabase.rpc('bulk_delete_seasonal_pricing', {
+    p_hotel_ids: [hotelId]
+  });
 
   // Delete rooms
   await supabase

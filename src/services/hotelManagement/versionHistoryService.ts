@@ -1,13 +1,14 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Hotel, HotelVersion } from "@/components/admin/hotels/types";
+import { Json } from "@/integrations/supabase/types";
 
 export const addHotelVersion = async (hotel: Hotel, userId: string, userName: string) => {
   const { data, error } = await supabase
     .from('hotel_versions')
     .insert({
       hotel_id: hotel.id,
-      version_data: hotel,
+      version_data: hotel as unknown as Json,
       created_by: userId,
       created_by_name: userName
     });
@@ -28,7 +29,7 @@ export const getHotelVersions = async (hotelId: number): Promise<HotelVersion[]>
   return data.map(version => ({
     id: version.id,
     hotelId: version.hotel_id,
-    versionData: version.version_data as Hotel,
+    versionData: version.version_data as unknown as Hotel,
     createdAt: version.created_at,
     createdBy: version.created_by_name
   }));
@@ -44,7 +45,7 @@ export const restoreHotelVersion = async (versionId: number, userId: string, use
 
   if (versionError) throw versionError;
   
-  const hotelVersion = versionData.version_data as Hotel;
+  const hotelVersion = versionData.version_data as unknown as Hotel;
   const hotelId = versionData.hotel_id;
   
   // Prepare data for update

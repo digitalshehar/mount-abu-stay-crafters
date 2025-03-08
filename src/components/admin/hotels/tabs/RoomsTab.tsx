@@ -14,6 +14,9 @@ interface RoomsTabProps {
   handleRoomChange: (index: number, field: keyof Room, value: string | number) => void;
   handleAddRoom: () => void;
   handleRemoveRoom: (index: number) => void;
+  onBack?: () => void;
+  onSubmit?: () => Promise<void>;
+  isLoading?: boolean;
 }
 
 const RoomsTab: React.FC<RoomsTabProps> = ({
@@ -21,6 +24,9 @@ const RoomsTab: React.FC<RoomsTabProps> = ({
   handleRoomChange,
   handleAddRoom,
   handleRemoveRoom,
+  onBack,
+  onSubmit,
+  isLoading
 }) => {
   const [uploadingRoom, setUploadingRoom] = useState<number | null>(null);
   const { toast } = useToast();
@@ -180,6 +186,21 @@ const RoomsTab: React.FC<RoomsTabProps> = ({
       <Button onClick={handleAddRoom} variant="outline" className="w-full">
         <Plus className="mr-2 h-4 w-4" /> Add Room
       </Button>
+
+      {(onBack || onSubmit) && (
+        <div className="flex justify-between gap-2 mt-4">
+          {onBack && (
+            <Button variant="outline" onClick={onBack}>
+              Back
+            </Button>
+          )}
+          {onSubmit && (
+            <Button onClick={onSubmit} disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save Hotel"}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

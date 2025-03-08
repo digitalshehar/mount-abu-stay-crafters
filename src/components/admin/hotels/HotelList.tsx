@@ -65,7 +65,6 @@ const HotelList: React.FC<HotelListProps> = ({
           onBulkDelete={() => handleBulkAction('delete')}
           onBulkToggleStatus={() => handleBulkAction('toggleStatus')}
           onBulkToggleFeatured={() => handleBulkAction('toggleFeatured')}
-          onCancelSelection={() => setSelectedHotels([])}
         />
       )}
       
@@ -73,16 +72,23 @@ const HotelList: React.FC<HotelListProps> = ({
         <div className="inline-block min-w-full align-middle">
           <table className="min-w-full divide-y divide-gray-200">
             <HotelTableHeader 
-              onSelectAll={handleSelectAll} 
-              allSelected={filteredHotels.length > 0 && selectedHotels.length === filteredHotels.length}
-              indeterminate={selectedHotels.length > 0 && selectedHotels.length < filteredHotels.length}
+              selectAll={selectedHotels.length === filteredHotels.length && filteredHotels.length > 0}
+              onSelectAll={() => handleSelectAll(selectedHotels.length !== filteredHotels.length || filteredHotels.length === 0)}
             />
             
             <tbody className="divide-y divide-gray-200 bg-white">
               {isLoading ? (
-                <LoadingState columns={7} />
+                <tr>
+                  <td colSpan={7}>
+                    <LoadingState />
+                  </td>
+                </tr>
               ) : filteredHotels.length === 0 ? (
-                <EmptyState columns={7} filtered={hotels.length > 0} />
+                <tr>
+                  <td colSpan={7}>
+                    <EmptyState filtered={hotels.length > 0} />
+                  </td>
+                </tr>
               ) : (
                 filteredHotels.map((hotel) => (
                   <HotelTableRow

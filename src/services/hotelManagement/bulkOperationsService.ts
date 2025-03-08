@@ -6,7 +6,7 @@ export const bulkDeleteHotels = async (hotelIds: number[]) => {
   // First delete seasonal pricing for all hotels
   await supabase.rpc('bulk_delete_seasonal_pricing', {
     p_hotel_ids: hotelIds
-  } as Record<string, unknown>);
+  });
   
   // Delete rooms for all hotels
   await supabase
