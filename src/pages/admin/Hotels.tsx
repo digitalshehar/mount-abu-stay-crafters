@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import HotelList from "@/components/admin/hotels/HotelList";
 import HotelSearchBar from "@/components/admin/hotels/HotelSearchBar";
@@ -21,7 +20,6 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { Bell, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Hotel } from "@/components/admin/hotels/types";
 
@@ -271,6 +269,7 @@ const HotelsManagement = () => {
         </div>
       </div>
 
+      {/* Main content */}
       <div className="grid grid-cols-1 gap-6">
         <div className="space-y-4">
           <HotelSearchBar 
@@ -370,6 +369,7 @@ const HotelsManagement = () => {
         isEditing={true}
       />
 
+      {/* Other dialogs and panels */}
       <DeleteHotelDialog
         isOpen={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}

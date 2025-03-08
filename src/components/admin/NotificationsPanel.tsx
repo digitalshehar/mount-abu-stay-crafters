@@ -4,8 +4,14 @@ import { Bell, Check, X, Info, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useNotifications } from "@/hooks/useNotifications";
+import { Notification } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
+
+interface NotificationsPanelProps {
+  notifications: Notification[];
+  onMarkAsRead: (id: string) => void;
+  onMarkAllAsRead: () => void;
+}
 
 interface NotificationItemProps {
   id: string;
@@ -77,8 +83,12 @@ const EmptyNotifications = () => {
   );
 };
 
-const NotificationsPanel = () => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ 
+  notifications, 
+  onMarkAsRead, 
+  onMarkAllAsRead 
+}) => {
+  const unreadCount = notifications.filter(notification => !notification.read).length;
   
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-stone-200 max-h-[80vh] flex flex-col">
@@ -96,7 +106,7 @@ const NotificationsPanel = () => {
             variant="outline" 
             size="sm" 
             className="h-8 text-xs"
-            onClick={markAllAsRead}
+            onClick={onMarkAllAsRead}
           >
             <Check className="h-3 w-3 mr-1" />
             Mark all as read
@@ -116,7 +126,7 @@ const NotificationsPanel = () => {
                 timestamp={notification.timestamp}
                 read={notification.read}
                 type={notification.type}
-                onMarkAsRead={markAsRead}
+                onMarkAsRead={onMarkAsRead}
               />
             ))}
           </div>
