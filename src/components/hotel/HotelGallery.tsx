@@ -1,192 +1,196 @@
 
 import React, { useState } from "react";
-import { ImageOff, X, ChevronLeft, ChevronRight, Grid3X3 } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HotelGalleryProps {
   name: string;
   images: string[];
+  fullScreen?: boolean;
+  onClose?: () => void;
 }
 
-const HotelGallery = ({ name, images }: HotelGalleryProps) => {
-  const [mainImageError, setMainImageError] = useState(false);
-  const [imageErrors, setImageErrors] = useState<{[key: number]: boolean}>({});
-  const [activeImage, setActiveImage] = useState(0);
-  const [showFullGallery, setShowFullGallery] = useState(false);
-  
+const HotelGallery: React.FC<HotelGalleryProps> = ({ 
+  name, 
+  images, 
+  fullScreen = false,
+  onClose
+}) => {
+  const [showLightbox, setShowLightbox] = useState(false);
+  const [currentImage, setCurrentImage] = useState(0);
+
   // Ensure we have at least one image
-  const allImages = images.length > 0 ? images : [images[0]];
-  
-  // For display in the main gallery preview, we show up to 5 images
-  const displayImages = allImages.slice(0, 5);
-  
-  const handleMainImageError = () => {
-    setMainImageError(true);
+  const galleryImages = images.length > 0 ? images : ["/placeholder.svg"];
+
+  const handleOpenLightbox = (index: number) => {
+    setCurrentImage(index);
+    setShowLightbox(true);
   };
 
-  const handleImageError = (index: number) => {
-    setImageErrors(prev => ({...prev, [index]: true}));
+  const handleNext = () => {
+    setCurrentImage((prev) => (prev + 1) % galleryImages.length);
   };
 
-  const handleThumbnailClick = (index: number) => {
-    setActiveImage(index);
-  };
-  
-  const navigateImage = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      setActiveImage(prev => (prev > 0 ? prev - 1 : allImages.length - 1));
-    } else {
-      setActiveImage(prev => (prev < allImages.length - 1 ? prev + 1 : 0));
-    }
-  };
-  
-  // Render image gallery with error handling
-  const renderImage = (image: string, index: number, large = false) => {
-    return !imageErrors[index] ? (
-      <img 
-        src={image} 
-        alt={`${name} - view ${index + 1}`} 
-        className={`w-full h-full object-cover ${large ? 'cursor-zoom-in' : ''}`}
-        onError={() => handleImageError(index)}
-        onClick={large ? () => setShowFullGallery(true) : undefined}
-      />
-    ) : (
-      <div className="w-full h-full flex items-center justify-center bg-stone-100">
-        <div className="text-center">
-          <ImageOff className={`${large ? 'h-16 w-16' : 'h-8 w-8'} mx-auto text-stone-400 mb-1`} />
-          <p className="text-xs text-stone-500">Image not available</p>
-        </div>
-      </div>
-    );
+  const handlePrev = () => {
+    setCurrentImage((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
   };
 
-  return (
-    <div className="container-custom py-8">
-      {/* Main Gallery Grid */}
-      <div className="grid grid-cols-4 gap-2 h-[400px]">
-        {/* Main large image */}
-        <div className="col-span-2 row-span-2 rounded-l-lg overflow-hidden bg-stone-100 relative">
-          {renderImage(displayImages[0], 0, true)}
-        </div>
-        
-        {/* Secondary images grid */}
-        {displayImages.slice(1, 5).map((image, idx) => (
-          <div 
-            key={idx + 1} 
-            className={`bg-stone-100 overflow-hidden ${
-              idx === 2 ? 'rounded-tr-lg' : idx === 3 ? 'rounded-br-lg' : ''
-            }`}
-          >
-            {renderImage(image, idx + 1, true)}
-            
-            {/* Last image shows count of remaining photos */}
-            {idx === 3 && allImages.length > 5 && (
-              <div 
-                className="absolute inset-0 bg-black/40 flex items-center justify-center text-white cursor-pointer"
-                onClick={() => setShowFullGallery(true)}
+  const renderFullScreenGallery = () => (
+    <Dialog open={fullScreen} onOpenChange={() => onClose && onClose()}>
+      <DialogContent className="max-w-6xl p-0 bg-black/95">
+        <DialogClose className="absolute right-4 top-4 z-10">
+          <X className="h-6 w-6 text-white" />
+        </DialogClose>
+
+        <div className="h-[80vh] flex flex-col md:flex-row">
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="relative w-full h-full">
+              <img
+                src={galleryImages[currentImage]}
+                alt={`${name} - Image ${currentImage + 1}`}
+                className="object-contain w-full h-full"
+              />
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white rounded-full p-2 hover:bg-black/50"
+                onClick={handlePrev}
               >
-                <div className="text-center">
-                  <Grid3X3 className="h-6 w-6 mx-auto mb-1" />
-                  <p className="font-medium">+{allImages.length - 5} photos</p>
-                </div>
-              </div>
-            )}
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white rounded-full p-2 hover:bg-black/50"
+                onClick={handleNext}
+              >
+                <ChevronRight className="h-6 w-6" />
+              </Button>
+            </div>
           </div>
-        ))}
+
+          <div className="w-full md:w-64 bg-black/80 p-4 overflow-auto">
+            <h3 className="text-white font-semibold mb-4">All Photos ({galleryImages.length})</h3>
+            <div className="grid grid-cols-3 md:grid-cols-1 gap-2">
+              {galleryImages.map((image, idx) => (
+                <div 
+                  key={idx} 
+                  className={`
+                    relative cursor-pointer overflow-hidden rounded-md
+                    ${currentImage === idx ? 'ring-2 ring-primary' : ''}
+                  `}
+                  onClick={() => setCurrentImage(idx)}
+                >
+                  <img
+                    src={image}
+                    alt={`${name} - Thumbnail ${idx + 1}`}
+                    className="aspect-square object-cover w-full h-full"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
+  // Lightbox for standard gallery view
+  const renderLightbox = () => (
+    <Dialog open={showLightbox} onOpenChange={setShowLightbox}>
+      <DialogContent className="max-w-5xl p-0 bg-black/95">
+        <DialogClose className="absolute right-4 top-4 z-10">
+          <X className="h-6 w-6 text-white" />
+        </DialogClose>
         
-        {/* View all photos button */}
-        <Button 
-          variant="outline" 
-          className="absolute bottom-4 right-4 bg-white shadow-md"
-          onClick={() => setShowFullGallery(true)}
-        >
-          <Grid3X3 className="h-4 w-4 mr-2" />
-          View All Photos
-        </Button>
-      </div>
-      
-      {/* Full Gallery Dialog */}
-      <Dialog open={showFullGallery} onOpenChange={setShowFullGallery}>
-        <DialogContent className="max-w-4xl p-0 bg-black h-[80vh] flex flex-col">
-          <div className="p-4 flex justify-between items-center bg-black/80 text-white">
-            <h3 className="font-medium">{name} - Photo Gallery</h3>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setShowFullGallery(false)}
-              className="text-white hover:text-white hover:bg-white/20"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+        <div className="relative h-[80vh] flex items-center justify-center">
+          <img
+            src={galleryImages[currentImage]}
+            alt={`${name} - Image ${currentImage + 1}`}
+            className="object-contain h-full max-w-full"
+          />
+          
+          <div className="absolute bottom-4 left-0 right-0 text-center text-white">
+            <p>{currentImage + 1} / {galleryImages.length}</p>
           </div>
           
-          <div className="flex-grow relative">
-            {/* Main image display */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              {!imageErrors[activeImage] ? (
-                <img 
-                  src={allImages[activeImage]} 
-                  alt={`${name} - view ${activeImage + 1}`}
-                  className="max-h-full max-w-full object-contain"
-                  onError={() => handleImageError(activeImage)}
-                />
-              ) : (
-                <div className="text-center text-white">
-                  <ImageOff className="h-16 w-16 mx-auto mb-2" />
-                  <p>Image not available</p>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white rounded-full p-2 hover:bg-black/50"
+            onClick={handlePrev}
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white rounded-full p-2 hover:bg-black/50"
+            onClick={handleNext}
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
+  // If showing full screen gallery, render that
+  if (fullScreen) {
+    return renderFullScreenGallery();
+  }
+
+  // Main gallery component
+  return (
+    <>
+      <div className="container-custom py-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[400px]">
+          {/* Main large image */}
+          <div className="col-span-2 md:col-span-2 row-span-2 relative" onClick={() => handleOpenLightbox(0)}>
+            <img
+              src={galleryImages[0]}
+              alt={`${name} - Main Image`}
+              className="w-full h-full object-cover rounded-l-lg cursor-pointer"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-10 hover:bg-opacity-0 transition-opacity duration-300 rounded-l-lg"></div>
+          </div>
+
+          {/* Secondary images */}
+          {galleryImages.slice(1, 5).map((image, idx) => (
+            <div 
+              key={idx} 
+              className={`relative ${idx === 2 ? 'rounded-tr-lg' : ''} ${idx === 3 ? 'rounded-br-lg' : ''}`}
+              onClick={() => handleOpenLightbox(idx + 1)}
+            >
+              <img
+                src={image}
+                alt={`${name} - Image ${idx + 2}`}
+                className={`w-full h-full object-cover cursor-pointer ${idx === 2 ? 'rounded-tr-lg' : ''} ${idx === 3 ? 'rounded-br-lg' : ''}`}
+              />
+              <div className={`absolute inset-0 bg-black bg-opacity-10 hover:bg-opacity-0 transition-opacity duration-300 ${idx === 2 ? 'rounded-tr-lg' : ''} ${idx === 3 ? 'rounded-br-lg' : ''}`}></div>
+              
+              {idx === 3 && galleryImages.length > 5 && (
+                <div 
+                  className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer rounded-br-lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose && onClose();
+                  }}
+                >
+                  <span className="text-white font-semibold text-lg">+{galleryImages.length - 5} Photos</span>
                 </div>
               )}
             </div>
-            
-            {/* Navigation buttons */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-white hover:bg-white/20 h-10 w-10 rounded-full"
-              onClick={() => navigateImage('prev')}
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-white hover:bg-white/20 h-10 w-10 rounded-full"
-              onClick={() => navigateImage('next')}
-            >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
-          </div>
-          
-          {/* Thumbnails */}
-          <div className="p-4 bg-black/80 flex items-center overflow-x-auto space-x-2">
-            {allImages.map((image, idx) => (
-              <div 
-                key={idx}
-                className={`flex-shrink-0 w-16 h-16 rounded overflow-hidden cursor-pointer ${
-                  activeImage === idx ? 'ring-2 ring-white' : 'opacity-70'
-                }`}
-                onClick={() => setActiveImage(idx)}
-              >
-                {!imageErrors[idx] ? (
-                  <img 
-                    src={image}
-                    alt={`Thumbnail ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                    onError={() => handleImageError(idx)}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-                    <ImageOff className="h-4 w-4 text-gray-400" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+          ))}
+        </div>
+      </div>
+
+      {renderLightbox()}
+    </>
   );
 };
 

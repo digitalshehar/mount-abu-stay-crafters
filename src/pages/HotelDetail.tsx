@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Check, Map, Phone, Mail, Calendar, Info, X, ChevronRight } from "lucide-react";
+import { Check, Map, Phone, Mail, Calendar, Info, X, ChevronRight, Share2, Bookmark, Camera } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,14 @@ import { generateHotelDescription, generateHotelSchema } from "@/utils/hotel";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
+// New imports for enhanced features
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useFavorites } from "@/hooks/useFavorites";
+
 const HotelDetail = () => {
   const { hotelSlug } = useParams<{ hotelSlug: string }>();
   const navigate = useNavigate();
@@ -41,12 +50,19 @@ const HotelDetail = () => {
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("rooms");
   const { toast: useToastFn } = useToast();
+  const [showFullGallery, setShowFullGallery] = useState(false);
+  const { favorites, addFavorite, removeFavorite } = useFavorites();
+  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+
+  // Check if the current hotel is in favorites
+  const isFavorite = favorites.some(fav => fav.id === hotel?.id);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const handleInitiateBooking = (roomType?: string) => {
+    setSelectedRoom(roomType || null);
     setShowBookingForm(true);
   };
 
@@ -61,6 +77,44 @@ const HotelDetail = () => {
         description: `Your booking at ${hotel?.name} has been confirmed. Check your email for details.`
       });
     }, 1500);
+  };
+
+  const handleToggleFavorite = () => {
+    if (!hotel) return;
+    
+    if (isFavorite) {
+      removeFavorite(hotel.id);
+      toast.info("Removed from favorites");
+    } else {
+      addFavorite({
+        id: hotel.id,
+        name: hotel.name,
+        type: "hotel",
+        image: hotel.image,
+        location: hotel.location,
+        price: hotel.price,
+        slug: hotel.slug
+      });
+      toast.success("Added to favorites");
+    }
+  };
+
+  const handleShareHotel = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: hotel?.name || "Hotel Details",
+          text: `Check out ${hotel?.name} in ${hotel?.location}`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        console.log("Error sharing:", error);
+      }
+    } else {
+      // Fallback for browsers that don't support navigator.share
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied to clipboard");
+    }
   };
 
   if (loading) {
@@ -175,15 +229,46 @@ const HotelDetail = () => {
                   <span>View on Map</span>
                 </Button>
                 
-                <Button variant="outline" size="sm" className="text-red-500 border-red-200 hover:bg-red-50">
-                  Share
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`flex items-center gap-2 ${isFavorite ? 'text-red-500 border-red-200' : ''}`}
+                  onClick={handleToggleFavorite}
+                >
+                  <Bookmark className={`h-4 w-4 ${isFavorite ? 'fill-red-500' : ''}`} />
+                  <span>{isFavorite ? 'Saved' : 'Save'}</span>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  onClick={handleShareHotel}
+                >
+                  <Share2 className="h-4 w-4" />
+                  <span>Share</span>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  onClick={() => setShowFullGallery(true)}
+                >
+                  <Camera className="h-4 w-4" />
+                  <span>All Photos</span>
                 </Button>
               </div>
             </div>
           </div>
         </div>
         
-        <HotelGallery name={hotel.name} images={hotel.images || [hotel.image]} />
+        <HotelGallery 
+          name={hotel.name} 
+          images={hotel.gallery && hotel.gallery.length > 0 ? hotel.gallery : [hotel.image]} 
+          fullScreen={showFullGallery}
+          onClose={() => setShowFullGallery(false)}
+        />
         
         <div className="container-custom py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -293,6 +378,34 @@ const HotelDetail = () => {
                   ))}
                 </div>
               </div>
+              
+              {/* New section: Special Offers */}
+              <div className="mt-8 bg-blue-50 p-6 rounded-lg border border-blue-100">
+                <h3 className="text-lg font-semibold text-blue-800 mb-4">Special Offers</h3>
+                <div className="space-y-4">
+                  <div className="bg-white p-4 rounded-md border border-blue-100 flex flex-col sm:flex-row items-start gap-4">
+                    <div className="bg-blue-100 text-blue-700 p-2 rounded-md font-semibold">
+                      Save 15%
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Early Bird Special</h4>
+                      <p className="text-sm text-stone-600">Book 30 days in advance and save 15% on your stay.</p>
+                    </div>
+                    <Button size="sm" className="ml-auto mt-2 sm:mt-0">Apply</Button>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded-md border border-blue-100 flex flex-col sm:flex-row items-start gap-4">
+                    <div className="bg-blue-100 text-blue-700 p-2 rounded-md font-semibold">
+                      Free Night
+                    </div>
+                    <div>
+                      <h4 className="font-medium">Stay 4, Pay 3</h4>
+                      <p className="text-sm text-stone-600">Book 4 nights and get 1 night completely free.</p>
+                    </div>
+                    <Button size="sm" className="ml-auto mt-2 sm:mt-0">Apply</Button>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div className="lg:col-span-1">
@@ -327,6 +440,17 @@ const HotelDetail = () => {
                       Free cancellation on most rooms
                     </p>
                   </div>
+                </div>
+
+                {/* New section: Price Match Guarantee */}
+                <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
+                  <h3 className="font-semibold text-lg mb-3">Price Match Guarantee</h3>
+                  <p className="text-sm text-stone-600 mb-2">
+                    Found this hotel cheaper elsewhere? We'll match the price and give you an additional 10% off.
+                  </p>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Claim Price Match
+                  </Button>
                 </div>
 
                 <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
@@ -367,7 +491,7 @@ const HotelDetail = () => {
                       }).map(([key, value], idx) => (
                         <div key={idx} className="flex justify-between text-sm">
                           <span className="text-stone-600">{key}</span>
-                          <span className="text-stone-800">{value}</span>
+                          <span className="text-stone-800">{value.toString()}</span>
                         </div>
                       ))}
                     </div>
@@ -392,6 +516,40 @@ const HotelDetail = () => {
                     ))}
                   </ul>
                 </div>
+
+                {/* New section: Weather widget */}
+                <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
+                  <h3 className="font-semibold text-lg mb-4">Current Weather</h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-2xl font-semibold">26°C</p>
+                      <p className="text-sm text-stone-500">Partly Cloudy</p>
+                    </div>
+                    <div className="text-yellow-500">
+                      {/* Weather icon would go here */}
+                      ☀️
+                    </div>
+                  </div>
+                  <Separator className="my-3" />
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="text-center">
+                      <p className="font-medium">Fri</p>
+                      <p>25°C</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium">Sat</p>
+                      <p>27°C</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium">Sun</p>
+                      <p>24°C</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-medium">Mon</p>
+                      <p>25°C</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -403,7 +561,9 @@ const HotelDetail = () => {
           <DialogHeader>
             <DialogTitle>Complete Your Hotel Booking</DialogTitle>
             <DialogDescription>
-              Please provide your details to confirm your stay at {hotel.name}.
+              {selectedRoom 
+                ? `Please provide your details to book the ${selectedRoom} room at ${hotel.name}.`
+                : `Please provide your details to confirm your stay at ${hotel.name}.`}
             </DialogDescription>
           </DialogHeader>
           

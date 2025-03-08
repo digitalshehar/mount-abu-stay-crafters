@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Hotel, NewHotel, SeasonalPrice } from "@/components/admin/hotels/types";
@@ -429,6 +428,7 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
     }
   };
 
+  // Function to clone a hotel
   const handleCloneHotel = async (hotel: Hotel) => {
     setIsSubmitting(true);
     try {
@@ -557,8 +557,58 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
     setIsDeleteDialogOpen,
     handleAddHotel,
     handleEditHotel,
-    handleDeleteHotel,
-    confirmDelete,
+    handleDeleteHotel: (id: number) => {
+      setHotelToDelete(id);
+      setIsDeleteDialogOpen(true);
+    },
+    confirmDelete: async () => {
+      if (!hotelToDelete) return;
+
+      try {
+        // Delete seasonal pricing
+        await supabase.rpc('bulk_delete_seasonal_pricing', {
+          p_hotel_ids: [hotelToDelete]
+        });
+
+        // Delete rooms
+        await supabase
+          .from("rooms")
+          .delete()
+          .eq("hotel_id", hotelToDelete);
+
+        // Delete hotel
+        const { error } = await supabase
+          .from("hotels")
+          .delete()
+          .eq("id", hotelToDelete);
+
+        if (error) {
+          console.error("Error deleting hotel:", error);
+          toast({
+            variant: "destructive",
+            title: "Failed to Delete Hotel",
+            description: "There was an error deleting the hotel.",
+          });
+          return;
+        }
+
+        await fetchHotels();
+        toast({
+          title: "Hotel Deleted",
+          description: "The hotel has been deleted successfully.",
+        });
+      } catch (error) {
+        console.error("Error deleting hotel:", error);
+        toast({
+          variant: "destructive",
+          title: "Failed to Delete Hotel",
+          description: "There was an error deleting the hotel.",
+        });
+      } finally {
+        setIsDeleteDialogOpen(false);
+        setHotelToDelete(null);
+      }
+    },
     handleToggleStatus,
     handleToggleFeatured,
     handleBulkAction,
