@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import HotelFilterPanel from "@/components/admin/hotels/HotelFilterPanel";
 import AddHotelDialog from "@/components/admin/hotels/AddHotelDialog";
 import DeleteHotelDialog from "@/components/admin/hotels/DeleteHotelDialog";
@@ -9,12 +9,11 @@ import { useHotels } from "@/hooks/useHotels";
 import { useHotelOperations } from "@/hooks/useHotelOperations";
 import { useNewHotel } from "@/hooks/useNewHotel";
 import { useAuth } from "@/context/AuthContext";
-import { useHotelDialogs } from "@/hooks/useHotelDialogs";
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useToast } from "@/hooks/use-toast";
-import { Hotel } from "@/components/admin/hotels/types";
+import { useHotelDialogManagement } from "@/hooks/useHotelDialogManagement";
 import HotelAdminHeader from "@/components/admin/hotels/HotelAdminHeader";
 import HotelAdminContent from "@/components/admin/hotels/HotelAdminContent";
 
@@ -70,6 +69,7 @@ const HotelsManagement = () => {
     handleRemoveSeasonalPrice
   } = useNewHotel();
 
+  // Use our new custom hook for dialog management
   const {
     isAddHotelOpen,
     setIsAddHotelOpen,
@@ -84,10 +84,11 @@ const HotelsManagement = () => {
     isUserRolePanelOpen,
     setIsUserRolePanelOpen,
     selectedHotelId,
-    setSelectedHotelId,
+    handleOpenEditHotel,
     handleOpenAuditLog,
-    handleOpenVersionHistory
-  } = useHotelDialogs();
+    handleOpenVersionHistory,
+    closeEditHotel
+  } = useHotelDialogManagement(hotels, setNewHotel, resetNewHotel);
 
   const {
     users,
@@ -105,10 +106,9 @@ const HotelsManagement = () => {
   } = useNotifications();
 
   // Add favorites hook
-  const { favorites, loading: favoritesLoading } = useFavorites(user);
+  const { favorites } = useFavorites(user);
 
   const [isMobileView, setIsMobileView] = useState(false);
-  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
 
   useEffect(() => {
     const checkMobileView = () => {
@@ -122,31 +122,6 @@ const HotelsManagement = () => {
       window.removeEventListener('resize', checkMobileView);
     };
   }, []);
-
-  // Set selected hotel when selectedHotelId changes
-  useEffect(() => {
-    if (selectedHotelId) {
-      const hotel = hotels.find(h => h.id === selectedHotelId);
-      if (hotel) {
-        setSelectedHotel(hotel);
-        // Convert the hotel to a format the form can handle
-        setNewHotel({
-          name: hotel.name,
-          location: hotel.location,
-          stars: hotel.stars,
-          pricePerNight: hotel.pricePerNight,
-          image: hotel.image,
-          description: hotel.description || "",
-          amenities: hotel.amenities || [],
-          rooms: hotel.rooms || [],
-          featured: hotel.featured || false,
-          gallery: hotel.gallery || [],
-          categories: hotel.categories || [],
-          seasonalPricing: hotel.seasonalPricing || []
-        });
-      }
-    }
-  }, [selectedHotelId, hotels]);
 
   const onAddHotel = async () => {
     const success = await handleAddHotel(newHotel);
@@ -172,9 +147,7 @@ const HotelsManagement = () => {
     try {
       const success = await handleEditHotel(selectedHotelId, newHotel);
       if (success) {
-        setIsEditHotelOpen(false);
-        resetNewHotel();
-        setSelectedHotelId(null);
+        closeEditHotel();
         
         addNotification({
           type: 'system',
@@ -197,11 +170,6 @@ const HotelsManagement = () => {
         description: "There was an error updating the hotel.",
       });
     }
-  };
-
-  const handleOpenEditHotel = (hotelId: number) => {
-    setSelectedHotelId(hotelId);
-    setIsEditHotelOpen(true);
   };
 
   return (

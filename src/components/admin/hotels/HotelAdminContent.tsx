@@ -19,7 +19,7 @@ interface HotelAdminContentProps {
   toggleFavoritesFilter: () => void;
   handleDeleteHotel: (id: number) => void;
   handleOpenEditHotel: (id: number) => void;
-  handleToggleStatus: (id: number) => void;
+  handleToggleStatus: (id: number, currentStatus?: string) => void;
   handleToggleFeatured: (id: number, featured: boolean) => void;
   handleCloneHotel: (hotel: Hotel) => void;
   handleBulkAction: (actionType: string, hotelIds: number[]) => void;
@@ -80,7 +80,7 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
           onToggleStatus={(id) => {
             const hotel = hotels.find(h => h.id === id);
             if (hotel) {
-              handleToggleStatus(id);
+              handleToggleStatus(id, hotel.status);
               addNotification({
                 type: 'system',
                 title: 'Hotel Status Changed',

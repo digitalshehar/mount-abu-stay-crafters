@@ -61,7 +61,10 @@ const Overview = () => {
             <TaskManager />
           </div>
           <div>
-            <ThemeCustomizer currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
+            <ThemeCustomizer 
+              initialTheme={currentTheme} 
+              onThemeChange={setCurrentTheme} 
+            />
           </div>
           <div>
             <BackupManager />
