@@ -6,7 +6,7 @@ import {
   Coffee, 
   Star, 
   MessageCircle, 
-  Wheelchair, 
+  Accessibility, 
   Car, 
   Calendar, 
   FileText, 
@@ -73,7 +73,7 @@ const HotelTabNavigation = ({ activeTab, onChange }: HotelTabNavigationProps) =>
         }`}
         onClick={() => onChange("accessibility")}
       >
-        <Wheelchair className="h-4 w-4" />
+        <Accessibility className="h-4 w-4" />
         <span className="hidden sm:inline-block">Accessibility</span>
       </TabsTrigger>
       
