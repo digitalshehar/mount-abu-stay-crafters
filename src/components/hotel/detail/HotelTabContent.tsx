@@ -12,6 +12,7 @@ import HotelPolicies from "../HotelPolicies";
 import HotelAccessibility from "../HotelAccessibility";
 import TransportOptions from "../TransportOptions";
 import LocalEvents from "../LocalEvents";
+import HotelItineraries from "../HotelItineraries";
 
 interface HotelTabContentProps {
   activeTab: string;
@@ -61,6 +62,10 @@ const HotelTabContent = ({
       
       <TabsContent value="events" className="mt-0 p-0">
         <LocalEvents />
+      </TabsContent>
+      
+      <TabsContent value="itineraries" className="mt-0 p-0">
+        <HotelItineraries hotelLocation={hotel.location} />
       </TabsContent>
       
       <TabsContent value="policies" className="mt-0 p-0">

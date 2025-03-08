@@ -71,7 +71,8 @@ const HotelDetail = () => {
     return null;
   }
 
-  const hotelSchema = hotel ? generateHotelSchema(hotel, window.location.href) : '';
+  // Fix: Properly serialize the schema object to a JSON string
+  const hotelSchema = hotel ? JSON.stringify(generateHotelSchema(hotel, window.location.href)) : '';
   const metaDescription = hotel?.seoDescription || (hotel ? generateHotelDescription(hotel) : '');
   const pageTitle = hotel?.seoTitle || (hotel ? `${hotel.name} | Luxury Hotel in ${hotel.location}` : 'Hotel Details');
 
