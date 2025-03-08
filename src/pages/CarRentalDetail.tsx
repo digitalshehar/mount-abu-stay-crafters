@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Calendar, Users, MapPin, ArrowLeft, Car, Settings, CheckCircle } from "lucide-react";
@@ -6,7 +7,7 @@ import { CarRental } from "@/integrations/supabase/custom-types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import FavoriteButton from "@/components/FavoriteButton";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import BookingForm, { BookingFormValues } from "@/components/BookingForm";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthContext";

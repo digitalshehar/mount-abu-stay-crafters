@@ -120,13 +120,17 @@ export const useFavorites = (user: User | null) => {
       if (error) throw error;
 
       // Add the new favorite to state with the full details
-      setFavorites([...favorites, {
+      // Ensure that the item_type is properly typed
+      const newFavorite: Favorite = {
         ...data,
+        item_type: item.type, // This ensures item_type is correctly typed
         name: item.name,
         image: item.image,
         price: item.price,
         location: item.location
-      }]);
+      };
+
+      setFavorites([...favorites, newFavorite]);
 
       toast({
         title: "Added to Favorites",
