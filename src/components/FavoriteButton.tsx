@@ -15,7 +15,7 @@ interface FavoriteButtonProps {
   className?: string;
 }
 
-const FavoriteButton: React.FC<FavoriteButtonProps> = ({
+export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   itemId,
   itemType,
   variant = 'outline',
@@ -139,5 +139,3 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     </Button>
   );
 };
-
-export default FavoriteButton;

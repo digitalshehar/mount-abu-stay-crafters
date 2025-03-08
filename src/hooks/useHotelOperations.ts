@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Hotel, NewHotel, SeasonalPrice } from "@/components/admin/hotels/types";
@@ -7,7 +8,6 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [hotelToDelete, setHotelToDelete] = useState<number | null>(null);
   const { toast } = useToast();
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Function to add a new hotel
@@ -66,13 +66,13 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
 
       // Add seasonal pricing
       if (hotelId && newHotel.seasonalPricing && newHotel.seasonalPricing.length > 0) {
-        const seasonalPricingPromises = newHotel.seasonalPricing.map(price => {
+        const seasonalPricingPromises = newHotel.seasonalPricing.map(pricing => {
           return supabase.from("seasonal_pricing").insert({
             hotel_id: hotelId,
-            name: price.name,
-            start_date: price.startDate,
-            end_date: price.endDate,
-            price_multiplier: price.priceMultiplier
+            name: pricing.name,
+            start_date: pricing.startDate,
+            end_date: pricing.endDate,
+            price_multiplier: pricing.priceMultiplier
           });
         });
 
@@ -159,13 +159,13 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
 
       // Then add the new/updated seasonal pricing
       if (hotel.seasonalPricing && hotel.seasonalPricing.length > 0) {
-        const seasonalPricingPromises = hotel.seasonalPricing.map(price => {
+        const seasonalPricingPromises = hotel.seasonalPricing.map(pricing => {
           return supabase.from("seasonal_pricing").insert({
             hotel_id: hotelId,
-            name: price.name,
-            start_date: price.startDate,
-            end_date: price.endDate,
-            price_multiplier: price.priceMultiplier
+            name: pricing.name,
+            start_date: pricing.startDate,
+            end_date: pricing.endDate,
+            price_multiplier: pricing.priceMultiplier
           });
         });
 
@@ -329,20 +329,13 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
             .in("hotel_id", hotelIds);
 
           // Delete hotels
-          const { error: deleteError } = await supabase
-            .from("hotels")
-            .delete()
-            .in("id", hotelIds);
-
-          if (deleteError) {
-            console.error("Error bulk deleting hotels:", deleteError);
-            toast({
-              variant: "destructive",
-              title: "Failed to Bulk Delete Hotels",
-              description: "There was an error deleting the selected hotels.",
-            });
-            return;
+          for (const id of hotelIds) {
+            await supabase
+              .from("hotels")
+              .delete()
+              .eq("id", id);
           }
+
           toast({
             title: "Hotels Deleted",
             description: "The selected hotels have been deleted successfully.",
@@ -433,22 +426,19 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
     setIsSubmitting(true);
     try {
       // Prepare the data for cloning
-      const { id, ...hotelData } = hotel;
-      const newSlug = `${hotelData.name.toLowerCase().replace(/\s+/g, "-")}-clone`;
-
       const newHotelData = {
-        name: `${hotelData.name} (Clone)`,
-        slug: newSlug,
-        location: hotelData.location,
-        stars: hotelData.stars,
-        price_per_night: hotelData.pricePerNight,
-        image: hotelData.image,
-        description: hotelData.description || "",
-        amenities: hotelData.amenities || [],
-        featured: hotelData.featured || false,
-        gallery: hotelData.gallery || [],
-        categories: hotelData.categories || [],
-        status: hotelData.status
+        name: `${hotel.name} (Clone)`,
+        slug: `${hotel.slug}-clone`,
+        location: hotel.location,
+        stars: hotel.stars,
+        price_per_night: hotel.pricePerNight,
+        image: hotel.image,
+        description: hotel.description || "",
+        amenities: hotel.amenities || [],
+        featured: hotel.featured || false,
+        gallery: hotel.gallery || [],
+        categories: hotel.categories || [],
+        status: hotel.status
       };
 
       // Insert the cloned hotel
@@ -557,58 +547,8 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
     setIsDeleteDialogOpen,
     handleAddHotel,
     handleEditHotel,
-    handleDeleteHotel: (id: number) => {
-      setHotelToDelete(id);
-      setIsDeleteDialogOpen(true);
-    },
-    confirmDelete: async () => {
-      if (!hotelToDelete) return;
-
-      try {
-        // Delete seasonal pricing
-        await supabase.rpc('bulk_delete_seasonal_pricing', {
-          p_hotel_ids: [hotelToDelete]
-        });
-
-        // Delete rooms
-        await supabase
-          .from("rooms")
-          .delete()
-          .eq("hotel_id", hotelToDelete);
-
-        // Delete hotel
-        const { error } = await supabase
-          .from("hotels")
-          .delete()
-          .eq("id", hotelToDelete);
-
-        if (error) {
-          console.error("Error deleting hotel:", error);
-          toast({
-            variant: "destructive",
-            title: "Failed to Delete Hotel",
-            description: "There was an error deleting the hotel.",
-          });
-          return;
-        }
-
-        await fetchHotels();
-        toast({
-          title: "Hotel Deleted",
-          description: "The hotel has been deleted successfully.",
-        });
-      } catch (error) {
-        console.error("Error deleting hotel:", error);
-        toast({
-          variant: "destructive",
-          title: "Failed to Delete Hotel",
-          description: "There was an error deleting the hotel.",
-        });
-      } finally {
-        setIsDeleteDialogOpen(false);
-        setHotelToDelete(null);
-      }
-    },
+    handleDeleteHotel,
+    confirmDelete,
     handleToggleStatus,
     handleToggleFeatured,
     handleBulkAction,

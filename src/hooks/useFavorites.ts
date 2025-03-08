@@ -101,6 +101,50 @@ export const useFavorites = (user: User | null) => {
     }
   };
 
+  const addFavorite = async (item: { 
+    id: number;
+    name: string;
+    type: 'hotel' | 'adventure' | 'car' | 'bike';
+    image: string;
+    location: string;
+    price: number;
+    slug?: string;
+  }) => {
+    try {
+      const { data, error } = await supabase.from('favorites').insert({
+        user_id: user?.id,
+        item_type: item.type,
+        item_id: item.id
+      }).select().single();
+
+      if (error) throw error;
+
+      // Add the new favorite to state with the full details
+      setFavorites([...favorites, {
+        ...data,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        location: item.location
+      }]);
+
+      toast({
+        title: "Added to Favorites",
+        description: `${item.name} has been added to your favorites.`,
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add to favorites. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const removeFavorite = async (favoriteId: string) => {
     try {
       const { error } = await supabase
@@ -126,5 +170,5 @@ export const useFavorites = (user: User | null) => {
     }
   };
 
-  return { favorites, loading, removeFavorite };
+  return { favorites, loading, removeFavorite, addFavorite };
 };

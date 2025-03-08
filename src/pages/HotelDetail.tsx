@@ -1,7 +1,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Check, Map, Phone, Mail, Calendar, Info, X, ChevronRight, Share2, Bookmark, Camera } from "lucide-react";
+import { 
+  Check, Map, Phone, Mail, Calendar, Info, ChevronRight, 
+  Share2, Bookmark, Camera, Accessibility, Car, MessageCircle, 
+  CalendarDays
+} from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Button } from "@/components/ui/button";
@@ -26,21 +30,19 @@ import HotelReviews from "@/components/hotel/HotelReviews";
 import HotelAttractions from "@/components/hotel/HotelAttractions";
 import HotelPolicies from "@/components/hotel/HotelPolicies";
 import HotelFeatures from "@/components/hotel/HotelFeatures";
-import BookingPanel from "@/components/hotel/BookingPanel";
+import HotelQuestions from "@/components/hotel/HotelQuestions";
+import HotelAccessibility from "@/components/hotel/HotelAccessibility";
+import TransportOptions from "@/components/hotel/TransportOptions";
+import LocalEvents from "@/components/hotel/LocalEvents";
 
 // Import custom hooks and utilities
 import { useHotelDetail } from "@/hooks/useHotelDetail";
 import { generateHotelDescription, generateHotelSchema } from "@/utils/hotel";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-
-// New imports for enhanced features
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/context/AuthContext";
 
 const HotelDetail = () => {
   const { hotelSlug } = useParams<{ hotelSlug: string }>();
@@ -51,11 +53,19 @@ const HotelDetail = () => {
   const [activeTab, setActiveTab] = useState("rooms");
   const { toast: useToastFn } = useToast();
   const [showFullGallery, setShowFullGallery] = useState(false);
-  const { favorites, addFavorite, removeFavorite } = useFavorites();
+  const { user } = useAuth();
+  const { favorites, removeFavorite, addFavorite } = useFavorites(user);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+  const [showBookingSuccess, setShowBookingSuccess] = useState(false);
 
   // Check if the current hotel is in favorites
-  const isFavorite = favorites.some(fav => fav.id === hotel?.id);
+  const isFavorite = hotel && favorites.some(fav => 
+    fav.item_type === 'hotel' && fav.item_id === hotel.id
+  );
+
+  const favoriteId = hotel && favorites.find(fav => 
+    fav.item_type === 'hotel' && fav.item_id === hotel.id
+  )?.id;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -72,6 +82,7 @@ const HotelDetail = () => {
     setTimeout(() => {
       setIsBookingLoading(false);
       setShowBookingForm(false);
+      setShowBookingSuccess(true);
       
       toast.success("Booking successful!", {
         description: `Your booking at ${hotel?.name} has been confirmed. Check your email for details.`
@@ -82,10 +93,10 @@ const HotelDetail = () => {
   const handleToggleFavorite = () => {
     if (!hotel) return;
     
-    if (isFavorite) {
-      removeFavorite(hotel.id);
+    if (isFavorite && favoriteId) {
+      removeFavorite(favoriteId);
       toast.info("Removed from favorites");
-    } else {
+    } else if (addFavorite) {
       addFavorite({
         id: hotel.id,
         name: hotel.name,
@@ -223,7 +234,7 @@ const HotelDetail = () => {
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <Button variant="outline" size="sm" className="flex items-center gap-2">
                   <Map className="h-4 w-4" />
                   <span>View on Map</span>
@@ -275,7 +286,7 @@ const HotelDetail = () => {
             <div className="lg:col-span-2">
               <Tabs defaultValue="rooms" className="w-full" onValueChange={setActiveTab} value={activeTab}>
                 <div className="bg-white rounded-t-lg border border-b-0 border-stone-200">
-                  <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-stone-200 p-0">
+                  <TabsList className="w-full justify-start overflow-x-auto rounded-none bg-transparent border-b border-stone-200 p-0">
                     <TabsTrigger 
                       value="rooms" 
                       className="rounded-none py-3 px-5 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
@@ -293,6 +304,30 @@ const HotelDetail = () => {
                       className="rounded-none py-3 px-5 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
                     >
                       Reviews
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="questions" 
+                      className="rounded-none py-3 px-5 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                    >
+                      Q&A
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="accessibility" 
+                      className="rounded-none py-3 px-5 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                    >
+                      Accessibility
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="transport" 
+                      className="rounded-none py-3 px-5 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                    >
+                      Transport
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="events" 
+                      className="rounded-none py-3 px-5 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                    >
+                      Local Events
                     </TabsTrigger>
                     <TabsTrigger 
                       value="policies" 
@@ -327,6 +362,22 @@ const HotelDetail = () => {
                       reviewCount={hotel.reviewCount}
                       reviews={hotel.reviews || []}
                     />
+                  </TabsContent>
+                  
+                  <TabsContent value="questions" className="mt-0 p-0">
+                    <HotelQuestions hotelId={hotel.id} />
+                  </TabsContent>
+                  
+                  <TabsContent value="accessibility" className="mt-0 p-0">
+                    <HotelAccessibility />
+                  </TabsContent>
+                  
+                  <TabsContent value="transport" className="mt-0 p-0">
+                    <TransportOptions hotelLocation={hotel.location} />
+                  </TabsContent>
+                  
+                  <TabsContent value="events" className="mt-0 p-0">
+                    <LocalEvents />
                   </TabsContent>
                   
                   <TabsContent value="policies" className="mt-0 p-0">
@@ -379,7 +430,7 @@ const HotelDetail = () => {
                 </div>
               </div>
               
-              {/* New section: Special Offers */}
+              {/* Special Offers */}
               <div className="mt-8 bg-blue-50 p-6 rounded-lg border border-blue-100">
                 <h3 className="text-lg font-semibold text-blue-800 mb-4">Special Offers</h3>
                 <div className="space-y-4">
@@ -442,7 +493,7 @@ const HotelDetail = () => {
                   </div>
                 </div>
 
-                {/* New section: Price Match Guarantee */}
+                {/* Price Match Guarantee */}
                 <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
                   <h3 className="font-semibold text-lg mb-3">Price Match Guarantee</h3>
                   <p className="text-sm text-stone-600 mb-2">
@@ -491,7 +542,7 @@ const HotelDetail = () => {
                       }).map(([key, value], idx) => (
                         <div key={idx} className="flex justify-between text-sm">
                           <span className="text-stone-600">{key}</span>
-                          <span className="text-stone-800">{value.toString()}</span>
+                          <span className="text-stone-800">{value?.toString() || ""}</span>
                         </div>
                       ))}
                     </div>
@@ -499,25 +550,43 @@ const HotelDetail = () => {
                 </div>
                 
                 <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
-                  <h3 className="font-semibold text-lg mb-4">Why Book With Us</h3>
-                  <ul className="space-y-3">
-                    {[
-                      "Best Price Guarantee",
-                      "Free Cancellation",
-                      "No Booking Fees",
-                      "Secure Booking Process",
-                      "24/7 Customer Support",
-                      "Member Discounts"
-                    ].map((benefit, idx) => (
-                      <li key={idx} className="flex items-center">
-                        <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                        <span className="text-sm">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="flex items-center mb-4">
+                    <MessageCircle className="h-5 w-5 text-primary mr-2" />
+                    <h3 className="font-semibold text-lg">Quick Actions</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-left"
+                      onClick={() => setActiveTab("questions")}
+                    >
+                      Ask a Question
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-left"
+                      onClick={() => setActiveTab("transport")}
+                    >
+                      Book Transportation
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-left"
+                      onClick={() => setActiveTab("events")}
+                    >
+                      Explore Local Events
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start text-left"
+                      onClick={() => setActiveTab("accessibility")}
+                    >
+                      View Accessibility Features
+                    </Button>
+                  </div>
                 </div>
 
-                {/* New section: Weather widget */}
+                {/* Weather widget */}
                 <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
                   <h3 className="font-semibold text-lg mb-4">Current Weather</h3>
                   <div className="flex items-center justify-between">
@@ -550,6 +619,31 @@ const HotelDetail = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Upcoming Events */}
+                <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
+                  <div className="flex items-center mb-4">
+                    <CalendarDays className="h-5 w-5 text-primary mr-2" />
+                    <h3 className="font-semibold text-lg">Upcoming Events</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="bg-stone-50 rounded-md p-3 border border-stone-100">
+                      <p className="font-medium">Summer Festival</p>
+                      <p className="text-xs text-stone-500 mt-1">May 15-17 • 1.2 km away</p>
+                    </div>
+                    <div className="bg-stone-50 rounded-md p-3 border border-stone-100">
+                      <p className="font-medium">Crafts Fair</p>
+                      <p className="text-xs text-stone-500 mt-1">Jun 5-7 • 2.5 km away</p>
+                    </div>
+                    <Button 
+                      variant="link" 
+                      className="w-full text-sm"
+                      onClick={() => setActiveTab("events")}
+                    >
+                      View all events →
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -572,6 +666,43 @@ const HotelDetail = () => {
             isLoading={isBookingLoading} 
             bookingType="hotel" 
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showBookingSuccess} onOpenChange={setShowBookingSuccess}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-green-600 flex items-center">
+              <Check className="mr-2 h-6 w-6" />
+              Booking Confirmed!
+            </DialogTitle>
+            <DialogDescription>
+              Your booking at {hotel.name} has been successfully confirmed.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="bg-green-50 p-4 rounded-md border border-green-100 mb-4">
+            <h4 className="font-medium text-green-800 mb-2">Booking Details</h4>
+            <div className="space-y-2 text-sm text-green-700">
+              <p><span className="font-medium">Hotel:</span> {hotel.name}</p>
+              {selectedRoom && <p><span className="font-medium">Room Type:</span> {selectedRoom}</p>}
+              <p><span className="font-medium">Confirmation #:</span> {Math.random().toString(36).substring(2, 10).toUpperCase()}</p>
+            </div>
+          </div>
+          
+          <p className="text-sm text-stone-600 mb-4">
+            A confirmation email has been sent to your email address with all the details of your booking.
+          </p>
+          
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowBookingSuccess(false)}>Close</Button>
+            <Button onClick={() => {
+              setShowBookingSuccess(false);
+              setActiveTab("transport");
+            }}>
+              Book Transportation
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
       
