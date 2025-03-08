@@ -11,6 +11,7 @@ export interface HotelListProps {
   hotels: Hotel[];
   filteredHotels: Hotel[];
   onDelete: (id: number) => void;
+  onEdit: (id: number) => void;
   onToggleStatus: (id: number) => void;
   onToggleFeatured: (id: number, currentValue: boolean) => void;
   onClone: (hotel: Hotel) => void;
@@ -24,6 +25,7 @@ const HotelList: React.FC<HotelListProps> = ({
   hotels,
   filteredHotels,
   onDelete,
+  onEdit,
   onToggleStatus,
   onToggleFeatured,
   onClone,
@@ -95,6 +97,7 @@ const HotelList: React.FC<HotelListProps> = ({
                     key={hotel.id}
                     hotel={hotel}
                     onDeleteHotel={() => onDelete(hotel.id)}
+                    onEditHotel={() => onEdit(hotel.id)}
                     onToggleStatus={() => onToggleStatus(hotel.id)}
                     onToggleFeatured={() => onToggleFeatured(hotel.id, hotel.featured)}
                     onClone={() => onClone(hotel)}

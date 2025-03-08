@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { NewHotel } from "@/components/admin/hotels/types";
+import { NewHotel, Room } from "@/components/admin/hotels/types";
 
 // Add a new hotel
 export const addHotel = async (newHotel: NewHotel) => {
@@ -30,6 +30,33 @@ export const addHotel = async (newHotel: NewHotel) => {
   return data?.[0]?.id;
 };
 
+// Update an existing hotel
+export const updateHotel = async (hotelId: number, hotel: NewHotel) => {
+  const slug = hotel.name.toLowerCase().replace(/\s+/g, "-");
+
+  const hotelData = {
+    name: hotel.name,
+    slug: slug,
+    location: hotel.location,
+    stars: hotel.stars,
+    price_per_night: hotel.pricePerNight,
+    image: hotel.image,
+    description: hotel.description,
+    amenities: hotel.amenities,
+    featured: hotel.featured,
+    gallery: Array.isArray(hotel.gallery) ? hotel.gallery : [],
+    categories: hotel.categories,
+  };
+
+  const { error } = await supabase
+    .from("hotels")
+    .update(hotelData)
+    .eq("id", hotelId);
+
+  if (error) throw error;
+  return true;
+};
+
 // Add rooms for a hotel
 export const addRooms = async (hotelId: number, rooms: NewHotel['rooms']) => {
   const roomsPromises = rooms.map(room => {
@@ -44,6 +71,18 @@ export const addRooms = async (hotelId: number, rooms: NewHotel['rooms']) => {
   });
   
   return Promise.all(roomsPromises);
+};
+
+// Update rooms for a hotel
+export const updateRooms = async (hotelId: number, rooms: NewHotel['rooms']) => {
+  // First delete existing rooms
+  await supabase
+    .from("rooms")
+    .delete()
+    .eq("hotel_id", hotelId);
+    
+  // Then add the new/updated rooms
+  return addRooms(hotelId, rooms);
 };
 
 // Delete a hotel and all associated data

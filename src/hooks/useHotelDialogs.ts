@@ -3,6 +3,7 @@ import { useState } from "react";
 
 export const useHotelDialogs = () => {
   const [isAddHotelOpen, setIsAddHotelOpen] = useState(false);
+  const [isEditHotelOpen, setIsEditHotelOpen] = useState(false);
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [isAuditLogOpen, setIsAuditLogOpen] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
@@ -22,6 +23,8 @@ export const useHotelDialogs = () => {
   return {
     isAddHotelOpen,
     setIsAddHotelOpen,
+    isEditHotelOpen,
+    setIsEditHotelOpen,
     isFilterPanelOpen,
     setIsFilterPanelOpen,
     isAuditLogOpen,

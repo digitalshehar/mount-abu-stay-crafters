@@ -31,6 +31,7 @@ interface AddHotelDialogProps {
   handleAddSeasonalPrice: (season: SeasonalPrice) => void;
   handleUpdateSeasonalPrice: (index: number, field: string, value: any) => void;
   handleRemoveSeasonalPrice: (index: number) => void;
+  isEditing?: boolean;
 }
 
 const AddHotelDialog = ({
@@ -46,6 +47,7 @@ const AddHotelDialog = ({
   handleImageUpload,
   addGalleryImage,
   removeGalleryImage,
+  isEditing = false,
 }: AddHotelDialogProps) => {
   const [activeTab, setActiveTab] = useState("general");
   const [isLoading, setIsLoading] = useState(false);
@@ -133,9 +135,11 @@ const AddHotelDialog = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Hotel</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Hotel' : 'Add New Hotel'}</DialogTitle>
           <DialogDescription>
-            Fill in the details below to add a new hotel to your inventory.
+            {isEditing 
+              ? 'Edit the details of this hotel.' 
+              : 'Fill in the details below to add a new hotel to your inventory.'}
           </DialogDescription>
         </DialogHeader>
         
@@ -166,6 +170,7 @@ const AddHotelDialog = ({
           isFormValid={isFormValid()}
           onCancel={() => setIsOpen(false)}
           onSubmit={handleSubmit}
+          isEditing={isEditing}
         />
       </DialogContent>
     </Dialog>

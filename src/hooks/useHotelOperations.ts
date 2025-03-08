@@ -41,6 +41,38 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
     }
   };
 
+  const handleEditHotel = async (hotelId: number, hotelData: NewHotel) => {
+    try {
+      // Update hotel basic info
+      await hotelService.updateHotel(hotelId, hotelData);
+      
+      // Update or add rooms
+      if (hotelData.rooms?.length) {
+        await hotelService.updateRooms(hotelId, hotelData.rooms);
+      }
+      
+      // Update seasonal pricing
+      if (hotelData.seasonalPricing?.length) {
+        await hotelService.updateSeasonalPricing(hotelId, hotelData.seasonalPricing);
+      }
+
+      toast({
+        title: "Hotel updated",
+        description: "The hotel has been updated successfully",
+      });
+
+      fetchHotels();
+      return true;
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error updating hotel",
+        description: error.message,
+      });
+      return false;
+    }
+  };
+
   const handleDeleteHotel = (id: number) => {
     setSelectedHotelId(id);
     setIsDeleteDialogOpen(true);
@@ -178,6 +210,7 @@ export const useHotelOperations = (fetchHotels: () => Promise<void>) => {
     setIsDeleteDialogOpen,
     selectedHotelId,
     handleAddHotel,
+    handleEditHotel,
     handleDeleteHotel,
     confirmDelete,
     handleToggleStatus,

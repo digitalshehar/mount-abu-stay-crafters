@@ -11,7 +11,9 @@ export const {
   addRooms,
   deleteHotel,
   updateHotelStatus,
-  updateHotelFeatured
+  updateHotelFeatured,
+  updateHotel,
+  updateRooms
 } = baseHotelService;
 
 export const {

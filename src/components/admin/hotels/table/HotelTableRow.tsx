@@ -25,6 +25,7 @@ import { Hotel } from "@/components/admin/hotels/types";
 export interface HotelTableRowProps {
   hotel: Hotel;
   onDeleteHotel: () => void;
+  onEditHotel: () => void;
   onToggleStatus: () => void;
   onToggleFeatured: () => void;
   onClone: () => void;
@@ -37,6 +38,7 @@ export interface HotelTableRowProps {
 const HotelTableRow = ({
   hotel,
   onDeleteHotel,
+  onEditHotel,
   onToggleStatus,
   onToggleFeatured,
   onClone,
@@ -114,6 +116,11 @@ const HotelTableRow = ({
             <span className="sr-only">Toggle Status</span>
           </Button>
           
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={onEditHotel}>
+            <Edit className="h-4 w-4" />
+            <span className="sr-only">Edit Hotel</span>
+          </Button>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -123,6 +130,10 @@ const HotelTableRow = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={onEditHotel}>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Hotel
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onToggleFeatured}>
                 <Star className="mr-2 h-4 w-4" />
                 {hotel.featured ? 'Remove from Featured' : 'Mark as Featured'}

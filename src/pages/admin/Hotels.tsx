@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import HotelList from "@/components/admin/hotels/HotelList";
 import HotelSearchBar from "@/components/admin/hotels/HotelSearchBar";
@@ -21,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { Hotel } from "@/components/admin/hotels/types";
 
 const HotelsManagement = () => {
   const { user } = useAuth();
@@ -44,6 +46,7 @@ const HotelsManagement = () => {
     isDeleteDialogOpen,
     setIsDeleteDialogOpen,
     handleAddHotel,
+    handleEditHotel,
     handleDeleteHotel,
     confirmDelete,
     handleToggleStatus,
@@ -74,6 +77,8 @@ const HotelsManagement = () => {
   const {
     isAddHotelOpen,
     setIsAddHotelOpen,
+    isEditHotelOpen,
+    setIsEditHotelOpen,
     isFilterPanelOpen,
     setIsFilterPanelOpen,
     isAuditLogOpen,
@@ -83,6 +88,7 @@ const HotelsManagement = () => {
     isUserRolePanelOpen,
     setIsUserRolePanelOpen,
     selectedHotelId,
+    setSelectedHotelId,
     handleOpenAuditLog,
     handleOpenVersionHistory
   } = useHotelDialogs();
@@ -103,8 +109,8 @@ const HotelsManagement = () => {
   } = useNotifications();
 
   const [isNotificationsPanelOpen, setIsNotificationsPanelOpen] = useState(false);
-
   const [isMobileView, setIsMobileView] = useState(false);
+  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
 
   useEffect(() => {
     const checkMobileView = () => {
@@ -118,6 +124,31 @@ const HotelsManagement = () => {
       window.removeEventListener('resize', checkMobileView);
     };
   }, []);
+
+  // Set selected hotel when selectedHotelId changes
+  useEffect(() => {
+    if (selectedHotelId) {
+      const hotel = hotels.find(h => h.id === selectedHotelId);
+      if (hotel) {
+        setSelectedHotel(hotel);
+        // Convert the hotel to a format the form can handle
+        setNewHotel({
+          name: hotel.name,
+          location: hotel.location,
+          stars: hotel.stars,
+          pricePerNight: hotel.pricePerNight,
+          image: hotel.image,
+          description: hotel.description || "",
+          amenities: hotel.amenities || [],
+          rooms: hotel.rooms || [],
+          featured: hotel.featured || false,
+          gallery: hotel.gallery || [],
+          categories: hotel.categories || [],
+          seasonalPricing: hotel.seasonalPricing || []
+        });
+      }
+    }
+  }, [selectedHotelId, hotels]);
 
   const onAddHotel = async () => {
     const success = await handleAddHotel(newHotel);
@@ -135,6 +166,44 @@ const HotelsManagement = () => {
         description: `${newHotel.name} has been added successfully.`,
       });
     }
+  };
+
+  const onEditHotel = async () => {
+    if (!selectedHotelId) return;
+    
+    try {
+      const success = await handleEditHotel(selectedHotelId, newHotel);
+      if (success) {
+        setIsEditHotelOpen(false);
+        resetNewHotel();
+        setSelectedHotelId(null);
+        
+        addNotification({
+          type: 'system',
+          title: 'Hotel Updated',
+          message: `Hotel "${newHotel.name}" has been successfully updated.`
+        });
+        
+        toast({
+          title: "Hotel Updated",
+          description: `${newHotel.name} has been updated successfully.`,
+        });
+        
+        fetchHotels();
+      }
+    } catch (error) {
+      console.error("Error updating hotel:", error);
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: "There was an error updating the hotel.",
+      });
+    }
+  };
+
+  const handleOpenEditHotel = (hotelId: number) => {
+    setSelectedHotelId(hotelId);
+    setIsEditHotelOpen(true);
   };
 
   return (
@@ -197,6 +266,7 @@ const HotelsManagement = () => {
                 message: 'A hotel has been removed from the system.'
               });
             }}
+            onEdit={handleOpenEditHotel}
             onToggleStatus={(id) => {
               const hotel = hotels.find(h => h.id === id);
               if (hotel) {
@@ -226,7 +296,7 @@ const HotelsManagement = () => {
         currentFilters={filterOptions}
       />
 
-      {/* Other dialogs and panels */}
+      {/* Add Hotel Dialog */}
       <AddHotelDialog
         isOpen={isAddHotelOpen}
         setIsOpen={setIsAddHotelOpen}
@@ -246,6 +316,29 @@ const HotelsManagement = () => {
         handleAddSeasonalPrice={handleAddSeasonalPrice}
         handleUpdateSeasonalPrice={handleUpdateSeasonalPrice}
         handleRemoveSeasonalPrice={handleRemoveSeasonalPrice}
+      />
+
+      {/* Edit Hotel Dialog */}
+      <AddHotelDialog
+        isOpen={isEditHotelOpen}
+        setIsOpen={setIsEditHotelOpen}
+        onAddHotel={onEditHotel}
+        newHotel={newHotel}
+        setNewHotel={setNewHotel}
+        handleInputChange={handleInputChange}
+        handleAmenityToggle={handleAmenityToggle}
+        handleRoomChange={handleRoomChange}
+        handleAddRoom={handleAddRoom}
+        handleRemoveRoom={handleRemoveRoom}
+        handleCategoryToggle={handleCategoryToggle}
+        handleAddCategory={handleAddCategory}
+        handleRemoveCategory={handleRemoveCategory}
+        addGalleryImage={addGalleryImage}
+        removeGalleryImage={removeGalleryImage}
+        handleAddSeasonalPrice={handleAddSeasonalPrice}
+        handleUpdateSeasonalPrice={handleUpdateSeasonalPrice}
+        handleRemoveSeasonalPrice={handleRemoveSeasonalPrice}
+        isEditing={true}
       />
 
       <DeleteHotelDialog
