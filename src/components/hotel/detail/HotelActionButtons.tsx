@@ -80,7 +80,6 @@ const HotelActionButtons = ({
 
       <HtmlRedirectButton 
         hotelSlug={hotel.slug} 
-        hotelName={hotel.name} 
       />
     </div>
   );
