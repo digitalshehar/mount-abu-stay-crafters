@@ -17,7 +17,7 @@ interface MapContainerProps {
   handleHotelSelect: (id: number) => void;
   onMapLoad: (map: google.maps.Map) => void;
   handleBoundsChanged: () => void;
-  showHeatmap?: boolean; // Add showHeatmap prop
+  showHeatmap?: boolean;
 }
 
 const MapContainer: React.FC<MapContainerProps> = ({
@@ -33,7 +33,7 @@ const MapContainer: React.FC<MapContainerProps> = ({
   handleHotelSelect,
   onMapLoad,
   handleBoundsChanged,
-  showHeatmap = false // Default value is false
+  showHeatmap = false
 }) => {
   const mapCenter = React.useMemo(() => {
     if (selectedMarker && selectedMarker.latitude && selectedMarker.longitude) {

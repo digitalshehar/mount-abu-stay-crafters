@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -24,9 +23,8 @@ const Hotels = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeView, setActiveView] = useState<string>("list");
+  const [activeView, setActiveView] = useState<string>("classic");
 
-  // Fetch hotels from Supabase
   const { data: hotels, isLoading, error } = useQuery({
     queryKey: ["hotels"],
     queryFn: async () => {
@@ -49,7 +47,6 @@ const Hotels = () => {
     },
   });
 
-  // Use custom hook for filtering
   const {
     priceRange,
     setPriceRange,
@@ -66,7 +63,6 @@ const Hotels = () => {
     toggleFilterDrawer
   } = useHotelFilters(hotels || [], searchQuery);
 
-  // Handle error notifications
   React.useEffect(() => {
     if (error) {
       console.error("Error details:", error);
@@ -76,7 +72,6 @@ const Hotels = () => {
     }
   }, [error]);
 
-  // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearchParams(prev => {
@@ -96,7 +91,6 @@ const Hotels = () => {
 
         <main className="flex-grow pt-28 pb-16 bg-stone-50">
           <div className="container-custom mb-8">
-            {/* Hero section */}
             <div className="relative mb-8 bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg overflow-hidden">
               <div className="absolute inset-0 opacity-20 bg-pattern-dots"></div>
               <div className="relative z-10 px-6 py-12 md:py-16 text-white text-center">
@@ -124,7 +118,6 @@ const Hotels = () => {
                 handleSearch={handleSearch}
               />
 
-              {/* Main content tabs */}
               <Tabs 
                 defaultValue="classic" 
                 value={activeView} 
