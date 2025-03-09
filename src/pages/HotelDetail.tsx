@@ -16,7 +16,7 @@ import { BookingDialog, BookingSuccessDialog } from "@/components/hotel/detail/B
 
 const HotelDetail = () => {
   const { hotelSlug } = useParams<{ hotelSlug: string }>();
-  const { hotel, loading, error, nearbyAttractions } = useHotelDetail(hotelSlug);
+  const { hotel, loading, error, nearbyAttractions, mapCoordinates } = useHotelDetail(hotelSlug);
   const [activeTab, setActiveTab] = useState("rooms");
   const [showFullGallery, setShowFullGallery] = useState(false);
   const { user } = useAuth();
@@ -47,6 +47,15 @@ const HotelDetail = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  // Check URL for tab parameter
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const tabParam = queryParams.get('tab');
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [window.location.search]);
+
   const handleToggleFavorite = () => {
     if (!hotel) return;
     
@@ -76,6 +85,13 @@ const HotelDetail = () => {
   const metaDescription = hotel?.seoDescription || (hotel ? generateHotelDescription(hotel) : '');
   const pageTitle = hotel?.seoTitle || (hotel ? `${hotel.name} | Luxury Hotel in ${hotel.location}` : 'Hotel Details');
 
+  // Create a merged hotel object with latitude and longitude
+  const hotelWithCoordinates = hotel ? {
+    ...hotel,
+    latitude: hotel.latitude || (mapCoordinates ? mapCoordinates.lat : 24.5927),
+    longitude: hotel.longitude || (mapCoordinates ? mapCoordinates.lng : 72.7156)
+  } : null;
+
   return (
     <HotelPageStructure
       title={pageTitle}
@@ -87,7 +103,7 @@ const HotelDetail = () => {
     >
       {hotel && (
         <HotelMainContent
-          hotel={hotel}
+          hotel={hotelWithCoordinates}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           isFavorite={isFavorite}

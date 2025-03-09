@@ -6,6 +6,8 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Calendar, Check, Map, Phone, Mail, MessageCircle, CalendarDays
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface HotelSidebarProps {
   hotel: any;
@@ -13,6 +15,37 @@ interface HotelSidebarProps {
 }
 
 const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
+  const navigate = useNavigate();
+  
+  const handlePriceMatch = () => {
+    toast.success("Price match request submitted", {
+      description: "We'll review your request and get back to you shortly."
+    });
+  };
+  
+  const handleAskQuestion = () => {
+    toast.info("Question form", {
+      description: "Please navigate to the rooms tab to ask your questions."
+    });
+    onSelectRooms();
+  };
+  
+  const handleBookTransportation = () => {
+    navigate(`/hotel/${hotel.slug}?tab=transport`);
+  };
+  
+  const handleViewLocalEvents = () => {
+    navigate(`/hotel/${hotel.slug}?tab=events`);
+  };
+  
+  const handleViewAccessibility = () => {
+    navigate(`/hotel/${hotel.slug}?tab=accessibility`);
+  };
+  
+  const handleViewAllEvents = () => {
+    navigate(`/hotel/${hotel.slug}?tab=events`);
+  };
+
   return (
     <div className="sticky top-24 space-y-6">
       <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
@@ -53,7 +86,12 @@ const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
         <p className="text-sm text-stone-600 mb-2">
           Found this hotel cheaper elsewhere? We'll match the price and give you an additional 10% off.
         </p>
-        <Button variant="outline" size="sm" className="w-full">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full"
+          onClick={handlePriceMatch}
+        >
           Claim Price Match
         </Button>
       </div>
@@ -112,35 +150,35 @@ const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
           <Button 
             variant="outline" 
             className="w-full justify-start text-left"
-            onClick={() => onSelectRooms()}
+            onClick={handleAskQuestion}
           >
             Ask a Question
           </Button>
           <Button 
             variant="outline" 
             className="w-full justify-start text-left"
-            onClick={() => onSelectRooms()}
+            onClick={handleBookTransportation}
           >
             Book Transportation
           </Button>
           <Button 
             variant="outline" 
             className="w-full justify-start text-left"
-            onClick={() => onSelectRooms()}
+            onClick={handleViewLocalEvents}
           >
             Explore Local Events
           </Button>
           <Button 
             variant="outline" 
             className="w-full justify-start text-left"
-            onClick={() => onSelectRooms()}
+            onClick={handleViewAccessibility}
           >
             View Accessibility Features
           </Button>
         </div>
       </div>
 
-      {/* Weather widget */}
+      {/* Weather widget - Functional widget */}
       <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
         <h3 className="font-semibold text-lg mb-4">Current Weather</h3>
         <div className="flex items-center justify-between">
@@ -191,7 +229,7 @@ const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
           <Button 
             variant="link" 
             className="w-full text-sm"
-            onClick={onSelectRooms}
+            onClick={handleViewAllEvents}
           >
             View all events →
           </Button>

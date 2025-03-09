@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleMap, useLoadScript, MarkerClusterer, Marker, InfoWindow } from '@react-google-maps/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Hotel } from '@/components/admin/hotels/types';
 import { Button } from '@/components/ui/button';
 import { Loader2, Map as MapIcon, List, Star } from 'lucide-react';
@@ -99,7 +99,12 @@ const HotelMap: React.FC<HotelMapProps> = ({
   onMapMove
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const mapRef = useRef<google.maps.Map | null>(null);
+  
+  // Get the selected hotel slug from URL query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const selectedHotelSlug = queryParams.get('selected');
   
   // View state (map or list)
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
@@ -120,6 +125,23 @@ const HotelMap: React.FC<HotelMapProps> = ({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
     libraries: libraries,
   });
+  
+  // Set selected hotel based on URL parameter
+  useEffect(() => {
+    if (selectedHotelSlug && hotels.length > 0) {
+      const hotel = hotels.find(h => h.slug === selectedHotelSlug);
+      if (hotel) {
+        setSelectedMarker(hotel);
+        setLocalSelectedHotelId(hotel.id);
+        
+        // If the map is loaded, center on the selected hotel
+        if (mapRef.current && hotel.latitude && hotel.longitude) {
+          mapRef.current.panTo({ lat: hotel.latitude, lng: hotel.longitude });
+          mapRef.current.setZoom(15);
+        }
+      }
+    }
+  }, [selectedHotelSlug, hotels, isLoaded]);
   
   // Calculate filtered hotels based on filters
   const filteredHotels = hotels.filter(hotel => {

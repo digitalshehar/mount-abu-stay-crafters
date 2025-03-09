@@ -1,15 +1,19 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Map, Bookmark, Share2, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import HtmlRedirectButton from "../HtmlRedirectButton";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 interface HotelActionButtonsProps {
   hotel: {
     slug: string;
     name: string;
     id: string;
+    latitude?: number;
+    longitude?: number;
   };
   isFavorite: boolean;
   onToggleFavorite: () => void;
@@ -22,6 +26,8 @@ const HotelActionButtons = ({
   onToggleFavorite,
   onViewGallery
 }: HotelActionButtonsProps) => {
+  const navigate = useNavigate();
+  const [showMap, setShowMap] = useState(false);
   
   const handleShareHotel = async () => {
     if (navigator.share) {
@@ -41,9 +47,19 @@ const HotelActionButtons = ({
     }
   };
 
+  const handleViewOnMap = () => {
+    // Navigate to the map page with the hotel slug as a query parameter
+    navigate(`/hotel-map?selected=${hotel.slug}`);
+  };
+
   return (
     <div className="flex items-center gap-3 flex-wrap">
-      <Button variant="outline" size="sm" className="flex items-center gap-2">
+      <Button 
+        variant="outline" 
+        size="sm" 
+        className="flex items-center gap-2"
+        onClick={handleViewOnMap}
+      >
         <Map className="h-4 w-4" />
         <span>View on Map</span>
       </Button>
