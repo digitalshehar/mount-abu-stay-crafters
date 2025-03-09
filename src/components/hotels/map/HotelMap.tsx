@@ -83,7 +83,7 @@ const mapOptions = {
 };
 
 // Define libraries array statically to prevent unnecessary reloads
-const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ['places'];
+const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ['places', 'visualization'];
 
 interface HotelMapProps {
   hotels: Hotel[];

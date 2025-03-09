@@ -44,7 +44,12 @@ const SearchContainer = () => {
     type: ""
   });
 
-  const handleSearch = () => {
+  const handleSearch = (e?: React.FormEvent) => {
+    // If event exists, prevent default form submission
+    if (e) {
+      e.preventDefault();
+    }
+    
     // Prepare search parameters based on active tab
     let searchParams = new URLSearchParams();
     
@@ -134,7 +139,7 @@ const SearchContainer = () => {
 
             <div className="mt-6">
               <Button 
-                onClick={handleSearch} 
+                onClick={() => handleSearch()} 
                 className="w-full py-4 text-base"
               >
                 <Search className="h-4 w-4 mr-2" />
@@ -156,23 +161,25 @@ const SearchContainer = () => {
       <div className="hidden md:block bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg">
         <SearchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {activeTab === "hotels" && (
-          <HotelSearchForm search={hotelSearch} setSearch={setHotelSearch} />
-        )}
+        <form onSubmit={handleSearch}>
+          {activeTab === "hotels" && (
+            <HotelSearchForm search={hotelSearch} setSearch={setHotelSearch} />
+          )}
 
-        {activeTab === "cars" && (
-          <CarSearchForm search={carSearch} setSearch={setCarSearch} />
-        )}
+          {activeTab === "cars" && (
+            <CarSearchForm search={carSearch} setSearch={setCarSearch} />
+          )}
 
-        {activeTab === "bikes" && (
-          <BikeSearchForm search={bikeSearch} setSearch={setBikeSearch} />
-        )}
+          {activeTab === "bikes" && (
+            <BikeSearchForm search={bikeSearch} setSearch={setBikeSearch} />
+          )}
 
-        {activeTab === "activities" && (
-          <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
-        )}
+          {activeTab === "activities" && (
+            <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
+          )}
 
-        <SearchButton activeTab={activeTab} handleSearch={handleSearch} />
+          <SearchButton activeTab={activeTab} handleSearch={() => handleSearch()} />
+        </form>
       </div>
     </div>
   );

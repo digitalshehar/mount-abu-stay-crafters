@@ -1,3 +1,4 @@
+
 import React from 'react';
 import GoogleMapComponent from './GoogleMapComponent';
 import MapLoading from '../MapLoading';
@@ -16,6 +17,7 @@ interface MapContainerProps {
   handleHotelSelect: (id: number) => void;
   onMapLoad: (map: google.maps.Map) => void;
   handleBoundsChanged: () => void;
+  showHeatmap?: boolean; // Add showHeatmap prop
 }
 
 const MapContainer: React.FC<MapContainerProps> = ({
@@ -30,7 +32,8 @@ const MapContainer: React.FC<MapContainerProps> = ({
   setSelectedMarker,
   handleHotelSelect,
   onMapLoad,
-  handleBoundsChanged
+  handleBoundsChanged,
+  showHeatmap = false // Default value is false
 }) => {
   const mapCenter = React.useMemo(() => {
     if (selectedMarker && selectedMarker.latitude && selectedMarker.longitude) {
@@ -72,6 +75,7 @@ const MapContainer: React.FC<MapContainerProps> = ({
           handleHotelSelect={handleHotelSelect}
           onBoundsChanged={handleBoundsChanged}
           onMapLoad={onMapLoad}
+          showHeatmap={showHeatmap}
         />
       )}
     </div>

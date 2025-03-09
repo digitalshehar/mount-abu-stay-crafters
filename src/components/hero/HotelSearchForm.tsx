@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface HotelSearchFormProps {
@@ -53,6 +53,12 @@ const HotelSearchForm = ({ search, setSearch }: HotelSearchFormProps) => {
     setGuestsOpen(false);
   };
 
+  // Prevent form submission when updating location
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault(); // Prevent any form submission
+    setSearch({ ...search, location: e.target.value });
+  };
+
   return (
     <div className="space-y-4">
       {/* Location Input */}
@@ -63,7 +69,8 @@ const HotelSearchForm = ({ search, setSearch }: HotelSearchFormProps) => {
           placeholder="Where are you going?"
           className="w-full pl-10 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           value={search.location}
-          onChange={(e) => setSearch({ ...search, location: e.target.value })}
+          onChange={handleLocationChange}
+          autoComplete="off"
         />
       </div>
 
@@ -84,6 +91,7 @@ const HotelSearchForm = ({ search, setSearch }: HotelSearchFormProps) => {
             </div>
           </DialogTrigger>
           <DialogContent className="p-0 max-w-[350px] rounded-lg">
+            <DialogTitle className="sr-only">Select Dates</DialogTitle>
             <div className="p-3">
               <CalendarComponent
                 mode="single"
@@ -153,8 +161,8 @@ const HotelSearchForm = ({ search, setSearch }: HotelSearchFormProps) => {
             </div>
           </DialogTrigger>
           <DialogContent className="p-4 max-w-[350px] rounded-lg">
-            <h3 className="text-lg font-medium mb-3">Select Guests & Rooms</h3>
-            <div className="space-y-3">
+            <DialogTitle>Select Guests & Rooms</DialogTitle>
+            <div className="space-y-3 mt-3">
               {["1-1", "2-1", "2-2", "3-1", "4-1", "4-2"].map((option) => {
                 const [guests, rooms] = option.split('-');
                 return (

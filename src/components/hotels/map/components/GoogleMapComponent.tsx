@@ -1,9 +1,8 @@
 
-import React, { useRef, useCallback } from 'react';
-import { GoogleMap, MarkerClusterer, Marker, InfoWindow } from '@react-google-maps/api';
-import { useNavigate } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { GoogleMap, MarkerF, InfoWindowF } from '@react-google-maps/api';
 import { Hotel } from '@/components/admin/hotels/types';
+import { formatCurrency } from '@/utils/hotel';
 
 interface GoogleMapComponentProps {
   isLoaded: boolean;
@@ -16,8 +15,9 @@ interface GoogleMapComponentProps {
   selectedMarker: Hotel | null;
   setSelectedMarker: (hotel: Hotel | null) => void;
   handleHotelSelect: (id: number) => void;
-  onBoundsChanged: () => void;
-  onMapLoad: (map: google.maps.Map) => void;
+  onMapLoad?: (map: google.maps.Map) => void;
+  onBoundsChanged?: () => void;
+  showHeatmap?: boolean; // Add showHeatmap prop
 }
 
 const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
@@ -31,99 +31,142 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
   selectedMarker,
   setSelectedMarker,
   handleHotelSelect,
+  onMapLoad,
   onBoundsChanged,
-  onMapLoad
+  showHeatmap = false
 }) => {
-  const navigate = useNavigate();
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const [heatmap, setHeatmap] = useState<google.maps.visualization.HeatmapLayer | null>(null);
 
-  const handleMarkerClick = (hotel: Hotel) => {
-    setSelectedMarker(hotel);
-    handleHotelSelect(hotel.id);
+  // Map load handler
+  const handleMapLoad = (map: google.maps.Map) => {
+    mapRef.current = map;
+    if (onMapLoad) {
+      onMapLoad(map);
+    }
   };
 
-  if (!isLoaded) return null;
+  // Effect for heatmap visualization
+  useEffect(() => {
+    if (isLoaded && mapRef.current && hotels.length > 0) {
+      // Only create heatmap if it doesn't exist yet
+      if (!heatmap && typeof google !== 'undefined' && google.maps && google.maps.visualization) {
+        try {
+          // Prepare heatmap data points from hotel prices and locations
+          const heatmapData = hotels
+            .filter(hotel => hotel.latitude && hotel.longitude)
+            .map(hotel => {
+              // Higher priced hotels get more "weight" in the heatmap
+              const weight = Math.min(hotel.pricePerNight / 5000, 1);
+              return {
+                location: new google.maps.LatLng(hotel.latitude!, hotel.longitude!),
+                weight
+              };
+            });
 
-  return (
+          if (heatmapData.length > 0) {
+            const newHeatmap = new google.maps.visualization.HeatmapLayer({
+              data: heatmapData,
+              map: showHeatmap ? mapRef.current : null,
+              radius: 20,
+              opacity: 0.7,
+              gradient: [
+                'rgba(0, 255, 255, 0)',
+                'rgba(0, 255, 255, 1)',
+                'rgba(0, 225, 255, 1)',
+                'rgba(0, 200, 255, 1)',
+                'rgba(0, 175, 255, 1)',
+                'rgba(0, 160, 255, 1)',
+                'rgba(0, 145, 223, 1)',
+                'rgba(0, 125, 191, 1)',
+                'rgba(0, 110, 255, 1)',
+                'rgba(0, 100, 255, 1)',
+                'rgba(0, 75, 255, 1)',
+                'rgba(0, 50, 255, 1)',
+                'rgba(0, 25, 255, 1)',
+                'rgba(0, 0, 255, 1)'
+              ]
+            });
+            setHeatmap(newHeatmap);
+          }
+        } catch (error) {
+          console.error("Error creating heatmap:", error);
+        }
+      } else if (heatmap) {
+        // Update heatmap visibility based on the showHeatmap toggle
+        heatmap.setMap(showHeatmap ? mapRef.current : null);
+      }
+    }
+  }, [isLoaded, hotels, showHeatmap, heatmap]);
+
+  return isLoaded ? (
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
       center={center}
       zoom={zoom}
       options={options}
-      onLoad={onMapLoad}
+      onLoad={handleMapLoad}
       onBoundsChanged={onBoundsChanged}
     >
-      <MarkerClusterer>
-        {(clusterer) => (
-          <>
-            {hotels.map(hotel => {
-              if (!hotel.latitude || !hotel.longitude) return null;
-              
-              return (
-                <Marker
-                  key={hotel.id}
-                  position={{ lat: hotel.latitude, lng: hotel.longitude }}
-                  onClick={() => handleMarkerClick(hotel)}
-                  clusterer={clusterer}
-                  icon={{
-                    path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
-                    fillColor: selectedHotelId === hotel.id ? '#0ea5e9' : '#718096',
-                    fillOpacity: 1,
-                    strokeWeight: 1,
-                    strokeColor: '#ffffff',
-                    scale: 1.5,
-                    anchor: new google.maps.Point(12, 22),
-                    labelOrigin: new google.maps.Point(12, 10),
-                  }}
-                  label={{
-                    text: `₹${Math.round(hotel.pricePerNight/100)*100}`,
-                    className: `price-label ${selectedHotelId === hotel.id ? 'selected' : ''}`,
-                    color: selectedHotelId === hotel.id ? '#ffffff' : '#1a202c',
-                  }}
-                />
-              );
-            })}
-            
-            {selectedMarker && (
-              <InfoWindow
-                position={{ lat: selectedMarker.latitude, lng: selectedMarker.longitude }}
+      {/* Hotel Markers */}
+      {hotels.map(hotel => {
+        if (!hotel.latitude || !hotel.longitude) return null;
+        
+        const isSelected = selectedHotelId === hotel.id;
+        const isInfoOpen = selectedMarker && selectedMarker.id === hotel.id;
+        
+        return (
+          <MarkerF
+            key={hotel.id}
+            position={{ lat: hotel.latitude, lng: hotel.longitude }}
+            onClick={() => {
+              handleHotelSelect(hotel.id);
+              setSelectedMarker(hotel);
+            }}
+            icon={{
+              path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
+              fillColor: isSelected ? '#2563eb' : '#1e293b',
+              fillOpacity: 1,
+              strokeColor: '#fff',
+              strokeWeight: 2,
+              scale: 1.2,
+              labelOrigin: new google.maps.Point(0, -30)
+            }}
+            label={{
+              text: formatCurrency(hotel.pricePerNight),
+              color: '#ffffff',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}
+          >
+            {isInfoOpen && (
+              <InfoWindowF
+                position={{ lat: hotel.latitude, lng: hotel.longitude }}
                 onCloseClick={() => setSelectedMarker(null)}
               >
-                <div className="hotel-popup">
-                  <img 
-                    src={selectedMarker.image} 
-                    alt={selectedMarker.name} 
-                    className="popup-image w-full h-32 object-cover mb-2 rounded-t"
-                  />
-                  <div className="popup-content p-3">
-                    <h3 className="popup-title text-base font-medium mb-1">{selectedMarker.name}</h3>
-                    <div className="popup-rating flex items-center mb-1 text-yellow-500">
-                      {Array.from({ length: Math.floor(selectedMarker.stars) }, (_, i) => (
-                        <Star key={i} className="h-3 w-3 fill-current" />
+                <div className="p-1 max-w-[200px]">
+                  <div className="text-sm font-semibold mb-1">{hotel.name}</div>
+                  <div className="text-xs text-stone-600 mb-1">{hotel.location}</div>
+                  <div className="flex items-center mb-1">
+                    <div className="flex">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <span key={i} className={`text-xs ${i < hotel.stars ? 'text-yellow-500' : 'text-gray-300'}`}>★</span>
                       ))}
-                      <span className="text-xs text-stone-500 ml-1">
-                        {selectedMarker.rating.toFixed(1)} ({selectedMarker.reviewCount} reviews)
-                      </span>
                     </div>
-                    <div className="popup-amenities mb-2">
-                      <p className="text-xs text-stone-600 line-clamp-1">
-                        {selectedMarker.amenities.slice(0, 3).join(' • ')}
-                      </p>
-                    </div>
-                    <div className="popup-price text-sm font-semibold mb-2">₹{selectedMarker.pricePerNight.toLocaleString()} / night</div>
-                    <button 
-                      className="popup-button w-full bg-primary text-white text-sm py-1 px-3 rounded hover:bg-primary/90 transition-colors"
-                      onClick={() => navigate(`/hotel/${selectedMarker.slug}`)}
-                    >
-                      View Details
-                    </button>
+                    <span className="text-xs text-stone-500 ml-1">({hotel.stars}-star)</span>
+                  </div>
+                  <div className="text-sm font-medium text-blue-600">
+                    {formatCurrency(hotel.pricePerNight)}/night
                   </div>
                 </div>
-              </InfoWindow>
+              </InfoWindowF>
             )}
-          </>
-        )}
-      </MarkerClusterer>
+          </MarkerF>
+        );
+      })}
     </GoogleMap>
+  ) : (
+    <div>Loading Map...</div>
   );
 };
 
