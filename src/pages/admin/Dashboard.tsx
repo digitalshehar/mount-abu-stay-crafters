@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { 
@@ -27,7 +26,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Close sidebar when navigating on mobile
   useEffect(() => {
     if (window.innerWidth < 768) {
       setSidebarOpen(false);
@@ -43,7 +41,6 @@ const AdminDashboard = () => {
       title: "Logged out successfully",
       description: "You have been logged out of the admin dashboard",
     });
-    // In a real app, you would implement actual logout functionality here
     navigate('/');
   };
 
@@ -102,7 +99,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-stone-50 flex overflow-hidden">
-      {/* Mobile sidebar toggle */}
       <div className="fixed top-4 left-4 z-50 md:hidden">
         <Button 
           variant="outline" 
@@ -114,7 +110,6 @@ const AdminDashboard = () => {
         </Button>
       </div>
 
-      {/* Sidebar overlay for mobile */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/20 z-30 md:hidden"
@@ -122,7 +117,6 @@ const AdminDashboard = () => {
         ></div>
       )}
 
-      {/* Sidebar */}
       <aside 
         className={cn(
           "bg-white text-stone-800 w-[280px] fixed inset-y-0 left-0 z-40 transition-transform duration-300 shadow-md flex flex-col",
@@ -205,7 +199,6 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
-      {/* Main content */}
       <main className={cn(
         "flex-1 p-4 sm:p-6 transition-all duration-300 pt-16 md:pt-6 overflow-y-auto",
         "md:ml-[280px]"
