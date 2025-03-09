@@ -1,4 +1,3 @@
-
 import React from 'react';
 import GoogleMapComponent from './GoogleMapComponent';
 import MapLoading from '../MapLoading';
@@ -33,6 +32,19 @@ const MapContainer: React.FC<MapContainerProps> = ({
   onMapLoad,
   handleBoundsChanged
 }) => {
+  const mapCenter = React.useMemo(() => {
+    if (selectedMarker && selectedMarker.latitude && selectedMarker.longitude) {
+      return { lat: selectedMarker.latitude, lng: selectedMarker.longitude };
+    }
+    
+    const hotelWithCoords = filteredHotels.find(h => h.latitude && h.longitude);
+    if (hotelWithCoords && hotelWithCoords.latitude && hotelWithCoords.longitude) {
+      return { lat: hotelWithCoords.latitude, lng: hotelWithCoords.longitude };
+    }
+    
+    return mountAbuCenter;
+  }, [selectedMarker, filteredHotels, mountAbuCenter]);
+
   return (
     <div className="h-[500px] rounded-lg overflow-hidden shadow-md relative">
       {!import.meta.env.VITE_GOOGLE_MAPS_API_KEY && (
@@ -50,8 +62,8 @@ const MapContainer: React.FC<MapContainerProps> = ({
         <GoogleMapComponent 
           isLoaded={isLoaded}
           mapContainerStyle={mapContainerStyle}
-          center={mountAbuCenter}
-          zoom={13}
+          center={mapCenter}
+          zoom={selectedMarker ? 15 : 13}
           options={mapOptions}
           hotels={filteredHotels}
           selectedHotelId={selectedHotelId}

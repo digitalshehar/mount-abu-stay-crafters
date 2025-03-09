@@ -7,6 +7,7 @@ import PriceRatingFields from "./general/PriceRatingFields";
 import ImagePreview from "./general/ImagePreview";
 import DescriptionField from "./general/DescriptionField";
 import FeaturedToggle from "./general/FeaturedToggle";
+import LocationMapSelector from "./general/LocationMapSelector";
 
 interface GeneralInfoTabProps {
   newHotel: NewHotel;
@@ -32,6 +33,27 @@ const GeneralInfoTab = ({
     } as React.ChangeEvent<HTMLInputElement>;
     
     handleInputChange(syntheticEvent);
+  };
+
+  const handleMapLocationChange = (latitude: number, longitude: number) => {
+    // Create synthetic events for both latitude and longitude
+    const latEvent = {
+      target: {
+        name: "latitude",
+        value: latitude,
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    const lngEvent = {
+      target: {
+        name: "longitude",
+        value: longitude,
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    // Update both values
+    handleInputChange(latEvent);
+    handleInputChange(lngEvent);
   };
 
   return (
@@ -65,6 +87,15 @@ const GeneralInfoTab = ({
         <FeaturedToggle 
           isFeatured={newHotel.featured}
           handleInputChange={handleInputChange}
+        />
+      </div>
+
+      <div className="mt-6 border-t pt-6">
+        <h3 className="text-lg font-medium mb-4">Hotel Location on Map</h3>
+        <LocationMapSelector
+          latitude={newHotel.latitude}
+          longitude={newHotel.longitude}
+          onLocationChange={handleMapLocationChange}
         />
       </div>
       
