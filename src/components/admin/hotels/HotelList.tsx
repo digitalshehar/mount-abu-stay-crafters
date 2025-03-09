@@ -7,9 +7,10 @@ import LoadingState from "./table/LoadingState";
 import BulkActionsBar from "./table/BulkActionsBar";
 import { useAuth } from "@/context/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
+import { Hotel as AdminHotel } from "./types";
 
-// Define a simplified Hotel type
-interface Hotel {
+// Define a simplified Hotel type for the HotelList component
+export interface Hotel {
   id: number;
   name: string;
   location: string;
@@ -20,6 +21,19 @@ interface Hotel {
   featured?: boolean;
   status?: string;
 }
+
+// Map AdminHotel to the simplified Hotel type
+export const mapAdminHotelToHotelList = (adminHotel: AdminHotel): Hotel => ({
+  id: adminHotel.id,
+  name: adminHotel.name,
+  location: adminHotel.location,
+  price_per_night: adminHotel.pricePerNight,
+  category: adminHotel.categories?.[0] || '',
+  review_count: adminHotel.reviewCount || 0,
+  image: adminHotel.image,
+  featured: adminHotel.featured,
+  status: adminHotel.status
+});
 
 export interface HotelListProps {
   hotels: Hotel[];

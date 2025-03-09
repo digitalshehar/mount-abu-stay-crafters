@@ -1,8 +1,8 @@
 
 import React from "react";
 import HotelSearchBar from "@/components/admin/hotels/HotelSearchBar";
-import HotelList from "@/components/admin/hotels/HotelList";
-import { FilterOptions, Hotel } from "@/components/admin/hotels/types";
+import HotelList, { Hotel, mapAdminHotelToHotelList } from "@/components/admin/hotels/HotelList";
+import { FilterOptions, Hotel as AdminHotel } from "@/components/admin/hotels/types";
 
 interface HotelAdminContentProps {
   searchTerm: string;
@@ -12,8 +12,8 @@ interface HotelAdminContentProps {
   handleClearFilters: () => void;
   setIsFilterPanelOpen: (isOpen: boolean) => void;
   filterOptions: FilterOptions;
-  hotels: Hotel[];
-  filteredHotels: Hotel[];
+  hotels: AdminHotel[];
+  filteredHotels: AdminHotel[];
   loading: boolean;
   showFavoritesOnly: boolean;
   toggleFavoritesFilter: () => void;
@@ -21,7 +21,7 @@ interface HotelAdminContentProps {
   handleOpenEditHotel: (id: number) => void;
   handleToggleStatus: (id: number, currentStatus?: string) => void;
   handleToggleFeatured: (id: number, featured: boolean) => void;
-  handleCloneHotel: (hotel: Hotel) => void;
+  handleCloneHotel: (hotel: AdminHotel) => void;
   handleBulkAction: (actionType: string, hotelIds: number[]) => void;
   handleOpenVersionHistory: (id: number) => void;
   handleOpenAuditLog: (id: number) => void;
@@ -51,6 +51,10 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
   handleOpenAuditLog,
   addNotification
 }) => {
+  // Convert AdminHotel[] to Hotel[] for the HotelList component
+  const mappedHotels = hotels.map(mapAdminHotelToHotelList);
+  const mappedFilteredHotels = filteredHotels.map(mapAdminHotelToHotelList);
+
   return (
     <div className="grid grid-cols-1 gap-6">
       <div className="space-y-4">
@@ -66,8 +70,8 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
         />
 
         <HotelList
-          hotels={hotels}
-          filteredHotels={filteredHotels}
+          hotels={mappedHotels}
+          filteredHotels={mappedFilteredHotels}
           onDelete={(id) => {
             handleDeleteHotel(id);
             addNotification({
@@ -89,7 +93,13 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
             }
           }}
           onToggleFeatured={handleToggleFeatured}
-          onClone={handleCloneHotel}
+          onClone={(hotelList) => {
+            // Find the original AdminHotel from its id
+            const adminHotel = hotels.find(h => h.id === hotelList.id);
+            if (adminHotel) {
+              handleCloneHotel(adminHotel);
+            }
+          }}
           onBulkAction={handleBulkAction}
           onViewHistory={handleOpenVersionHistory}
           onViewAuditLog={handleOpenAuditLog}

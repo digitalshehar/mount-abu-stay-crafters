@@ -33,21 +33,24 @@ export const useBookings = () => {
       
       console.log('Fetching bookings from Supabase...');
       
-      // Use 'any' type to bypass TypeScript checking for the bookings table
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('bookings')
         .select(`
           *,
-          hotels:hotel_id (name)
-        `);
+          hotels(name)
+        `)
+        .returns<any[]>();
 
       if (error) {
         console.error('Error fetching bookings:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load bookings data',
+          description: 'Failed to load bookings data: ' + error.message,
           variant: 'destructive',
         });
+        setBookings([]);
+        setRecentBookings([]);
+        setLoading(false);
         return;
       }
 
@@ -61,8 +64,15 @@ export const useBookings = () => {
       
       setBookings(formattedBookings);
       setRecentBookings(formattedBookings.slice(0, 5));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in fetchBookings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load bookings data: ' + (error.message || 'Unknown error'),
+        variant: 'destructive',
+      });
+      setBookings([]);
+      setRecentBookings([]);
     } finally {
       setLoading(false);
     }
@@ -77,11 +87,11 @@ export const useBookings = () => {
     try {
       console.log('Adding new booking:', bookingData);
       
-      // Use 'any' type to bypass TypeScript checking for the bookings table
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('bookings')
-        .insert(bookingData as any)
-        .select();
+        .insert(bookingData)
+        .select()
+        .returns<any[]>();
 
       if (error) {
         console.error('Error adding booking:', error);
@@ -116,11 +126,11 @@ export const useBookings = () => {
   // Function to update booking status
   const updateBookingStatus = async (id: string, status: string) => {
     try {
-      // Use 'any' type to bypass TypeScript checking for the bookings table
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('bookings')
         .update({ booking_status: status })
-        .eq('id', id);
+        .eq('id', id)
+        .returns<any>();
 
       if (error) throw error;
       
@@ -131,11 +141,11 @@ export const useBookings = () => {
       
       fetchBookings();
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating booking status:', error);
       toast({
         title: 'Update Failed',
-        description: 'Failed to update booking status',
+        description: 'Failed to update booking status: ' + (error.message || 'Unknown error'),
         variant: 'destructive',
       });
       return false;
@@ -145,11 +155,11 @@ export const useBookings = () => {
   // Function to update payment status
   const updatePaymentStatus = async (id: string, status: string) => {
     try {
-      // Use 'any' type to bypass TypeScript checking for the bookings table
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('bookings')
         .update({ payment_status: status })
-        .eq('id', id);
+        .eq('id', id)
+        .returns<any>();
 
       if (error) throw error;
       
@@ -160,11 +170,11 @@ export const useBookings = () => {
       
       fetchBookings();
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating payment status:', error);
       toast({
         title: 'Update Failed',
-        description: 'Failed to update payment status',
+        description: 'Failed to update payment status: ' + (error.message || 'Unknown error'),
         variant: 'destructive',
       });
       return false;
