@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Wifi, Coffee, ParkingCircle, Wind, Utensils, Dumbbell, Swimming, Snowflake } from "lucide-react";
+import { Wifi, Coffee, ParkingCircle, Wind, Utensils, Dumbbell, Waves, Snowflake } from "lucide-react";
 
 interface HotelCardAmenitiesProps {
   amenities: string[];
@@ -16,7 +16,7 @@ const HotelCardAmenities = ({ amenities }: HotelCardAmenitiesProps) => {
     if (normalizedAmenity.includes('conditioning') || normalizedAmenity.includes('ac')) return <Wind className="h-3 w-3" />;
     if (normalizedAmenity.includes('restaurant')) return <Utensils className="h-3 w-3" />;
     if (normalizedAmenity.includes('gym')) return <Dumbbell className="h-3 w-3" />;
-    if (normalizedAmenity.includes('pool') || normalizedAmenity.includes('swimming')) return <Swimming className="h-3 w-3" />;
+    if (normalizedAmenity.includes('pool') || normalizedAmenity.includes('swimming')) return <Waves className="h-3 w-3" />;
     if (normalizedAmenity.includes('air')) return <Snowflake className="h-3 w-3" />;
     
     // Default icon
