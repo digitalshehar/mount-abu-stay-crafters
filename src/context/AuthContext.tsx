@@ -31,6 +31,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     init().then(cleanup => {
       cleanupFn = cleanup;
+    }).catch(error => {
+      console.error("Failed to initialize auth:", error);
     });
     
     // Return cleanup function

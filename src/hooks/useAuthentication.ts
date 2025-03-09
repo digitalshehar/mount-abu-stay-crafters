@@ -55,12 +55,17 @@ export const useAuthentication = () => {
 
       if (error) throw error;
 
+      // Check if user is admin
+      const isAdmin = email.includes('admin') || email === 'admin@mountabu.com';
+
       toast({
         title: "Welcome back!",
-        description: "You have successfully signed in.",
+        description: isAdmin 
+          ? "You have successfully signed in to the admin dashboard." 
+          : "You have successfully signed in.",
       });
 
-      navigate('/');
+      // Note: navigation is not performed here as it's handled in the Auth component
     } catch (error: any) {
       toast({
         title: "Error signing in",
@@ -97,15 +102,19 @@ export const useAuthentication = () => {
   };
 
   const initializeAuth = async () => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      setSession(sessionData.session);
+      setUser(sessionData.session?.user ?? null);
       
-      if (session?.user) {
-        fetchProfile(session.user.id);
+      if (sessionData.session?.user) {
+        await fetchProfile(sessionData.session.user.id);
       }
+    } catch (error) {
+      console.error("Error getting initial session:", error);
+    } finally {
       setLoading(false);
-    });
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);

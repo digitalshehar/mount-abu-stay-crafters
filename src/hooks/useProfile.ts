@@ -1,9 +1,9 @@
 
 import { useState } from 'react';
-import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { UserProfile } from '@/types/auth';
+import { User } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
+import { UserProfile } from '@/types/auth';
 
 export const useProfile = (user: User | null) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -12,46 +12,66 @@ export const useProfile = (user: User | null) => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      setLoading(true);
+      
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, username, full_name, avatar_url, created_at')
         .eq('id', userId)
         .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+
+      if (data) {
+        setProfile(data as UserProfile);
+      }
+    } catch (error) {
+      console.error('Error in fetchProfile:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load user profile.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProfile = async (updateData: { username?: string; full_name?: string; avatar_url?: string }) => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', user.id)
+        .select();
 
       if (error) {
         throw error;
       }
 
-      setProfile(data);
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
-
-  const updateProfile = async (data: { username?: string; full_name?: string; avatar_url?: string }): Promise<void> => {
-    try {
-      setLoading(true);
-      
-      if (!user) throw new Error("User not authenticated");
-
-      const { error } = await supabase
-        .from('profiles')
-        .update(data)
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      fetchProfile(user.id);
-
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      });
+      if (data && data.length > 0) {
+        setProfile(prev => ({
+          ...prev!,
+          ...updateData
+        }));
+        
+        toast({
+          title: 'Profile updated',
+          description: 'Your profile has been updated successfully.',
+        });
+      }
     } catch (error: any) {
       toast({
-        title: "Error updating profile",
+        title: 'Error updating profile',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -61,6 +81,7 @@ export const useProfile = (user: User | null) => {
   return {
     profile,
     setProfile,
+    loading,
     fetchProfile,
     updateProfile,
   };

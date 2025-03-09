@@ -42,13 +42,25 @@ const Auth = () => {
     
     try {
       await signIn(loginEmail, loginPassword);
-      navigate(isAdmin ? '/admin/dashboard' : '/');
-    } catch (error) {
-      // Error is handled in the auth context
+      
+      // Navigate based on whether this is admin login or regular login
+      if (isAdmin) {
+        // Check if the email is an admin email (for demo purposes)
+        // In a real app, you would check admin status from a user_roles table
+        if (loginEmail.includes('admin') || loginEmail === 'admin@mountabu.com') {
+          navigate('/admin/dashboard');
+        } else {
+          setLoginError('You do not have admin privileges');
+        }
+      } else {
+        navigate('/');
+      }
+    } catch (error: any) {
+      setLoginError(error.message || 'An error occurred during login');
     }
   };
 
-  // Handle signup submission
+  // Handle signup submission (only for regular users, not admins)
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
@@ -70,9 +82,10 @@ const Auth = () => {
     
     try {
       await signUp(signupEmail, signupPassword, signupUsername);
-      // Signup success is handled in the auth context
-    } catch (error) {
-      // Error is handled in the auth context
+      // On successful signup, notification is handled in the auth context
+      // User will need to verify email before logging in
+    } catch (error: any) {
+      setSignupError(error.message || 'An error occurred during signup');
     }
   };
 

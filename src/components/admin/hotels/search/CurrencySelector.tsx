@@ -26,6 +26,14 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   setCurrency,
   currencies
 }) => {
+  // If no currencies provided, use defaults
+  const availableCurrencies = currencies.length > 0 ? currencies : [
+    { code: "INR", symbol: "₹", name: "Indian Rupee" },
+    { code: "USD", symbol: "$", name: "US Dollar" },
+    { code: "EUR", symbol: "€", name: "Euro" },
+    { code: "GBP", symbol: "£", name: "British Pound" }
+  ];
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -36,7 +44,7 @@ const CurrencySelector: React.FC<CurrencySelectorProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        {currencies.map((curr) => (
+        {availableCurrencies.map((curr) => (
           <DropdownMenuItem 
             key={curr.code}
             onClick={() => setCurrency(curr)}

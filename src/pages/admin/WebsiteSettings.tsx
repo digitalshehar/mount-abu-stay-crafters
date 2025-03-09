@@ -1,59 +1,64 @@
 
 import React, { useState } from "react";
-import { Save, Globe, Layout, Palette, Share2, BellRing } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/use-toast";
+import { Globe, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, FileText } from "lucide-react";
 
-const AdminWebsiteSettings = () => {
+const WebsiteSettings = () => {
   const { toast } = useToast();
   
-  // Sample website settings
+  // General settings
   const [generalSettings, setGeneralSettings] = useState({
-    siteName: "Mount Abu Tourism",
-    tagline: "Experience the Beauty of Rajasthan's Hill Station",
-    contactEmail: "info@mountabu-tourism.com",
-    contactPhone: "+91 9876543210",
-    address: "Tourist Office, Mount Abu, Rajasthan, India",
-    footerText: "© 2023 Mount Abu Tourism. All rights reserved.",
+    siteName: "Hotel in Mount Abu",
+    siteTagline: "Your perfect stay in the hills",
+    siteDescription: "Find the best hotels, activities, and experiences in Mount Abu, Rajasthan.",
+    siteEmail: "contact@mountabu.com",
+    sitePhone: "+91 1234567890",
+    siteAddress: "Mount Abu, Rajasthan, India"
   });
   
+  // SEO settings
   const [seoSettings, setSeoSettings] = useState({
-    metaTitle: "Mount Abu Tourism - Rajasthan's Only Hill Station",
-    metaDescription: "Discover the beauty of Mount Abu, Rajasthan's only hill station. Book hotels, tours, and activities for your perfect vacation.",
-    ogImage: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1640&ixlib=rb-4.0.3",
-    twitterHandle: "@mountabu",
-    googleAnalyticsId: "UA-12345678-9",
+    metaTitle: "Hotel in Mount Abu - Find Your Perfect Stay",
+    metaDescription: "Discover the best hotels, activities, and experiences in Mount Abu, Rajasthan. Book your perfect stay today!",
+    ogTitle: "Mount Abu - Your Perfect Hill Station Retreat",
+    ogDescription: "Discover the beauty of Mount Abu with our curated selection of hotels and experiences.",
+    ogImage: "https://example.com/og-image.jpg",
+    enableSitemap: true,
+    enableRobotsTxt: true,
+    enableCanonicalUrls: true,
+    enableStructuredData: true
   });
   
-  const [appearanceSettings, setAppearanceSettings] = useState({
-    primaryColor: "#0F766E",
-    secondaryColor: "#f59e0b",
-    fontFamily: "Inter, sans-serif",
-    showLogo: true,
-    logoUrl: "https://placekitten.com/100/100", // Placeholder
-    favicon: "https://placekitten.com/32/32", // Placeholder
-  });
-  
+  // Social media settings
   const [socialSettings, setSocialSettings] = useState({
-    facebook: "https://facebook.com/mountabu",
-    twitter: "https://twitter.com/mountabu",
-    instagram: "https://instagram.com/mountabu",
-    youtube: "https://youtube.com/mountabu",
-    pinterest: "",
+    facebookUrl: "https://facebook.com/mountabu",
+    twitterUrl: "https://twitter.com/mountabu",
+    instagramUrl: "https://instagram.com/mountabu",
+    linkedinUrl: "https://linkedin.com/company/mountabu",
+    youtubeUrl: "",
+    pinterestUrl: "",
+    enableSocialSharing: true
   });
-
-  // Handle form input changes for general settings
-  const handleGeneralSettingsChange = (e) => {
+  
+  // Footer settings
+  const [footerSettings, setFooterSettings] = useState({
+    copyrightText: "© 2023 Hotel in Mount Abu. All rights reserved.",
+    footerTagline: "Your perfect stay in the hills",
+    showSocialIcons: true,
+    showContactInfo: true,
+    showQuickLinks: true,
+    showNewsletterSignup: true
+  });
+  
+  // Handle changes in form fields
+  const handleGeneralChange = (e) => {
     const { name, value } = e.target;
     setGeneralSettings({
       ...generalSettings,
@@ -61,369 +66,465 @@ const AdminWebsiteSettings = () => {
     });
   };
   
-  // Handle form input changes for SEO settings
-  const handleSeoSettingsChange = (e) => {
-    const { name, value } = e.target;
+  const handleSeoChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setSeoSettings({
       ...seoSettings,
-      [name]: value
-    });
-  };
-  
-  // Handle form input changes for appearance settings
-  const handleAppearanceSettingsChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setAppearanceSettings({
-      ...appearanceSettings,
       [name]: type === 'checkbox' ? checked : value
     });
   };
   
-  // Handle form input changes for social settings
-  const handleSocialSettingsChange = (e) => {
-    const { name, value } = e.target;
+  const handleSocialChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setSocialSettings({
       ...socialSettings,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     });
   };
-
-  // Handle saving settings
-  const handleSaveSettings = () => {
-    // In a real app, you would save these settings to your backend
+  
+  const handleFooterChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFooterSettings({
+      ...footerSettings,
+      [name]: type === 'checkbox' ? checked : value
+    });
+  };
+  
+  // Handle form submissions
+  const saveGeneralSettings = (e) => {
+    e.preventDefault();
     toast({
-      title: "Settings saved",
-      description: "Your website settings have been updated successfully.",
+      title: "General settings saved",
+      description: "Your website's general settings have been updated successfully."
     });
   };
-
+  
+  const saveSeoSettings = (e) => {
+    e.preventDefault();
+    toast({
+      title: "SEO settings saved",
+      description: "Your website's SEO settings have been updated successfully."
+    });
+  };
+  
+  const saveSocialSettings = (e) => {
+    e.preventDefault();
+    toast({
+      title: "Social media settings saved",
+      description: "Your website's social media settings have been updated successfully."
+    });
+  };
+  
+  const saveFooterSettings = (e) => {
+    e.preventDefault();
+    toast({
+      title: "Footer settings saved",
+      description: "Your website's footer settings have been updated successfully."
+    });
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Website Settings</h1>
-        
-        <Button onClick={handleSaveSettings} className="gap-2">
-          <Save size={16} />
-          Save Changes
-        </Button>
       </div>
-
+      
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid grid-cols-4 mb-6">
-          <TabsTrigger value="general" className="gap-2">
-            <Globe size={16} />
-            <span>General</span>
-          </TabsTrigger>
-          <TabsTrigger value="appearance" className="gap-2">
-            <Palette size={16} />
-            <span>Appearance</span>
-          </TabsTrigger>
-          <TabsTrigger value="seo" className="gap-2">
-            <Layout size={16} />
-            <span>SEO</span>
-          </TabsTrigger>
-          <TabsTrigger value="social" className="gap-2">
-            <Share2 size={16} />
-            <span>Social Media</span>
-          </TabsTrigger>
+        <TabsList className="grid grid-cols-4 mb-4">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="seo">SEO</TabsTrigger>
+          <TabsTrigger value="social">Social Media</TabsTrigger>
+          <TabsTrigger value="footer">Footer</TabsTrigger>
         </TabsList>
         
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <TabsContent value="general" className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="siteName">Website Name</Label>
-                <Input 
-                  id="siteName"
-                  name="siteName"
-                  value={generalSettings.siteName}
-                  onChange={handleGeneralSettingsChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="tagline">Tagline</Label>
-                <Input 
-                  id="tagline"
-                  name="tagline"
-                  value={generalSettings.tagline}
-                  onChange={handleGeneralSettingsChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="contactEmail">Contact Email</Label>
-                <Input 
-                  id="contactEmail"
-                  name="contactEmail"
-                  type="email"
-                  value={generalSettings.contactEmail}
-                  onChange={handleGeneralSettingsChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="contactPhone">Contact Phone</Label>
-                <Input 
-                  id="contactPhone"
-                  name="contactPhone"
-                  value={generalSettings.contactPhone}
-                  onChange={handleGeneralSettingsChange}
-                />
-              </div>
-              
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea 
-                  id="address"
-                  name="address"
-                  value={generalSettings.address}
-                  onChange={handleGeneralSettingsChange}
-                  rows={2}
-                />
-              </div>
-              
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="footerText">Footer Text</Label>
-                <Input 
-                  id="footerText"
-                  name="footerText"
-                  value={generalSettings.footerText}
-                  onChange={handleGeneralSettingsChange}
-                />
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="appearance" className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="primaryColor">Primary Color</Label>
-                <div className="flex gap-3">
-                  <Input 
-                    id="primaryColor"
-                    name="primaryColor"
-                    type="color"
-                    value={appearanceSettings.primaryColor}
-                    onChange={handleAppearanceSettingsChange}
-                    className="w-16 h-10 p-1"
-                  />
-                  <Input 
-                    value={appearanceSettings.primaryColor}
-                    onChange={handleAppearanceSettingsChange}
-                    name="primaryColor"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="secondaryColor">Secondary Color</Label>
-                <div className="flex gap-3">
-                  <Input 
-                    id="secondaryColor"
-                    name="secondaryColor"
-                    type="color"
-                    value={appearanceSettings.secondaryColor}
-                    onChange={handleAppearanceSettingsChange}
-                    className="w-16 h-10 p-1"
-                  />
-                  <Input 
-                    value={appearanceSettings.secondaryColor}
-                    onChange={handleAppearanceSettingsChange}
-                    name="secondaryColor"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="fontFamily">Font Family</Label>
-                <select
-                  id="fontFamily"
-                  name="fontFamily"
-                  value={appearanceSettings.fontFamily}
-                  onChange={handleAppearanceSettingsChange}
-                  className="w-full h-10 px-3 py-2 border border-stone-200 rounded-md"
-                >
-                  <option value="Inter, sans-serif">Inter</option>
-                  <option value="Roboto, sans-serif">Roboto</option>
-                  <option value="Poppins, sans-serif">Poppins</option>
-                  <option value="Montserrat, sans-serif">Montserrat</option>
-                  <option value="Open Sans, sans-serif">Open Sans</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="showLogo">Logo Settings</Label>
-                <div className="flex items-center space-x-2 pt-2">
-                  <input
-                    type="checkbox"
-                    id="showLogo"
-                    name="showLogo"
-                    checked={appearanceSettings.showLogo}
-                    onChange={handleAppearanceSettingsChange}
-                    className="h-4 w-4"
-                  />
-                  <Label htmlFor="showLogo" className="text-sm font-normal">Show logo</Label>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="logoUrl">Logo URL</Label>
-                <Input 
-                  id="logoUrl"
-                  name="logoUrl"
-                  value={appearanceSettings.logoUrl}
-                  onChange={handleAppearanceSettingsChange}
-                  disabled={!appearanceSettings.showLogo}
-                />
-                {appearanceSettings.logoUrl && appearanceSettings.showLogo && (
-                  <div className="mt-2 p-2 border rounded w-fit">
-                    <img src={appearanceSettings.logoUrl} alt="Logo Preview" className="h-10" />
+        <TabsContent value="general">
+          <Card>
+            <CardHeader>
+              <CardTitle>General Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={saveGeneralSettings} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="siteName">Site Name</Label>
+                    <div className="flex items-center">
+                      <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="siteName"
+                        name="siteName"
+                        value={generalSettings.siteName}
+                        onChange={handleGeneralChange}
+                      />
+                    </div>
                   </div>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="favicon">Favicon URL</Label>
-                <Input 
-                  id="favicon"
-                  name="favicon"
-                  value={appearanceSettings.favicon}
-                  onChange={handleAppearanceSettingsChange}
-                />
-                {appearanceSettings.favicon && (
-                  <div className="mt-2 p-2 border rounded w-fit">
-                    <img src={appearanceSettings.favicon} alt="Favicon Preview" className="h-8" />
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="siteTagline">Site Tagline</Label>
+                    <Input 
+                      id="siteTagline"
+                      name="siteTagline"
+                      value={generalSettings.siteTagline}
+                      onChange={handleGeneralChange}
+                    />
                   </div>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="seo" className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="metaTitle">Meta Title</Label>
-                <Input 
-                  id="metaTitle"
-                  name="metaTitle"
-                  value={seoSettings.metaTitle}
-                  onChange={handleSeoSettingsChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="googleAnalyticsId">Google Analytics ID</Label>
-                <Input 
-                  id="googleAnalyticsId"
-                  name="googleAnalyticsId"
-                  value={seoSettings.googleAnalyticsId}
-                  onChange={handleSeoSettingsChange}
-                  placeholder="UA-XXXXXXXXX-X"
-                />
-              </div>
-              
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="metaDescription">Meta Description</Label>
-                <Textarea 
-                  id="metaDescription"
-                  name="metaDescription"
-                  value={seoSettings.metaDescription}
-                  onChange={handleSeoSettingsChange}
-                  rows={3}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="ogImage">OG Image URL</Label>
-                <Input 
-                  id="ogImage"
-                  name="ogImage"
-                  value={seoSettings.ogImage}
-                  onChange={handleSeoSettingsChange}
-                />
-                {seoSettings.ogImage && (
-                  <div className="mt-2 p-2 border rounded">
-                    <img src={seoSettings.ogImage} alt="OG Image Preview" className="h-24 object-cover" />
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="siteDescription">Site Description</Label>
+                    <Textarea 
+                      id="siteDescription"
+                      name="siteDescription"
+                      value={generalSettings.siteDescription}
+                      onChange={handleGeneralChange}
+                      rows={3}
+                    />
                   </div>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="twitterHandle">Twitter Handle</Label>
-                <Input 
-                  id="twitterHandle"
-                  name="twitterHandle"
-                  value={seoSettings.twitterHandle}
-                  onChange={handleSeoSettingsChange}
-                  placeholder="@yourtwitterhandle"
-                />
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="social" className="p-6 space-y-6">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="facebook">Facebook URL</Label>
-                <Input 
-                  id="facebook"
-                  name="facebook"
-                  value={socialSettings.facebook}
-                  onChange={handleSocialSettingsChange}
-                  placeholder="https://facebook.com/yourpage"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="twitter">Twitter URL</Label>
-                <Input 
-                  id="twitter"
-                  name="twitter"
-                  value={socialSettings.twitter}
-                  onChange={handleSocialSettingsChange}
-                  placeholder="https://twitter.com/yourhandle"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="instagram">Instagram URL</Label>
-                <Input 
-                  id="instagram"
-                  name="instagram"
-                  value={socialSettings.instagram}
-                  onChange={handleSocialSettingsChange}
-                  placeholder="https://instagram.com/yourprofile"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="youtube">YouTube URL</Label>
-                <Input 
-                  id="youtube"
-                  name="youtube"
-                  value={socialSettings.youtube}
-                  onChange={handleSocialSettingsChange}
-                  placeholder="https://youtube.com/yourchannel"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="pinterest">Pinterest URL</Label>
-                <Input 
-                  id="pinterest"
-                  name="pinterest"
-                  value={socialSettings.pinterest}
-                  onChange={handleSocialSettingsChange}
-                  placeholder="https://pinterest.com/yourprofile"
-                />
-              </div>
-            </div>
-          </TabsContent>
-        </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="siteEmail">Contact Email</Label>
+                    <div className="flex items-center">
+                      <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="siteEmail"
+                        name="siteEmail"
+                        type="email"
+                        value={generalSettings.siteEmail}
+                        onChange={handleGeneralChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="sitePhone">Contact Phone</Label>
+                    <div className="flex items-center">
+                      <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="sitePhone"
+                        name="sitePhone"
+                        value={generalSettings.sitePhone}
+                        onChange={handleGeneralChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="siteAddress">Address</Label>
+                    <div className="flex items-center">
+                      <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Textarea 
+                        id="siteAddress"
+                        name="siteAddress"
+                        value={generalSettings.siteAddress}
+                        onChange={handleGeneralChange}
+                        rows={2}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <Button type="submit">Save General Settings</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="seo">
+          <Card>
+            <CardHeader>
+              <CardTitle>SEO Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={saveSeoSettings} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="metaTitle">Meta Title</Label>
+                    <div className="flex items-center">
+                      <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="metaTitle"
+                        name="metaTitle"
+                        value={seoSettings.metaTitle}
+                        onChange={handleSeoChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="metaDescription">Meta Description</Label>
+                    <Textarea 
+                      id="metaDescription"
+                      name="metaDescription"
+                      value={seoSettings.metaDescription}
+                      onChange={handleSeoChange}
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="ogTitle">Open Graph Title</Label>
+                    <Input 
+                      id="ogTitle"
+                      name="ogTitle"
+                      value={seoSettings.ogTitle}
+                      onChange={handleSeoChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="ogDescription">Open Graph Description</Label>
+                    <Textarea 
+                      id="ogDescription"
+                      name="ogDescription"
+                      value={seoSettings.ogDescription}
+                      onChange={handleSeoChange}
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="ogImage">Open Graph Image URL</Label>
+                    <Input 
+                      id="ogImage"
+                      name="ogImage"
+                      value={seoSettings.ogImage}
+                      onChange={handleSeoChange}
+                      placeholder="https://example.com/og-image.jpg"
+                    />
+                  </div>
+                  
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableSitemap">Enable Sitemap</Label>
+                        <p className="text-sm text-muted-foreground">Generate an XML sitemap for search engines</p>
+                      </div>
+                      <Switch 
+                        id="enableSitemap"
+                        name="enableSitemap"
+                        checked={seoSettings.enableSitemap}
+                        onCheckedChange={(checked) => setSeoSettings({...seoSettings, enableSitemap: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableRobotsTxt">Enable robots.txt</Label>
+                        <p className="text-sm text-muted-foreground">Create a robots.txt file for search engine crawlers</p>
+                      </div>
+                      <Switch 
+                        id="enableRobotsTxt"
+                        name="enableRobotsTxt"
+                        checked={seoSettings.enableRobotsTxt}
+                        onCheckedChange={(checked) => setSeoSettings({...seoSettings, enableRobotsTxt: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableCanonicalUrls">Enable Canonical URLs</Label>
+                        <p className="text-sm text-muted-foreground">Add canonical URL tags to all pages</p>
+                      </div>
+                      <Switch 
+                        id="enableCanonicalUrls"
+                        name="enableCanonicalUrls"
+                        checked={seoSettings.enableCanonicalUrls}
+                        onCheckedChange={(checked) => setSeoSettings({...seoSettings, enableCanonicalUrls: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableStructuredData">Enable Structured Data</Label>
+                        <p className="text-sm text-muted-foreground">Add JSON-LD structured data for rich snippets</p>
+                      </div>
+                      <Switch 
+                        id="enableStructuredData"
+                        name="enableStructuredData"
+                        checked={seoSettings.enableStructuredData}
+                        onCheckedChange={(checked) => setSeoSettings({...seoSettings, enableStructuredData: checked})}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <Button type="submit">Save SEO Settings</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="social">
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Media Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={saveSocialSettings} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="facebookUrl">Facebook URL</Label>
+                    <div className="flex items-center">
+                      <Facebook className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="facebookUrl"
+                        name="facebookUrl"
+                        value={socialSettings.facebookUrl}
+                        onChange={handleSocialChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="twitterUrl">Twitter URL</Label>
+                    <div className="flex items-center">
+                      <Twitter className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="twitterUrl"
+                        name="twitterUrl"
+                        value={socialSettings.twitterUrl}
+                        onChange={handleSocialChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="instagramUrl">Instagram URL</Label>
+                    <div className="flex items-center">
+                      <Instagram className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="instagramUrl"
+                        name="instagramUrl"
+                        value={socialSettings.instagramUrl}
+                        onChange={handleSocialChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
+                    <div className="flex items-center">
+                      <Linkedin className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="linkedinUrl"
+                        name="linkedinUrl"
+                        value={socialSettings.linkedinUrl}
+                        onChange={handleSocialChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableSocialSharing">Enable Social Sharing</Label>
+                        <p className="text-sm text-muted-foreground">Add social sharing buttons to pages</p>
+                      </div>
+                      <Switch 
+                        id="enableSocialSharing"
+                        name="enableSocialSharing"
+                        checked={socialSettings.enableSocialSharing}
+                        onCheckedChange={(checked) => setSocialSettings({...socialSettings, enableSocialSharing: checked})}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <Button type="submit">Save Social Media Settings</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="footer">
+          <Card>
+            <CardHeader>
+              <CardTitle>Footer Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={saveFooterSettings} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="copyrightText">Copyright Text</Label>
+                    <Input 
+                      id="copyrightText"
+                      name="copyrightText"
+                      value={footerSettings.copyrightText}
+                      onChange={handleFooterChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="footerTagline">Footer Tagline</Label>
+                    <Input 
+                      id="footerTagline"
+                      name="footerTagline"
+                      value={footerSettings.footerTagline}
+                      onChange={handleFooterChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="showSocialIcons">Show Social Icons</Label>
+                        <p className="text-sm text-muted-foreground">Display social media icons in the footer</p>
+                      </div>
+                      <Switch 
+                        id="showSocialIcons"
+                        name="showSocialIcons"
+                        checked={footerSettings.showSocialIcons}
+                        onCheckedChange={(checked) => setFooterSettings({...footerSettings, showSocialIcons: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="showContactInfo">Show Contact Info</Label>
+                        <p className="text-sm text-muted-foreground">Display contact information in the footer</p>
+                      </div>
+                      <Switch 
+                        id="showContactInfo"
+                        name="showContactInfo"
+                        checked={footerSettings.showContactInfo}
+                        onCheckedChange={(checked) => setFooterSettings({...footerSettings, showContactInfo: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="showQuickLinks">Show Quick Links</Label>
+                        <p className="text-sm text-muted-foreground">Display quick navigation links in the footer</p>
+                      </div>
+                      <Switch 
+                        id="showQuickLinks"
+                        name="showQuickLinks"
+                        checked={footerSettings.showQuickLinks}
+                        onCheckedChange={(checked) => setFooterSettings({...footerSettings, showQuickLinks: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="showNewsletterSignup">Show Newsletter Signup</Label>
+                        <p className="text-sm text-muted-foreground">Display a newsletter signup form in the footer</p>
+                      </div>
+                      <Switch 
+                        id="showNewsletterSignup"
+                        name="showNewsletterSignup"
+                        checked={footerSettings.showNewsletterSignup}
+                        onCheckedChange={(checked) => setFooterSettings({...footerSettings, showNewsletterSignup: checked})}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <Button type="submit">Save Footer Settings</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
 };
 
-export default AdminWebsiteSettings;
+export default WebsiteSettings;
