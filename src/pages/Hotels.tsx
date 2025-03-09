@@ -16,11 +16,15 @@ import HotelInfoSections from "@/components/hotels/HotelInfoSections";
 import { useHotelFilters } from "@/components/hotels/useHotelFilters";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import HotelZone from "@/components/hotels/HotelZone";
 
 const Hotels = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeView, setActiveView] = useState<string>("list");
 
   // Fetch hotels from Supabase
   const { data: hotels, isLoading, error } = useQuery({
@@ -120,58 +124,89 @@ const Hotels = () => {
                 handleSearch={handleSearch}
               />
 
-              <ActiveFilters 
-                activeFilterCount={activeFilterCount}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                selectedStars={selectedStars}
-                setSelectedStars={setSelectedStars}
-                selectedAmenities={selectedAmenities}
-                setSelectedAmenities={setSelectedAmenities}
-                priceRange={priceRange}
-                setPriceRange={setPriceRange}
-                clearFilters={clearFilters}
-              />
-
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <FilterSidebar 
-                  priceRange={priceRange}
-                  setPriceRange={setPriceRange}
-                  selectedStars={selectedStars}
-                  handleStarFilter={handleStarFilter}
-                  selectedAmenities={selectedAmenities}
-                  handleAmenityFilter={handleAmenityFilter}
-                  clearFilters={clearFilters}
-                  commonAmenities={commonAmenities}
-                />
-
-                <div className="lg:col-span-3">
-                  <MobileFilter 
-                    isFilterOpen={isFilterOpen}
-                    setIsFilterOpen={setIsFilterOpen}
+              {/* Main content tabs */}
+              <Tabs 
+                defaultValue="classic" 
+                value={activeView} 
+                onValueChange={setActiveView}
+                className="w-full"
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <TabsList>
+                    <TabsTrigger value="classic" className="flex items-center gap-2">
+                      <Search className="h-4 w-4" />
+                      <span>Classic View</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="map" className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      <span>Hotel Zone</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                
+                <TabsContent value="classic" className="mt-0">
+                  <ActiveFilters 
                     activeFilterCount={activeFilterCount}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    selectedStars={selectedStars}
+                    setSelectedStars={setSelectedStars}
+                    selectedAmenities={selectedAmenities}
+                    setSelectedAmenities={setSelectedAmenities}
                     priceRange={priceRange}
                     setPriceRange={setPriceRange}
-                    selectedStars={selectedStars}
-                    handleStarFilter={handleStarFilter}
-                    selectedAmenities={selectedAmenities}
-                    handleAmenityFilter={handleAmenityFilter}
                     clearFilters={clearFilters}
-                    commonAmenities={commonAmenities}
                   />
 
-                  <HotelContent 
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <FilterSidebar 
+                      priceRange={priceRange}
+                      setPriceRange={setPriceRange}
+                      selectedStars={selectedStars}
+                      handleStarFilter={handleStarFilter}
+                      selectedAmenities={selectedAmenities}
+                      handleAmenityFilter={handleAmenityFilter}
+                      clearFilters={clearFilters}
+                      commonAmenities={commonAmenities}
+                    />
+
+                    <div className="lg:col-span-3">
+                      <MobileFilter 
+                        isFilterOpen={isFilterOpen}
+                        setIsFilterOpen={setIsFilterOpen}
+                        activeFilterCount={activeFilterCount}
+                        priceRange={priceRange}
+                        setPriceRange={setPriceRange}
+                        selectedStars={selectedStars}
+                        handleStarFilter={handleStarFilter}
+                        selectedAmenities={selectedAmenities}
+                        handleAmenityFilter={handleAmenityFilter}
+                        clearFilters={clearFilters}
+                        commonAmenities={commonAmenities}
+                      />
+
+                      <HotelContent 
+                        isLoading={isLoading}
+                        filteredHotels={filteredHotels}
+                        activeFilterCount={activeFilterCount}
+                        clearFilters={clearFilters}
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="map" className="mt-0">
+                  <HotelZone 
+                    hotels={hotels || []}
                     isLoading={isLoading}
-                    filteredHotels={filteredHotels}
-                    activeFilterCount={activeFilterCount}
                     clearFilters={clearFilters}
                   />
-                  
-                  <Separator className="my-10" />
-                  
-                  <HotelInfoSections />
-                </div>
-              </div>
+                </TabsContent>
+              </Tabs>
+              
+              <Separator className="my-10" />
+              
+              <HotelInfoSections />
             </div>
           </div>
         </main>
