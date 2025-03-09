@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 
 interface HotelSearchSectionProps {
   searchQuery: string;
@@ -20,17 +20,18 @@ const HotelSearchSection = ({
 }: HotelSearchSectionProps) => {
   const [checkIn, setCheckIn] = useState<Date | undefined>(new Date());
   const [checkOut, setCheckOut] = useState<Date | undefined>(
-    new Date(new Date().setDate(new Date().getDate() + 1))
+    addDays(new Date(), 1)
   );
   const [guests, setGuests] = useState(2);
+  const [rooms, setRooms] = useState(1);
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden border border-stone-200">
-      <form onSubmit={handleSearch}>
-        <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-stone-200">
-          <div className="p-4">
+    <div className="bg-white shadow-md rounded-lg overflow-hidden border-t-4 border-blue-600">
+      <form onSubmit={handleSearch} className="p-0">
+        <div className="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-stone-200">
+          <div className="p-4 md:col-span-4">
             <div className="flex items-center h-full">
-              <MapPin className="h-5 w-5 text-stone-400 mr-2" />
+              <MapPin className="h-5 w-5 text-blue-500 mr-2" />
               <div className="flex-grow">
                 <label htmlFor="search-location" className="block text-xs text-stone-500 mb-1">
                   Destination
@@ -47,9 +48,9 @@ const HotelSearchSection = ({
             </div>
           </div>
 
-          <div className="p-4">
+          <div className="p-4 md:col-span-3">
             <div className="flex items-center h-full">
-              <Calendar className="h-5 w-5 text-stone-400 mr-2" />
+              <Calendar className="h-5 w-5 text-blue-500 mr-2" />
               <div className="flex-grow">
                 <label htmlFor="check-in" className="block text-xs text-stone-500 mb-1">
                   Check-in
@@ -60,7 +61,7 @@ const HotelSearchSection = ({
                       variant="ghost"
                       className="p-0 h-auto text-base font-normal justify-start hover:bg-transparent"
                     >
-                      {checkIn ? format(checkIn, "MMMM d, yyyy") : "Select date"}
+                      {checkIn ? format(checkIn, "EEE, MMM d, yyyy") : "Select date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -77,9 +78,9 @@ const HotelSearchSection = ({
             </div>
           </div>
 
-          <div className="p-4">
+          <div className="p-4 md:col-span-3">
             <div className="flex items-center h-full">
-              <Calendar className="h-5 w-5 text-stone-400 mr-2" />
+              <Calendar className="h-5 w-5 text-blue-500 mr-2" />
               <div className="flex-grow">
                 <label htmlFor="check-out" className="block text-xs text-stone-500 mb-1">
                   Check-out
@@ -90,7 +91,7 @@ const HotelSearchSection = ({
                       variant="ghost"
                       className="p-0 h-auto text-base font-normal justify-start hover:bg-transparent"
                     >
-                      {checkOut ? format(checkOut, "MMMM d, yyyy") : "Select date"}
+                      {checkOut ? format(checkOut, "EEE, MMM d, yyyy") : "Select date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -107,43 +108,73 @@ const HotelSearchSection = ({
             </div>
           </div>
 
-          <div className="p-4 flex items-center">
-            <div className="flex-grow pr-2">
-              <div className="flex items-center h-full">
-                <Users className="h-5 w-5 text-stone-400 mr-2" />
-                <div className="flex-grow">
-                  <label htmlFor="guests" className="block text-xs text-stone-500 mb-1">
-                    Guests
-                  </label>
-                  <div className="flex items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7 rounded-full"
-                      onClick={() => setGuests(Math.max(1, guests - 1))}
-                    >
-                      -
-                    </Button>
-                    <span className="mx-2 text-base">{guests}</span>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7 rounded-full"
-                      onClick={() => setGuests(Math.min(10, guests + 1))}
-                    >
-                      +
-                    </Button>
-                  </div>
-                </div>
+          <div className="p-4 md:col-span-2 flex items-center justify-between">
+            <div className="flex flex-col">
+              <label className="block text-xs text-stone-500 mb-1">
+                Guests & Rooms
+              </label>
+              <div className="flex items-center space-x-1 text-base">
+                <span>{guests} Guests,</span>
+                <span>{rooms} Room</span>
               </div>
             </div>
-            <Button type="submit" className="h-10">
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </Button>
+            <div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-7 w-7">
+                    <Users className="h-4 w-4 text-blue-500" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-60 p-4">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Guests</span>
+                      <div className="flex items-center space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 w-7 p-0"
+                          onClick={() => setGuests(Math.max(1, guests - 1))}
+                        >-</Button>
+                        <span className="w-6 text-center">{guests}</span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 w-7 p-0"
+                          onClick={() => setGuests(Math.min(10, guests + 1))}
+                        >+</Button>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Rooms</span>
+                      <div className="flex items-center space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 w-7 p-0"
+                          onClick={() => setRooms(Math.max(1, rooms - 1))}
+                        >-</Button>
+                        <span className="w-6 text-center">{rooms}</span>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 w-7 p-0"
+                          onClick={() => setRooms(Math.min(5, rooms + 1))}
+                        >+</Button>
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
+        </div>
+        
+        <div className="p-4 bg-stone-50 flex justify-end">
+          <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+            <Search className="h-4 w-4 mr-2" />
+            Search Hotels
+          </Button>
         </div>
       </form>
     </div>
