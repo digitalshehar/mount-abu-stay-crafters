@@ -37,19 +37,20 @@ const GeneralInfoTab = ({
 
   const handleMapLocationChange = (latitude: number, longitude: number) => {
     // Create synthetic events for both latitude and longitude
+    // Properly cast to React.ChangeEvent<HTMLInputElement> after creating as unknown
     const latEvent = {
       target: {
         name: "latitude",
         value: latitude,
       },
-    } as React.ChangeEvent<HTMLInputElement>;
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
     
     const lngEvent = {
       target: {
         name: "longitude",
         value: longitude,
       },
-    } as React.ChangeEvent<HTMLInputElement>;
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
     
     // Update both values
     handleInputChange(latEvent);
