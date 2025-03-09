@@ -10,11 +10,14 @@ import { useFavorites } from '@/hooks/useFavorites';
 const Profile = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'hotel' | 'adventure' | 'car' | 'bike'>('hotel');
-  const { favorites, loading, removeFavorite } = useFavorites(user);
+  const { favorites, loading, removeFromFavorites } = useFavorites(user);
 
   // Handler to fix the return type mismatch
   const handleRemoveFavorite = async (id: string): Promise<void> => {
-    await removeFavorite(id);
+    const itemId = parseInt(id, 10);
+    if (!isNaN(itemId)) {
+      await removeFromFavorites(itemId, 'hotel');
+    }
   };
 
   return (
@@ -29,7 +32,7 @@ const Profile = () => {
           
           <div className="col-span-1 md:col-span-2 order-1 md:order-2">
             <FavoritesList 
-              favorites={favorites as any}
+              favorites={favorites}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               loading={loading}
