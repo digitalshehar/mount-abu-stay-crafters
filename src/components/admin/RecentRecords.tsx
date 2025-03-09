@@ -3,12 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Booking {
-  name: string;
-  hotel: string;
-  date: string;
-}
+import { useBookings } from "@/hooks/useBookings";
+import { format, formatDistanceToNow } from "date-fns";
 
 interface Hotel {
   name: string;
@@ -22,22 +18,16 @@ interface Activity {
 }
 
 const RecentRecords = () => {
-  const [recentBookings, setRecentBookings] = useState<Booking[]>([
-    { name: "John Doe", hotel: "Hilltop Luxury Resort", date: "Yesterday" },
-    { name: "Jane Smith", hotel: "Palace Heritage Hotel", date: "2 days ago" },
-    { name: "Robert Brown", hotel: "Mountain View Cottages", date: "3 days ago" },
-  ]);
-
-  const [topHotels, setTopHotels] = useState<Hotel[]>([
-    { name: "Hilltop Luxury Resort", bookings: 45 },
-    { name: "Palace Heritage Hotel", bookings: 32 },
-    { name: "Green Valley Resort", bookings: 28 },
-  ]);
+  const { recentBookings, loading: bookingsLoading } = useBookings();
+  const [topHotels, setTopHotels] = useState<Hotel[]>([]);
+  const [loadingHotels, setLoadingHotels] = useState(true);
 
   useEffect(() => {
     // Fetch top hotels from Supabase
     const fetchTopHotels = async () => {
       try {
+        setLoadingHotels(true);
+        
         const { data, error } = await supabase
           .from('hotels')
           .select('name, review_count')
@@ -56,11 +46,24 @@ const RecentRecords = () => {
         }
       } catch (error) {
         console.error("Error fetching top hotels:", error);
+      } finally {
+        setLoadingHotels(false);
       }
     };
 
     fetchTopHotels();
   }, []);
+
+  // Format date as "Yesterday", "2 days ago", etc.
+  const formatBookingDate = (dateString: string) => {
+    if (!dateString) return "Unknown";
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Invalid date";
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -70,15 +73,23 @@ const RecentRecords = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentBookings.map((booking, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm font-medium">{booking.name}</p>
-                  <p className="text-xs text-muted-foreground">{booking.hotel}</p>
+            {bookingsLoading ? (
+              <p className="text-sm text-muted-foreground">Loading bookings...</p>
+            ) : recentBookings.length > 0 ? (
+              recentBookings.map((booking, index) => (
+                <div key={booking.id || index} className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm font-medium">{booking.guest_name}</p>
+                    <p className="text-xs text-muted-foreground">{booking.hotel_name || 'Unknown Hotel'}</p>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {formatBookingDate(booking.created_at)}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">{booking.date}</div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No bookings found</p>
+            )}
           </div>
         </CardContent>
         <CardFooter>
@@ -92,12 +103,18 @@ const RecentRecords = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {topHotels.map((hotel, index) => (
-              <div key={index} className="flex justify-between items-center">
-                <p className="text-sm font-medium">{hotel.name}</p>
-                <p className="text-xs text-muted-foreground">{hotel.bookings} bookings</p>
-              </div>
-            ))}
+            {loadingHotels ? (
+              <p className="text-sm text-muted-foreground">Loading hotels...</p>
+            ) : topHotels.length > 0 ? (
+              topHotels.map((hotel, index) => (
+                <div key={index} className="flex justify-between items-center">
+                  <p className="text-sm font-medium">{hotel.name}</p>
+                  <p className="text-xs text-muted-foreground">{hotel.bookings} bookings</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No hotel data available</p>
+            )}
           </div>
         </CardContent>
         <CardFooter>

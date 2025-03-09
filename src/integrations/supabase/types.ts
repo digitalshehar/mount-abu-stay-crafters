@@ -569,6 +569,28 @@ export type Database = {
         }
         Returns: undefined
       }
+      email: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_user_profile: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+          username: string | null
+          website: string | null
+        }
+      }
+      uid: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
