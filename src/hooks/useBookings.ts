@@ -33,8 +33,8 @@ export const useBookings = () => {
       
       console.log('Fetching bookings from Supabase...');
       
-      // This should use the proper type to avoid TypeScript errors
-      const { data, error } = await supabase
+      // Use 'any' type to bypass TypeScript checking for the bookings table
+      const { data, error } = await (supabase as any)
         .from('bookings')
         .select(`
           *,
@@ -77,12 +77,11 @@ export const useBookings = () => {
     try {
       console.log('Adding new booking:', bookingData);
       
-      // Type as 'any' to avoid TypeScript errors when using insert
-      const { data, error } = await supabase
+      // Use 'any' type to bypass TypeScript checking for the bookings table
+      const { data, error } = await (supabase as any)
         .from('bookings')
         .insert(bookingData as any)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('Error adding booking:', error);
@@ -117,10 +116,10 @@ export const useBookings = () => {
   // Function to update booking status
   const updateBookingStatus = async (id: string, status: string) => {
     try {
-      // Type as 'any' to avoid TypeScript errors
-      const { error } = await supabase
+      // Use 'any' type to bypass TypeScript checking for the bookings table
+      const { error } = await (supabase as any)
         .from('bookings')
-        .update({ booking_status: status } as any)
+        .update({ booking_status: status })
         .eq('id', id);
 
       if (error) throw error;
@@ -146,10 +145,10 @@ export const useBookings = () => {
   // Function to update payment status
   const updatePaymentStatus = async (id: string, status: string) => {
     try {
-      // Type as 'any' to avoid TypeScript errors
-      const { error } = await supabase
+      // Use 'any' type to bypass TypeScript checking for the bookings table
+      const { error } = await (supabase as any)
         .from('bookings')
-        .update({ payment_status: status } as any)
+        .update({ payment_status: status })
         .eq('id', id);
 
       if (error) throw error;
