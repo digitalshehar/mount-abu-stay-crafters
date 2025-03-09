@@ -1,12 +1,18 @@
 
-import React from "react";
-import { Search, Filter, X, Heart } from "lucide-react";
+import React, { useState } from "react";
+import { Search, Filter, X, Heart, Globe, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FilterOptions } from "@/components/admin/hotels/types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HotelSearchBarProps {
   searchQuery: string;
@@ -19,6 +25,20 @@ interface HotelSearchBarProps {
   onToggleFavoritesFilter?: () => void;
 }
 
+const CURRENCIES = [
+  { code: "INR", symbol: "₹", name: "Indian Rupee" },
+  { code: "USD", symbol: "$", name: "US Dollar" },
+  { code: "EUR", symbol: "€", name: "Euro" },
+  { code: "GBP", symbol: "£", name: "British Pound" },
+];
+
+const LANGUAGES = [
+  { code: "en", name: "English" },
+  { code: "hi", name: "Hindi" },
+  { code: "fr", name: "French" },
+  { code: "de", name: "German" },
+];
+
 const HotelSearchBar: React.FC<HotelSearchBarProps> = ({
   searchQuery,
   setSearchQuery,
@@ -27,9 +47,11 @@ const HotelSearchBar: React.FC<HotelSearchBarProps> = ({
   activeFilters,
   onClearFilters,
   showFavoritesOnly = false,
-  onToggleFavoritesFilter
+  onToggleFavoritesFilter,
 }) => {
   const { user } = useAuth();
+  const [currency, setCurrency] = useState(CURRENCIES[0]);
+  const [language, setLanguage] = useState(LANGUAGES[0]);
   
   // Count number of active filters
   const getActiveFilterCount = () => {
@@ -95,6 +117,52 @@ const HotelSearchBar: React.FC<HotelSearchBarProps> = ({
       </div>
       
       <div className="flex gap-2 flex-wrap mt-3 md:mt-0">
+        {/* Currency Selector */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1">
+              <span>{currency.symbol}</span>
+              <span className="hidden sm:inline-block">{currency.code}</span>
+              <ChevronsUpDown className="h-3.5 w-3.5 ml-1 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {CURRENCIES.map((curr) => (
+              <DropdownMenuItem 
+                key={curr.code}
+                onClick={() => setCurrency(curr)}
+                className="cursor-pointer"
+              >
+                <span className="font-medium mr-2">{curr.symbol}</span>
+                <span>{curr.name}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Language Selector */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1">
+              <Globe className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline-block">{language.code.toUpperCase()}</span>
+              <ChevronsUpDown className="h-3.5 w-3.5 ml-1 opacity-50" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {LANGUAGES.map((lang) => (
+              <DropdownMenuItem 
+                key={lang.code}
+                onClick={() => setLanguage(lang)}
+                className="cursor-pointer"
+              >
+                <span className="font-medium mr-2">{lang.code.toUpperCase()}</span>
+                <span>{lang.name}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         {user && onToggleFavoritesFilter && (
           <Button 
             variant={showFavoritesOnly ? "default" : "outline"} 

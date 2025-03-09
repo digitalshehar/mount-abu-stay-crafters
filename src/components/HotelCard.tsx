@@ -1,9 +1,11 @@
 
-import { MapPin, ArrowRight, Heart, Star, Check } from "lucide-react";
+import { MapPin, ArrowRight, Heart, Star, Check, MessageCircle, ThumbsUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface HotelCardProps {
   id: number;
@@ -31,6 +33,7 @@ const HotelCard = ({
   slug,
 }: HotelCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isReviewVisible, setIsReviewVisible] = useState(false);
   const hotelSlug = slug || name.toLowerCase().replace(/\s+/g, '-');
   
   // Calculate discount for display purposes (just for UI)
@@ -42,6 +45,26 @@ const HotelCard = ({
     e.preventDefault();
     e.stopPropagation();
     setIsFavorite(!isFavorite);
+    
+    toast(isFavorite ? "Removed from favorites" : "Added to favorites", {
+      description: isFavorite 
+        ? `${name} has been removed from your favorites` 
+        : `${name} has been added to your favorites`
+    });
+  };
+
+  const toggleReview = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsReviewVisible(!isReviewVisible);
+  };
+
+  const handleHelpfulClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toast("Marked as helpful", {
+      description: "Thank you for your feedback"
+    });
   };
 
   return (
@@ -89,9 +112,9 @@ const HotelCard = ({
             <h3 className="text-base font-medium line-clamp-2">{name}</h3>
           </Link>
           
-          <div className="flex items-center bg-blue-600 text-white px-2 py-1 rounded text-sm font-semibold whitespace-nowrap">
+          <div className="flex items-center gap-1 bg-blue-600 text-white px-2 py-1 rounded text-sm font-semibold whitespace-nowrap">
             <span>{rating.toFixed(1)}</span>
-            <Star className="h-3 w-3 ml-1 fill-current" />
+            <Star className="h-3 w-3 fill-current" />
           </div>
         </div>
 
@@ -113,10 +136,43 @@ const HotelCard = ({
           </div>
         </div>
 
-        {/* Reviews */}
-        <div className="text-xs text-stone-500 mt-2 mb-3">
+        {/* Review preview */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={toggleReview} 
+          className="text-xs text-blue-600 px-1 py-0 h-auto flex items-center justify-start my-2"
+        >
+          <MessageCircle className="h-3 w-3 mr-1" />
           {reviewCount} reviews
-        </div>
+        </Button>
+        
+        {isReviewVisible && (
+          <div className="bg-stone-50 p-2 rounded-md mb-2 text-xs">
+            <div className="flex items-center">
+              <div className="flex mr-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className={`h-3 w-3 ${i < rating ? "text-yellow-500 fill-yellow-500" : "text-stone-300"}`} />
+                ))}
+              </div>
+              <span className="text-stone-600 font-medium">Rahul S.</span>
+            </div>
+            <p className="mt-1 text-stone-600">
+              "Great hotel with excellent amenities. Very clean and comfortable rooms."
+            </p>
+            <div className="flex justify-end mt-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleHelpfulClick}
+                className="h-6 text-xs flex items-center text-stone-500 hover:text-blue-600"
+              >
+                <ThumbsUp className="h-3 w-3 mr-1" />
+                Helpful
+              </Button>
+            </div>
+          </div>
+        )}
         
         {/* Price and CTA */}
         <div className="mt-auto">

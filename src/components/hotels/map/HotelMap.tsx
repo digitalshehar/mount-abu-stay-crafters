@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -8,6 +9,7 @@ import FilterSidebar from '../FilterSidebar';
 import HotelContent from '../HotelContent';
 import MapControls from './components/MapControls';
 import MapContainer from './components/MapContainer';
+import MapFeatures from './components/MapFeatures';
 import { useMapFilters } from './hooks/useMapFilters';
 import './HotelMapStyles.css';
 
@@ -113,6 +115,11 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const [localSelectedHotelId, setLocalSelectedHotelId] = useState<number | null>(selectedHotelId || null);
   const [selectedMarker, setSelectedMarker] = useState<Hotel | null>(null);
   
+  // Map feature states
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showLandmarks, setShowLandmarks] = useState(false);
+  const [showTraffic, setShowTraffic] = useState(false);
+  
   // Filter states and handlers from custom hook
   const {
     searchQuery,
@@ -213,6 +220,43 @@ const HotelMap: React.FC<HotelMapProps> = ({
       onMapMove(bounds);
     }
   };
+
+  // Handle user location
+  const handleUserLocation = () => {
+    if (navigator.geolocation && mapRef.current) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          
+          mapRef.current?.setCenter(pos);
+          mapRef.current?.setZoom(14);
+          
+          // Create a marker for user location
+          new google.maps.Marker({
+            position: pos,
+            map: mapRef.current,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 7,
+              fillColor: "#4285F4",
+              fillOpacity: 1,
+              strokeColor: "#ffffff",
+              strokeWeight: 2,
+            },
+            title: "Your Location",
+          });
+        },
+        () => {
+          alert("Error: The Geolocation service failed.");
+        }
+      );
+    } else {
+      alert("Error: Your browser doesn't support geolocation.");
+    }
+  };
   
   // Common amenities for filter
   const commonAmenities = [
@@ -278,20 +322,34 @@ const HotelMap: React.FC<HotelMapProps> = ({
         
         <div className="space-y-6">
           {viewMode === 'map' ? (
-            <MapContainer
-              isLoading={isLoading}
-              isLoaded={isLoaded}
-              mapContainerStyle={mapContainerStyle}
-              mountAbuCenter={mountAbuCenter}
-              mapOptions={mapOptions}
-              filteredHotels={filteredHotels}
-              selectedHotelId={effectiveSelectedHotelId}
-              selectedMarker={selectedMarker}
-              setSelectedMarker={setSelectedMarker}
-              handleHotelSelect={handleHotelSelect}
-              onMapLoad={onMapLoad}
-              handleBoundsChanged={handleBoundsChanged}
-            />
+            <div className="relative">
+              <MapContainer
+                isLoading={isLoading}
+                isLoaded={isLoaded}
+                mapContainerStyle={mapContainerStyle}
+                mountAbuCenter={mountAbuCenter}
+                mapOptions={{
+                  ...mapOptions,
+                  // Add dynamic map options
+                  showTraffic,
+                }}
+                filteredHotels={filteredHotels}
+                selectedHotelId={effectiveSelectedHotelId}
+                selectedMarker={selectedMarker}
+                setSelectedMarker={setSelectedMarker}
+                handleHotelSelect={handleHotelSelect}
+                onMapLoad={onMapLoad}
+                handleBoundsChanged={handleBoundsChanged}
+                showHeatmap={showHeatmap}
+              />
+              
+              <MapFeatures 
+                onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
+                onToggleLandmarks={() => setShowLandmarks(!showLandmarks)}
+                onToggleTraffic={() => setShowTraffic(!showTraffic)}
+                onUserLocation={handleUserLocation}
+              />
+            </div>
           ) : (
             <HotelContent 
               isLoading={isLoading}
