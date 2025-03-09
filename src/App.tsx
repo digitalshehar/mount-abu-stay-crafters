@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +20,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import CancellationPolicy from "./pages/CancellationPolicy";
 import Hotels from "./pages/Hotels";
+import HotelMap from "./pages/HotelMap";
 import Destinations from "./pages/Destinations";
 import AdventureDetail from "./pages/AdventureDetail";
 import DestinationDetail from "./pages/DestinationDetail";
@@ -54,6 +54,7 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<Index />} />
             <Route path="/hotels" element={<Hotels />} />
+            <Route path="/hotels/map" element={<HotelMap />} />
             <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
             <Route path="/hotel/:hotelSlug/html" element={<HotelHtmlView />} />
             <Route path="/hotel/:hotelSlug.html" element={<HotelHtmlView />} />

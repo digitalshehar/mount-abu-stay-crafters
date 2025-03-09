@@ -1,122 +1,105 @@
 
 import React from "react";
-import { Star, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useMedia } from "@/hooks/use-mobile";
+import HotelFilters from "./HotelFilters";
+import HotelContent from "./HotelContent";
+import MobileFilter from "./MobileFilter";
+import ActiveFilters from "./ActiveFilters";
+import FilterSidebar from "./FilterSidebar";
+import { useHotelFilters } from "./useHotelFilters";
 
-interface Hotel {
-  id: number;
-  name: string;
-  slug: string;
-  location: string;
-  stars: number;
-  pricePerNight: number;
-  image: string;
-  description: string;
-  amenities: string[];
-  reviewCount: number;
-  rating: number;
-}
-
-interface HotelListViewProps {
-  hotels: Hotel[];
-  isLoading: boolean;
-}
-
-const HotelListView: React.FC<HotelListViewProps> = ({ hotels, isLoading }) => {
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="bg-white rounded-xl overflow-hidden shadow-sm p-4 animate-pulse"
-          >
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="md:w-1/3 h-48 bg-stone-200 rounded-lg"></div>
-              <div className="md:w-2/3 space-y-4">
-                <div className="h-6 bg-stone-200 rounded w-1/2 mb-2"></div>
-                <div className="h-4 bg-stone-200 rounded w-1/3 mb-4"></div>
-                <div className="h-4 bg-stone-200 rounded w-full mb-2"></div>
-                <div className="h-4 bg-stone-200 rounded w-5/6"></div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (hotels.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <h3 className="text-xl font-semibold mb-2">No hotels found</h3>
-        <p className="text-stone-500">
-          Try adjusting your filters or search criteria.
-        </p>
-      </div>
-    );
-  }
+const HotelListView = ({ hotels, isLoading }: { hotels: any[]; isLoading: boolean }) => {
+  const { isMobile } = useMedia();
+  const {
+    searchQuery,
+    setSearchQuery,
+    selectedStars,
+    setSelectedStars,
+    selectedAmenities,
+    setSelectedAmenities,
+    priceRange,
+    setPriceRange,
+    sortBy,
+    setSortBy,
+    handleStarFilter,
+    handleAmenityFilter,
+    filteredAndSortedHotels,
+    clearFilters,
+    activeFilterCount,
+    commonAmenities,
+  } = useHotelFilters(hotels);
 
   return (
-    <div className="space-y-6">
-      {hotels.map((hotel) => (
-        <div
-          key={hotel.id}
-          className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
-        >
-          <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/3 h-48 md:h-auto relative overflow-hidden">
-              <Link to={`/hotel/${hotel.slug}`}>
-                <img
-                  src={hotel.image}
-                  alt={hotel.name}
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </Link>
-            </div>
-            <div className="md:w-2/3 p-6">
-              <div className="flex justify-between items-start mb-2">
-                <Link to={`/hotel/${hotel.slug}`} className="hover:opacity-80 transition-opacity">
-                  <h3 className="text-xl font-display font-semibold">{hotel.name}</h3>
-                </Link>
-                <div className="flex items-center bg-primary/5 rounded-lg px-2 py-1">
-                  <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                  <span className="text-sm font-medium">{hotel.rating}</span>
-                  <span className="text-xs text-stone-500 ml-1">({hotel.reviewCount})</span>
-                </div>
-              </div>
+    <div className="container mx-auto py-6 lg:py-8 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">Hotels in Mount Abu</h1>
+        <Link to="/hotels/map">
+          <Button variant="outline" size="sm" className="flex items-center">
+            <Map className="mr-2 h-4 w-4" />
+            View Map
+          </Button>
+        </Link>
+      </div>
 
-              <div className="flex items-center text-stone-500 text-sm mb-4">
-                <MapPin className="h-4 w-4 mr-1" /> {hotel.location}
-              </div>
+      <HotelFilters
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
 
-              <p className="text-stone-600 mb-4 line-clamp-2">{hotel.description}</p>
+      {isMobile ? (
+        <MobileFilter
+          selectedStars={selectedStars}
+          handleStarFilter={handleStarFilter}
+          selectedAmenities={selectedAmenities}
+          handleAmenityFilter={handleAmenityFilter}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          commonAmenities={commonAmenities}
+        />
+      ) : null}
 
-              <div className="flex flex-wrap gap-2 mb-4">
-                {hotel.amenities.slice(0, 5).map((amenity, index) => (
-                  <span
-                    key={index}
-                    className="text-xs bg-stone-100 text-stone-600 px-2 py-1 rounded-full"
-                  >
-                    {amenity}
-                  </span>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between mt-auto">
-                <div>
-                  <span className="text-lg font-semibold">₹{hotel.pricePerNight}</span>
-                  <span className="text-stone-500 text-sm">/night</span>
-                </div>
-                <Link to={`/hotel/${hotel.slug}`}>
-                  <Button>View Details</Button>
-                </Link>
-              </div>
-            </div>
-          </div>
+      {activeFilterCount > 0 && (
+        <div className="mb-6">
+          <ActiveFilters
+            activeFilterCount={activeFilterCount}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedStars={selectedStars}
+            setSelectedStars={setSelectedStars}
+            selectedAmenities={selectedAmenities}
+            setSelectedAmenities={setSelectedAmenities}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            clearFilters={clearFilters}
+          />
         </div>
-      ))}
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
+        <FilterSidebar
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          selectedStars={selectedStars}
+          handleStarFilter={handleStarFilter}
+          selectedAmenities={selectedAmenities}
+          handleAmenityFilter={handleAmenityFilter}
+          clearFilters={clearFilters}
+          commonAmenities={commonAmenities}
+        />
+
+        <HotelContent
+          isLoading={isLoading}
+          filteredHotels={filteredAndSortedHotels}
+          activeFilterCount={activeFilterCount}
+          clearFilters={clearFilters}
+        />
+      </div>
     </div>
   );
 };
