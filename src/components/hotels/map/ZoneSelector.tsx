@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-// Define the zones in Mount Abu
+// Define the zones in Mount Abu with the same data structure
 const ZONES = [
   { 
     id: 'nakki-lake', 
@@ -68,10 +68,8 @@ const ZoneSelector: React.FC<ZoneSelectorProps> = ({ onSelectZone }) => {
       // If clicking the already selected zone, clear the selection
       onSelectZone(null);
     } else {
-      // Convert bounds to mapbox LngLatBounds format
+      // Convert bounds to the format expected by the map component
       const bounds = {
-        _sw: { lng: zone.bounds.west, lat: zone.bounds.south },
-        _ne: { lng: zone.bounds.east, lat: zone.bounds.north },
         getSouth: () => zone.bounds.south,
         getNorth: () => zone.bounds.north,
         getWest: () => zone.bounds.west,

@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { GoogleMap, useLoadScript, MarkerClusterer, Marker, InfoWindow } from '@react-google-maps/api';
 import { useNavigate } from 'react-router-dom';
 import { Hotel } from '@/components/admin/hotels/types';
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,27 @@ import HotelContent from '../HotelContent';
 import MapLoading from './MapLoading';
 import './HotelMapStyles.css';
 
-// Set your mapbox token from environment variable
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
+// Define map container styles
+const mapContainerStyle = {
+  width: '100%',
+  height: '100%',
+};
+
+// Mount Abu center coordinates
+const mountAbuCenter = {
+  lat: 24.5927,
+  lng: 72.7156,
+};
+
+// Map options
+const mapOptions = {
+  disableDefaultUI: false,
+  zoomControl: true,
+  mapTypeControl: true,
+  fullscreenControl: true,
+  streetViewControl: false,
+  mapTypeId: 'roadmap' as const,
+};
 
 interface HotelMapProps {
   hotels: Hotel[];
@@ -30,22 +49,28 @@ const HotelMap: React.FC<HotelMapProps> = ({
   setSelectedHotelId,
   onMapMove
 }) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<{ [id: number]: mapboxgl.Marker }>({});
-  const popupsRef = useRef<{ [id: number]: mapboxgl.Popup }>({});
   const navigate = useNavigate();
+  const mapRef = useRef<google.maps.Map | null>(null);
   
   // View state (map or list)
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   
-  // Filter states
+  // State for selected hotel and info window
   const [localSelectedHotelId, setLocalSelectedHotelId] = useState<number | null>(selectedHotelId || null);
+  const [selectedMarker, setSelectedMarker] = useState<Hotel | null>(null);
+  
+  // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStars, setSelectedStars] = useState<number[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([1000, 15000]);
-  const [isMapInitialized, setIsMapInitialized] = useState(false);
+  const [mapBounds, setMapBounds] = useState<google.maps.LatLngBounds | null>(null);
+  
+  // Load Google Maps script
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries: ['places'],
+  });
   
   // Calculate filtered hotels based on filters
   const filteredHotels = hotels.filter(hotel => {
@@ -122,153 +147,82 @@ const HotelMap: React.FC<HotelMapProps> = ({
   // Get effective selected hotel ID
   const effectiveSelectedHotelId = selectedHotelId !== undefined ? selectedHotelId : localSelectedHotelId;
   
-  // Initialize map
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxgl.accessToken || map.current || isLoading) return;
-    
-    const initializeMap = () => {
-      // Mount Abu coordinates
-      const mountAbu = {
-        lng: 72.7156,
-        lat: 24.5927
-      };
-      
-      const newMap = new mapboxgl.Map({
-        container: mapContainer.current!,
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: [mountAbu.lng, mountAbu.lat],
-        zoom: 13
-      });
-      
-      newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      newMap.addControl(new mapboxgl.FullscreenControl(), 'top-right');
-      
-      newMap.on('load', () => {
-        setIsMapInitialized(true);
-      });
-
-      // Add move end event for parent components to track bounds
-      if (onMapMove) {
-        newMap.on('moveend', () => {
-          const bounds = newMap.getBounds();
-          onMapMove(bounds);
-        });
-      }
-      
-      map.current = newMap;
-    };
-    
-    initializeMap();
-    
-    // Cleanup function
-    return () => {
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
-      }
-    };
-  }, [isLoading, onMapMove]);
+  // Handle map load
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+  }, []);
   
-  // Update markers when filtered hotels change or map is initialized
-  useEffect(() => {
-    if (!map.current || !isMapInitialized) return;
-    
-    // Clear existing markers
-    Object.values(markersRef.current).forEach(marker => marker.remove());
-    Object.values(popupsRef.current).forEach(popup => popup.remove());
-    markersRef.current = {};
-    popupsRef.current = {};
-    
-    // Add new markers for filtered hotels
-    filteredHotels.forEach(hotel => {
-      if (!hotel.latitude || !hotel.longitude) return;
-      
-      // Create popup
-      const popup = new mapboxgl.Popup({ offset: 25, closeButton: true })
-        .setHTML(`
-          <div class="hotel-popup">
-            <img src="${hotel.image}" alt="${hotel.name}" class="popup-image" />
-            <div class="popup-content">
-              <h3 class="popup-title">${hotel.name}</h3>
-              <div class="popup-rating">
-                ${Array(Math.floor(hotel.stars)).fill('★').join('')}
-              </div>
-              <div class="popup-price">₹${hotel.pricePerNight} / night</div>
-              <button class="popup-button" data-hotel-id="${hotel.id}">View Details</button>
-            </div>
-          </div>
-        `);
-      
-      // Add event listener for the View Details button
-      popup.on('open', () => {
-        const button = document.querySelector(`.popup-button[data-hotel-id="${hotel.id}"]`);
-        if (button) {
-          button.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigate(`/hotel/${hotel.slug}`);
-          });
-        }
-      });
-      
-      // Create marker element
-      const el = document.createElement('div');
-      el.className = 'hotel-marker';
-      
-      // Create price label
-      const priceMarker = document.createElement('div');
-      priceMarker.className = `price-marker ${effectiveSelectedHotelId === hotel.id ? 'selected' : ''}`;
-      priceMarker.textContent = `₹${Math.round(hotel.pricePerNight / 100) * 100}`;
-      el.appendChild(priceMarker);
-      
-      // Create and add marker to map
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([hotel.longitude, hotel.latitude])
-        .setPopup(popup)
-        .addTo(map.current!);
-      
-      // Store marker reference
-      markersRef.current[hotel.id] = marker;
-      popupsRef.current[hotel.id] = popup;
-      
-      // Add click event to marker
-      el.addEventListener('click', () => {
-        handleHotelSelect(hotel.id);
-        
-        // Update all markers to reflect selection
-        Object.keys(markersRef.current).forEach(id => {
-          const markerEl = markersRef.current[Number(id)].getElement();
-          const priceEl = markerEl.querySelector('.price-marker');
-          if (priceEl) {
-            if (Number(id) === hotel.id) {
-              priceEl.classList.add('selected');
-            } else {
-              priceEl.classList.remove('selected');
-            }
-          }
+  // Handle marker click
+  const handleMarkerClick = (hotel: Hotel) => {
+    setSelectedMarker(hotel);
+    handleHotelSelect(hotel.id);
+  };
+  
+  // Handle map bounds change
+  const handleBoundsChanged = () => {
+    if (mapRef.current && onMapMove) {
+      const bounds = mapRef.current.getBounds();
+      if (bounds) {
+        setMapBounds(bounds);
+        onMapMove({
+          getSouth: () => bounds.getSouthWest().lat(),
+          getNorth: () => bounds.getNorthEast().lat(),
+          getWest: () => bounds.getSouthWest().lng(),
+          getEast: () => bounds.getNorthEast().lng(),
         });
-      });
-    });
-  }, [filteredHotels, isMapInitialized, navigate, effectiveSelectedHotelId, setSelectedHotelId]);
+      }
+    }
+  };
   
   // Handle zone selection
   const handleZoneSelect = (bounds: any) => {
-    if (!map.current || !bounds) return;
+    if (!mapRef.current || !bounds) return;
     
-    map.current.fitBounds(bounds, {
-      padding: { top: 50, bottom: 50, left: 50, right: 50 }
+    const newBounds = new google.maps.LatLngBounds(
+      new google.maps.LatLng(bounds.getSouth(), bounds.getWest()),
+      new google.maps.LatLng(bounds.getNorth(), bounds.getEast())
+    );
+    
+    mapRef.current.fitBounds(newBounds, {
+      top: 50, bottom: 50, left: 50, right: 50
     });
-
+    
     // Notify parent component about bounds change if callback provided
     if (onMapMove) {
       onMapMove(bounds);
     }
   };
   
+  // Filter visible hotels based on map bounds
+  const visibleHotels = mapBounds && viewMode === 'map'
+    ? filteredHotels.filter(hotel => 
+        hotel.latitude && 
+        hotel.longitude && 
+        hotel.latitude >= mapBounds.getSouthWest().lat() && 
+        hotel.latitude <= mapBounds.getNorthEast().lat() && 
+        hotel.longitude >= mapBounds.getSouthWest().lng() && 
+        hotel.longitude <= mapBounds.getNorthEast().lng()
+      )
+    : filteredHotels;
+  
   // Common amenities for filter
   const commonAmenities = [
     "WiFi", "Swimming Pool", "Restaurant", "Spa", "Gym", 
     "Breakfast", "Parking", "Air Conditioning"
   ];
+  
+  // Handle rendering errors
+  if (loadError) {
+    return (
+      <div className="container mx-auto py-6 px-4 text-center">
+        <div className="bg-red-50 p-6 rounded-lg text-red-600">
+          <h3 className="text-lg font-semibold mb-2">Error Loading Google Maps</h3>
+          <p>There was an error loading Google Maps. Please check your API key and try again.</p>
+          <p className="mt-4 text-sm text-red-500">Error details: {loadError.message}</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="container mx-auto py-6 lg:py-8 px-4">
@@ -336,19 +290,84 @@ const HotelMap: React.FC<HotelMapProps> = ({
         <div className="space-y-6">
           {viewMode === 'map' ? (
             <div className="h-[500px] rounded-lg overflow-hidden shadow-md relative">
-              {!mapboxgl.accessToken && (
+              {!import.meta.env.VITE_GOOGLE_MAPS_API_KEY && (
                 <div className="absolute inset-0 bg-white bg-opacity-90 z-10 flex flex-col items-center justify-center p-6 text-center">
-                  <div className="text-lg font-medium text-red-600 mb-2">Mapbox Access Token Missing</div>
+                  <div className="text-lg font-medium text-red-600 mb-2">Google Maps API Key Missing</div>
                   <p className="text-sm text-stone-600 mb-4">
-                    Please add your Mapbox access token to the .env file as VITE_MAPBOX_ACCESS_TOKEN.
+                    Please add your Google Maps API key to the .env file as VITE_GOOGLE_MAPS_API_KEY.
                   </p>
                 </div>
               )}
               
-              {isLoading ? (
+              {isLoading || !isLoaded ? (
                 <MapLoading />
               ) : (
-                <div ref={mapContainer} className="h-full w-full" />
+                <GoogleMap
+                  mapContainerStyle={mapContainerStyle}
+                  center={mountAbuCenter}
+                  zoom={13}
+                  options={mapOptions}
+                  onLoad={onMapLoad}
+                  onBoundsChanged={handleBoundsChanged}
+                >
+                  <MarkerClusterer>
+                    {(clusterer) => (
+                      <>
+                        {filteredHotels.map(hotel => {
+                          if (!hotel.latitude || !hotel.longitude) return null;
+                          
+                          return (
+                            <Marker
+                              key={hotel.id}
+                              position={{ lat: hotel.latitude, lng: hotel.longitude }}
+                              onClick={() => handleMarkerClick(hotel)}
+                              clusterer={clusterer}
+                              icon={{
+                                path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+                                fillColor: effectiveSelectedHotelId === hotel.id ? '#0ea5e9' : '#718096',
+                                fillOpacity: 1,
+                                strokeWeight: 1,
+                                strokeColor: '#ffffff',
+                                scale: 1.5,
+                                anchor: new google.maps.Point(12, 22),
+                                labelOrigin: new google.maps.Point(12, 10),
+                              }}
+                              label={{
+                                text: `₹${Math.round(hotel.pricePerNight/100)*100}`,
+                                className: `price-label ${effectiveSelectedHotelId === hotel.id ? 'selected' : ''}`,
+                                color: effectiveSelectedHotelId === hotel.id ? '#ffffff' : '#1a202c',
+                              }}
+                            />
+                          );
+                        })}
+                        
+                        {selectedMarker && (
+                          <InfoWindow
+                            position={{ lat: selectedMarker.latitude, lng: selectedMarker.longitude }}
+                            onCloseClick={() => setSelectedMarker(null)}
+                          >
+                            <div className="hotel-popup">
+                              <img src={selectedMarker.image} alt={selectedMarker.name} className="popup-image" />
+                              <div className="popup-content">
+                                <h3 className="popup-title">{selectedMarker.name}</h3>
+                                <div className="popup-rating">
+                                  {Array(Math.floor(selectedMarker.stars)).fill('★').join('')}
+                                </div>
+                                <div className="popup-price">₹{selectedMarker.pricePerNight} / night</div>
+                                <button 
+                                  className="popup-button"
+                                  onClick={() => navigate(`/hotel/${selectedMarker.slug}`)}
+                                >
+                                  View Details
+                                </button>
+                              </div>
+                            </div>
+                          </InfoWindow>
+                        )}
+                      </>
+                    )}
+                  </MarkerClusterer>
+                </GoogleMap>
               )}
             </div>
           ) : (
@@ -362,7 +381,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
           
           <div className="bg-stone-50 p-4 rounded-lg">
             <p className="text-sm text-stone-600">
-              Showing {filteredHotels.length} hotels in Mount Abu. Use the map to explore hotel locations or switch to list view to see detailed listings.
+              Showing {visibleHotels.length} hotels in Mount Abu. Use the map to explore hotel locations or switch to list view to see detailed listings.
             </p>
           </div>
         </div>
