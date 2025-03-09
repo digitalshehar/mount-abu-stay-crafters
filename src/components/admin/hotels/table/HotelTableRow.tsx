@@ -1,4 +1,3 @@
-
 import React from "react";
 import { 
   Edit, 
@@ -52,7 +51,7 @@ const HotelTableRow = ({
   onSelectHotel
 }: HotelTableRowProps) => {
   const { user } = useAuth();
-  const { addFavorite, removeFavorite, isFavorite, getFavoriteId } = useFavorites(user);
+  const { addToFavorites, removeFromFavorites, isFavorite, getFavoriteId } = useFavorites(user);
   
   const isHotelFavorite = isFavorite(hotel.id, 'hotel');
   
@@ -60,17 +59,10 @@ const HotelTableRow = ({
     if (isHotelFavorite) {
       const favoriteId = getFavoriteId(hotel.id, 'hotel');
       if (favoriteId) {
-        await removeFavorite(favoriteId);
+        await removeFromFavorites(hotel.id, 'hotel');
       }
     } else {
-      await addFavorite({
-        id: hotel.id,
-        name: hotel.name,
-        type: 'hotel',
-        image: hotel.image,
-        location: hotel.location,
-        price: hotel.pricePerNight
-      });
+      await addToFavorites(hotel.id, 'hotel');
     }
   };
 

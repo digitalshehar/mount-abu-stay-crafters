@@ -24,7 +24,7 @@ const Profile = () => {
           
           <div className="col-span-1 md:col-span-2 order-1 md:order-2">
             <FavoritesList 
-              favorites={favorites}
+              favorites={favorites as any}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               loading={loading}

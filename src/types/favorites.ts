@@ -1,7 +1,7 @@
 
 export type Favorite = {
   id: string;
-  item_type: 'hotel' | 'adventure' | 'car' | 'bike';
+  item_type: string;  // Changed from a union type to string to match the backend
   item_id: number;
   name?: string;
   image?: string;
