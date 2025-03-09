@@ -6,7 +6,6 @@ import { NotificationProvider } from './context/NotificationContext';
 import { Toaster } from 'sonner';
 import Loading from './components/Loading';
 import PublicLayout from './layouts/PublicLayout';
-import AdminLayout from './layouts/AdminLayout';
 import NotFound from './pages/NotFound';
 import './App.css';
 
@@ -77,14 +76,11 @@ function App() {
                 <Route path="forgot-password" element={<ForgotPassword />} />
                 <Route path="reset-password" element={<ResetPassword />} />
 
-                {/* Admin Routes */}
-                <Route path="admin" element={<AdminLayout />}>
-                  <Route index element={<Navigate to="dashboard" replace />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="overview" element={<Overview />} />
+                {/* Admin Routes - Using Dashboard component directly instead of AdminLayout */}
+                <Route path="admin" element={<Dashboard />}>
+                  <Route index element={<Overview />} />
                   <Route path="hotels" element={<Hotels />} />
                   <Route path="booking-management" element={<BookingManagement />} />
-                  <Route path="bookings" element={<Bookings />} />
                   <Route path="adventures" element={<AdventuresManagement />} />
                   <Route path="car-rentals" element={<CarRentalsManagement />} />
                   <Route path="bike-rentals" element={<BikeRentalsManagement />} />
