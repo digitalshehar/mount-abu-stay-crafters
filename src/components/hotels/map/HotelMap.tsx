@@ -3,7 +3,7 @@ import { GoogleMap, useLoadScript, MarkerClusterer, Marker, InfoWindow } from '@
 import { useNavigate } from 'react-router-dom';
 import { Hotel } from '@/components/admin/hotels/types';
 import { Button } from '@/components/ui/button';
-import { Loader2, Map as MapIcon, List } from 'lucide-react';
+import { Loader2, Map as MapIcon, List, Star } from 'lucide-react';
 import ZoneSelector from './ZoneSelector';
 import ActiveFilters from '../ActiveFilters';
 import FilterSidebar from '../FilterSidebar';
@@ -31,10 +31,57 @@ const mapOptions = {
   fullscreenControl: true,
   streetViewControl: false,
   mapTypeId: 'roadmap' as const,
+  styles: [
+    {
+      featureType: "water",
+      elementType: "geometry",
+      stylers: [{ color: "#e9e9e9" }, { lightness: 17 }]
+    },
+    {
+      featureType: "landscape",
+      elementType: "geometry",
+      stylers: [{ color: "#f5f5f5" }, { lightness: 20 }]
+    },
+    {
+      featureType: "road.highway",
+      elementType: "geometry.fill",
+      stylers: [{ color: "#ffffff" }, { lightness: 17 }]
+    },
+    {
+      featureType: "road.highway",
+      elementType: "geometry.stroke",
+      stylers: [{ color: "#ffffff" }, { lightness: 29 }, { weight: 0.2 }]
+    },
+    {
+      featureType: "road.arterial",
+      elementType: "geometry",
+      stylers: [{ color: "#ffffff" }, { lightness: 18 }]
+    },
+    {
+      featureType: "road.local",
+      elementType: "geometry",
+      stylers: [{ color: "#ffffff" }, { lightness: 16 }]
+    },
+    {
+      featureType: "poi",
+      elementType: "geometry",
+      stylers: [{ color: "#f5f5f5" }, { lightness: 21 }]
+    },
+    {
+      featureType: "poi.park",
+      elementType: "geometry",
+      stylers: [{ color: "#dedede" }, { lightness: 21 }]
+    },
+    {
+      featureType: "transit",
+      elementType: "geometry",
+      stylers: [{ color: "#f2f2f2" }, { lightness: 19 }]
+    }
+  ],
 };
 
 // Define libraries array statically to prevent unnecessary reloads
-const libraries = ['places'];
+const libraries: ("places" | "drawing" | "geometry" | "localContext" | "visualization")[] = ['places'];
 
 interface HotelMapProps {
   hotels: Hotel[];
@@ -349,15 +396,29 @@ const HotelMap: React.FC<HotelMapProps> = ({
                             onCloseClick={() => setSelectedMarker(null)}
                           >
                             <div className="hotel-popup">
-                              <img src={selectedMarker.image} alt={selectedMarker.name} className="popup-image" />
-                              <div className="popup-content">
-                                <h3 className="popup-title">{selectedMarker.name}</h3>
-                                <div className="popup-rating">
-                                  {Array(Math.floor(selectedMarker.stars)).fill('★').join('')}
+                              <img 
+                                src={selectedMarker.image} 
+                                alt={selectedMarker.name} 
+                                className="popup-image w-full h-32 object-cover mb-2 rounded-t"
+                              />
+                              <div className="popup-content p-3">
+                                <h3 className="popup-title text-base font-medium mb-1">{selectedMarker.name}</h3>
+                                <div className="popup-rating flex items-center mb-1 text-yellow-500">
+                                  {Array.from({ length: Math.floor(selectedMarker.stars) }, (_, i) => (
+                                    <Star key={i} className="h-3 w-3 fill-current" />
+                                  ))}
+                                  <span className="text-xs text-stone-500 ml-1">
+                                    {selectedMarker.rating.toFixed(1)} ({selectedMarker.reviewCount} reviews)
+                                  </span>
                                 </div>
-                                <div className="popup-price">₹{selectedMarker.pricePerNight} / night</div>
+                                <div className="popup-amenities mb-2">
+                                  <p className="text-xs text-stone-600 line-clamp-1">
+                                    {selectedMarker.amenities.slice(0, 3).join(' • ')}
+                                  </p>
+                                </div>
+                                <div className="popup-price text-sm font-semibold mb-2">₹{selectedMarker.pricePerNight.toLocaleString()} / night</div>
                                 <button 
-                                  className="popup-button"
+                                  className="popup-button w-full bg-primary text-white text-sm py-1 px-3 rounded hover:bg-primary/90 transition-colors"
                                   onClick={() => navigate(`/hotel/${selectedMarker.slug}`)}
                                 >
                                   View Details
