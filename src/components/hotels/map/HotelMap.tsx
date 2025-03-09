@@ -33,6 +33,9 @@ const mapOptions = {
   mapTypeId: 'roadmap' as const,
 };
 
+// Define libraries array statically to prevent unnecessary reloads
+const libraries = ['places'];
+
 interface HotelMapProps {
   hotels: Hotel[];
   isLoading: boolean;
@@ -68,7 +71,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
   // Load Google Maps script with the API key from env variables
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries: ['places'],
+    libraries: libraries,
   });
   
   // Calculate filtered hotels based on filters
