@@ -54,14 +54,6 @@ const HotelZone: React.FC<HotelZoneProps> = ({
       )
     : filteredHotels;
 
-  // Handle hotel selection from the list
-  const handleHotelClick = (hotelId: number) => {
-    setSelectedHotelId(hotelId);
-    if (view === 'list') {
-      setView('map');
-    }
-  };
-
   // Handle map bounds change
   const handleMapMove = (bounds: any) => {
     setMapBounds(bounds);
@@ -169,6 +161,7 @@ const HotelZone: React.FC<HotelZoneProps> = ({
               <div className="h-[60vh] rounded-lg overflow-hidden">
                 <HotelMap 
                   hotels={filteredHotels}
+                  isLoading={isLoading}
                   selectedHotelId={selectedHotelId}
                   setSelectedHotelId={setSelectedHotelId}
                   onMapMove={handleMapMove}

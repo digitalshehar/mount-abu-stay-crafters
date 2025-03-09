@@ -18,9 +18,18 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN || '';
 interface HotelMapProps {
   hotels: Hotel[];
   isLoading: boolean;
+  selectedHotelId?: number | null;
+  setSelectedHotelId?: (id: number) => void;
+  onMapMove?: (bounds: any) => void;
 }
 
-const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading }) => {
+const HotelMap: React.FC<HotelMapProps> = ({ 
+  hotels, 
+  isLoading, 
+  selectedHotelId,
+  setSelectedHotelId,
+  onMapMove
+}) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<{ [id: number]: mapboxgl.Marker }>({});
@@ -31,7 +40,7 @@ const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading }) => {
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   
   // Filter states
-  const [selectedHotelId, setSelectedHotelId] = useState<number | null>(null);
+  const [localSelectedHotelId, setLocalSelectedHotelId] = useState<number | null>(selectedHotelId || null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStars, setSelectedStars] = useState<number[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
@@ -100,6 +109,18 @@ const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading }) => {
         : [...prev, amenity]
     );
   };
+
+  // Use local or external selectedHotelId depending on props
+  const handleHotelSelect = (id: number) => {
+    if (setSelectedHotelId) {
+      setSelectedHotelId(id);
+    } else {
+      setLocalSelectedHotelId(id);
+    }
+  };
+
+  // Get effective selected hotel ID
+  const effectiveSelectedHotelId = selectedHotelId !== undefined ? selectedHotelId : localSelectedHotelId;
   
   // Initialize map
   useEffect(() => {
@@ -125,6 +146,14 @@ const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading }) => {
       newMap.on('load', () => {
         setIsMapInitialized(true);
       });
+
+      // Add move end event for parent components to track bounds
+      if (onMapMove) {
+        newMap.on('moveend', () => {
+          const bounds = newMap.getBounds();
+          onMapMove(bounds);
+        });
+      }
       
       map.current = newMap;
     };
@@ -138,7 +167,7 @@ const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading }) => {
         map.current = null;
       }
     };
-  }, [isLoading]);
+  }, [isLoading, onMapMove]);
   
   // Update markers when filtered hotels change or map is initialized
   useEffect(() => {
@@ -187,7 +216,7 @@ const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading }) => {
       
       // Create price label
       const priceMarker = document.createElement('div');
-      priceMarker.className = `price-marker ${selectedHotelId === hotel.id ? 'selected' : ''}`;
+      priceMarker.className = `price-marker ${effectiveSelectedHotelId === hotel.id ? 'selected' : ''}`;
       priceMarker.textContent = `₹${Math.round(hotel.pricePerNight / 100) * 100}`;
       el.appendChild(priceMarker);
       
@@ -203,7 +232,7 @@ const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading }) => {
       
       // Add click event to marker
       el.addEventListener('click', () => {
-        setSelectedHotelId(hotel.id);
+        handleHotelSelect(hotel.id);
         
         // Update all markers to reflect selection
         Object.keys(markersRef.current).forEach(id => {
@@ -219,7 +248,7 @@ const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading }) => {
         });
       });
     });
-  }, [filteredHotels, isMapInitialized, navigate, selectedHotelId]);
+  }, [filteredHotels, isMapInitialized, navigate, effectiveSelectedHotelId, setSelectedHotelId]);
   
   // Handle zone selection
   const handleZoneSelect = (bounds: any) => {
@@ -228,6 +257,11 @@ const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading }) => {
     map.current.fitBounds(bounds, {
       padding: { top: 50, bottom: 50, left: 50, right: 50 }
     });
+
+    // Notify parent component about bounds change if callback provided
+    if (onMapMove) {
+      onMapMove(bounds);
+    }
   };
   
   // Common amenities for filter

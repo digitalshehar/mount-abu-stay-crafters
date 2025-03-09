@@ -1,37 +1,32 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
 import { Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMedia } from "@/hooks/use-mobile";
-import HotelFilters from "./HotelFilters";
 import HotelContent from "./HotelContent";
-import MobileFilter from "./MobileFilter";
-import ActiveFilters from "./ActiveFilters";
 import FilterSidebar from "./FilterSidebar";
 import { useHotelFilters } from "./useHotelFilters";
 
-const HotelListView = ({ hotels, isLoading }: { hotels: any[]; isLoading: boolean }) => {
-  const { isMobile } = useMedia();
+interface HotelListViewProps {
+  hotels: any[];
+  isLoading: boolean;
+}
+
+const HotelListView = ({ hotels, isLoading }: HotelListViewProps) => {
   const {
-    searchQuery,
-    setSearchQuery,
+    priceRange,
+    setPriceRange,
     selectedStars,
     setSelectedStars,
     selectedAmenities,
     setSelectedAmenities,
-    priceRange,
-    setPriceRange,
-    sortBy,
-    setSortBy,
+    activeFilterCount,
+    filteredHotels,
     handleStarFilter,
     handleAmenityFilter,
-    filteredAndSortedHotels,
     clearFilters,
-    activeFilterCount,
     commonAmenities,
-  } = useHotelFilters(hotels);
+  } = useHotelFilters(hotels, "");
 
   return (
     <div className="container mx-auto py-6 lg:py-8 px-4">
@@ -44,42 +39,6 @@ const HotelListView = ({ hotels, isLoading }: { hotels: any[]; isLoading: boolea
           </Button>
         </Link>
       </div>
-
-      <HotelFilters
-        sortBy={sortBy}
-        setSortBy={setSortBy}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-      />
-
-      {isMobile ? (
-        <MobileFilter
-          selectedStars={selectedStars}
-          handleStarFilter={handleStarFilter}
-          selectedAmenities={selectedAmenities}
-          handleAmenityFilter={handleAmenityFilter}
-          priceRange={priceRange}
-          setPriceRange={setPriceRange}
-          commonAmenities={commonAmenities}
-        />
-      ) : null}
-
-      {activeFilterCount > 0 && (
-        <div className="mb-6">
-          <ActiveFilters
-            activeFilterCount={activeFilterCount}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedStars={selectedStars}
-            setSelectedStars={setSelectedStars}
-            selectedAmenities={selectedAmenities}
-            setSelectedAmenities={setSelectedAmenities}
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
-            clearFilters={clearFilters}
-          />
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
         <FilterSidebar
@@ -95,7 +54,7 @@ const HotelListView = ({ hotels, isLoading }: { hotels: any[]; isLoading: boolea
 
         <HotelContent
           isLoading={isLoading}
-          filteredHotels={filteredAndSortedHotels}
+          filteredHotels={filteredHotels}
           activeFilterCount={activeFilterCount}
           clearFilters={clearFilters}
         />
