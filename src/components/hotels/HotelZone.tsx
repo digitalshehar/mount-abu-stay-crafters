@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { MapPin, Map as MapIcon, List, Filter, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,7 +26,6 @@ const HotelZone: React.FC<HotelZoneProps> = ({
   const [mapBounds, setMapBounds] = useState<any | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Use the existing hotel filters hook
   const {
     priceRange,
     setPriceRange,
@@ -42,7 +40,6 @@ const HotelZone: React.FC<HotelZoneProps> = ({
     commonAmenities
   } = useHotelFilters(hotels || [], "");
 
-  // Filter hotels based on map bounds
   const visibleHotels = mapBounds && view === 'map'
     ? filteredHotels.filter(hotel => 
         hotel.latitude && 
@@ -54,17 +51,14 @@ const HotelZone: React.FC<HotelZoneProps> = ({
       )
     : filteredHotels;
 
-  // Handle map bounds change
   const handleMapMove = (bounds: any) => {
     setMapBounds(bounds);
   };
 
-  // Handle zone selection
   const handleZoneSelect = (bounds: any) => {
     setMapBounds(bounds);
     
     if (bounds && hotels.length > 0) {
-      // Find hotels in this zone and select the first one
       const hotelsInZone = hotels.filter(hotel => 
         hotel.latitude && 
         hotel.longitude && 
@@ -82,7 +76,6 @@ const HotelZone: React.FC<HotelZoneProps> = ({
 
   return (
     <div className="w-full">
-      {/* View toggle tabs */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <Tabs defaultValue={view} value={view} onValueChange={(v) => setView(v as 'list' | 'map')} className="w-full sm:w-auto">
           <TabsList className="grid w-full sm:w-auto grid-cols-2">
@@ -110,7 +103,6 @@ const HotelZone: React.FC<HotelZoneProps> = ({
         </div>
       </div>
 
-      {/* Active filters */}
       <ActiveFilters 
         activeFilterCount={activeFilterCount}
         searchQuery=""
@@ -124,9 +116,7 @@ const HotelZone: React.FC<HotelZoneProps> = ({
         clearFilters={clearFilters}
       />
 
-      {/* Main content with map and list */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Filter sidebar */}
         <div className="hidden lg:flex flex-col space-y-6">
           <FilterSidebar 
             priceRange={priceRange}
@@ -144,10 +134,8 @@ const HotelZone: React.FC<HotelZoneProps> = ({
           )}
         </div>
 
-        {/* Main content area */}
         <div className="lg:col-span-3">
           {view === 'list' ? (
-            /* List view */
             <HotelContent 
               isLoading={isLoading}
               filteredHotels={filteredHotels}
@@ -155,9 +143,7 @@ const HotelZone: React.FC<HotelZoneProps> = ({
               clearFilters={clearFilters}
             />
           ) : (
-            /* Map view */
             <div className="space-y-6">
-              {/* Map container with fixed height */}
               <div className="h-[60vh] rounded-lg overflow-hidden">
                 <HotelMap 
                   hotels={filteredHotels}
@@ -168,17 +154,14 @@ const HotelZone: React.FC<HotelZoneProps> = ({
                 />
               </div>
 
-              {/* Mobile zone selector */}
               <div className="block lg:hidden mb-4">
                 <ZoneSelector onSelectZone={handleZoneSelect} />
               </div>
 
-              {/* Show hotel count in current view */}
               <p className="text-stone-600">
                 Showing {visibleHotels.length} {visibleHotels.length === 1 ? 'hotel' : 'hotels'} in current map view
               </p>
 
-              {/* Mini list of visible hotels */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {visibleHotels.slice(0, 6).map(hotel => (
                   <div 
@@ -211,7 +194,6 @@ const HotelZone: React.FC<HotelZoneProps> = ({
                 ))}
               </div>
 
-              {/* Show more button if there are more hotels */}
               {visibleHotels.length > 6 && (
                 <div className="text-center">
                   <Button variant="outline" size="sm" onClick={() => setView('list')}>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleMap, useLoadScript, MarkerClusterer, Marker, InfoWindow } from '@react-google-maps/api';
 import { useNavigate } from 'react-router-dom';
@@ -66,7 +65,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const [priceRange, setPriceRange] = useState<[number, number]>([1000, 15000]);
   const [mapBounds, setMapBounds] = useState<google.maps.LatLngBounds | null>(null);
   
-  // Load Google Maps script
+  // Load Google Maps script with the API key from env variables
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
     libraries: ['places'],
