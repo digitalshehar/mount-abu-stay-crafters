@@ -42,7 +42,7 @@ export interface HotelListProps {
   onEdit: (id: number) => void;
   onToggleStatus: (id: number) => void;
   onToggleFeatured: (id: number, currentValue: boolean) => void;
-  onClone: (hotel: Hotel) => void; // This expects a Hotel object
+  onClone: (hotel: Hotel) => void;
   onBulkAction: (actionType: string, hotelIds: number[]) => void;
   onViewHistory: (id: number) => void;
   onViewAuditLog: (id: number) => void;
@@ -130,7 +130,7 @@ const HotelList: React.FC<HotelListProps> = ({
                     onEdit={onEdit}
                     onToggleStatus={onToggleStatus}
                     onToggleFeatured={onToggleFeatured}
-                    onClone={() => onClone(hotel)} // Wrap to match expected signature
+                    onClone={() => onClone(hotel)}
                     onViewHistory={onViewHistory}
                     onViewAuditLog={onViewAuditLog}
                     isSelected={selectedHotels.includes(hotel.id)}

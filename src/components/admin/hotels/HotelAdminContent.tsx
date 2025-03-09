@@ -1,7 +1,7 @@
 
 import React from "react";
 import HotelSearchBar from "@/components/admin/hotels/HotelSearchBar";
-import HotelList, { Hotel, mapAdminHotelToHotelList } from "@/components/admin/hotels/HotelList";
+import HotelList, { Hotel as HotelListItem, mapAdminHotelToHotelList } from "@/components/admin/hotels/HotelList";
 import { FilterOptions, Hotel as AdminHotel } from "@/components/admin/hotels/types";
 
 interface HotelAdminContentProps {
@@ -51,9 +51,9 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
   handleOpenAuditLog,
   addNotification
 }) => {
-  // Convert AdminHotel[] to Hotel[] for the HotelList component
-  const mappedHotels = hotels.map(mapAdminHotelToHotelList);
-  const mappedFilteredHotels = filteredHotels.map(mapAdminHotelToHotelList);
+  // Convert AdminHotel[] to HotelListItem[] for the HotelList component
+  const mappedHotels: HotelListItem[] = hotels.map(mapAdminHotelToHotelList);
+  const mappedFilteredHotels: HotelListItem[] = filteredHotels.map(mapAdminHotelToHotelList);
 
   return (
     <div className="grid grid-cols-1 gap-6">
@@ -93,9 +93,9 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
             }
           }}
           onToggleFeatured={handleToggleFeatured}
-          onClone={(hotelList) => {
+          onClone={(hotelItem) => {
             // Find the original AdminHotel from its id
-            const adminHotel = hotels.find(h => h.id === hotelList.id);
+            const adminHotel = hotels.find(h => h.id === hotelItem.id);
             if (adminHotel) {
               handleCloneHotel(adminHotel);
             }
