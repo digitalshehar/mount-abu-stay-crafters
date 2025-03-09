@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import SearchTabs from "./SearchTabs";
 import HotelSearchForm from "./HotelSearchForm";
 import CarSearchForm from "./CarSearchForm";
@@ -14,6 +17,7 @@ const SearchContainer = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("hotels");
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   
   // Search form state
   const [hotelSearch, setHotelSearch] = useState({
@@ -86,6 +90,9 @@ const SearchContainer = () => {
         break;
     }
     
+    // Close the sheet on mobile after search
+    setIsSheetOpen(false);
+    
     // Success toast
     if (searchParams.toString() !== "") {
       toast({
@@ -95,27 +102,78 @@ const SearchContainer = () => {
     }
   };
 
+  // Simple search component displayed on the hero section for mobile
+  const MobileSearchTrigger = () => (
+    <div className="w-full px-4 md:hidden">
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetTrigger asChild>
+          <button className="w-full bg-white rounded-lg px-4 py-3.5 text-left flex items-center shadow-lg">
+            <Search className="h-5 w-5 text-primary mr-3" />
+            <span className="text-stone-500">Where are you going?</span>
+          </button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="h-[90vh] rounded-t-xl px-4 pt-6 pb-8">
+          <div className="h-full overflow-y-auto">
+            <SearchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+
+            {activeTab === "hotels" && (
+              <HotelSearchForm search={hotelSearch} setSearch={setHotelSearch} />
+            )}
+
+            {activeTab === "cars" && (
+              <CarSearchForm search={carSearch} setSearch={setCarSearch} />
+            )}
+
+            {activeTab === "bikes" && (
+              <BikeSearchForm search={bikeSearch} setSearch={setBikeSearch} />
+            )}
+
+            {activeTab === "activities" && (
+              <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
+            )}
+
+            <div className="mt-6">
+              <Button 
+                onClick={handleSearch} 
+                className="w-full py-4 text-base"
+              >
+                <Search className="h-4 w-4 mr-2" />
+                Search {activeTab === "hotels" ? "Hotels" : activeTab === "cars" ? "Cars" : activeTab === "bikes" ? "Bikes" : "Activities"}
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+
   return (
-    <div className="max-w-5xl mx-auto bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg animate-fade-in-up animation-delay-400">
-      <SearchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="max-w-5xl mx-auto animate-fade-in-up animation-delay-400">
+      {/* Mobile search trigger */}
+      <MobileSearchTrigger />
+      
+      {/* Desktop search container */}
+      <div className="hidden md:block bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg">
+        <SearchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {activeTab === "hotels" && (
-        <HotelSearchForm search={hotelSearch} setSearch={setHotelSearch} />
-      )}
+        {activeTab === "hotels" && (
+          <HotelSearchForm search={hotelSearch} setSearch={setHotelSearch} />
+        )}
 
-      {activeTab === "cars" && (
-        <CarSearchForm search={carSearch} setSearch={setCarSearch} />
-      )}
+        {activeTab === "cars" && (
+          <CarSearchForm search={carSearch} setSearch={setCarSearch} />
+        )}
 
-      {activeTab === "bikes" && (
-        <BikeSearchForm search={bikeSearch} setSearch={setBikeSearch} />
-      )}
+        {activeTab === "bikes" && (
+          <BikeSearchForm search={bikeSearch} setSearch={setBikeSearch} />
+        )}
 
-      {activeTab === "activities" && (
-        <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
-      )}
+        {activeTab === "activities" && (
+          <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
+        )}
 
-      <SearchButton activeTab={activeTab} handleSearch={handleSearch} />
+        <SearchButton activeTab={activeTab} handleSearch={handleSearch} />
+      </div>
     </div>
   );
 };

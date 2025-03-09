@@ -8,7 +8,7 @@ interface SearchButtonProps {
 
 const SearchButton = ({ activeTab, handleSearch }: SearchButtonProps) => {
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center mt-4">
       <button
         onClick={handleSearch}
         className="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg shadow transition-all flex items-center"
