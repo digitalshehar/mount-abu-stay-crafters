@@ -1,7 +1,7 @@
 
 import { MapPin, ArrowRight, Heart, Star, Check } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -37,6 +37,13 @@ const HotelCard = ({
   const originalPrice = Math.round(price * 1.2);
   const discountPercent = Math.round((1 - price / originalPrice) * 100);
 
+  // Prevent click propagation on favorite button
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsFavorite(!isFavorite);
+  };
+
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full">
       <div className="relative">
@@ -57,11 +64,7 @@ const HotelCard = ({
               ? "bg-red-500 text-white" 
               : "bg-white/80 text-stone-500 hover:bg-white hover:text-red-500"
           )}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setIsFavorite(!isFavorite);
-          }}
+          onClick={handleFavoriteClick}
         >
           <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />
         </button>

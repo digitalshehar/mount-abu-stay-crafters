@@ -25,9 +25,20 @@ const HotelSearchSection = ({
   const [guests, setGuests] = useState(2);
   const [rooms, setRooms] = useState(1);
 
+  // Handle input change without submitting the form
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Handle form submission with prevent default
+  const handleSubmitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch(e);
+  };
+
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden border-t-4 border-blue-600">
-      <form onSubmit={handleSearch} className="p-0">
+      <form onSubmit={handleSubmitSearch} className="p-0">
         <div className="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-stone-200">
           <div className="p-4 md:col-span-4">
             <div className="flex items-center h-full">
@@ -41,7 +52,7 @@ const HotelSearchSection = ({
                   type="text"
                   placeholder="Mount Abu, Rajasthan"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleQueryChange}
                   className="border-none shadow-none focus-visible:ring-0 p-0 h-auto text-base"
                 />
               </div>
@@ -134,14 +145,22 @@ const HotelSearchSection = ({
                           variant="outline" 
                           size="sm" 
                           className="h-7 w-7 p-0"
-                          onClick={() => setGuests(Math.max(1, guests - 1))}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setGuests(Math.max(1, guests - 1));
+                          }}
+                          type="button"
                         >-</Button>
                         <span className="w-6 text-center">{guests}</span>
                         <Button 
                           variant="outline" 
                           size="sm" 
                           className="h-7 w-7 p-0"
-                          onClick={() => setGuests(Math.min(10, guests + 1))}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setGuests(Math.min(10, guests + 1));
+                          }}
+                          type="button"
                         >+</Button>
                       </div>
                     </div>
@@ -152,14 +171,22 @@ const HotelSearchSection = ({
                           variant="outline" 
                           size="sm" 
                           className="h-7 w-7 p-0"
-                          onClick={() => setRooms(Math.max(1, rooms - 1))}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setRooms(Math.max(1, rooms - 1));
+                          }}
+                          type="button"
                         >-</Button>
                         <span className="w-6 text-center">{rooms}</span>
                         <Button 
                           variant="outline" 
                           size="sm" 
                           className="h-7 w-7 p-0"
-                          onClick={() => setRooms(Math.min(5, rooms + 1))}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setRooms(Math.min(5, rooms + 1));
+                          }}
+                          type="button"
                         >+</Button>
                       </div>
                     </div>

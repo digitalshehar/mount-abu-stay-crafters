@@ -49,10 +49,22 @@ const HotelSearchBar: React.FC<HotelSearchBarProps> = ({
   
   const activeFilterCount = getActiveFilterCount();
 
+  // Handle input change without submitting immediately on mobile
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission
       onSearch();
     }
+  };
+
+  const handleClearSearch = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent any default actions
+    setSearchQuery('');
+    onSearch();
   };
 
   return (
@@ -64,7 +76,7 @@ const HotelSearchBar: React.FC<HotelSearchBarProps> = ({
             type="text"
             placeholder="Search hotels by name or location..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             className="pl-10 w-full"
           />
@@ -73,10 +85,7 @@ const HotelSearchBar: React.FC<HotelSearchBarProps> = ({
               variant="ghost"
               size="sm"
               className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-              onClick={() => {
-                setSearchQuery('');
-                onSearch();
-              }}
+              onClick={handleClearSearch}
             >
               <X className="h-3 w-3" />
             </Button>

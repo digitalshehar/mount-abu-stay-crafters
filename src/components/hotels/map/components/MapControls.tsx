@@ -12,7 +12,8 @@ interface MapControlsProps {
 const MapControls: React.FC<MapControlsProps> = ({ viewMode, setViewMode }) => {
   const navigate = useNavigate();
 
-  const handleViewModeChange = (mode: 'map' | 'list') => {
+  const handleViewModeChange = (e: React.MouseEvent, mode: 'map' | 'list') => {
+    e.preventDefault(); // Prevent default behavior
     setViewMode(mode);
     
     // If switching to list view, navigate back to hotels page
@@ -26,7 +27,7 @@ const MapControls: React.FC<MapControlsProps> = ({ viewMode, setViewMode }) => {
       <Button 
         variant={viewMode === 'map' ? 'default' : 'ghost'}
         size="sm"
-        onClick={() => handleViewModeChange('map')}
+        onClick={(e) => handleViewModeChange(e, 'map')}
         className={`flex items-center rounded-r-none ${viewMode === 'map' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
       >
         <MapIcon className="h-4 w-4 mr-1" />
@@ -38,7 +39,7 @@ const MapControls: React.FC<MapControlsProps> = ({ viewMode, setViewMode }) => {
       <Button 
         variant={viewMode === 'list' ? 'default' : 'ghost'} 
         size="sm"
-        onClick={() => handleViewModeChange('list')}
+        onClick={(e) => handleViewModeChange(e, 'list')}
         className={`flex items-center rounded-l-none ${viewMode === 'list' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
       >
         <List className="h-4 w-4 mr-1" />

@@ -28,6 +28,17 @@ const FilterSidebar = ({
   clearFilters,
   commonAmenities
 }: FilterSidebarProps) => {
+  // Handle checkbox change without causing refreshes
+  const handleStarClick = (e: React.MouseEvent, star: number) => {
+    e.preventDefault();
+    handleStarFilter(star);
+  };
+
+  const handleAmenityClick = (e: React.MouseEvent, amenity: string) => {
+    e.preventDefault();
+    handleAmenityFilter(amenity);
+  };
+
   return (
     <div className="hidden lg:block bg-white p-5 rounded-lg shadow-sm space-y-6 h-fit sticky top-24">
       <div className="flex items-center justify-between">
@@ -35,7 +46,10 @@ const FilterSidebar = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={clearFilters}
+          onClick={(e) => {
+            e.preventDefault();
+            clearFilters();
+          }}
           className="text-blue-600 h-8 px-2 hover:bg-blue-50"
         >
           Clear All
@@ -77,7 +91,7 @@ const FilterSidebar = ({
                 "flex items-center space-x-2 p-2 rounded cursor-pointer",
                 selectedStars.includes(star) ? "bg-blue-50" : "hover:bg-stone-50"
               )}
-              onClick={() => handleStarFilter(star)}
+              onClick={(e) => handleStarClick(e, star)}
             >
               <Checkbox
                 id={`star-${star}`}
@@ -120,7 +134,7 @@ const FilterSidebar = ({
                 "flex items-center space-x-2 p-2 rounded cursor-pointer",
                 selectedAmenities.includes(amenity) ? "bg-blue-50" : "hover:bg-stone-50"
               )}
-              onClick={() => handleAmenityFilter(amenity)}
+              onClick={(e) => handleAmenityClick(e, amenity)}
             >
               <Checkbox
                 id={`amenity-${amenity}`}
