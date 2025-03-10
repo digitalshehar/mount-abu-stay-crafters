@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
@@ -33,6 +34,7 @@ const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 // Admin Components
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const Overview = lazy(() => import('./pages/admin/Overview'));
+const HotelsManagement = lazy(() => import('./pages/admin/Hotels'));
 const AdventuresManagement = lazy(() => import('./pages/admin/AdventuresManagement'));
 const CarRentalsManagement = lazy(() => import('./pages/admin/CarRentalsManagement'));
 const BikeRentalsManagement = lazy(() => import('./pages/admin/BikeRentalsManagement'));
@@ -76,10 +78,10 @@ function App() {
                 <Route path="forgot-password" element={<ForgotPassword />} />
                 <Route path="reset-password" element={<ResetPassword />} />
 
-                {/* Admin Routes - Using Dashboard component directly instead of AdminLayout */}
+                {/* Admin Routes */}
                 <Route path="admin" element={<Dashboard />}>
                   <Route index element={<Overview />} />
-                  <Route path="hotels" element={<Hotels />} />
+                  <Route path="hotels" element={<HotelsManagement />} />
                   <Route path="booking-management" element={<BookingManagement />} />
                   <Route path="adventures" element={<AdventuresManagement />} />
                   <Route path="car-rentals" element={<CarRentalsManagement />} />
