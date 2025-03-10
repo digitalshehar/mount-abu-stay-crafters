@@ -1,14 +1,76 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { FileUp, Plus, Search } from 'lucide-react';
 import DashboardHeader from '@/components/admin/dashboard/DashboardHeader';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { 
+  PlusCircle, Search, RefreshCw, Filter, Trash2, Edit, Eye, 
+  MoreHorizontal, ArrowUpDown, CheckCircle2, XCircle
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { 
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+
+// Mock data for demonstration
+const BLOG_POSTS = [
+  {
+    id: 1,
+    title: 'Top 10 Places to Visit in Mount Abu',
+    excerpt: 'Discover the most scenic and popular tourist spots in Mount Abu...',
+    author: 'John Doe',
+    category: 'Travel Guide',
+    date: '2023-05-15',
+    status: 'published',
+    image: 'https://picsum.photos/300/200',
+  },
+  {
+    id: 2,
+    title: 'Mount Abu: The Only Hill Station in Rajasthan',
+    excerpt: 'Learn about the history and geography of this unique hill station...',
+    author: 'Jane Smith',
+    category: 'History',
+    date: '2023-04-22',
+    status: 'draft',
+    image: 'https://picsum.photos/300/201',
+  },
+  {
+    id: 3,
+    title: 'Wildlife Spotting in Mount Abu',
+    excerpt: 'A guide to the diverse flora and fauna in Mount Abu Wildlife Sanctuary...',
+    author: 'Mike Johnson',
+    category: 'Nature',
+    date: '2023-03-10',
+    status: 'published',
+    image: 'https://picsum.photos/300/202',
+  },
+  {
+    id: 4,
+    title: 'Festivals of Mount Abu',
+    excerpt: 'Explore the vibrant cultural festivals celebrated in Mount Abu...',
+    author: 'Sarah Williams',
+    category: 'Culture',
+    date: '2023-06-08',
+    status: 'scheduled',
+    image: 'https://picsum.photos/300/203',
+  },
+  {
+    id: 5,
+    title: 'Monsoon Magic in Mount Abu',
+    excerpt: 'Why monsoon is the best time to visit Mount Abu...',
+    author: 'Robert Brown',
+    category: 'Travel Guide',
+    date: '2023-07-20',
+    status: 'draft',
+    image: 'https://picsum.photos/300/204',
+  },
+];
 
 const container = {
   hidden: { opacity: 0 },
@@ -25,230 +87,221 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-const BlogManagement = () => {
+const BlogManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   
-  // Mock blog posts data
-  const blogPosts = [
-    {
-      id: 1,
-      title: "Top 10 Places to Visit in Mount Abu",
-      excerpt: "Discover the most beautiful and serene locations in Mount Abu...",
-      image: "https://source.unsplash.com/random/300x200?mountain",
-      author: "Rahul Sharma",
-      date: "2023-05-15",
-      status: "published"
-    },
-    {
-      id: 2,
-      title: "Best Hotels in Mount Abu for Every Budget",
-      excerpt: "From luxury resorts to budget-friendly stays, find the perfect accommodation...",
-      image: "https://source.unsplash.com/random/300x200?hotel",
-      author: "Priya Patel",
-      date: "2023-04-22",
-      status: "draft"
-    },
-    {
-      id: 3,
-      title: "Adventure Activities in Mount Abu",
-      excerpt: "Experience the thrill of trekking, camping, and more in Mount Abu...",
-      image: "https://source.unsplash.com/random/300x200?adventure",
-      author: "Amit Singh",
-      date: "2023-03-30",
-      status: "published"
-    }
-  ];
+  const filteredPosts = BLOG_POSTS.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         post.category.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (activeTab === 'all') return matchesSearch;
+    return matchesSearch && post.status === activeTab;
+  });
   
-  const filteredPosts = blogPosts.filter(post => 
-    post.title.toLowerCase().includes(searchTerm.toLowerCase())
+  const headerActions = (
+    <>
+      <Button variant="outline" size="sm" className="flex items-center gap-1">
+        <Filter size={14} />
+        <span>Filter</span>
+      </Button>
+      <Button variant="outline" size="sm" className="flex items-center gap-1">
+        <RefreshCw size={14} />
+        <span>Refresh</span>
+      </Button>
+      <Button className="flex items-center gap-1">
+        <PlusCircle size={16} />
+        <span>New Post</span>
+      </Button>
+    </>
   );
   
+  const handleSelectPost = (id: number) => {
+    if (selectedPosts.includes(id)) {
+      setSelectedPosts(selectedPosts.filter(postId => postId !== id));
+    } else {
+      setSelectedPosts([...selectedPosts, id]);
+    }
+  };
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'published':
+        return <Badge className="bg-green-500">Published</Badge>;
+      case 'draft':
+        return <Badge variant="outline">Draft</Badge>;
+      case 'scheduled':
+        return <Badge className="bg-blue-500">Scheduled</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
   return (
-    <motion.div 
+    <motion.div
       className="space-y-6"
       variants={container}
       initial="hidden"
       animate="show"
     >
-      <DashboardHeader 
-        title="Blog Management" 
-        actions={
-          <Button className="flex items-center gap-2">
-            <Plus size={16} />
-            <span>Create Post</span>
-          </Button>
-        }
+      <DashboardHeader
+        title="Blog Management"
+        lastUpdated={(new Date()).toISOString()}
+        actions={headerActions}
       />
       
       <motion.div variants={item}>
         <Card>
-          <CardHeader className="pb-3">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <CardTitle>Blog Posts</CardTitle>
-                <CardDescription>
-                  Manage your blog posts, create new content, and engage your audience.
-                </CardDescription>
-              </div>
-              <div className="relative w-full md:w-64">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                <Input
-                  type="search"
-                  placeholder="Search posts..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+          <CardHeader className="px-6 py-4">
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-xl">Blog Posts</CardTitle>
+              <div className="flex items-center space-x-2">
+                <div className="relative w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search posts..."
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={selectedPosts.length === 0}>
+                      Actions
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem>
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Publish Selected
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Unpublish Selected
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Selected
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="all">
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="published">Published</TabsTrigger>
-                <TabsTrigger value="draft">Drafts</TabsTrigger>
-              </TabsList>
+          
+          <CardContent className="p-0">
+            <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
+              <div className="px-6">
+                <TabsList className="grid grid-cols-4 mb-4">
+                  <TabsTrigger value="all">All Posts</TabsTrigger>
+                  <TabsTrigger value="published">Published</TabsTrigger>
+                  <TabsTrigger value="draft">Drafts</TabsTrigger>
+                  <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+                </TabsList>
+              </div>
               
-              <TabsContent value="all" className="space-y-4">
-                {filteredPosts.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500">
-                    No blog posts found matching your search.
-                  </div>
-                ) : (
-                  filteredPosts.map(post => (
-                    <div key={post.id} className="border rounded-lg overflow-hidden flex flex-col md:flex-row">
-                      <div className="md:w-48 h-48 md:h-auto">
-                        <img 
-                          src={post.image} 
-                          alt={post.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-4 flex-1 flex flex-col">
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="text-lg font-medium">{post.title}</h3>
-                          <div className={`text-xs px-2 py-1 rounded ${
-                            post.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                          }`}>
-                            {post.status === 'published' ? 'Published' : 'Draft'}
+              <TabsContent value={activeTab} className="m-0">
+                <ScrollArea className="h-[calc(100vh-350px)]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4"
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedPosts(filteredPosts.map(post => post.id));
+                              } else {
+                                setSelectedPosts([]);
+                              }
+                            }}
+                            checked={selectedPosts.length === filteredPosts.length && filteredPosts.length > 0}
+                          />
+                        </TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Author</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>
+                          <div className="flex items-center">
+                            Date
+                            <ArrowUpDown className="ml-2 h-4 w-4" />
                           </div>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2">{post.excerpt}</p>
-                        <div className="text-xs text-gray-500 mt-auto">
-                          By {post.author} • {new Date(post.date).toLocaleDateString()}
-                        </div>
-                        <div className="flex gap-2 mt-4">
-                          <Button variant="outline" size="sm">Edit</Button>
-                          <Button variant="outline" size="sm" className="text-red-500">Delete</Button>
-                          {post.status === 'draft' && (
-                            <Button size="sm">Publish</Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </TabsContent>
-              
-              <TabsContent value="published" className="space-y-4">
-                {filteredPosts.filter(post => post.status === 'published').map(post => (
-                  <div key={post.id} className="border rounded-lg overflow-hidden flex flex-col md:flex-row">
-                    {/* Same content as above */}
-                    <div className="md:w-48 h-48 md:h-auto">
-                      <img 
-                        src={post.image} 
-                        alt={post.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-medium">{post.title}</h3>
-                        <div className="text-xs px-2 py-1 rounded bg-green-100 text-green-800">
-                          Published
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-2">{post.excerpt}</p>
-                      <div className="text-xs text-gray-500 mt-auto">
-                        By {post.author} • {new Date(post.date).toLocaleDateString()}
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        <Button variant="outline" size="sm">Edit</Button>
-                        <Button variant="outline" size="sm" className="text-red-500">Delete</Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </TabsContent>
-              
-              <TabsContent value="draft" className="space-y-4">
-                {filteredPosts.filter(post => post.status === 'draft').map(post => (
-                  <div key={post.id} className="border rounded-lg overflow-hidden flex flex-col md:flex-row">
-                    {/* Same content as above */}
-                    <div className="md:w-48 h-48 md:h-auto">
-                      <img 
-                        src={post.image} 
-                        alt={post.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-medium">{post.title}</h3>
-                        <div className="text-xs px-2 py-1 rounded bg-amber-100 text-amber-800">
-                          Draft
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-2">{post.excerpt}</p>
-                      <div className="text-xs text-gray-500 mt-auto">
-                        By {post.author} • {new Date(post.date).toLocaleDateString()}
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        <Button variant="outline" size="sm">Edit</Button>
-                        <Button variant="outline" size="sm" className="text-red-500">Delete</Button>
-                        <Button size="sm">Publish</Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                        </TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    
+                    <TableBody>
+                      {filteredPosts.length > 0 ? (
+                        filteredPosts.map((post) => (
+                          <TableRow key={post.id}>
+                            <TableCell>
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4"
+                                checked={selectedPosts.includes(post.id)}
+                                onChange={() => handleSelectPost(post.id)}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-3">
+                                <img
+                                  src={post.image}
+                                  alt={post.title}
+                                  className="h-10 w-10 rounded object-cover"
+                                />
+                                <div>
+                                  <div className="font-medium">{post.title}</div>
+                                  <div className="text-sm text-muted-foreground truncate max-w-md">
+                                    {post.excerpt}
+                                  </div>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>{post.author}</TableCell>
+                            <TableCell>{post.category}</TableCell>
+                            <TableCell>{post.date}</TableCell>
+                            <TableCell>{getStatusBadge(post.status)}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end space-x-2">
+                                <Button variant="ghost" size="icon">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="text-destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center h-32">
+                            <div className="flex flex-col items-center justify-center text-muted-foreground">
+                              <Search className="h-8 w-8 mb-2" />
+                              <p>No blog posts found</p>
+                              <p className="text-sm">Try adjusting your search or filters</p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
               </TabsContent>
             </Tabs>
           </CardContent>
-        </Card>
-      </motion.div>
-      
-      <motion.div variants={item}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Post</CardTitle>
-            <CardDescription>Create a new blog post in just a few steps.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Post Title</Label>
-              <Input id="title" placeholder="Enter post title" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="content">Content</Label>
-              <Textarea id="content" placeholder="Write your blog post content here..." className="min-h-[200px]" />
-            </div>
-            <div className="flex items-center justify-center border-2 border-dashed rounded-lg p-6">
-              <div className="text-center">
-                <FileUp className="mx-auto h-8 w-8 text-gray-400" />
-                <div className="mt-2">
-                  <Button variant="outline">Upload Featured Image</Button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  SVG, PNG, JPG or GIF (max. 2MB)
-                </p>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline">Save as Draft</Button>
-            <Button>Publish Post</Button>
-          </CardFooter>
         </Card>
       </motion.div>
     </motion.div>

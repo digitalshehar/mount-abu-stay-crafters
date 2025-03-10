@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, Heart } from "lucide-react";
 import NotificationsPanel from "@/components/admin/NotificationsPanel";
 import { useAuth } from "@/context/AuthContext";
-import { Notification } from "@/context/NotificationContext";
+import { Notification } from "@/hooks/useNotifications";
 
 interface HotelAdminHeaderProps {
   onAddHotel: () => void;
@@ -88,8 +88,8 @@ const HotelAdminHeader: React.FC<HotelAdminHeaderProps> = ({
           <div className="absolute top-full right-0 mt-2 w-80 md:w-96 bg-white rounded-lg shadow-lg z-50">
             <NotificationsPanel 
               notifications={notifications}
-              markAsRead={markAsRead}
-              markAllAsRead={markAllAsRead}
+              onMarkAsRead={markAsRead}
+              onMarkAllAsRead={markAllAsRead}
             />
           </div>
         )}
