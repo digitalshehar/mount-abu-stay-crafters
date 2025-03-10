@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
-  const { signIn, signUp, loading } = useAuth();
+  const { signIn, signUp, loading, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isAdmin = searchParams.get('admin') === 'true';
@@ -30,6 +31,46 @@ const Auth = () => {
   const [loginError, setLoginError] = useState('');
   const [signupError, setSignupError] = useState('');
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      // Check if user is admin and admin page is requested
+      if (isAdmin) {
+        checkIsAdmin(user.id).then(isAdmin => {
+          if (isAdmin) {
+            navigate('/admin/dashboard');
+          } else {
+            navigate('/');
+          }
+        });
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, navigate, isAdmin]);
+
+  // Check if user has admin role
+  const checkIsAdmin = async (userId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .single();
+      
+      if (error) {
+        console.error("Error checking admin role:", error);
+        return false;
+      }
+      
+      return !!data;
+    } catch (error) {
+      console.error("Error in checkIsAdmin:", error);
+      return false;
+    }
+  };
+
   // Handle login submission
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,18 +84,7 @@ const Auth = () => {
     try {
       await signIn(loginEmail, loginPassword);
       
-      // Navigate based on whether this is admin login or regular login
-      if (isAdmin) {
-        // Check if the email is an admin email (for demo purposes)
-        // In a real app, you would check admin status from a user_roles table
-        if (loginEmail.includes('admin') || loginEmail === 'admin@mountabu.com') {
-          navigate('/admin/dashboard');
-        } else {
-          setLoginError('You do not have admin privileges');
-        }
-      } else {
-        navigate('/');
-      }
+      // Navigation will be handled by the useEffect that watches user state
     } catch (error: any) {
       setLoginError(error.message || 'An error occurred during login');
     }
@@ -147,7 +177,7 @@ const Auth = () => {
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="text-center">
+          <CardFooter className="flex justify-center">
             <Link to="/auth" className="text-sm text-primary hover:underline">
               Back to regular login
             </Link>
