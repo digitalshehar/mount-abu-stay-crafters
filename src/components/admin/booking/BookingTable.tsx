@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 export interface BookingTableProps {
   bookings: Booking[];
@@ -85,6 +86,8 @@ const BookingTable: React.FC<BookingTableProps> = ({
 
   // Subscribe to real-time booking updates
   useEffect(() => {
+    console.log('Setting up real-time subscription for bookings');
+    
     // Set up real-time subscription for new bookings
     const channel = supabase
       .channel('booking-changes')
@@ -117,6 +120,7 @@ const BookingTable: React.FC<BookingTableProps> = ({
 
     // Clean up subscription on unmount
     return () => {
+      console.log('Cleaning up booking subscription');
       supabase.removeChannel(channel);
     };
   }, [fetchBookings, toast]);
@@ -130,7 +134,7 @@ const BookingTable: React.FC<BookingTableProps> = ({
   }
 
   return (
-    <>
+    <Card className="p-4 shadow-sm">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium">Bookings List</h3>
         <Button 
@@ -144,8 +148,8 @@ const BookingTable: React.FC<BookingTableProps> = ({
           <span>Refresh</span>
         </Button>
       </div>
-      <ScrollArea className="h-[600px]">
-        <div className="rounded-md border shadow-sm">
+      <div className="rounded-md border">
+        <ScrollArea className="h-[550px]">
           <Table>
             <BookingTableHeader />
             <TableBody>
@@ -160,8 +164,8 @@ const BookingTable: React.FC<BookingTableProps> = ({
               ))}
             </TableBody>
           </Table>
-        </div>
-      </ScrollArea>
+        </ScrollArea>
+      </div>
 
       {!onViewDetails && selectedBooking && (
         <BookingDetailsDialog 
@@ -172,7 +176,7 @@ const BookingTable: React.FC<BookingTableProps> = ({
           onPaymentStatusChange={handlePaymentUpdate}
         />
       )}
-    </>
+    </Card>
   );
 };
 

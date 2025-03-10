@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Booking } from '@/hooks/useBookings';
 import BookingStatusSelect from './BookingStatusSelect';
 import PaymentStatusSelect from './PaymentStatusSelect';
+import { Separator } from '@/components/ui/separator';
 
 interface BookingInfoCardProps {
   booking: Booking;
@@ -24,6 +25,15 @@ const BookingInfoCard: React.FC<BookingInfoCardProps> = ({
     if (booking.bike_name) return `Bike: ${booking.bike_name}`;
     if (booking.adventure_name) return `Adventure: ${booking.adventure_name}`;
     return 'Unknown Booking';
+  };
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    });
   };
 
   return (
@@ -51,9 +61,29 @@ const BookingInfoCard: React.FC<BookingInfoCardProps> = ({
         <p>{booking.number_of_guests} {booking.number_of_guests === 1 ? 'person' : 'people'}</p>
       </div>
 
-      <div>
-        <Label className="text-xs text-muted-foreground">Total Price</Label>
-        <p className="text-lg font-bold">₹{booking.total_price.toLocaleString('en-IN')}</p>
+      <div className="bg-slate-50 p-3 rounded-md border">
+        <h4 className="font-medium text-sm mb-2">Price Breakdown</h4>
+        
+        {booking.base_price ? (
+          <>
+            <div className="flex justify-between text-sm">
+              <span>Base price:</span>
+              <span>{formatCurrency(booking.base_price)}</span>
+            </div>
+            
+            <div className="flex justify-between text-sm">
+              <span>Tax (10%):</span>
+              <span>{formatCurrency(booking.tax_amount || 0)}</span>
+            </div>
+            
+            <Separator className="my-2" />
+          </>
+        ) : null}
+        
+        <div className="flex justify-between font-bold">
+          <span>Total price:</span>
+          <span>{formatCurrency(booking.total_price)}</span>
+        </div>
       </div>
 
       <BookingStatusSelect 
