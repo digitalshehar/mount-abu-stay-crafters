@@ -53,7 +53,7 @@ export const useHotelBooking = (hotel: any) => {
         guest_email: data.email,
         guest_phone: data.phone,
         number_of_guests: 2, // Default to 2 guests
-        total_price: basePrice, // The service will add tax
+        total_price: basePrice, // Service will add tax and generate reference
         booking_status: 'confirmed',
         payment_status: 'pending',
         booking_type: 'hotel' as BookingType // Fix the TypeScript error by casting to BookingType
@@ -63,15 +63,14 @@ export const useHotelBooking = (hotel: any) => {
       const result = await addBooking(bookingData);
       
       if (result) {
-        // Generate booking reference
-        const reference = Math.random().toString(36).substring(2, 10).toUpperCase();
-        setBookingReference(reference);
+        // Get booking reference from result
+        setBookingReference(result.booking_reference || '');
         
         setShowBookingForm(false);
         setShowBookingSuccess(true);
         
         toast.success("Booking successful!", {
-          description: `Your booking at ${hotel.name} has been confirmed. Check your email for details.`
+          description: `Your booking at ${hotel.name} has been confirmed. A confirmation email has been sent to ${data.email}.`
         });
       }
     } catch (error) {

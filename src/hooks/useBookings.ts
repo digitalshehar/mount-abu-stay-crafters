@@ -34,6 +34,7 @@ export interface Booking {
   booking_status: string;
   created_at: string;
   booking_type: BookingType;
+  booking_reference?: string;
 }
 
 export type BookingStatusType = 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'all';
@@ -145,7 +146,7 @@ export const useBookings = () => {
     if (response.success) {
       toast({
         title: 'Booking Successful',
-        description: 'Your booking has been confirmed!',
+        description: 'Your booking has been confirmed and a confirmation email has been sent!',
       });
       return response.data;
     } else {

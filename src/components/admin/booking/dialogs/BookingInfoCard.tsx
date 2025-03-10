@@ -7,6 +7,7 @@ import { Booking } from '@/hooks/useBookings';
 import BookingStatusSelect from './BookingStatusSelect';
 import PaymentStatusSelect from './PaymentStatusSelect';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 interface BookingInfoCardProps {
   booking: Booking;
@@ -41,6 +42,14 @@ const BookingInfoCard: React.FC<BookingInfoCardProps> = ({
       <div>
         <h3 className="text-lg font-semibold">{getBookingName()}</h3>
         {booking.room_type && <p className="text-muted-foreground">{booking.room_type}</p>}
+        
+        {booking.booking_reference && (
+          <div className="mt-2">
+            <Badge variant="outline" className="bg-blue-50">
+              Reference: {booking.booking_reference}
+            </Badge>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">

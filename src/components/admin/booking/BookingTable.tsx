@@ -148,22 +148,24 @@ const BookingTable: React.FC<BookingTableProps> = ({
           <span>Refresh</span>
         </Button>
       </div>
-      <div className="rounded-md border">
-        <ScrollArea className="h-[550px]">
-          <Table>
-            <BookingTableHeader />
-            <TableBody>
-              {bookings.map((booking) => (
-                <BookingRow 
-                  key={booking.id}
-                  booking={booking}
-                  onViewDetails={handleViewDetails}
-                  onStatusChange={handleStatusUpdate}
-                  onPaymentStatusChange={handlePaymentUpdate}
-                />
-              ))}
-            </TableBody>
-          </Table>
+      <div className="rounded-md border max-w-full overflow-hidden">
+        <ScrollArea className="h-[600px] w-full">
+          <div className="min-w-[1000px]">
+            <Table>
+              <BookingTableHeader />
+              <TableBody>
+                {bookings.map((booking) => (
+                  <BookingRow 
+                    key={booking.id}
+                    booking={booking}
+                    onViewDetails={handleViewDetails}
+                    onStatusChange={handleStatusUpdate}
+                    onPaymentStatusChange={handlePaymentUpdate}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </ScrollArea>
       </div>
 
