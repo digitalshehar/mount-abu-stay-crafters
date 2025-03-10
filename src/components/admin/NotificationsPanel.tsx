@@ -1,211 +1,146 @@
 
-import React, { useState, useEffect } from 'react';
-import { Bell, Check, Trash2, X } from 'lucide-react';
-import { 
-  Sheet,
-  SheetContent, 
-  SheetHeader, 
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
+import React from "react";
+import { Bell, Check, X, Info, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Notification } from '@/context/NotificationContext';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { Separator } from "@/components/ui/separator";
+import { Notification } from "@/hooks/useNotifications";
+import { formatDistanceToNow } from "date-fns";
 
 interface NotificationsPanelProps {
   notifications: Notification[];
-  unreadCount: number;
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
-  deleteNotification?: (id: string) => void;
+  onMarkAsRead: (id: string) => void;
+  onMarkAllAsRead: () => void;
 }
 
-const NotificationType = {
-  system: {
-    color: "bg-blue-500",
-    icon: Bell,
-  },
-  alert: {
-    color: "bg-red-500",
-    icon: Bell,
-  },
-  info: {
-    color: "bg-green-500",
-    icon: Bell,
-  },
+interface NotificationItemProps {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+  type: "system" | "alert" | "info";
+  onMarkAsRead: (id: string) => void;
+}
+
+const NotificationIcon = ({ type }: { type: "system" | "alert" | "info" }) => {
+  switch (type) {
+    case "alert":
+      return <AlertTriangle className="h-5 w-5 text-destructive" />;
+    case "info":
+      return <Info className="h-5 w-5 text-blue-500" />;
+    default:
+      return <Bell className="h-5 w-5 text-primary" />;
+  }
 };
 
-const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
-  notifications,
-  unreadCount,
-  markAsRead,
-  markAllAsRead,
-  deleteNotification,
-}) => {
-  const [open, setOpen] = useState(false);
-  const [filter, setFilter] = useState<"all" | "unread">("all");
-  
-  const filteredNotifications = filter === "all" 
-    ? notifications 
-    : notifications.filter(n => !n.read);
-  
-  useEffect(() => {
-    // When the panel closes, we can optionally auto-mark as read
-    if (!open && unreadCount > 0) {
-      // Uncomment the next line to auto-mark all as read when panel closes
-      // markAllAsRead();
-    }
-  }, [open, unreadCount, markAllAsRead]);
-  
-  const handleMarkAllRead = () => {
-    markAllAsRead();
-  };
-
+const NotificationItem = ({
+  id,
+  title,
+  message,
+  timestamp,
+  read,
+  type,
+  onMarkAsRead,
+}: NotificationItemProps) => {
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0"
-            >
-              {unreadCount}
-            </Badge>
-          )}
-        </Button>
-      </SheetTrigger>
-      <SheetContent className="sm:max-w-md">
-        <SheetHeader className="flex flex-row items-center justify-between">
-          <SheetTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notifications
-            {unreadCount > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {unreadCount} unread
-              </Badge>
-            )}
-          </SheetTitle>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={unreadCount === 0}
-              onClick={handleMarkAllRead}
-            >
-              <Check className="mr-2 h-3 w-3" />
-              Mark all read
-            </Button>
-          </div>
-        </SheetHeader>
-        
-        <div className="flex justify-between my-4">
-          <Button 
-            variant={filter === "all" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setFilter("all")}
-            className="w-full mr-2"
-          >
-            All
-          </Button>
-          <Button 
-            variant={filter === "unread" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setFilter("unread")}
-            className="w-full ml-2"
-          >
-            Unread
-          </Button>
+    <div className={`p-3 ${read ? "bg-white" : "bg-stone-50"} hover:bg-stone-100 transition-colors`}>
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 mt-1">
+          <NotificationIcon type={type} />
         </div>
-        
-        <ScrollArea className="h-[calc(100vh-150px)] mt-4 pr-4">
-          {filteredNotifications.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              {filter === "all" ? "No notifications" : "No unread notifications"}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredNotifications.map((notification) => {
-                // Ensure notification type is one of the allowed types
-                const type = notification.type && 
-                  (notification.type === "system" || 
-                   notification.type === "alert" || 
-                   notification.type === "info") 
-                  ? notification.type 
-                  : "system";
-                
-                const { icon: Icon, color } = NotificationType[type];
-                const formattedDate = notification.createdAt 
-                  ? format(new Date(notification.createdAt), 'MMM d, h:mm a')
-                  : '';
-              
-                return (
-                  <div 
-                    key={notification.id} 
-                    className={cn(
-                      "p-4 rounded-lg border",
-                      notification.read ? "bg-background" : "bg-muted"
-                    )}
-                  >
-                    <div className="flex items-start">
-                      <div className={cn("p-2 rounded-full mr-4", color)}>
-                        <Icon className="h-4 w-4 text-white" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-sm">
-                            {notification.title}
-                          </h4>
-                          <div className="flex items-center space-x-1">
-                            {!notification.read && (
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-6 w-6" 
-                                onClick={() => markAsRead(notification.id)}
-                              >
-                                <Check className="h-3 w-3" />
-                              </Button>
-                            )}
-                            {deleteNotification && (
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-6 w-6 text-destructive"
-                                onClick={() => deleteNotification(notification.id)}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <p className="text-sm mt-1 text-muted-foreground">
-                          {notification.message}
-                        </p>
-                        
-                        <div className="flex justify-between mt-2">
-                          <span className="text-xs text-muted-foreground">
-                            {formattedDate}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+        <div className="flex-grow">
+          <h4 className="font-medium text-sm">{title}</h4>
+          <p className="text-stone-600 text-sm mt-1">{message}</p>
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-stone-500">
+              {formatDistanceToNow(timestamp, { addSuffix: true })}
+            </span>
+            {!read && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 px-2 text-xs" 
+                onClick={() => onMarkAsRead(id)}
+              >
+                Mark as read
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const EmptyNotifications = () => {
+  return (
+    <div className="py-8 text-center">
+      <Bell className="h-8 w-8 text-stone-300 mx-auto mb-3" />
+      <h4 className="text-stone-500 font-medium">No notifications</h4>
+      <p className="text-stone-400 text-sm mt-1">You're all caught up!</p>
+    </div>
+  );
+};
+
+const NotificationsPanel: React.FC<NotificationsPanelProps> = ({ 
+  notifications, 
+  onMarkAsRead, 
+  onMarkAllAsRead 
+}) => {
+  const unreadCount = notifications.filter(notification => !notification.read).length;
+  
+  return (
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-stone-200 max-h-[80vh] flex flex-col">
+      <div className="p-3 flex items-center justify-between bg-white border-b">
+        <div>
+          <h3 className="font-semibold">Notifications</h3>
+          <p className="text-stone-500 text-xs">
+            {unreadCount > 0 
+              ? `You have ${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}` 
+              : 'No new notifications'}
+          </p>
+        </div>
+        {unreadCount > 0 && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 text-xs"
+            onClick={onMarkAllAsRead}
+          >
+            <Check className="h-3 w-3 mr-1" />
+            Mark all as read
+          </Button>
+        )}
+      </div>
+      
+      <ScrollArea className="flex-grow max-h-[400px]">
+        {notifications.length > 0 ? (
+          <div className="divide-y divide-stone-100">
+            {notifications.map((notification) => (
+              <NotificationItem
+                key={notification.id}
+                id={notification.id}
+                title={notification.title}
+                message={notification.message}
+                timestamp={notification.timestamp}
+                read={notification.read}
+                type={notification.type}
+                onMarkAsRead={onMarkAsRead}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyNotifications />
+        )}
+      </ScrollArea>
+      
+      <div className="p-2 border-t bg-stone-50">
+        <Button variant="ghost" size="sm" className="w-full text-stone-600 text-sm">
+          View all notifications
+        </Button>
+      </div>
+    </div>
   );
 };
 

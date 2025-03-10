@@ -11,9 +11,7 @@ export const useAuthentication = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  // Initialize navigate as null/undefined initially
-  // We'll only use it when it's available (inside Router context)
-  const navigate = typeof window !== 'undefined' ? useNavigate() : undefined;
+  const navigate = useNavigate();
   const { profile, setProfile, fetchProfile, updateProfile } = useProfile(user);
 
   const signUp = async (email: string, password: string, username: string): Promise<void> => {
@@ -91,10 +89,7 @@ export const useAuthentication = () => {
         description: "You have been successfully signed out.",
       });
       
-      // Only navigate if the function is available (in Router context)
-      if (navigate) {
-        navigate('/');
-      }
+      navigate('/');
     } catch (error: any) {
       toast({
         title: "Error signing out",
