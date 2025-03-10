@@ -4,9 +4,13 @@ import BookingDashboardHeader from "@/components/admin/bookings/BookingDashboard
 import BookingAnalytics from "@/components/admin/bookings/BookingAnalytics";
 import BookingTable from "@/components/admin/bookings/BookingTable";
 import BookingFilterPanel from "@/components/admin/bookings/BookingFilterPanel";
+import RoomAvailabilityCalendar from "@/components/admin/bookings/RoomAvailabilityCalendar";
 import { useBookings } from "@/hooks/useBookings";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const BookingManagement = () => {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -17,6 +21,8 @@ const BookingManagement = () => {
     paymentStatus: []
   });
   
+  const [activeTab, setActiveTab] = useState<"list" | "calendar">("list");
+  
   const { 
     bookings, 
     loading, 
@@ -25,23 +31,27 @@ const BookingManagement = () => {
     updatePaymentStatus 
   } = useBookings();
 
+  // Fetch hotels for the calendar view
+  const { data: hotels = [] } = useQuery({
+    queryKey: ["hotels"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("hotels").select("id,name");
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   const handleUpdateStatus = async (bookingId: string, status: string) => {
     const success = await updateBookingStatus(bookingId, status);
     if (success) {
-      toast({
-        title: "Status Updated",
-        description: `Booking status has been changed to ${status}`,
-      });
+      toast.success(`Booking status has been changed to ${status}`);
     }
   };
 
   const handleUpdatePaymentStatus = async (bookingId: string, status: string) => {
     const success = await updatePaymentStatus(bookingId, status);
     if (success) {
-      toast({
-        title: "Payment Status Updated",
-        description: `Payment status has been changed to ${status}`,
-      });
+      toast.success(`Payment status has been changed to ${status}`);
     }
   };
 
@@ -54,24 +64,42 @@ const BookingManagement = () => {
 
   return (
     <div className="max-w-[1600px] mx-auto p-4 md:p-6">
-      <BookingDashboardHeader 
-        onFilterOpen={() => setFilterOpen(true)} 
-        bookingsCount={bookings.length}
-        onRefresh={fetchBookings}
-      />
-      
-      <div className="grid grid-cols-1 gap-6 mb-6">
-        <Card className="p-6">
-          <BookingAnalytics bookings={bookings} />
-        </Card>
-      </div>
-      
-      <BookingTable 
-        bookings={filteredBookings} 
-        loading={loading}
-        onUpdateStatus={handleUpdateStatus}
-        onUpdatePaymentStatus={handleUpdatePaymentStatus} 
-      />
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "list" | "calendar")}>
+        <BookingDashboardHeader 
+          onFilterOpen={() => setFilterOpen(true)} 
+          bookingsCount={bookings.length}
+          onRefresh={fetchBookings}
+          onCalendarView={() => setActiveTab(activeTab === "list" ? "calendar" : "list")}
+          bookings={bookings}
+        />
+        
+        <div className="grid grid-cols-1 gap-6 mb-6">
+          <Card className="p-6">
+            <BookingAnalytics bookings={bookings} />
+          </Card>
+        </div>
+        
+        <TabsList className="mb-4">
+          <TabsTrigger value="list">List View</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="list" className="mt-0">
+          <BookingTable 
+            bookings={filteredBookings} 
+            loading={loading}
+            onUpdateStatus={handleUpdateStatus}
+            onUpdatePaymentStatus={handleUpdatePaymentStatus} 
+          />
+        </TabsContent>
+        
+        <TabsContent value="calendar" className="mt-0">
+          <RoomAvailabilityCalendar 
+            bookings={bookings}
+            hotels={hotels}
+          />
+        </TabsContent>
+      </Tabs>
       
       <BookingFilterPanel 
         isOpen={filterOpen}
