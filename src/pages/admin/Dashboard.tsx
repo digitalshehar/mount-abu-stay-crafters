@@ -14,7 +14,8 @@ import {
   X,
   PlusSquare,
   Globe,
-  ChevronRight
+  ChevronRight,
+  CalendarClock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -62,6 +63,11 @@ const AdminDashboard = () => {
       icon: Hotel, 
       label: "Hotels", 
       path: "/admin/hotels" 
+    },
+    { 
+      icon: CalendarClock, 
+      label: "Bookings", 
+      path: "/admin/bookings" 
     },
     { 
       icon: FileText, 

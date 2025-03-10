@@ -41,6 +41,7 @@ import AdminAdventures from "./pages/admin/Adventures";
 import AdminSettings from "./pages/admin/Settings";
 import AdminPageBuilder from "./pages/admin/PageBuilder";
 import AdminWebsiteSettings from "./pages/admin/WebsiteSettings";
+import AdminBookings from "./pages/admin/Bookings";
 
 const queryClient = new QueryClient();
 
@@ -85,6 +86,7 @@ const App = () => (
               <Route index element={<AdminOverview />} />
               <Route path="hotels" element={<AdminHotels />} />
               <Route path="blog" element={<AdminBlog />} />
+              <Route path="bookings" element={<AdminBookings />} />
               <Route path="rentals/car" element={<AdminCarRentals />} />
               <Route path="rentals/bike" element={<AdminBikeRentals />} />
               <Route path="adventures" element={<AdminAdventures />} />
