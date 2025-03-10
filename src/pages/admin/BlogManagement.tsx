@@ -1,15 +1,14 @@
 
 import React from 'react';
+import DashboardHeader from '@/components/admin/dashboard/DashboardHeader';
 
 const BlogManagement: React.FC = () => {
   return (
-    <div className="space-y-4">
-      <h1 className="text-3xl font-bold mb-6">Blog Management</h1>
-      <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-lg mb-4">Manage blog content here.</p>
-        <div className="bg-gray-50 p-4 rounded">
-          <p>Your blog posts will appear here once created.</p>
-        </div>
+    <div className="space-y-6">
+      <DashboardHeader title="Blog Management" />
+      
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <p className="text-gray-600">Blog management features will be added here.</p>
       </div>
     </div>
   );

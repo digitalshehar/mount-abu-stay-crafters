@@ -6,12 +6,14 @@ import MobileHeader from "@/components/admin/dashboard/MobileHeader";
 import DashboardLayout from "@/components/admin/dashboard/DashboardLayout";
 import { adminNavItems } from "@/components/admin/dashboard/AdminNavItems";
 
-const AdminDashboard = () => {
+const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  console.log("Dashboard component rendering");
 
   return (
     <div className="min-h-screen bg-stone-50 flex overflow-hidden">
@@ -28,4 +30,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default Dashboard;

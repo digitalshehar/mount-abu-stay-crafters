@@ -2,19 +2,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
-  LayoutDashboard, 
-  Hotel, 
-  FileText, 
-  Car, 
-  Bike, 
-  Map, 
-  Settings, 
   LogOut, 
-  Menu, 
-  X,
-  PlusSquare,
-  Globe,
-  ChevronRight
+  ChevronRight,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { NavItem } from "./AdminNavItems";
+import NotificationCenter from "@/components/NotificationCenter";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -42,7 +33,7 @@ const AdminSidebar: React.FC<SidebarProps> = ({
     if (window.innerWidth < 768) {
       toggleSidebar();
     }
-  }, [location.pathname, toggleSidebar]);
+  }, [location.pathname]);
 
   const isActive = (path: string) => {
     return location.pathname === path || 
@@ -73,11 +64,22 @@ const AdminSidebar: React.FC<SidebarProps> = ({
           sidebarOpen && "translate-x-0"
         )}
       >
-        <div className="p-4 sm:p-6 border-b border-stone-200 flex-shrink-0">
+        <div className="p-4 sm:p-6 border-b border-stone-200 flex-shrink-0 flex items-center justify-between">
           <Link to="/admin" className="flex items-center gap-2">
             <span className="bg-primary text-white text-xl p-2 rounded font-bold">HM</span>
             <h1 className="text-xl font-bold">Admin Dashboard</h1>
           </Link>
+          <div className="flex items-center gap-2">
+            <NotificationCenter />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleSidebar}
+              className="md:hidden"
+            >
+              <X size={18} />
+            </Button>
+          </div>
         </div>
         
         <nav className="p-4 overflow-y-auto flex-grow">

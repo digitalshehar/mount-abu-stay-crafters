@@ -1,5 +1,6 @@
 
 import React from 'react';
+import DashboardHeader from '@/components/admin/dashboard/DashboardHeader';
 import DashboardStats from '@/components/admin/DashboardStats';
 import DashboardCharts from '@/components/admin/DashboardCharts';
 import RecentRecords from '@/components/admin/RecentRecords';
@@ -8,16 +9,14 @@ import SiteMonitoring from '@/components/admin/SiteMonitoring';
 import ActivityLog from '@/components/admin/ActivityLog';
 
 const Overview: React.FC = () => {
+  console.log("Overview component rendering");
+  
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-        <div className="flex space-x-2">
-          <span className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full">
-            Last updated: {new Date().toLocaleTimeString()}
-          </span>
-        </div>
-      </div>
+      <DashboardHeader 
+        title="Dashboard Overview" 
+        lastUpdated={new Date().toLocaleTimeString()} 
+      />
       
       <DashboardStats />
       
