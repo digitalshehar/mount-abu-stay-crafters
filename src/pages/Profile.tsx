@@ -10,11 +10,11 @@ import { useFavorites } from '@/hooks/useFavorites';
 const Profile = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'hotel' | 'adventure' | 'car' | 'bike'>('hotel');
-  const { favorites, loading, removeFavorite } = useFavorites(user);
+  const { favorites, loading, removeFromFavorites } = useFavorites(user);
 
-  // Create a wrapper for removeFavorite to ensure it returns Promise<void>
+  // Create a wrapper for removeFromFavorites to ensure it returns Promise<void>
   const handleRemoveFavorite = async (id: string) => {
-    await removeFavorite(id);
+    await removeFromFavorites(id, activeTab);
     return;
   };
 
