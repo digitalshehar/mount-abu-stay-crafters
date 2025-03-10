@@ -39,7 +39,7 @@ export const useBookings = () => {
           *,
           hotels(name)
         `)
-        .order('created_at', { ascending: false });
+        .returns<any[]>();
 
       if (error) {
         console.error('Error fetching bookings:', error);
@@ -48,14 +48,6 @@ export const useBookings = () => {
           description: 'Failed to load bookings data: ' + error.message,
           variant: 'destructive',
         });
-        setBookings([]);
-        setRecentBookings([]);
-        setLoading(false);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        console.log('No bookings found');
         setBookings([]);
         setRecentBookings([]);
         setLoading(false);
@@ -91,14 +83,15 @@ export const useBookings = () => {
   }, []);
 
   // Function to add a new booking
-  const addBooking = async (bookingData: Omit<Booking, 'id' | 'created_at' | 'hotel_name'>) => {
+  const addBooking = async (bookingData: Omit<Booking, 'id' | 'created_at'>) => {
     try {
       console.log('Adding new booking:', bookingData);
       
       const { data, error } = await supabase
         .from('bookings')
         .insert(bookingData)
-        .select();
+        .select()
+        .returns<any[]>();
 
       if (error) {
         console.error('Error adding booking:', error);
@@ -136,7 +129,8 @@ export const useBookings = () => {
       const { error } = await supabase
         .from('bookings')
         .update({ booking_status: status })
-        .eq('id', id);
+        .eq('id', id)
+        .returns<any>();
 
       if (error) throw error;
       
@@ -164,7 +158,8 @@ export const useBookings = () => {
       const { error } = await supabase
         .from('bookings')
         .update({ payment_status: status })
-        .eq('id', id);
+        .eq('id', id)
+        .returns<any>();
 
       if (error) throw error;
       

@@ -195,65 +195,6 @@ export type Database = {
         }
         Relationships: []
       }
-      bookings: {
-        Row: {
-          booking_status: string
-          check_in_date: string
-          check_out_date: string
-          created_at: string
-          guest_email: string
-          guest_name: string
-          guest_phone: string | null
-          hotel_id: number | null
-          id: string
-          number_of_guests: number
-          payment_status: string
-          room_type: string
-          total_price: number
-          user_id: string | null
-        }
-        Insert: {
-          booking_status?: string
-          check_in_date: string
-          check_out_date: string
-          created_at?: string
-          guest_email: string
-          guest_name: string
-          guest_phone?: string | null
-          hotel_id?: number | null
-          id?: string
-          number_of_guests: number
-          payment_status?: string
-          room_type: string
-          total_price: number
-          user_id?: string | null
-        }
-        Update: {
-          booking_status?: string
-          check_in_date?: string
-          check_out_date?: string
-          created_at?: string
-          guest_email?: string
-          guest_name?: string
-          guest_phone?: string | null
-          hotel_id?: number | null
-          id?: string
-          number_of_guests?: number
-          payment_status?: string
-          room_type?: string
-          total_price?: number
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "hotels"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       car_rentals: {
         Row: {
           bookings: number | null
