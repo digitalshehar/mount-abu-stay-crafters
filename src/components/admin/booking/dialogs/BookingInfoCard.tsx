@@ -1,106 +1,145 @@
 
 import React from 'react';
-import { format } from 'date-fns';
-import { CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Booking } from '@/hooks/useBookings';
+import { format } from 'date-fns';
+import {
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import BookingStatusSelect from './BookingStatusSelect';
 import PaymentStatusSelect from './PaymentStatusSelect';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 
-interface BookingInfoCardProps {
+export interface BookingInfoCardProps {
   booking: Booking;
-  onStatusChange: (status: string) => void;
-  onPaymentStatusChange: (status: string) => void;
+  onStatusChange?: (id: string, status: string) => Promise<boolean>;
+  onPaymentStatusChange?: (id: string, status: string) => Promise<boolean>;
 }
 
-const BookingInfoCard: React.FC<BookingInfoCardProps> = ({ 
-  booking, 
-  onStatusChange, 
-  onPaymentStatusChange 
+const BookingInfoCard: React.FC<BookingInfoCardProps> = ({
+  booking,
+  onStatusChange,
+  onPaymentStatusChange,
 }) => {
-  const getBookingName = () => {
-    if (booking.hotel_name) return booking.hotel_name;
-    if (booking.car_name) return `Car: ${booking.car_name}`;
-    if (booking.bike_name) return `Bike: ${booking.bike_name}`;
-    if (booking.adventure_name) return `Adventure: ${booking.adventure_name}`;
-    return 'Unknown Booking';
-  };
+  // Format dates
+  const formattedCheckIn = format(new Date(booking.check_in_date), 'MMM dd, yyyy');
+  const formattedCheckOut = format(new Date(booking.check_out_date), 'MMM dd, yyyy');
+  
+  // Format price
+  const formattedPrice = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+  }).format(booking.total_price);
 
-  // Format currency
-  const formatCurrency = (amount: number) => {
-    return amount.toLocaleString('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    });
+  const getServiceName = () => {
+    if (booking.hotel_name) return booking.hotel_name;
+    if (booking.car_name) return booking.car_name;
+    if (booking.bike_name) return booking.bike_name;
+    if (booking.adventure_name) return booking.adventure_name;
+    return 'Unknown';
   };
 
   return (
-    <CardContent className="pt-6 space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold">{getBookingName()}</h3>
-        {booking.room_type && <p className="text-muted-foreground">{booking.room_type}</p>}
-        
+    <>
+      <CardHeader>
+        <CardTitle className="text-lg">Booking Information</CardTitle>
         {booking.booking_reference && (
-          <div className="mt-2">
-            <Badge variant="outline" className="bg-blue-50">
-              Reference: {booking.booking_reference}
-            </Badge>
+          <CardDescription>
+            Reference: <Badge variant="outline" className="ml-1">{booking.booking_reference}</Badge>
+          </CardDescription>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground">Service</h4>
+            <p className="text-sm font-medium">{getServiceName()}</p>
+          </div>
+          {booking.room_type && (
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground">Room Type</h4>
+              <p className="text-sm font-medium">{booking.room_type}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground">Check In</h4>
+            <p className="text-sm font-medium">{formattedCheckIn}</p>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground">Check Out</h4>
+            <p className="text-sm font-medium">{formattedCheckOut}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground">Guests</h4>
+            <p className="text-sm font-medium">{booking.number_of_guests}</p>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground">Total Price</h4>
+            <p className="text-sm font-medium">{formattedPrice}</p>
+          </div>
+        </div>
+
+        {booking.base_price && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground">Base Price</h4>
+              <p className="text-sm font-medium">
+                {new Intl.NumberFormat('en-IN', {
+                  style: 'currency',
+                  currency: 'INR',
+                  maximumFractionDigits: 0,
+                }).format(booking.base_price)}
+              </p>
+            </div>
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground">Tax</h4>
+              <p className="text-sm font-medium">
+                {new Intl.NumberFormat('en-IN', {
+                  style: 'currency',
+                  currency: 'INR',
+                  maximumFractionDigits: 0,
+                }).format(booking.tax_amount || 0)}
+              </p>
+            </div>
           </div>
         )}
-      </div>
 
-      <div className="space-y-2">
-        <div className="grid grid-cols-2 gap-x-3">
-          <div>
-            <Label className="text-xs text-muted-foreground">Check In</Label>
-            <p>{format(new Date(booking.check_in_date), 'MMM dd, yyyy')}</p>
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Check Out</Label>
-            <p>{format(new Date(booking.check_out_date), 'MMM dd, yyyy')}</p>
-          </div>
+        <div className="space-y-4 pt-4">
+          {onStatusChange && (
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-2">Booking Status</h4>
+              <BookingStatusSelect 
+                id={booking.id} 
+                currentStatus={booking.booking_status} 
+                onStatusChange={onStatusChange} 
+              />
+            </div>
+          )}
+          
+          {onPaymentStatusChange && (
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground mb-2">Payment Status</h4>
+              <PaymentStatusSelect 
+                id={booking.id} 
+                currentStatus={booking.payment_status} 
+                onStatusChange={onPaymentStatusChange} 
+              />
+            </div>
+          )}
         </div>
-      </div>
-
-      <div>
-        <Label className="text-xs text-muted-foreground">Guests</Label>
-        <p>{booking.number_of_guests} {booking.number_of_guests === 1 ? 'person' : 'people'}</p>
-      </div>
-
-      <div className="bg-slate-50 p-3 rounded-md border">
-        <h4 className="font-medium text-sm mb-2">Price Breakdown</h4>
-        
-        <div className="flex justify-between text-sm">
-          <span>Base price:</span>
-          <span>{formatCurrency(booking.base_price || booking.total_price * 0.9)}</span>
-        </div>
-        
-        <div className="flex justify-between text-sm">
-          <span>Tax (10%):</span>
-          <span>{formatCurrency(booking.tax_amount || booking.total_price * 0.1)}</span>
-        </div>
-        
-        <Separator className="my-2" />
-        
-        <div className="flex justify-between font-bold">
-          <span>Total price:</span>
-          <span>{formatCurrency(booking.total_price)}</span>
-        </div>
-      </div>
-
-      <BookingStatusSelect 
-        currentStatus={booking.booking_status} 
-        onStatusChange={onStatusChange}
-      />
-
-      <PaymentStatusSelect
-        currentStatus={booking.payment_status}
-        onStatusChange={onPaymentStatusChange}
-      />
-    </CardContent>
+      </CardContent>
+    </>
   );
 };
 

@@ -24,7 +24,8 @@ export const fetchAdventureBookings = async (): Promise<Booking[]> => {
       payment_status: 'paid',
       booking_status: adventure.status === 'active' ? 'confirmed' : 'cancelled',
       created_at: adventure.created_at || new Date().toISOString(),
-      booking_type: 'adventure'
+      booking_type: 'adventure',
+      booking_reference: `ADV${adventure.id}${Date.now().toString().slice(-4)}`
     }));
   } catch (error: any) {
     console.error('Error fetching adventure bookings:', error);

@@ -24,7 +24,8 @@ export const fetchCarBookings = async (): Promise<Booking[]> => {
       payment_status: 'paid',
       booking_status: car.status === 'available' ? 'completed' : 'confirmed',
       created_at: car.created_at || new Date().toISOString(),
-      booking_type: 'car'
+      booking_type: 'car',
+      booking_reference: `CAR${car.id}${Date.now().toString().slice(-4)}`
     }));
   } catch (error: any) {
     console.error('Error fetching car bookings:', error);

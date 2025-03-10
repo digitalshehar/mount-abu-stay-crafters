@@ -147,15 +147,21 @@ const BookingRow: React.FC<BookingRowProps> = ({
             <DropdownMenuItem onClick={() => onViewDetails(booking)}>
               <Eye className="w-4 h-4 mr-2" /> View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onPaymentStatusChange && onPaymentStatusChange(booking.id, 'paid')}>
-              <CheckCircle className="w-4 h-4 mr-2" /> Mark as Paid
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onStatusChange && onStatusChange(booking.id, 'completed')}>
-              <CheckCircle className="w-4 h-4 mr-2" /> Complete Booking
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onStatusChange && onStatusChange(booking.id, 'cancelled')}>
-              <XCircle className="w-4 h-4 mr-2" /> Cancel Booking
-            </DropdownMenuItem>
+            {onPaymentStatusChange && (
+              <DropdownMenuItem onClick={() => onPaymentStatusChange(booking.id, 'paid')}>
+                <CheckCircle className="w-4 h-4 mr-2" /> Mark as Paid
+              </DropdownMenuItem>
+            )}
+            {onStatusChange && (
+              <DropdownMenuItem onClick={() => onStatusChange(booking.id, 'completed')}>
+                <CheckCircle className="w-4 h-4 mr-2" /> Complete Booking
+              </DropdownMenuItem>
+            )}
+            {onStatusChange && (
+              <DropdownMenuItem onClick={() => onStatusChange(booking.id, 'cancelled')}>
+                <XCircle className="w-4 h-4 mr-2" /> Cancel Booking
+              </DropdownMenuItem>
+            )}
             {onDeleteClick && (
               <DropdownMenuItem onClick={() => onDeleteClick(booking.id)} className="text-destructive">
                 <XCircle className="w-4 h-4 mr-2" /> Delete Booking

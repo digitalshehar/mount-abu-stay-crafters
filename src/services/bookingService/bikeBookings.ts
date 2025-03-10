@@ -24,7 +24,8 @@ export const fetchBikeBookings = async (): Promise<Booking[]> => {
       payment_status: 'paid',
       booking_status: bike.status === 'available' ? 'completed' : 'confirmed',
       created_at: bike.created_at || new Date().toISOString(),
-      booking_type: 'bike'
+      booking_type: 'bike',
+      booking_reference: `BIKE${bike.id}${Date.now().toString().slice(-4)}`
     }));
   } catch (error: any) {
     console.error('Error fetching bike bookings:', error);

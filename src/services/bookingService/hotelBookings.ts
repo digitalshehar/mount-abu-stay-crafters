@@ -16,7 +16,7 @@ export const fetchHotelBookings = async (): Promise<Booking[]> => {
     return data.map((booking: any) => ({
       ...booking,
       hotel_name: booking.hotels?.name || 'Unknown Hotel',
-      booking_type: 'hotel'
+      booking_type: booking.booking_type || 'hotel'
     }));
   } catch (error: any) {
     console.error('Error fetching hotel bookings:', error);
