@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -83,7 +82,7 @@ const mapOptions = {
 };
 
 // Define libraries array statically to prevent unnecessary reloads
-const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ['places', 'visualization'];
+const libraries = ['places', 'visualization'] as ("places" | "drawing" | "geometry" | "visualization")[];
 
 interface HotelMapProps {
   hotels: Hotel[];
@@ -119,7 +118,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showLandmarks, setShowLandmarks] = useState(false);
   const [showTraffic, setShowTraffic] = useState(false);
-  
+
   // Filter states and handlers from custom hook
   const {
     searchQuery,
@@ -143,7 +142,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
   // Load Google Maps script with the API key from env variables
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries,
+    libraries: libraries,
   });
   
   // Set selected hotel based on URL parameter
@@ -330,7 +329,6 @@ const HotelMap: React.FC<HotelMapProps> = ({
                 mountAbuCenter={mountAbuCenter}
                 mapOptions={{
                   ...mapOptions,
-                  // Add dynamic map options
                   showTraffic,
                 }}
                 filteredHotels={filteredHotels}

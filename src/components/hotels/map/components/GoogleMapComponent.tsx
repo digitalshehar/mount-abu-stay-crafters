@@ -17,7 +17,7 @@ interface GoogleMapComponentProps {
   handleHotelSelect: (id: number) => void;
   onMapLoad?: (map: google.maps.Map) => void;
   onBoundsChanged?: () => void;
-  showHeatmap?: boolean; // Add showHeatmap prop
+  showHeatmap?: boolean;
 }
 
 const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
@@ -48,10 +48,15 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
 
   // Effect for heatmap visualization
   useEffect(() => {
-    if (isLoaded && mapRef.current && hotels.length > 0) {
-      // Only create heatmap if it doesn't exist yet
-      if (!heatmap && typeof google !== 'undefined' && google.maps && google.maps.visualization) {
-        try {
+    if (isLoaded && mapRef.current && hotels.length > 0 && showHeatmap) {
+      try {
+        // Check if visualization library is available
+        if (typeof google !== 'undefined' && google.maps && google.maps.visualization) {
+          // Remove existing heatmap if it exists
+          if (heatmap) {
+            heatmap.setMap(null);
+          }
+          
           // Prepare heatmap data points from hotel prices and locations
           const heatmapData = hotels
             .filter(hotel => hotel.latitude && hotel.longitude)
@@ -65,37 +70,24 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
             });
 
           if (heatmapData.length > 0) {
+            // Create new heatmap
             const newHeatmap = new google.maps.visualization.HeatmapLayer({
               data: heatmapData,
               map: showHeatmap ? mapRef.current : null,
               radius: 20,
               opacity: 0.7,
-              gradient: [
-                'rgba(0, 255, 255, 0)',
-                'rgba(0, 255, 255, 1)',
-                'rgba(0, 225, 255, 1)',
-                'rgba(0, 200, 255, 1)',
-                'rgba(0, 175, 255, 1)',
-                'rgba(0, 160, 255, 1)',
-                'rgba(0, 145, 223, 1)',
-                'rgba(0, 125, 191, 1)',
-                'rgba(0, 110, 255, 1)',
-                'rgba(0, 100, 255, 1)',
-                'rgba(0, 75, 255, 1)',
-                'rgba(0, 50, 255, 1)',
-                'rgba(0, 25, 255, 1)',
-                'rgba(0, 0, 255, 1)'
-              ]
             });
             setHeatmap(newHeatmap);
           }
-        } catch (error) {
-          console.error("Error creating heatmap:", error);
+        } else {
+          console.warn('Google Maps Visualization library not loaded');
         }
-      } else if (heatmap) {
-        // Update heatmap visibility based on the showHeatmap toggle
-        heatmap.setMap(showHeatmap ? mapRef.current : null);
+      } catch (error) {
+        console.error("Error creating heatmap:", error);
       }
+    } else if (heatmap && (!showHeatmap || !isLoaded)) {
+      // Hide heatmap when toggled off
+      heatmap.setMap(null);
     }
   }, [isLoaded, hotels, showHeatmap, heatmap]);
 

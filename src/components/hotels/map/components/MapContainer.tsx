@@ -1,4 +1,3 @@
-
 import React from 'react';
 import GoogleMapComponent from './GoogleMapComponent';
 import MapLoading from '../MapLoading';
@@ -36,15 +35,18 @@ const MapContainer: React.FC<MapContainerProps> = ({
   showHeatmap = false
 }) => {
   const mapCenter = React.useMemo(() => {
+    // If there's a selected marker with coordinates, center on it
     if (selectedMarker && selectedMarker.latitude && selectedMarker.longitude) {
       return { lat: selectedMarker.latitude, lng: selectedMarker.longitude };
     }
     
+    // Otherwise find the first hotel with coordinates
     const hotelWithCoords = filteredHotels.find(h => h.latitude && h.longitude);
     if (hotelWithCoords && hotelWithCoords.latitude && hotelWithCoords.longitude) {
       return { lat: hotelWithCoords.latitude, lng: hotelWithCoords.longitude };
     }
     
+    // Default to Mount Abu center
     return mountAbuCenter;
   }, [selectedMarker, filteredHotels, mountAbuCenter]);
 
