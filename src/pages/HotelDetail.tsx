@@ -19,7 +19,7 @@ const HotelDetail = () => {
   const [activeTab, setActiveTab] = useState("rooms");
   const [showFullGallery, setShowFullGallery] = useState(false);
   const { user } = useAuth();
-  const { favorites, addToFavorites, removeFromFavorites } = useFavorites(user);
+  const { favorites, removeFromFavorites, addToFavorites } = useFavorites(user);
   
   // Use our new custom booking hook
   const {

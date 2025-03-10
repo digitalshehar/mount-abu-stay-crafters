@@ -12,11 +12,6 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState<'hotel' | 'adventure' | 'car' | 'bike'>('hotel');
   const { favorites, loading, removeFavorite } = useFavorites(user);
 
-  // Handler to fix the return type mismatch
-  const handleRemoveFavorite = async (id: string): Promise<void> => {
-    await removeFavorite(id);
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-stone-50">
       <Header />
@@ -33,7 +28,7 @@ const Profile = () => {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               loading={loading}
-              onRemoveFavorite={handleRemoveFavorite}
+              onRemoveFavorite={removeFavorite}
             />
           </div>
         </div>
