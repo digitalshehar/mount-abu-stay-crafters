@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import BookingTable from './BookingTable';
 import BookingFilters from './BookingFilters';
 import BookingStats from './BookingStats';
@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BookingDetailsDialog from './BookingDetailsDialog';
 import { Booking, BookingStats as BookingStatsType, BookingStatusType, PaymentStatusType } from '@/hooks/useBookings';
 
-interface BookingManagementDashboardProps {
+export interface BookingManagementDashboardProps {
   bookings: Booking[];
   bookingStats: BookingStatsType;
   loading: boolean;

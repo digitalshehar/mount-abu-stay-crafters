@@ -24,7 +24,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import BookingDetailsDialog from './BookingDetailsDialog';
 
-interface BookingTableProps {
+export interface BookingTableProps {
   bookings: Booking[];
   loading: boolean;
   updateBookingStatus?: (id: string, status: string) => Promise<boolean>;

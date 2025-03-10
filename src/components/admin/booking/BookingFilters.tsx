@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface BookingFiltersProps {
+export interface BookingFiltersProps {
   searchQuery: string;
   statusFilter: BookingStatusType;
   paymentFilter: PaymentStatusType;

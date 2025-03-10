@@ -1,16 +1,13 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Booking, BookingStats } from '@/hooks/useBookings';
 import { Bar, BarChart, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell, Legend, CartesianGrid, Sector } from 'recharts';
 
-interface BookingChartsProps {
+export interface BookingChartsProps {
   bookings?: Booking[];
   stats?: BookingStats;
   bookingStats?: BookingStats;
 }
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const BookingCharts: React.FC<BookingChartsProps> = ({ bookings, stats, bookingStats }) => {
   // Use the appropriate stats object, with bookingStats taking precedence

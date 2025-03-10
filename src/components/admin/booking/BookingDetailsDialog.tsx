@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Check, Clock, CreditCard, Users, X } from 'lucide-react';
 
-interface BookingDetailsDialogProps {
+export interface BookingDetailsDialogProps {
   booking: Booking | null;
   onClose?: () => void;
   open?: boolean;
