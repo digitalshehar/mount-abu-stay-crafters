@@ -20,7 +20,7 @@ const HotelDetail = () => {
   const [activeTab, setActiveTab] = useState("rooms");
   const [showFullGallery, setShowFullGallery] = useState(false);
   const { user } = useAuth();
-  const { favorites, addToFavorites, removeFromFavorites } = useFavorites(user);
+  const { favorites, removeFavorite, addFavorite } = useFavorites(user);
   
   // Use our new custom booking hook
   const {
@@ -60,10 +60,18 @@ const HotelDetail = () => {
     if (!hotel) return;
     
     if (isFavorite && favoriteId) {
-      removeFromFavorites(hotel.id, 'hotel');
+      removeFavorite(favoriteId);
       toast.info("Removed from favorites");
-    } else {
-      addToFavorites(hotel.id, 'hotel');
+    } else if (addFavorite) {
+      addFavorite({
+        id: hotel.id,
+        name: hotel.name,
+        type: "hotel",
+        image: hotel.image,
+        location: hotel.location,
+        price: hotel.price,
+        slug: hotel.slug
+      });
       toast.success("Added to favorites");
     }
   };

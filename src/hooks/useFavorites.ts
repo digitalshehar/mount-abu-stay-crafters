@@ -1,207 +1,187 @@
 
 import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-export interface Favorite {
-  id: string;
-  user_id: string;
-  item_id: number;
-  item_type: string;
-  created_at: string;
-}
+import { Favorite } from '@/types/favorites';
+import { User } from '@supabase/supabase-js';
 
 export const useFavorites = (user: User | null) => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchFavorites = async () => {
-    if (!user) {
-      setFavorites([]);
-      setLoading(false);
-      return;
+  useEffect(() => {
+    if (user) {
+      fetchFavorites();
     }
+  }, [user]);
 
+  const fetchFavorites = async () => {
     try {
       setLoading(true);
-      console.log('Fetching favorites for user ID:', user.id);
-      
-      const { data, error } = await supabase
+      const { data: favoritesData, error: favoritesError } = await supabase
         .from('favorites')
         .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .eq('user_id', user?.id);
 
-      if (error) {
-        console.error('Error fetching favorites:', error);
-        throw error;
+      if (favoritesError) throw favoritesError;
+
+      // Process favorites to get item details
+      const enrichedFavorites: Favorite[] = [];
+      
+      for (const fav of favoritesData) {
+        // Ensure item_type is one of the allowed types
+        if (!['hotel', 'adventure', 'car', 'bike'].includes(fav.item_type)) {
+          console.error(`Unknown item_type: ${fav.item_type}`);
+          continue;
+        }
+        
+        // Type assertion to ensure TypeScript knows this is a valid type
+        const itemType = fav.item_type as 'hotel' | 'adventure' | 'car' | 'bike';
+        
+        const table = itemType === 'hotel' ? 'hotels' : 
+                      itemType === 'adventure' ? 'adventures' : 
+                      itemType === 'car' ? 'car_rentals' : 'bike_rentals';
+        
+        try {
+          const { data, error } = await supabase
+            .from(table)
+            .select('*')
+            .eq('id', fav.item_id)
+            .single();
+
+          if (error) {
+            console.error(`Error fetching ${itemType} details:`, error);
+            // Still include the favorite with basic info
+            enrichedFavorites.push({
+              ...fav,
+              item_type: itemType
+            });
+          } else {
+            // Extract price based on item type
+            let price: number | undefined;
+            let location: string | undefined = 'No location';
+            
+            if (itemType === 'hotel' && 'price_per_night' in data) {
+              price = data.price_per_night;
+            } else if ('price' in data) {
+              price = data.price;
+            }
+            
+            // Check if location exists before trying to access it
+            if ('location' in data) {
+              location = data.location;
+            }
+            
+            // Add details from the related table
+            enrichedFavorites.push({
+              ...fav,
+              item_type: itemType,
+              name: data.name,
+              image: data.image,
+              price: price,
+              location: location
+            });
+          }
+        } catch (error) {
+          console.error(`Error processing ${itemType}:`, error);
+        }
       }
 
-      console.log('Favorites fetched:', data);
-      setFavorites(data || []);
+      setFavorites(enrichedFavorites);
     } catch (error) {
-      console.error('Error in fetchFavorites:', error);
+      console.error('Error fetching favorites:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load favorites',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to load favorites. Please try again later.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const addToFavorites = async (itemId: number, itemType: string) => {
-    if (!user) {
-      toast({
-        title: 'Authentication Required',
-        description: 'Please sign in to add favorites',
-      });
-      return false;
-    }
-
+  const addFavorite = async (item: { 
+    id: number;
+    name: string;
+    type: 'hotel' | 'adventure' | 'car' | 'bike';
+    image: string;
+    location: string;
+    price: number;
+    slug?: string;
+  }) => {
     try {
-      console.log('Adding to favorites:', { itemId, itemType });
-      
-      const { data, error } = await supabase
-        .from('favorites')
-        .insert({
-          user_id: user.id,
-          item_id: itemId,
-          item_type: itemType
-        })
-        .select();
+      const { data, error } = await supabase.from('favorites').insert({
+        user_id: user?.id,
+        item_type: item.type,
+        item_id: item.id
+      }).select().single();
 
-      if (error) {
-        console.error('Error adding to favorites:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      setFavorites(prev => [...prev, data[0]]);
-      
+      // Add the new favorite to state with the full details
+      // Ensure that the item_type is properly typed
+      const newFavorite: Favorite = {
+        ...data,
+        item_type: item.type, // This ensures item_type is correctly typed
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        location: item.location
+      };
+
+      setFavorites([...favorites, newFavorite]);
+
       toast({
-        title: 'Added to Favorites',
-        description: 'Item has been added to your favorites',
+        title: "Added to Favorites",
+        description: `${item.name} has been added to your favorites.`,
       });
       
       return true;
     } catch (error) {
-      console.error('Error in addToFavorites:', error);
+      console.error('Error adding favorite:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to add to favorites',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to add to favorites. Please try again.",
+        variant: "destructive",
       });
       return false;
     }
   };
 
-  const removeFromFavorites = async (itemId: number, itemType: string) => {
-    if (!user) return false;
-
-    try {
-      console.log('Removing from favorites:', { itemId, itemType });
-      
-      // Find the favorite ID to remove
-      const favoriteToRemove = favorites.find(
-        fav => fav.item_id === itemId && fav.item_type === itemType
-      );
-      
-      if (!favoriteToRemove) {
-        console.warn('Favorite not found:', { itemId, itemType });
-        return false;
-      }
-      
-      const { error } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('id', favoriteToRemove.id);
-
-      if (error) {
-        console.error('Error removing from favorites:', error);
-        throw error;
-      }
-
-      setFavorites(prev => 
-        prev.filter(fav => !(fav.item_id === itemId && fav.item_type === itemType))
-      );
-      
-      toast({
-        title: 'Removed from Favorites',
-        description: 'Item has been removed from your favorites',
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('Error in removeFromFavorites:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to remove from favorites',
-        variant: 'destructive',
-      });
-      return false;
-    }
-  };
-
-  // Add this function for direct removal by ID (used in other components)
-  const removeFavorite = async (id: string) => {
+  const removeFavorite = async (favoriteId: string) => {
     try {
       const { error } = await supabase
         .from('favorites')
         .delete()
-        .eq('id', id);
+        .eq('id', favoriteId);
 
-      if (error) {
-        console.error('Error removing favorite by ID:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      setFavorites(prev => prev.filter(fav => fav.id !== id));
-      
+      // Update state locally after successful deletion
+      setFavorites(prevFavorites => prevFavorites.filter(fav => fav.id !== favoriteId));
       toast({
-        title: 'Removed from Favorites',
-        description: 'Item has been removed from your favorites',
+        title: "Success",
+        description: "Item removed from favorites",
       });
-      
-      return true;
     } catch (error) {
-      console.error('Error in removeFavorite:', error);
+      console.error('Error removing favorite:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to remove from favorites',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to remove from favorites",
+        variant: "destructive",
       });
-      return false;
     }
   };
 
-  const isFavorite = (itemId: number, itemType: string) => {
+  const isFavorite = (itemId: number, itemType: 'hotel' | 'adventure' | 'car' | 'bike'): boolean => {
     return favorites.some(fav => fav.item_id === itemId && fav.item_type === itemType);
   };
 
-  // Add a function to get favorite ID by item ID and type
-  const getFavoriteId = (itemId: number, itemType: string): string | undefined => {
-    const favorite = favorites.find(
-      fav => fav.item_id === itemId && fav.item_type === itemType
-    );
-    return favorite?.id;
+  const getFavoriteId = (itemId: number, itemType: 'hotel' | 'adventure' | 'car' | 'bike'): string | null => {
+    const favorite = favorites.find(fav => fav.item_id === itemId && fav.item_type === itemType);
+    return favorite ? favorite.id : null;
   };
 
-  useEffect(() => {
-    fetchFavorites();
-  }, [user?.id]);
-
-  return {
-    favorites,
-    loading,
-    isFavorite,
-    addToFavorites,
-    removeFromFavorites,
-    fetchFavorites,
-    // Add additional methods for compatibility
-    removeFavorite,
-    getFavoriteId
-  };
+  return { favorites, loading, removeFavorite, addFavorite, isFavorite, getFavoriteId };
 };

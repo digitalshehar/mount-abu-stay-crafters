@@ -195,65 +195,6 @@ export type Database = {
         }
         Relationships: []
       }
-      bookings: {
-        Row: {
-          booking_status: string
-          check_in_date: string
-          check_out_date: string
-          created_at: string
-          guest_email: string
-          guest_name: string
-          guest_phone: string | null
-          hotel_id: number | null
-          id: string
-          number_of_guests: number
-          payment_status: string
-          room_type: string
-          total_price: number
-          user_id: string | null
-        }
-        Insert: {
-          booking_status?: string
-          check_in_date: string
-          check_out_date: string
-          created_at?: string
-          guest_email: string
-          guest_name: string
-          guest_phone?: string | null
-          hotel_id?: number | null
-          id?: string
-          number_of_guests: number
-          payment_status?: string
-          room_type: string
-          total_price: number
-          user_id?: string | null
-        }
-        Update: {
-          booking_status?: string
-          check_in_date?: string
-          check_out_date?: string
-          created_at?: string
-          guest_email?: string
-          guest_name?: string
-          guest_phone?: string | null
-          hotel_id?: number | null
-          id?: string
-          number_of_guests?: number
-          payment_status?: string
-          room_type?: string
-          total_price?: number
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_hotel_id_fkey"
-            columns: ["hotel_id"]
-            isOneToOne: false
-            referencedRelation: "hotels"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       car_rentals: {
         Row: {
           bookings: number | null
@@ -627,28 +568,6 @@ export type Database = {
           p_hotel_ids: number[]
         }
         Returns: undefined
-      }
-      email: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_user_profile: {
-        Args: {
-          user_id: string
-        }
-        Returns: {
-          avatar_url: string | null
-          created_at: string | null
-          full_name: string | null
-          id: string
-          updated_at: string | null
-          username: string | null
-          website: string | null
-        }
-      }
-      uid: {
-        Args: Record<PropertyKey, never>
-        Returns: string
       }
     }
     Enums: {

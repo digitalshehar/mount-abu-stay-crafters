@@ -90,7 +90,6 @@ const HotelAdminHeader: React.FC<HotelAdminHeaderProps> = ({
               notifications={notifications}
               onMarkAsRead={markAsRead}
               onMarkAllAsRead={markAllAsRead}
-              onClose={() => setIsNotificationsPanelOpen(false)}
             />
           </div>
         )}

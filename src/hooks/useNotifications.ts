@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { toast } from '@/hooks/use-toast';
 
 export interface Notification {
   id: string;
@@ -82,13 +81,6 @@ export const useNotifications = () => {
     };
 
     setNotifications(prevNotifications => [newNotification, ...prevNotifications]);
-    
-    // Show a toast notification
-    toast({
-      title: notification.title,
-      description: notification.message,
-      variant: notification.type === 'alert' ? 'destructive' : 'default',
-    });
   };
 
   return {
