@@ -197,6 +197,7 @@ export type Database = {
       }
       bookings: {
         Row: {
+          base_price: number | null
           booking_status: string
           check_in_date: string
           check_out_date: string
@@ -209,10 +210,12 @@ export type Database = {
           number_of_guests: number
           payment_status: string
           room_type: string
+          tax_amount: number | null
           total_price: number
           user_id: string | null
         }
         Insert: {
+          base_price?: number | null
           booking_status?: string
           check_in_date: string
           check_out_date: string
@@ -225,10 +228,12 @@ export type Database = {
           number_of_guests: number
           payment_status?: string
           room_type: string
+          tax_amount?: number | null
           total_price: number
           user_id?: string | null
         }
         Update: {
+          base_price?: number | null
           booking_status?: string
           check_in_date?: string
           check_out_date?: string
@@ -241,6 +246,7 @@ export type Database = {
           number_of_guests?: number
           payment_status?: string
           room_type?: string
+          tax_amount?: number | null
           total_price?: number
           user_id?: string | null
         }

@@ -64,21 +64,17 @@ const BookingInfoCard: React.FC<BookingInfoCardProps> = ({
       <div className="bg-slate-50 p-3 rounded-md border">
         <h4 className="font-medium text-sm mb-2">Price Breakdown</h4>
         
-        {booking.base_price ? (
-          <>
-            <div className="flex justify-between text-sm">
-              <span>Base price:</span>
-              <span>{formatCurrency(booking.base_price)}</span>
-            </div>
-            
-            <div className="flex justify-between text-sm">
-              <span>Tax (10%):</span>
-              <span>{formatCurrency(booking.tax_amount || 0)}</span>
-            </div>
-            
-            <Separator className="my-2" />
-          </>
-        ) : null}
+        <div className="flex justify-between text-sm">
+          <span>Base price:</span>
+          <span>{formatCurrency(booking.base_price || booking.total_price * 0.9)}</span>
+        </div>
+        
+        <div className="flex justify-between text-sm">
+          <span>Tax (10%):</span>
+          <span>{formatCurrency(booking.tax_amount || booking.total_price * 0.1)}</span>
+        </div>
+        
+        <Separator className="my-2" />
         
         <div className="flex justify-between font-bold">
           <span>Total price:</span>

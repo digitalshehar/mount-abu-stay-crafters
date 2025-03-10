@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { BookingFormValues } from "@/components/BookingForm";
 import { useBookings } from "@/hooks/useBookings";
+import { BookingType } from "@/hooks/useBookings";
 
 export const useHotelBooking = (hotel: any) => {
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -55,7 +56,7 @@ export const useHotelBooking = (hotel: any) => {
         total_price: basePrice, // The service will add tax
         booking_status: 'confirmed',
         payment_status: 'pending',
-        booking_type: 'hotel'
+        booking_type: 'hotel' as BookingType // Fix the TypeScript error by casting to BookingType
       };
       
       // Add the booking
