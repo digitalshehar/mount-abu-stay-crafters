@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface Booking {
   id: string;
+  user_id: string;
   hotel_id: number;
   hotel_name?: string;
   room_type: string;
@@ -31,11 +32,12 @@ export const useBookings = () => {
       setLoading(true);
       
       console.log('Fetching bookings from Supabase...');
+      
       const { data, error } = await supabase
         .from('bookings')
         .select(`
           *,
-          hotels:hotel_id (name)
+          hotels(name)
         `)
         .order('created_at', { ascending: false });
 
@@ -43,9 +45,20 @@ export const useBookings = () => {
         console.error('Error fetching bookings:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load bookings data',
+          description: 'Failed to load bookings data: ' + error.message,
           variant: 'destructive',
         });
+        setBookings([]);
+        setRecentBookings([]);
+        setLoading(false);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No bookings found');
+        setBookings([]);
+        setRecentBookings([]);
+        setLoading(false);
         return;
       }
 
@@ -59,8 +72,15 @@ export const useBookings = () => {
       
       setBookings(formattedBookings);
       setRecentBookings(formattedBookings.slice(0, 5));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in fetchBookings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load bookings data: ' + (error.message || 'Unknown error'),
+        variant: 'destructive',
+      });
+      setBookings([]);
+      setRecentBookings([]);
     } finally {
       setLoading(false);
     }
@@ -71,15 +91,14 @@ export const useBookings = () => {
   }, []);
 
   // Function to add a new booking
-  const addBooking = async (bookingData: Omit<Booking, 'id' | 'created_at'>) => {
+  const addBooking = async (bookingData: Omit<Booking, 'id' | 'created_at' | 'hotel_name'>) => {
     try {
       console.log('Adding new booking:', bookingData);
       
       const { data, error } = await supabase
         .from('bookings')
         .insert(bookingData)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('Error adding booking:', error);
@@ -128,11 +147,11 @@ export const useBookings = () => {
       
       fetchBookings();
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating booking status:', error);
       toast({
         title: 'Update Failed',
-        description: 'Failed to update booking status',
+        description: 'Failed to update booking status: ' + (error.message || 'Unknown error'),
         variant: 'destructive',
       });
       return false;
@@ -156,11 +175,11 @@ export const useBookings = () => {
       
       fetchBookings();
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating payment status:', error);
       toast({
         title: 'Update Failed',
-        description: 'Failed to update payment status',
+        description: 'Failed to update payment status: ' + (error.message || 'Unknown error'),
         variant: 'destructive',
       });
       return false;

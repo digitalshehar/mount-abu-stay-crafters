@@ -10,7 +10,15 @@ import { useFavorites } from '@/hooks/useFavorites';
 const Profile = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'hotel' | 'adventure' | 'car' | 'bike'>('hotel');
-  const { favorites, loading, removeFavorite } = useFavorites(user);
+  const { favorites, loading, removeFromFavorites } = useFavorites(user);
+
+  // Handler to fix the return type mismatch
+  const handleRemoveFavorite = async (id: string): Promise<void> => {
+    const itemId = parseInt(id, 10);
+    if (!isNaN(itemId)) {
+      await removeFromFavorites(itemId, 'hotel');
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50">
@@ -28,7 +36,7 @@ const Profile = () => {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               loading={loading}
-              onRemoveFavorite={removeFavorite}
+              onRemoveFavorite={handleRemoveFavorite}
             />
           </div>
         </div>

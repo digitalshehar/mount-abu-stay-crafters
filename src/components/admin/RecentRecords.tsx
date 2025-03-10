@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users } from "lucide-react";
@@ -28,6 +27,7 @@ const RecentRecords = () => {
       try {
         setLoadingHotels(true);
         
+        // Using a simple select query
         const { data, error } = await supabase
           .from('hotels')
           .select('name, review_count')

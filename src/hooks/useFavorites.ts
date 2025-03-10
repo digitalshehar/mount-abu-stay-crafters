@@ -145,8 +145,48 @@ export const useFavorites = (user: User | null) => {
     }
   };
 
+  // Add this function for direct removal by ID (used in other components)
+  const removeFavorite = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error removing favorite by ID:', error);
+        throw error;
+      }
+
+      setFavorites(prev => prev.filter(fav => fav.id !== id));
+      
+      toast({
+        title: 'Removed from Favorites',
+        description: 'Item has been removed from your favorites',
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error in removeFavorite:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to remove from favorites',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
   const isFavorite = (itemId: number, itemType: string) => {
     return favorites.some(fav => fav.item_id === itemId && fav.item_type === itemType);
+  };
+
+  // Add a function to get favorite ID by item ID and type
+  const getFavoriteId = (itemId: number, itemType: string): string | undefined => {
+    const favorite = favorites.find(
+      fav => fav.item_id === itemId && fav.item_type === itemType
+    );
+    return favorite?.id;
   };
 
   useEffect(() => {
@@ -159,6 +199,9 @@ export const useFavorites = (user: User | null) => {
     isFavorite,
     addToFavorites,
     removeFromFavorites,
-    fetchFavorites
+    fetchFavorites,
+    // Add additional methods for compatibility
+    removeFavorite,
+    getFavoriteId
   };
 };
