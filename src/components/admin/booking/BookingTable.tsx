@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Table,
@@ -7,7 +6,7 @@ import {
 import { Booking } from '@/hooks/useBookings';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import BookingDetailsDialog from './dialogs/BookingDetailsDialog';
-import TableHeader from './tables/TableHeader';
+import BookingTableHeader from './tables/TableHeader';
 import BookingRow from './tables/TableRow';
 import NoBookingsFound from './tables/NoBookingsFound';
 import TableLoading from './tables/TableLoading';
@@ -76,7 +75,7 @@ const BookingTable: React.FC<BookingTableProps> = ({
       <ScrollArea className="h-[600px]">
         <div className="rounded-md border">
           <Table>
-            <TableHeader />
+            <BookingTableHeader />
             <TableBody>
               {bookings.map((booking) => (
                 <BookingRow 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TableCell, TableRow as UITableRow } from '@/components/ui/table';
 import { Booking } from '@/hooks/useBookings';
@@ -14,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import BookingTableHeader from './TableHeader';
 
 interface BookingRowProps {
   booking: Booking;

@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { TableHead, TableHeader as UITableHeader, TableRow } from '@/components/ui/table';
 
-const TableHeader: React.FC = () => {
+const BookingTableHeader: React.FC = () => {
   return (
-    <TableHeader>
+    <UITableHeader>
       <TableRow>
         <TableHead>Booking ID</TableHead>
         <TableHead>Guest</TableHead>
@@ -17,8 +17,8 @@ const TableHeader: React.FC = () => {
         <TableHead>Payment</TableHead>
         <TableHead className="text-right">Actions</TableHead>
       </TableRow>
-    </TableHeader>
+    </UITableHeader>
   );
 };
 
-export default TableHeader;
+export default BookingTableHeader;
