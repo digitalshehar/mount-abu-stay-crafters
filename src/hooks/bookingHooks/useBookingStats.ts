@@ -13,7 +13,8 @@ export const useBookingStats = (filteredBookings: Booking[]) => {
       bookingsByHotel: {},
       bookingsByRoomType: {},
       revenueByMonth: {},
-      occupancyRate: 75.5 // Default occupancy rate as placeholder
+      occupancyRate: 75.5, // Default occupancy rate as placeholder
+      bookingsByType: {} // New property for booking types
     };
 
     // Calculate total revenue and averages
@@ -22,15 +23,22 @@ export const useBookingStats = (filteredBookings: Booking[]) => {
 
     // Group by status
     filteredBookings.forEach(booking => {
-      // By status
+      // By booking status
       stats.bookingsByStatus[booking.booking_status] = (stats.bookingsByStatus[booking.booking_status] || 0) + 1;
       
-      // By hotel
-      const hotelKey = booking.hotel_name || 'Unknown';
-      stats.bookingsByHotel[hotelKey] = (stats.bookingsByHotel[hotelKey] || 0) + 1;
+      // By booking type
+      if (stats.bookingsByType) {
+        stats.bookingsByType[booking.booking_type] = (stats.bookingsByType[booking.booking_type] || 0) + 1;
+      }
       
-      // By room type
-      stats.bookingsByRoomType[booking.room_type] = (stats.bookingsByRoomType[booking.room_type] || 0) + 1;
+      // By hotel
+      const serviceKey = booking.hotel_name || booking.car_name || booking.bike_name || booking.adventure_name || 'Unknown';
+      stats.bookingsByHotel[serviceKey] = (stats.bookingsByHotel[serviceKey] || 0) + 1;
+      
+      // By room type (only applies to hotel bookings)
+      if (booking.room_type) {
+        stats.bookingsByRoomType[booking.room_type] = (stats.bookingsByRoomType[booking.room_type] || 0) + 1;
+      }
       
       // By month (for revenue analysis)
       const bookingMonth = new Date(booking.check_in_date).toISOString().substring(0, 7); // YYYY-MM format

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useBookings } from '@/hooks/useBookings';
-import { HelmetProvider, Helmet } from 'react-helmet-async';
+import { Helmet } from 'react-helmet-async';
 import BookingManagementDashboard from '@/components/admin/booking/BookingManagementDashboard';
 
 const AdminBookings = () => {
@@ -16,10 +16,12 @@ const AdminBookings = () => {
     statusFilter,
     paymentFilter,
     dateRange,
+    bookingType,
     setSearchQuery,
     setStatusFilter,
     setPaymentFilter,
     setDateRange,
+    setBookingType,
     exportBookingsToCSV
   } = useBookings();
   
@@ -33,11 +35,9 @@ const AdminBookings = () => {
 
   return (
     <div className="space-y-6">
-      <HelmetProvider>
-        <Helmet>
-          <title>Bookings Management | Admin Dashboard</title>
-        </Helmet>
-      </HelmetProvider>
+      <Helmet>
+        <title>Bookings Management | Admin Dashboard</title>
+      </Helmet>
       
       <BookingManagementDashboard 
         bookings={filteredBookings}
@@ -46,11 +46,13 @@ const AdminBookings = () => {
         searchQuery={searchQuery}
         statusFilter={statusFilter}
         paymentFilter={paymentFilter}
+        bookingType={bookingType}
         dateRange={dateRange}
         setSearchQuery={setSearchQuery}
         setStatusFilter={setStatusFilter}
         setPaymentFilter={setPaymentFilter}
         setDateRange={setDateRange}
+        setBookingType={setBookingType}
         exportBookingsToCSV={exportBookingsToCSV}
         onViewDetails={handleViewDetails}
         selectedBooking={selectedBooking}

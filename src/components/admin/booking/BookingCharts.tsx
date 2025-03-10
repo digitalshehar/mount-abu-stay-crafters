@@ -1,204 +1,221 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Booking, BookingStats } from '@/hooks/useBookings';
-import { Bar, BarChart, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell, Legend, CartesianGrid, Sector } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend 
+} from 'recharts';
+import { BookingStats } from '@/hooks/useBookings';
+
+// Define colors for the charts
+const CHART_COLORS = {
+  primary: '#4f46e5',
+  secondary: '#10b981',
+  accent: '#f59e0b',
+  muted: '#6b7280',
+  success: '#22c55e',
+  danger: '#ef4444',
+  warning: '#f59e0b',
+  info: '#3b82f6'
+};
+
+// Color palette for pie charts
+const PIE_COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#84cc16'];
 
 export interface BookingChartsProps {
-  bookings?: Booking[];
-  stats?: BookingStats;
   bookingStats?: BookingStats;
+  bookings?: any[];
 }
 
-const BookingCharts: React.FC<BookingChartsProps> = ({ bookings, stats, bookingStats }) => {
-  // Use the appropriate stats object, with bookingStats taking precedence
-  const statsData = bookingStats || stats || {
-    bookingsByStatus: {},
-    bookingsByHotel: {},
-    bookingsByRoomType: {},
-    revenueByMonth: {},
-    totalBookings: 0,
-    totalRevenue: 0,
-    averageBookingValue: 0,
-    occupancyRate: 0
-  };
-  
-  // Transform data for status pie chart
-  const statusData = Object.entries(statsData.bookingsByStatus).map(([name, value]) => ({
+const BookingCharts: React.FC<BookingChartsProps> = ({ bookingStats = {
+  totalBookings: 0,
+  totalRevenue: 0,
+  averageBookingValue: 0,
+  bookingsByStatus: {},
+  bookingsByHotel: {},
+  bookingsByRoomType: {},
+  revenueByMonth: {},
+  occupancyRate: 0
+} }) => {
+  // Transform data for charts
+  const bookingStatusData = Object.entries(bookingStats.bookingsByStatus || {}).map(([name, value]) => ({
     name,
-    value,
+    value
   }));
 
-  // Transform data for hotel bar chart
-  const hotelData = Object.entries(statsData.bookingsByHotel)
-    .map(([name, value]) => ({
-      name: name.length > 15 ? name.substring(0, 15) + '...' : name,
-      value,
-    }))
+  const revenueByMonthData = Object.entries(bookingStats.revenueByMonth || {}).map(([month, value]) => {
+    // Format month for display (YYYY-MM to MMM YYYY)
+    const dateObj = new Date(month);
+    const formattedMonth = dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return {
+      month: formattedMonth,
+      revenue: value
+    };
+  }).sort((a, b) => {
+    // Sort by date (assumes month is in format "MMM YYYY")
+    return new Date(a.month).getTime() - new Date(b.month).getTime();
+  });
+
+  const bookingsByHotelData = Object.entries(bookingStats.bookingsByHotel || {})
+    .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
-    .slice(0, 5);
+    .slice(0, 5); // Top 5 hotels
 
-  // Transform data for room type distribution
-  const roomTypeData = Object.entries(statsData.bookingsByRoomType).map(([name, value]) => ({
-    name,
-    value,
-  }));
-
-  // Transform data for monthly revenue
-  const revenueData = Object.entries(statsData.revenueByMonth)
-    .map(([month, revenue]) => {
-      const date = new Date(month);
-      return {
-        name: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        revenue,
-      };
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.name);
-      const dateB = new Date(b.name);
-      return dateA.getTime() - dateB.getTime();
-    });
+  const bookingsByRoomTypeData = Object.entries(bookingStats.bookingsByRoomType || {})
+    .map(([name, value]) => ({ name, value }));
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Booking Status Distribution</CardTitle>
-            <CardDescription>Distribution of bookings by status</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {statusData.length > 0 ? (
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList>
+          <TabsTrigger value="overview">Booking Overview</TabsTrigger>
+          <TabsTrigger value="revenue">Revenue Analysis</TabsTrigger>
+          <TabsTrigger value="distribution">Booking Distribution</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Booking Status Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Booking Status Distribution</CardTitle>
+                <CardDescription>
+                  Breakdown of bookings by status
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={bookingStatusData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill={CHART_COLORS.primary}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {bookingStatusData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Legend />
+                    <Tooltip formatter={(value) => [`${value} bookings`, 'Count']} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            
+            {/* Room Type Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Room Type Distribution</CardTitle>
+                <CardDescription>
+                  Bookings by room type
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={bookingsByRoomTypeData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill={CHART_COLORS.secondary}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {bookingsByRoomTypeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Legend />
+                    <Tooltip formatter={(value) => [`${value} bookings`, 'Count']} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="revenue" className="space-y-4">
+          {/* Monthly Revenue Trend */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Monthly Revenue Trend</CardTitle>
+              <CardDescription>
+                Revenue generated over time
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={true}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    nameKey="name"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value) => [`${value} Bookings`, 'Count']}
-                    labelFormatter={(name) => `Status: ${name}`}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Popular Hotels</CardTitle>
-            <CardDescription>Top 5 hotels by booking count</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {hotelData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={hotelData} layout="vertical" margin={{ left: 20, right: 20 }}>
+                <BarChart
+                  data={revenueByMonthData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 20,
+                    bottom: 60,
+                  }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={150} tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#6366F1" name="Bookings" />
+                  <XAxis dataKey="month" angle={-45} textAnchor="end" height={60} />
+                  <YAxis
+                    tickFormatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                  />
+                  <Tooltip formatter={(value) => [`₹${value.toLocaleString('en-IN')}`, 'Revenue']} />
+                  <Bar dataKey="revenue" fill={CHART_COLORS.primary} name="Revenue" />
                 </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Room Type Distribution</CardTitle>
-            <CardDescription>Bookings by room type</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {roomTypeData.length > 0 ? (
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="distribution" className="space-y-4">
+          {/* Top Hotels by Bookings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Properties by Bookings</CardTitle>
+              <CardDescription>
+                Most booked properties
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="h-96">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={roomTypeData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={true}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    nameKey="name"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {roomTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value) => [`${value} Bookings`, 'Count']}
-                    labelFormatter={(name) => `Room Type: ${name}`}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Monthly Revenue</CardTitle>
-            <CardDescription>Revenue trends over time</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {revenueData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueData} margin={{ left: 20, right: 20 }}>
+                <BarChart
+                  layout="vertical"
+                  data={bookingsByHotelData}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 100,
+                    bottom: 5,
+                  }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis 
-                    tickFormatter={(value) => `₹${value >= 1000 ? `${(value/1000).toFixed(0)}K` : value}`}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [`₹${value.toLocaleString('en-IN')}`, 'Revenue']}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="#6366F1" 
-                    activeDot={{ r: 8 }} 
-                    name="Revenue"
-                  />
-                </LineChart>
+                  <XAxis type="number" />
+                  <YAxis type="category" dataKey="name" width={80} />
+                  <Tooltip />
+                  <Bar dataKey="value" fill={CHART_COLORS.accent} name="Bookings" />
+                </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground">No data available</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

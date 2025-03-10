@@ -1,18 +1,25 @@
 
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Booking } from '@/hooks/useBookings';
+import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Check, Clock, CreditCard, Users, X } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 
 export interface BookingDetailsDialogProps {
-  booking: Booking | null;
-  onClose?: () => void;
+  booking: Booking;
   open?: boolean;
+  onClose?: () => void;
   onOpenChange?: (open: boolean) => void;
   updateBookingStatus?: (id: string, status: string) => Promise<boolean>;
   updatePaymentStatus?: (id: string, status: string) => Promise<boolean>;
@@ -22,256 +29,173 @@ export interface BookingDetailsDialogProps {
 
 const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   booking,
-  onClose,
   open,
+  onClose,
   onOpenChange,
   updateBookingStatus,
   updatePaymentStatus,
   onStatusChange,
-  onPaymentStatusChange,
+  onPaymentStatusChange
 }) => {
-  if (!booking) return null;
-
-  const isOpen = open !== undefined ? open : !!booking;
-  const handleOpenChange = onOpenChange || (onClose ? (isOpen: boolean) => !isOpen && onClose() : undefined);
-
-  const handleStatusUpdate = async (status: string) => {
-    const updateFn = onStatusChange || updateBookingStatus;
-    if (updateFn) {
-      const success = await updateFn(booking.id, status);
-      if (success && onClose) {
-        onClose();
-      }
+  const handleStatusChange = async (status: string) => {
+    if (onStatusChange) {
+      await onStatusChange(booking.id, status);
+    } else if (updateBookingStatus) {
+      await updateBookingStatus(booking.id, status);
     }
   };
 
-  const handlePaymentUpdate = async (status: string) => {
-    const updateFn = onPaymentStatusChange || updatePaymentStatus;
-    if (updateFn) {
-      const success = await updateFn(booking.id, status);
-      if (success && onClose) {
-        onClose();
-      }
+  const handlePaymentStatusChange = async (status: string) => {
+    if (onPaymentStatusChange) {
+      await onPaymentStatusChange(booking.id, status);
+    } else if (updatePaymentStatus) {
+      await updatePaymentStatus(booking.id, status);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const getBookingName = () => {
+    if (booking.hotel_name) return booking.hotel_name;
+    if (booking.car_name) return `Car: ${booking.car_name}`;
+    if (booking.bike_name) return `Bike: ${booking.bike_name}`;
+    if (booking.adventure_name) return `Adventure: ${booking.adventure_name}`;
+    return 'Unknown Booking';
   };
 
-  const getPaymentStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'refunded':
-        return 'bg-purple-100 text-purple-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const getBookingTypeLabel = (type: string) => {
+    switch (type) {
+      case 'hotel': return 'Hotel Stay';
+      case 'car': return 'Car Rental';
+      case 'bike': return 'Bike Rental';
+      case 'adventure': return 'Adventure Tour';
+      default: return 'Booking';
     }
-  };
-
-  const getDuration = () => {
-    const checkIn = new Date(booking.check_in_date);
-    const checkOut = new Date(booking.check_out_date);
-    const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Booking Details</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Booking Details 
+            <Badge variant="secondary" className="ml-2">{getBookingTypeLabel(booking.booking_type)}</Badge>
+          </DialogTitle>
+          <DialogDescription>
+            Booking reference: {booking.id}
+          </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[70vh] overflow-auto pr-4">
-          <div className="space-y-6 py-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">
-                Booking #{booking.id.substring(0, 8)}...
-              </h3>
-              <div className="flex space-x-2">
-                <Badge variant="outline" className={getStatusColor(booking.booking_status)}>
-                  {booking.booking_status}
-                </Badge>
-                <Badge variant="outline" className={getPaymentStatusColor(booking.payment_status)}>
-                  {booking.payment_status}
-                </Badge>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Left column - booking details */}
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold">{getBookingName()}</h3>
+                {booking.room_type && <p className="text-muted-foreground">{booking.room_type}</p>}
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Guest Information</h4>
-                  <div className="border rounded-md p-3 space-y-2">
-                    <div>
-                      <Label className="text-xs">Name</Label>
-                      <p className="font-medium">{booking.guest_name}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Email</Label>
-                      <p className="font-medium">{booking.guest_email}</p>
-                    </div>
-                    {booking.guest_phone && (
-                      <div>
-                        <Label className="text-xs">Phone</Label>
-                        <p className="font-medium">{booking.guest_phone}</p>
-                      </div>
-                    )}
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-x-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Check In</Label>
+                    <p>{format(new Date(booking.check_in_date), 'MMM dd, yyyy')}</p>
                   </div>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Stay Details</h4>
-                  <div className="border rounded-md p-3 space-y-2">
-                    <div>
-                      <Label className="text-xs">Hotel</Label>
-                      <p className="font-medium">{booking.hotel_name || 'Unknown Hotel'}</p>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Room Type</Label>
-                      <p className="font-medium">{booking.room_type}</p>
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1" />
-                      <Label className="text-xs mr-2">Guests:</Label>
-                      <p className="font-medium">{booking.number_of_guests}</p>
-                    </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Check Out</Label>
+                    <p>{format(new Date(booking.check_out_date), 'MMM dd, yyyy')}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Booking Dates</h4>
-                  <div className="border rounded-md p-3 space-y-2">
-                    <div>
-                      <Label className="text-xs">Check In</Label>
-                      <p className="font-medium">
-                        {format(new Date(booking.check_in_date), 'EEEE, MMMM dd, yyyy')}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Check Out</Label>
-                      <p className="font-medium">
-                        {format(new Date(booking.check_out_date), 'EEEE, MMMM dd, yyyy')}
-                      </p>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <Label className="text-xs mr-2">Duration:</Label>
-                      <p className="font-medium">{getDuration()} nights</p>
-                    </div>
-                  </div>
-                </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Guests</Label>
+                <p>{booking.number_of_guests} {booking.number_of_guests === 1 ? 'person' : 'people'}</p>
+              </div>
 
+              <div>
+                <Label className="text-xs text-muted-foreground">Total Price</Label>
+                <p className="text-lg font-bold">₹{booking.total_price.toLocaleString('en-IN')}</p>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Booking Status</Label>
+                <Select defaultValue={booking.booking_status} onValueChange={handleStatusChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Booking Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Payment Status</Label>
+                <Select defaultValue={booking.payment_status} onValueChange={handlePaymentStatusChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Payment Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="paid">Paid</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Right column - guest details */}
+          <Card>
+            <CardContent className="pt-6 space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold">Guest Information</h3>
+                <Separator className="my-2" />
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground">Name</Label>
+                <p>{booking.guest_name}</p>
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <p>{booking.guest_email}</p>
+              </div>
+
+              {booking.guest_phone && (
                 <div>
-                  <h4 className="text-sm font-medium mb-1">Payment Information</h4>
-                  <div className="border rounded-md p-3 space-y-2">
-                    <div>
-                      <Label className="text-xs">Total Amount</Label>
-                      <p className="text-lg font-bold">₹{booking.total_price.toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="flex items-center">
-                      <CreditCard className="h-4 w-4 mr-1" />
-                      <Label className="text-xs mr-2">Payment Status:</Label>
-                      <Badge variant="outline" className={getPaymentStatusColor(booking.payment_status)}>
-                        {booking.payment_status}
-                      </Badge>
-                    </div>
-                    <div>
-                      <Label className="text-xs">Booking Date</Label>
-                      <p className="font-medium">
-                        {format(new Date(booking.created_at), 'MMMM dd, yyyy')}
-                      </p>
-                    </div>
-                  </div>
+                  <Label className="text-xs text-muted-foreground">Phone Number</Label>
+                  <p>{booking.guest_phone}</p>
+                </div>
+              )}
+
+              <div>
+                <Label className="text-xs text-muted-foreground">Booking Date</Label>
+                <p>{format(new Date(booking.created_at), 'MMMM dd, yyyy')}</p>
+              </div>
+
+              <div className="pt-4">
+                <Label className="text-xs text-muted-foreground">Additional Actions</Label>
+                <div className="flex flex-col gap-2 mt-2">
+                  <Button variant="outline" onClick={() => window.open(`mailto:${booking.guest_email}`)}>
+                    Contact Guest
+                  </Button>
+                  {/* Add more action buttons here if needed */}
                 </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {onClose && (
+          <div className="flex justify-end mt-4">
+            <Button onClick={onClose}>Close</Button>
           </div>
-        </ScrollArea>
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <div className="flex flex-col sm:flex-row gap-2 w-full">
-            <div className="flex-1 space-y-2">
-              <h4 className="text-sm font-medium">Update Booking Status</h4>
-              <div className="flex flex-wrap gap-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center"
-                  onClick={() => handleStatusUpdate('confirmed')}
-                >
-                  <Check className="h-3 w-3 mr-1" /> Confirm
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center"
-                  onClick={() => handleStatusUpdate('completed')}
-                >
-                  <Check className="h-3 w-3 mr-1" /> Complete
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center"
-                  onClick={() => handleStatusUpdate('cancelled')}
-                >
-                  <X className="h-3 w-3 mr-1" /> Cancel
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex-1 space-y-2">
-              <h4 className="text-sm font-medium">Update Payment Status</h4>
-              <div className="flex flex-wrap gap-2">
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center"
-                  onClick={() => handlePaymentUpdate('paid')}
-                >
-                  <Check className="h-3 w-3 mr-1" /> Paid
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center"
-                  onClick={() => handlePaymentUpdate('pending')}
-                >
-                  <Clock className="h-3 w-3 mr-1" /> Pending
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center"
-                  onClick={() => handlePaymentUpdate('refunded')}
-                >
-                  <CreditCard className="h-3 w-3 mr-1" /> Refund
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          <Button className="w-full sm:w-auto" onClick={onClose}>Close</Button>
-        </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

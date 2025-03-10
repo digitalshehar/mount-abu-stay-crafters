@@ -7,7 +7,7 @@ import BookingCharts from './BookingCharts';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BookingDetailsDialog from './BookingDetailsDialog';
-import { Booking, BookingStats as BookingStatsType, BookingStatusType, PaymentStatusType } from '@/hooks/useBookings';
+import { Booking, BookingStats as BookingStatsType, BookingStatusType, BookingType, PaymentStatusType } from '@/hooks/useBookings';
 
 export interface BookingManagementDashboardProps {
   bookings: Booking[];
@@ -16,10 +16,12 @@ export interface BookingManagementDashboardProps {
   searchQuery: string;
   statusFilter: BookingStatusType;
   paymentFilter: PaymentStatusType;
+  bookingType?: BookingType;
   dateRange: { from: Date | undefined; to: Date | undefined };
   setSearchQuery: (query: string) => void;
   setStatusFilter: (status: BookingStatusType) => void;
   setPaymentFilter: (status: PaymentStatusType) => void;
+  setBookingType?: (type: BookingType) => void;
   setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
   exportBookingsToCSV: () => void;
   onViewDetails: (booking: Booking) => void;
@@ -37,10 +39,12 @@ const BookingManagementDashboard: React.FC<BookingManagementDashboardProps> = ({
   searchQuery,
   statusFilter,
   paymentFilter,
+  bookingType = 'all',
   dateRange,
   setSearchQuery,
   setStatusFilter,
   setPaymentFilter,
+  setBookingType,
   setDateRange,
   exportBookingsToCSV,
   onViewDetails,
@@ -55,7 +59,7 @@ const BookingManagementDashboard: React.FC<BookingManagementDashboardProps> = ({
       <div className="flex flex-col space-y-4">
         <h1 className="text-3xl font-bold tracking-tight">Booking Management</h1>
         <p className="text-muted-foreground">
-          Manage all hotel bookings, update statuses, and analyze booking data.
+          Manage all bookings including hotels, car rentals, bike rentals, and adventures.
         </p>
       </div>
 
@@ -68,10 +72,12 @@ const BookingManagementDashboard: React.FC<BookingManagementDashboardProps> = ({
           searchQuery={searchQuery}
           statusFilter={statusFilter}
           paymentFilter={paymentFilter}
+          bookingType={bookingType}
           dateRange={dateRange}
           setSearchQuery={setSearchQuery}
           setStatusFilter={setStatusFilter}
           setPaymentFilter={setPaymentFilter}
+          setBookingType={setBookingType}
           setDateRange={setDateRange}
           exportBookingsToCSV={exportBookingsToCSV}
         />

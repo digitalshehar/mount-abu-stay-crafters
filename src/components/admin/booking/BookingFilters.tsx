@@ -2,7 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { BookingStatusType, PaymentStatusType } from '@/hooks/useBookings';
+import { BookingStatusType, BookingType, PaymentStatusType } from '@/hooks/useBookings';
 import { CalendarIcon, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -15,10 +15,12 @@ export interface BookingFiltersProps {
   searchQuery: string;
   statusFilter: BookingStatusType;
   paymentFilter: PaymentStatusType;
+  bookingType?: BookingType;
   dateRange: { from: Date | undefined; to: Date | undefined };
   setSearchQuery: (query: string) => void;
   setStatusFilter: (status: BookingStatusType) => void;
   setPaymentFilter: (status: PaymentStatusType) => void;
+  setBookingType?: (type: BookingType) => void;
   setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
   exportBookingsToCSV?: () => void;
 }
@@ -27,16 +29,18 @@ const BookingFilters = ({
   searchQuery,
   statusFilter,
   paymentFilter,
+  bookingType = 'all',
   dateRange,
   setSearchQuery,
   setStatusFilter,
   setPaymentFilter,
+  setBookingType,
   setDateRange,
   exportBookingsToCSV,
 }: BookingFiltersProps) => {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="space-y-2">
           <Label htmlFor="search">Search</Label>
           <Input
@@ -84,6 +88,27 @@ const BookingFilters = ({
             </SelectContent>
           </Select>
         </div>
+        
+        {setBookingType && (
+          <div className="space-y-2">
+            <Label htmlFor="bookingType">Booking Type</Label>
+            <Select
+              value={bookingType}
+              onValueChange={(value) => setBookingType(value as BookingType)}
+            >
+              <SelectTrigger id="bookingType">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="hotel">Hotel</SelectItem>
+                <SelectItem value="car">Car Rental</SelectItem>
+                <SelectItem value="bike">Bike Rental</SelectItem>
+                <SelectItem value="adventure">Adventure</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         
         <div className="space-y-2">
           <Label>Date Range</Label>
@@ -149,6 +174,7 @@ const BookingFilters = ({
             setSearchQuery('');
             setStatusFilter('all');
             setPaymentFilter('all');
+            if (setBookingType) setBookingType('all');
             setDateRange({ from: undefined, to: undefined });
           }}
         >

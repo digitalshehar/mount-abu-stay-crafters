@@ -44,6 +44,7 @@ const BookingTable: React.FC<BookingTableProps> = ({
   onViewDetails,
 }) => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const handleStatusUpdate = (id: string, status: string) => {
     if (onStatusChange) {
@@ -70,6 +71,7 @@ const BookingTable: React.FC<BookingTableProps> = ({
       onViewDetails(booking);
     } else {
       setSelectedBooking(booking);
+      setDetailsOpen(true);
     }
   };
 
@@ -103,6 +105,29 @@ const BookingTable: React.FC<BookingTableProps> = ({
     }
   };
 
+  const getBookingTypeColor = (type: string) => {
+    switch (type) {
+      case 'hotel':
+        return 'bg-blue-100 text-blue-800';
+      case 'car':
+        return 'bg-green-100 text-green-800';
+      case 'bike':
+        return 'bg-orange-100 text-orange-800';
+      case 'adventure':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getBookingName = (booking: Booking) => {
+    if (booking.hotel_name) return booking.hotel_name;
+    if (booking.car_name) return `Car: ${booking.car_name}`;
+    if (booking.bike_name) return `Bike: ${booking.bike_name}`;
+    if (booking.adventure_name) return `Adventure: ${booking.adventure_name}`;
+    return 'Unknown Booking';
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading bookings...</div>;
   }
@@ -125,7 +150,8 @@ const BookingTable: React.FC<BookingTableProps> = ({
               <TableRow>
                 <TableHead>Booking ID</TableHead>
                 <TableHead>Guest</TableHead>
-                <TableHead>Hotel</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Service</TableHead>
                 <TableHead>Check In</TableHead>
                 <TableHead>Check Out</TableHead>
                 <TableHead>Amount</TableHead>
@@ -138,7 +164,9 @@ const BookingTable: React.FC<BookingTableProps> = ({
               {bookings.map((booking) => (
                 <TableRow key={booking.id}>
                   <TableCell className="font-medium">
-                    {booking.id.substring(0, 8)}...
+                    {typeof booking.id === 'string' && booking.id.length > 8 
+                      ? booking.id.substring(0, 8) + '...'
+                      : booking.id}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
@@ -146,7 +174,12 @@ const BookingTable: React.FC<BookingTableProps> = ({
                       <span className="text-xs text-muted-foreground">{booking.guest_email}</span>
                     </div>
                   </TableCell>
-                  <TableCell>{booking.hotel_name || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={getBookingTypeColor(booking.booking_type)}>
+                      {booking.booking_type}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{getBookingName(booking)}</TableCell>
                   <TableCell>{format(new Date(booking.check_in_date), 'MMM dd, yyyy')}</TableCell>
                   <TableCell>{format(new Date(booking.check_out_date), 'MMM dd, yyyy')}</TableCell>
                   <TableCell>₹{booking.total_price.toLocaleString('en-IN')}</TableCell>
@@ -208,10 +241,11 @@ const BookingTable: React.FC<BookingTableProps> = ({
 
       {!onViewDetails && selectedBooking && (
         <BookingDetailsDialog 
-          booking={selectedBooking} 
-          onClose={() => setSelectedBooking(null)} 
-          updateBookingStatus={updateBookingStatus || handleStatusUpdate}
-          updatePaymentStatus={updatePaymentStatus || handlePaymentUpdate}
+          booking={selectedBooking}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          onStatusChange={handleStatusUpdate}
+          onPaymentStatusChange={handlePaymentUpdate}
         />
       )}
     </>
