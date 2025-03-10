@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Table, TableBody, TableHeader } from '@/components/ui/table';
+import { Table, TableBody, TableHeader as UITableHeader } from '@/components/ui/table';
 import { Booking } from '@/hooks/useBookings';
 import BookingRow from './tables/TableRow';
-import TableHeader from './tables/TableHeader';
+import BookingTableHeader from './tables/TableHeader';
 import TableLoading from './tables/TableLoading';
 import NoBookingsFound from './tables/NoBookingsFound';
 
@@ -42,9 +42,9 @@ const BookingTable: React.FC<BookingTableProps> = ({
       <div className="rounded-md border">
         <ScrollArea className="h-[600px]">
           <Table>
-            <TableHeader>
-              <TableHeader />
-            </TableHeader>
+            <UITableHeader>
+              <BookingTableHeader />
+            </UITableHeader>
             <TableBody>
               {loading ? (
                 <TableLoading />

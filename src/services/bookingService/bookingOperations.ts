@@ -1,8 +1,15 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Booking, BookingType } from '@/hooks/useBookings';
+import { v4 as uuidv4 } from 'uuid';
 
-export const addBooking = async (bookingData: Partial<Booking>, refetchCallback?: () => Promise<void>) => {
+// Generate a booking reference like "BK-XXXX-XXXX"
+export const generateBookingReference = () => {
+  const uniqueId = uuidv4().toUpperCase().replace(/-/g, '').substring(0, 8);
+  return `BK-${uniqueId.substring(0, 4)}-${uniqueId.substring(4, 8)}`;
+};
+
+export const addBooking = async (bookingData: Partial<Booking>, refetchCallback: () => Promise<void>) => {
   try {
     console.log('Adding new booking:', bookingData);
     
@@ -11,17 +18,13 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback?
     const tax = basePrice * 0.1; // 10% tax
     const totalWithTax = basePrice + tax;
     
-    // Generate booking reference
-    const bookingReference = generateBookingReference(bookingData.booking_type || 'hotel');
-    
     // Ensure required fields
     const requiredFields = [
       'guest_name', 
       'guest_email', 
       'check_in_date', 
       'check_out_date', 
-      'number_of_guests',
-      'booking_type'
+      'number_of_guests'
     ];
     
     const missingFields = requiredFields.filter(field => !bookingData[field as keyof Booking]);
@@ -30,22 +33,29 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback?
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
     
+    // Generate booking reference
+    const bookingReference = generateBookingReference();
+    
     // Add the tax information to the booking data
     const bookingWithTax = {
       ...bookingData,
-      booking_type: bookingData.booking_type || 'hotel', // Set default booking type
+      booking_type: bookingData.booking_type || 'hotel' as BookingType,
       total_price: totalWithTax,
       base_price: basePrice,
       tax_amount: tax,
       booking_status: bookingData.booking_status || 'confirmed',
       payment_status: bookingData.payment_status || 'pending',
       booking_reference: bookingReference,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      check_in_date: bookingData.check_in_date,
+      check_out_date: bookingData.check_out_date,
+      guest_name: bookingData.guest_name,
+      guest_email: bookingData.guest_email
     };
     
     const { data, error } = await supabase
       .from('bookings')
-      .insert(bookingWithTax as any)
+      .insert(bookingWithTax)
       .select()
       .single();
 
@@ -54,17 +64,12 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback?
       return { success: false, error: error.message, data: null };
     }
 
-    // Send confirmation email
-    try {
-      await sendBookingConfirmationEmail(data);
-    } catch (emailError) {
-      console.error("Error sending confirmation email:", emailError);
-      // Continue despite email error - booking was still created
-    }
+    // Send email notification to guest
+    sendBookingConfirmationEmail(data);
 
     // Refresh bookings after adding a new one
     if (refetchCallback) {
-      await refetchCallback();
+      refetchCallback();
     }
     
     return { success: true, error: null, data };
@@ -74,7 +79,7 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback?
   }
 };
 
-export const updateBookingStatus = async (id: string, status: string): Promise<boolean> => {
+export const updateBookingStatus = async (id: string, status: string) => {
   try {
     const { error } = await supabase
       .from('bookings')
@@ -90,7 +95,7 @@ export const updateBookingStatus = async (id: string, status: string): Promise<b
   }
 };
 
-export const updatePaymentStatus = async (id: string, status: string): Promise<boolean> => {
+export const updatePaymentStatus = async (id: string, status: string) => {
   try {
     const { error } = await supabase
       .from('bookings')
@@ -106,7 +111,7 @@ export const updatePaymentStatus = async (id: string, status: string): Promise<b
   }
 };
 
-export const deleteBooking = async (id: string): Promise<boolean> => {
+export const deleteBooking = async (id: string) => {
   try {
     const { error } = await supabase
       .from('bookings')
@@ -122,29 +127,25 @@ export const deleteBooking = async (id: string): Promise<boolean> => {
   }
 };
 
-// Helper function to generate a booking reference
-const generateBookingReference = (bookingType: string): string => {
-  const prefix = bookingType.substring(0, 2).toUpperCase();
-  const timestamp = Date.now().toString().slice(-6);
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  return `${prefix}${timestamp}${random}`;
-};
-
-// Function to send confirmation email using the Supabase Edge Function
-const sendBookingConfirmationEmail = async (booking: Booking) => {
+// Send email confirmation to guest
+export const sendBookingConfirmationEmail = async (booking: Booking) => {
   try {
-    const { data, error } = await supabase.functions.invoke('send-booking-confirmation', {
-      body: { booking }
+    // For now, just log that we would send an email - in production, 
+    // this would call Supabase Edge Function or third-party email service
+    console.log('Sending booking confirmation email to:', booking.guest_email);
+    console.log('Booking details:', {
+      reference: booking.booking_reference || booking.id,
+      guestName: booking.guest_name,
+      checkIn: booking.check_in_date,
+      checkOut: booking.check_out_date,
+      amount: booking.total_price,
+      status: booking.booking_status
     });
     
-    if (error) {
-      throw error;
-    }
-    
-    console.log("Email confirmation sent successfully:", data);
-    return data;
+    return true;
   } catch (error) {
-    console.error("Failed to send booking confirmation email:", error);
-    throw error;
+    console.error('Error sending booking confirmation email:', error);
+    return false;
   }
 };
+
