@@ -12,9 +12,9 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState<'hotel' | 'adventure' | 'car' | 'bike'>('hotel');
   const { favorites, loading, removeFromFavorites } = useFavorites(user);
 
-  // Create a wrapper for removeFromFavorites to ensure it returns Promise<void>
-  const handleRemoveFavorite = async (id: number) => {
-    await removeFromFavorites(id.toString(), activeTab);
+  // Create a wrapper for removeFromFavorites to handle string to number conversion
+  const handleRemoveFavorite = async (id: string) => {
+    await removeFromFavorites(id, activeTab);
     return;
   };
 
