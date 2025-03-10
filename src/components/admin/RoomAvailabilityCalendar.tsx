@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { DayPicker, SelectMultipleEventHandler } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
@@ -30,13 +30,10 @@ const RoomAvailabilityCalendar: React.FC<RoomAvailabilityCalendarProps> = ({
     },
   };
 
-  const renderDay = (day: Date, _: unknown, props: React.HTMLProps<HTMLDivElement>) => {
-    const isSelected = props.className?.includes('selected');
-    const isAvailable = availableDates.some(date =>
-      date.getDate() === day.getDate() &&
-      date.getMonth() === day.getMonth() &&
-      date.getFullYear() === day.getFullYear()
-    );
+  // Custom day content renderer instead of using renderDay
+  const dayContent = (day: Date, modifiersObj: Record<string, boolean>) => {
+    const isSelected = modifiersObj.selected;
+    const isAvailable = modifiersObj.available;
   
     let dayStyle = {};
   
@@ -75,7 +72,9 @@ const RoomAvailabilityCalendar: React.FC<RoomAvailabilityCalendarProps> = ({
       onSelect={handleSelect}
       modifiers={modifiers}
       modifiersStyles={modifiersStyles}
-      renderDay={renderDay}
+      components={{
+        DayContent: dayContent
+      }}
     />
   );
 };

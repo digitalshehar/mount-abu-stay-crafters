@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useBookingStats } from '@/hooks/bookingHooks/useBookingStats';
 import type { BookingStats as BookingStatsType } from '@/hooks/useBookings';
 import { Users, CreditCard, Calendar, BarChart2 } from 'lucide-react';
 
