@@ -1,105 +1,108 @@
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { FavoritesProvider } from './context/FavoritesContext';
+import { NotificationProvider } from './context/NotificationContext';
+import { Toaster } from 'sonner';
+import Loading from './components/Loading';
+import PublicLayout from './layouts/PublicLayout';
+import AdminLayout from './layouts/AdminLayout';
+import NotFound from './pages/NotFound';
+import './App.css';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/context/AuthContext";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import CarRentals from "./pages/CarRentals";
-import BikeRentals from "./pages/BikeRentals";
-import Adventures from "./pages/Adventures";
-import Blog from "./pages/Blog";
-import HotelDetail from "./pages/HotelDetail";
-import HotelHtmlView from "./pages/HotelHtmlView";
-import AboutUs from "./pages/AboutUs";
-import Contact from "./pages/Contact";
-import TravelGuide from "./pages/TravelGuide";
-import FAQs from "./pages/FAQs";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import CancellationPolicy from "./pages/CancellationPolicy";
-import Hotels from "./pages/Hotels";
-import HotelMap from "./pages/HotelMap";
-import Destinations from "./pages/Destinations";
-import AdventureDetail from "./pages/AdventureDetail";
-import DestinationDetail from "./pages/DestinationDetail";
-import CarRentalDetail from "./pages/CarRentalDetail";
-import BikeRentalDetail from "./pages/BikeRentalDetail";
-import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
+// Lazy-loaded components
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Hotels = lazy(() => import('./pages/Hotels'));
+const HotelDetails = lazy(() => import('./pages/HotelDetails'));
+const Adventures = lazy(() => import('./pages/Adventures'));
+const AdventureDetails = lazy(() => import('./pages/AdventureDetails'));
+const CarRentals = lazy(() => import('./pages/CarRentals'));
+const CarRentalDetails = lazy(() => import('./pages/CarRentalDetails'));
+const BikeRentals = lazy(() => import('./pages/BikeRentals'));
+const BikeRentalDetails = lazy(() => import('./pages/BikeRentalDetails'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Bookings = lazy(() => import('./pages/Bookings'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 
-// Admin Pages
-import AdminDashboard from "./pages/admin/Dashboard";
-import AdminOverview from "./pages/admin/Overview";
-import AdminHotels from "./pages/admin/Hotels";
-import AdminBlog from "./pages/admin/Blog";
-import AdminCarRentals from "./pages/admin/CarRentals";
-import AdminBikeRentals from "./pages/admin/BikeRentals";
-import AdminAdventures from "./pages/admin/Adventures";
-import AdminSettings from "./pages/admin/Settings";
-import AdminPageBuilder from "./pages/admin/PageBuilder";
-import AdminWebsiteSettings from "./pages/admin/WebsiteSettings";
+// Admin Components
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
+const Overview = lazy(() => import('./pages/admin/Overview'));
+const AdventuresManagement = lazy(() => import('./pages/admin/AdventuresManagement'));
+const CarRentalsManagement = lazy(() => import('./pages/admin/CarRentalsManagement'));
+const BikeRentalsManagement = lazy(() => import('./pages/admin/BikeRentalsManagement'));
+const BlogManagement = lazy(() => import('./pages/admin/BlogManagement'));
+const Settings = lazy(() => import('./pages/admin/Settings'));
+const WebsiteSettings = lazy(() => import('./pages/admin/WebsiteSettings'));
+const PageBuilder = lazy(() => import('./pages/admin/PageBuilder'));
+const BookingManagement = lazy(() => import('./pages/admin/BookingManagement'));
 
-const queryClient = new QueryClient();
+function App() {
+  return (
+    <AuthProvider>
+      <FavoritesProvider>
+        <NotificationProvider>
+          <Router>
+            <Toaster position="bottom-right" richColors closeButton />
+            <Suspense fallback={<Loading />}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<PublicLayout />}>
+                  <Route index element={<Home />} />
+                  <Route path="about" element={<About />} />
+                  <Route path="contact" element={<Contact />} />
+                  <Route path="hotels" element={<Hotels />} />
+                  <Route path="hotels/:slug" element={<HotelDetails />} />
+                  <Route path="adventures" element={<Adventures />} />
+                  <Route path="adventures/:slug" element={<AdventureDetails />} />
+                  <Route path="car-rentals" element={<CarRentals />} />
+                  <Route path="car-rentals/:slug" element={<CarRentalDetails />} />
+                  <Route path="bike-rentals" element={<BikeRentals />} />
+                  <Route path="bike-rentals/:slug" element={<BikeRentalDetails />} />
+                  <Route path="blog" element={<Blog />} />
+                  <Route path="blog/:slug" element={<BlogPost />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="bookings" element={<Bookings />} />
+                </Route>
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/hotels" element={<Hotels />} />
-            <Route path="/hotels/map" element={<HotelMap />} />
-            <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
-            <Route path="/hotel/:hotelSlug/html" element={<HotelHtmlView />} />
-            <Route path="/hotel/:hotelSlug.html" element={<HotelHtmlView />} />
-            <Route path="/destinations" element={<Destinations />} />
-            <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
-            <Route path="/rentals/car" element={<CarRentals />} />
-            <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
-            <Route path="/rentals/bike" element={<BikeRentals />} />
-            <Route path="/rentals/bike/:id" element={<BikeRentalDetail />} />
-            <Route path="/adventures" element={<Adventures />} />
-            <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/about-us" element={<AboutUs />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/travel-guide" element={<TravelGuide />} />
-            <Route path="/faqs" element={<FAQs />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/cancellation-policy" element={<CancellationPolicy />} />
-            
-            {/* Auth Routes */}
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/profile" element={<Profile />} />
-            
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminDashboard />}>
-              <Route index element={<AdminOverview />} />
-              <Route path="hotels" element={<AdminHotels />} />
-              <Route path="blog" element={<AdminBlog />} />
-              <Route path="rentals/car" element={<AdminCarRentals />} />
-              <Route path="rentals/bike" element={<AdminBikeRentals />} />
-              <Route path="adventures" element={<AdminAdventures />} />
-              <Route path="page-builder" element={<AdminPageBuilder />} />
-              <Route path="website-settings" element={<AdminWebsiteSettings />} />
-              <Route path="settings" element={<AdminSettings />} />
-            </Route>
-            
-            {/* Catch All Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
-);
+                {/* Authentication Routes */}
+                <Route path="login" element={<Login />} />
+                <Route path="register" element={<Register />} />
+                <Route path="forgot-password" element={<ForgotPassword />} />
+                <Route path="reset-password" element={<ResetPassword />} />
+
+                {/* Admin Routes */}
+                <Route path="admin" element={<AdminLayout />}>
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="overview" element={<Overview />} />
+                  <Route path="hotels" element={<Hotels />} />
+                  <Route path="booking-management" element={<BookingManagement />} />
+                  <Route path="bookings" element={<Bookings />} />
+                  <Route path="adventures" element={<AdventuresManagement />} />
+                  <Route path="car-rentals" element={<CarRentalsManagement />} />
+                  <Route path="bike-rentals" element={<BikeRentalsManagement />} />
+                  <Route path="blog" element={<BlogManagement />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="website-settings" element={<WebsiteSettings />} />
+                  <Route path="page-builder" element={<PageBuilder />} />
+                </Route>
+
+                {/* 404 Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </Router>
+        </NotificationProvider>
+      </FavoritesProvider>
+    </AuthProvider>
+  );
+}
 
 export default App;

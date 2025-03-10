@@ -33,21 +33,32 @@ export const useBookings = () => {
       
       console.log('Fetching bookings from Supabase...');
       
-      // This should use the proper type to avoid TypeScript errors
       const { data, error } = await supabase
         .from('bookings')
         .select(`
           *,
-          hotels:hotel_id (name)
-        `);
+          hotels(name)
+        `)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching bookings:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load bookings data',
+          description: 'Failed to load bookings data: ' + error.message,
           variant: 'destructive',
         });
+        setBookings([]);
+        setRecentBookings([]);
+        setLoading(false);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No bookings found');
+        setBookings([]);
+        setRecentBookings([]);
+        setLoading(false);
         return;
       }
 
@@ -61,8 +72,15 @@ export const useBookings = () => {
       
       setBookings(formattedBookings);
       setRecentBookings(formattedBookings.slice(0, 5));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in fetchBookings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load bookings data: ' + (error.message || 'Unknown error'),
+        variant: 'destructive',
+      });
+      setBookings([]);
+      setRecentBookings([]);
     } finally {
       setLoading(false);
     }
@@ -73,16 +91,14 @@ export const useBookings = () => {
   }, []);
 
   // Function to add a new booking
-  const addBooking = async (bookingData: Omit<Booking, 'id' | 'created_at'>) => {
+  const addBooking = async (bookingData: Omit<Booking, 'id' | 'created_at' | 'hotel_name'>) => {
     try {
       console.log('Adding new booking:', bookingData);
       
-      // Type as 'any' to avoid TypeScript errors when using insert
       const { data, error } = await supabase
         .from('bookings')
-        .insert(bookingData as any)
-        .select()
-        .single();
+        .insert(bookingData)
+        .select();
 
       if (error) {
         console.error('Error adding booking:', error);
@@ -117,10 +133,9 @@ export const useBookings = () => {
   // Function to update booking status
   const updateBookingStatus = async (id: string, status: string) => {
     try {
-      // Type as 'any' to avoid TypeScript errors
       const { error } = await supabase
         .from('bookings')
-        .update({ booking_status: status } as any)
+        .update({ booking_status: status })
         .eq('id', id);
 
       if (error) throw error;
@@ -132,11 +147,11 @@ export const useBookings = () => {
       
       fetchBookings();
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating booking status:', error);
       toast({
         title: 'Update Failed',
-        description: 'Failed to update booking status',
+        description: 'Failed to update booking status: ' + (error.message || 'Unknown error'),
         variant: 'destructive',
       });
       return false;
@@ -146,10 +161,9 @@ export const useBookings = () => {
   // Function to update payment status
   const updatePaymentStatus = async (id: string, status: string) => {
     try {
-      // Type as 'any' to avoid TypeScript errors
       const { error } = await supabase
         .from('bookings')
-        .update({ payment_status: status } as any)
+        .update({ payment_status: status })
         .eq('id', id);
 
       if (error) throw error;
@@ -161,11 +175,11 @@ export const useBookings = () => {
       
       fetchBookings();
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating payment status:', error);
       toast({
         title: 'Update Failed',
-        description: 'Failed to update payment status',
+        description: 'Failed to update payment status: ' + (error.message || 'Unknown error'),
         variant: 'destructive',
       });
       return false;

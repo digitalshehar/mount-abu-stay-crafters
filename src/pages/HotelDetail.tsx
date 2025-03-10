@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Dialog } from "@/components/ui/dialog";
@@ -19,7 +20,7 @@ const HotelDetail = () => {
   const [activeTab, setActiveTab] = useState("rooms");
   const [showFullGallery, setShowFullGallery] = useState(false);
   const { user } = useAuth();
-  const { favorites, removeFromFavorites, addToFavorites } = useFavorites(user);
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites(user);
   
   // Use our new custom booking hook
   const {
@@ -61,7 +62,7 @@ const HotelDetail = () => {
     if (isFavorite && favoriteId) {
       removeFromFavorites(hotel.id, 'hotel');
       toast.info("Removed from favorites");
-    } else if (addToFavorites) {
+    } else {
       addToFavorites(hotel.id, 'hotel');
       toast.success("Added to favorites");
     }
