@@ -5,21 +5,9 @@ import HotelTableRow from "./table/HotelTableRow";
 import EmptyState from "./table/EmptyState";
 import LoadingState from "./table/LoadingState";
 import BulkActionsBar from "./table/BulkActionsBar";
+import { Hotel } from "./types";
 import { useAuth } from "@/context/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
-
-// Define a simplified Hotel type
-interface Hotel {
-  id: number;
-  name: string;
-  location: string;
-  price_per_night: number;
-  category: string;
-  review_count: number;
-  image?: string;
-  featured?: boolean;
-  status?: string;
-}
 
 export interface HotelListProps {
   hotels: Hotel[];
@@ -28,7 +16,7 @@ export interface HotelListProps {
   onEdit: (id: number) => void;
   onToggleStatus: (id: number) => void;
   onToggleFeatured: (id: number, currentValue: boolean) => void;
-  onClone: (hotel: Hotel) => void; // This expects a Hotel object
+  onClone: (hotel: Hotel) => void;
   onBulkAction: (actionType: string, hotelIds: number[]) => void;
   onViewHistory: (id: number) => void;
   onViewAuditLog: (id: number) => void;
@@ -112,13 +100,13 @@ const HotelList: React.FC<HotelListProps> = ({
                   <HotelTableRow
                     key={hotel.id}
                     hotel={hotel}
-                    onDelete={onDelete}
-                    onEdit={onEdit}
-                    onToggleStatus={onToggleStatus}
-                    onToggleFeatured={onToggleFeatured}
-                    onClone={() => onClone(hotel)} // Wrap to match expected signature
-                    onViewHistory={onViewHistory}
-                    onViewAuditLog={onViewAuditLog}
+                    onDeleteHotel={() => onDelete(hotel.id)}
+                    onEditHotel={() => onEdit(hotel.id)}
+                    onToggleStatus={() => onToggleStatus(hotel.id)}
+                    onToggleFeatured={() => onToggleFeatured(hotel.id, hotel.featured)}
+                    onClone={() => onClone(hotel)}
+                    onViewHistory={() => onViewHistory(hotel.id)}
+                    onViewAuditLog={() => onViewAuditLog(hotel.id)}
                     isSelected={selectedHotels.includes(hotel.id)}
                     onSelectHotel={(checked) => handleSelectHotel(hotel.id, checked)}
                   />

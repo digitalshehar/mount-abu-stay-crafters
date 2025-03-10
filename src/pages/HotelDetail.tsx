@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Dialog } from "@/components/ui/dialog";
@@ -62,7 +61,7 @@ const HotelDetail = () => {
     if (isFavorite && favoriteId) {
       removeFromFavorites(hotel.id, 'hotel');
       toast.info("Removed from favorites");
-    } else {
+    } else if (addToFavorites) {
       addToFavorites(hotel.id, 'hotel');
       toast.success("Added to favorites");
     }

@@ -1,8 +1,9 @@
-
 import React from "react";
-import { MoreHorizontal } from "lucide-react"; // Using lucide-react instead of radix icons
-import { Checkbox } from "@/components/ui/checkbox";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { Row } from "@tanstack/react-table";
+
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,47 +13,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Hotel } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
 
-// Define a simplified Hotel type since we can't import from @/types
-interface Hotel {
-  id: number;
-  name: string;
-  location: string;
-  price_per_night: number;
-  category: string;
-  review_count: number;
-  image?: string;
-  featured?: boolean;
-  status?: string;
-}
-
 interface HotelTableRowProps {
   hotel: Hotel;
+  row: Row<Hotel>;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
   onClone: (id: number) => void;
-  isSelected?: boolean;
-  onSelectHotel?: (checked: boolean) => void;
-  onToggleStatus?: (id: number) => void;
-  onToggleFeatured?: (id: number, featured: boolean) => void;
-  onViewHistory?: (id: number) => void;
-  onViewAuditLog?: (id: number) => void;
 }
 
-export function HotelTableRow({ 
-  hotel, 
-  onEdit, 
-  onDelete, 
-  onClone,
-  isSelected,
-  onSelectHotel,
-  onToggleStatus,
-  onToggleFeatured,
-  onViewHistory,
-  onViewAuditLog
-}: HotelTableRowProps) {
+// Inside the component, update the handling of favorites
+export function HotelTableRow({ hotel, onEdit, onDelete, onClone }: HotelTableRowProps) {
   const [isCloning, setIsCloning] = React.useState(false);
   
   const { user } = useAuth();
@@ -80,13 +54,12 @@ export function HotelTableRow({
   return (
     <tr>
       <td className="p-4 align-middle [&:has([data-state=checked])]:bg-muted">
-        {onSelectHotel && (
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={(value) => onSelectHotel(!!value)}
-            aria-label="Select row"
-          />
-        )}
+        {/* <Checkbox
+          id={row.id}
+          aria-label="Select row"
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+        /> */}
       </td>
       <td>
         <div className="flex items-center space-x-2">
@@ -115,7 +88,7 @@ export function HotelTableRow({
               variant="ghost"
               className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
             >
-              <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+              <DotsHorizontalIcon className="h-4 w-4" aria-hidden="true" />
               <span className="sr-only">Open menu</span>
             </Button>
           </DropdownMenuTrigger>
@@ -129,26 +102,6 @@ export function HotelTableRow({
             <DropdownMenuItem onClick={handleClone} disabled={isCloning}>
               {isCloning ? "Cloning..." : "Clone"}
             </DropdownMenuItem>
-            {onToggleStatus && (
-              <DropdownMenuItem onClick={() => onToggleStatus(hotel.id)}>
-                {hotel.status === 'active' ? 'Deactivate' : 'Activate'}
-              </DropdownMenuItem>
-            )}
-            {onToggleFeatured && (
-              <DropdownMenuItem onClick={() => onToggleFeatured(hotel.id, !!hotel.featured)}>
-                {hotel.featured ? 'Unmark Featured' : 'Mark as Featured'}
-              </DropdownMenuItem>
-            )}
-            {onViewHistory && (
-              <DropdownMenuItem onClick={() => onViewHistory(hotel.id)}>
-                View History
-              </DropdownMenuItem>
-            )}
-            {onViewAuditLog && (
-              <DropdownMenuItem onClick={() => onViewAuditLog(hotel.id)}>
-                View Audit Log
-              </DropdownMenuItem>
-            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onDelete(hotel.id)}>
               Delete
