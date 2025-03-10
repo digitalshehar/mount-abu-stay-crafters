@@ -11,6 +11,9 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
     const tax = basePrice * 0.1; // 10% tax
     const totalWithTax = basePrice + tax;
     
+    // Generate booking reference (simple implementation)
+    const bookingRef = `BK-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    
     // Ensure required fields
     const requiredFields = [
       'guest_name', 
@@ -27,19 +30,16 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
     
-    // Generate booking reference
-    const bookingReference = Math.random().toString(36).substring(2, 10).toUpperCase();
-    
-    // Add the tax information to the booking data
+    // Add the tax information and booking reference to the booking data
     const bookingWithTax = {
       ...bookingData,
+      booking_reference: bookingRef,
       total_price: totalWithTax,
       base_price: basePrice,
       tax_amount: tax,
       booking_status: bookingData.booking_status || 'confirmed',
       payment_status: bookingData.payment_status || 'pending',
-      created_at: new Date().toISOString(),
-      booking_reference: bookingReference
+      created_at: new Date().toISOString()
     };
     
     const { data, error } = await supabase
@@ -55,13 +55,10 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
 
     // Send confirmation email
     try {
-      await sendBookingConfirmationEmail({
-        ...data,
-        booking_reference: bookingReference
-      });
+      await sendBookingConfirmationEmail(data);
     } catch (emailError) {
       console.error('Error sending confirmation email:', emailError);
-      // Don't fail the booking if the email fails
+      // We don't want to fail the booking if email fails
     }
 
     // Refresh bookings after adding a new one
@@ -124,20 +121,20 @@ export const deleteBooking = async (id: string) => {
   }
 };
 
-// New function to send booking confirmation email
-export const sendBookingConfirmationEmail = async (booking: Booking) => {
+const sendBookingConfirmationEmail = async (booking: Booking) => {
   try {
-    const response = await supabase.functions.invoke('send-booking-confirmation', {
-      body: { booking }
+    const { data, error } = await supabase.functions.invoke('send-booking-confirmation', {
+      body: { booking },
     });
-    
-    if (!response.data?.success) {
-      throw new Error(response.data?.error || 'Failed to send confirmation email');
+
+    if (error) {
+      throw error;
     }
-    
-    return true;
+
+    console.log('Booking confirmation email sent:', data);
+    return data;
   } catch (error) {
     console.error('Error sending booking confirmation email:', error);
-    return false;
+    throw error;
   }
 };

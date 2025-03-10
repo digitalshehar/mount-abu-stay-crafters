@@ -1,183 +1,134 @@
 
-import React, { useState, useEffect } from 'react';
-import {
-  Table,
-  TableBody,
+import React, { useState } from 'react';
+import { 
+  Table, 
+  TableBody, 
+  TableHead
 } from '@/components/ui/table';
-import { Booking } from '@/hooks/useBookings';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import BookingDetailsDialog from './dialogs/BookingDetailsDialog';
-import BookingTableHeader from './tables/TableHeader';
-import BookingRow from './tables/TableRow';
-import NoBookingsFound from './tables/NoBookingsFound';
-import TableLoading from './tables/TableLoading';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { RefreshCw } from 'lucide-react';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuGroup, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Booking } from '@/hooks/useBookings';
+import { MoreHorizontal, Ban, CheckCircle2, Trash2, CalendarClock, BadgeCheck, Clock, X, AlertCircle } from 'lucide-react';
+import { format } from 'date-fns';
+import TableHeader from './tables/TableHeader';
+import TableRow from './tables/TableRow';
+import TableLoading from './tables/TableLoading';
+import NoBookingsFound from './tables/NoBookingsFound';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 
-export interface BookingTableProps {
+interface BookingTableProps {
   bookings: Booking[];
   loading: boolean;
+  onStatusChange: (id: string, status: string) => Promise<boolean>;
+  onPaymentStatusChange: (id: string, status: string) => Promise<boolean>;
+  onViewDetails: (booking: Booking) => void;
   fetchBookings?: () => Promise<void>;
-  updateBookingStatus?: (id: string, status: string) => Promise<boolean>;
-  updatePaymentStatus?: (id: string, status: string) => Promise<boolean>;
-  onStatusChange?: (id: string, status: string) => Promise<boolean>;
-  onPaymentStatusChange?: (id: string, status: string) => Promise<boolean>;
-  onViewDetails?: (booking: Booking) => void;
 }
 
 const BookingTable: React.FC<BookingTableProps> = ({
   bookings,
   loading,
-  fetchBookings,
-  updateBookingStatus,
-  updatePaymentStatus,
   onStatusChange,
   onPaymentStatusChange,
   onViewDetails,
+  fetchBookings
 }) => {
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const { toast } = useToast();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [bookingToDelete, setBookingToDelete] = useState<string | null>(null);
 
-  const handleStatusUpdate = (id: string, status: string) => {
-    if (onStatusChange) {
-      return onStatusChange(id, status);
-    }
-    if (updateBookingStatus) {
-      return updateBookingStatus(id, status);
-    }
-    return Promise.resolve(false);
+  const handleDeleteClick = (bookingId: string) => {
+    setBookingToDelete(bookingId);
+    setDeleteConfirmOpen(true);
   };
 
-  const handlePaymentUpdate = (id: string, status: string) => {
-    if (onPaymentStatusChange) {
-      return onPaymentStatusChange(id, status);
+  const handleDeleteConfirm = async () => {
+    if (bookingToDelete) {
+      // Delete booking implementation would go here
+      console.log('Delete booking:', bookingToDelete);
     }
-    if (updatePaymentStatus) {
-      return updatePaymentStatus(id, status);
-    }
-    return Promise.resolve(false);
-  };
-
-  const handleViewDetails = (booking: Booking) => {
-    if (onViewDetails) {
-      onViewDetails(booking);
-    } else {
-      setSelectedBooking(booking);
-      setDetailsOpen(true);
-    }
-  };
-
-  const handleRefresh = async () => {
-    if (fetchBookings) {
-      setRefreshing(true);
-      await fetchBookings();
-      setRefreshing(false);
-      toast({
-        title: "Refreshed",
-        description: "Booking data has been refreshed",
-      });
-    }
-  };
-
-  // Subscribe to real-time booking updates
-  useEffect(() => {
-    console.log('Setting up real-time subscription for bookings');
+    setDeleteConfirmOpen(false);
+    setBookingToDelete(null);
     
-    // Set up real-time subscription for new bookings
-    const channel = supabase
-      .channel('booking-changes')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'bookings' },
-        (payload) => {
-          console.log('New booking received:', payload);
-          toast({
-            title: "New Booking",
-            description: "A new booking has been created",
-            variant: "default",
-          });
-          if (fetchBookings) {
-            fetchBookings();
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'bookings' },
-        (payload) => {
-          console.log('Booking updated:', payload);
-          if (fetchBookings) {
-            fetchBookings();
-          }
-        }
-      )
-      .subscribe();
+    // Refetch bookings if function is provided
+    if (fetchBookings) {
+      fetchBookings();
+    }
+  };
 
-    // Clean up subscription on unmount
-    return () => {
-      console.log('Cleaning up booking subscription');
-      supabase.removeChannel(channel);
-    };
-  }, [fetchBookings, toast]);
-
-  if (loading) {
-    return <TableLoading />;
-  }
-
-  if (bookings.length === 0) {
-    return <NoBookingsFound />;
-  }
+  const getBookingTypeLabel = (type: string) => {
+    switch (type) {
+      case 'hotel': return 'Hotel';
+      case 'car': return 'Car';
+      case 'bike': return 'Bike';
+      case 'adventure': return 'Adventure';
+      default: return 'Unknown';
+    }
+  };
 
   return (
-    <Card className="p-4 shadow-sm">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">Bookings List</h3>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleRefresh} 
-          disabled={refreshing || loading}
-          className="flex items-center gap-1"
-        >
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          <span>Refresh</span>
-        </Button>
-      </div>
-      <div className="rounded-md border max-w-full overflow-hidden">
-        <ScrollArea className="h-[600px] w-full">
-          <div className="min-w-[1000px]">
-            <Table>
-              <BookingTableHeader />
-              <TableBody>
-                {bookings.map((booking) => (
-                  <BookingRow 
+    <Card className="overflow-hidden border rounded-md">
+      <ScrollArea className="h-[600px] w-full">
+        <div className="relative w-full min-w-max">
+          <Table>
+            <TableHead>
+              <TableHeader />
+            </TableHead>
+            <TableBody>
+              {loading ? (
+                <TableLoading />
+              ) : bookings.length === 0 ? (
+                <NoBookingsFound />
+              ) : (
+                bookings.map((booking) => (
+                  <TableRow 
                     key={booking.id}
                     booking={booking}
-                    onViewDetails={handleViewDetails}
-                    onStatusChange={handleStatusUpdate}
-                    onPaymentStatusChange={handlePaymentUpdate}
+                    onViewDetails={() => onViewDetails(booking)}
+                    onDeleteClick={() => handleDeleteClick(booking.id)}
+                    onStatusChange={onStatusChange}
+                    onPaymentStatusChange={onPaymentStatusChange}
+                    getBookingTypeLabel={getBookingTypeLabel}
                   />
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </ScrollArea>
-      </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </ScrollArea>
 
-      {!onViewDetails && selectedBooking && (
-        <BookingDetailsDialog 
-          booking={selectedBooking}
-          open={detailsOpen}
-          onOpenChange={setDetailsOpen}
-          onStatusChange={handleStatusUpdate}
-          onPaymentStatusChange={handlePaymentUpdate}
-        />
-      )}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this booking. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

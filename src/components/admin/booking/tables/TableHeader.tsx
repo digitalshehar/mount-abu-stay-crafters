@@ -1,24 +1,22 @@
 
 import React from 'react';
-import { TableHead, TableHeader as UITableHeader, TableRow } from '@/components/ui/table';
+import { TableRow, TableHead, TableHeader as ShadcnTableHeader } from '@/components/ui/table';
 
-const BookingTableHeader: React.FC = () => {
+const AdminTableHeader = () => {
   return (
-    <UITableHeader>
-      <TableRow>
-        <TableHead>Booking ID</TableHead>
-        <TableHead>Guest</TableHead>
-        <TableHead>Type</TableHead>
-        <TableHead>Service</TableHead>
-        <TableHead>Check In</TableHead>
-        <TableHead>Check Out</TableHead>
-        <TableHead>Amount</TableHead>
-        <TableHead>Status</TableHead>
-        <TableHead>Payment</TableHead>
-        <TableHead className="text-right">Actions</TableHead>
-      </TableRow>
-    </UITableHeader>
+    <TableRow>
+      <ShadcnTableHeader className="w-[180px]">Booking Ref/ID</ShadcnTableHeader>
+      <ShadcnTableHeader className="w-[150px]">Customer</ShadcnTableHeader>
+      <ShadcnTableHeader className="w-[180px]">Service Details</ShadcnTableHeader>
+      <ShadcnTableHeader className="w-[150px]">Check In</ShadcnTableHeader>
+      <ShadcnTableHeader className="w-[150px]">Check Out</ShadcnTableHeader>
+      <ShadcnTableHeader className="w-[120px]">Amount</ShadcnTableHeader>
+      <ShadcnTableHeader className="w-[120px]">Status</ShadcnTableHeader>
+      <ShadcnTableHeader className="w-[120px]">Payment</ShadcnTableHeader>
+      <ShadcnTableHeader className="w-[120px]">Type</ShadcnTableHeader>
+      <ShadcnTableHeader className="w-[80px] text-right">Actions</ShadcnTableHeader>
+    </TableRow>
   );
 };
 
-export default BookingTableHeader;
+export default AdminTableHeader;

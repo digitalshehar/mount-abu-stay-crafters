@@ -1,10 +1,24 @@
 
-// This file acts as the main entry point for the booking service
-// and re-exports all the functions from the sub-modules
+import { fetchHotelBookings } from './hotelBookings';
+import { fetchCarBookings } from './carBookings';
+import { fetchBikeBookings } from './bikeBookings';
+import { fetchAdventureBookings } from './adventureBookings';
+import { 
+  addBooking, 
+  updateBookingStatus, 
+  updatePaymentStatus, 
+  deleteBooking 
+} from './bookingOperations';
+import { setupRealtimeBookings } from './realtimeBookings';
 
-export * from './hotelBookings';
-export * from './carBookings';
-export * from './bikeBookings';
-export * from './adventureBookings';
-export * from './bookingOperations';
-export * from './realtimeBookings';
+export {
+  fetchHotelBookings,
+  fetchCarBookings,
+  fetchBikeBookings,
+  fetchAdventureBookings,
+  addBooking,
+  updateBookingStatus,
+  updatePaymentStatus,
+  deleteBooking,
+  setupRealtimeBookings
+};
