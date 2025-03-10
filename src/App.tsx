@@ -41,6 +41,9 @@ import AdminAdventures from "./pages/admin/Adventures";
 import AdminSettings from "./pages/admin/Settings";
 import AdminPageBuilder from "./pages/admin/PageBuilder";
 import AdminWebsiteSettings from "./pages/admin/WebsiteSettings";
+import AdminBookings from "./pages/admin/Bookings";
+import AdminUsers from "./pages/admin/Users";
+import AdminAnalytics from "./pages/admin/Analytics";
 
 const queryClient = new QueryClient();
 
@@ -83,11 +86,15 @@ const App = () => (
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminDashboard />}>
               <Route index element={<AdminOverview />} />
+              <Route path="dashboard" element={<AdminOverview />} />
               <Route path="hotels" element={<AdminHotels />} />
+              <Route path="bookings" element={<AdminBookings />} />
               <Route path="blog" element={<AdminBlog />} />
-              <Route path="rentals/car" element={<AdminCarRentals />} />
-              <Route path="rentals/bike" element={<AdminBikeRentals />} />
+              <Route path="cars" element={<AdminCarRentals />} />
+              <Route path="bikes" element={<AdminBikeRentals />} />
               <Route path="adventures" element={<AdminAdventures />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="page-builder" element={<AdminPageBuilder />} />
               <Route path="website-settings" element={<AdminWebsiteSettings />} />
               <Route path="settings" element={<AdminSettings />} />

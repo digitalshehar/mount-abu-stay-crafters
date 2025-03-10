@@ -18,7 +18,12 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
-import { Search, Download, RefreshCcw } from 'lucide-react';
+import { Search, Download, RefreshCcw, CalendarIcon, FilterX } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { DateRange } from 'react-day-picker';
 
 const BookingsPage = () => {
   const { 
@@ -32,6 +37,7 @@ const BookingsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [filteredBookings, setFilteredBookings] = useState(bookings);
   
   // Apply filters when bookings or filter values change
@@ -59,11 +65,34 @@ const BookingsPage = () => {
       result = result.filter(booking => booking.payment_status === paymentFilter);
     }
     
+    // Apply date range filter
+    if (dateRange?.from) {
+      const from = new Date(dateRange.from);
+      from.setHours(0, 0, 0, 0);
+      
+      result = result.filter(booking => {
+        const checkIn = new Date(booking.check_in_date);
+        if (dateRange.to) {
+          const to = new Date(dateRange.to);
+          to.setHours(23, 59, 59, 999);
+          return checkIn >= from && checkIn <= to;
+        }
+        return checkIn >= from;
+      });
+    }
+    
     setFilteredBookings(result);
-  }, [bookings, searchQuery, statusFilter, paymentFilter]);
+  }, [bookings, searchQuery, statusFilter, paymentFilter, dateRange]);
 
   const handleRefresh = () => {
     fetchBookings();
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setPaymentFilter('all');
+    setDateRange(undefined);
   };
 
   const handleExport = () => {
@@ -110,12 +139,12 @@ const BookingsPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <Card className="mb-6">
+    <div className="container mx-auto p-6 max-w-[1600px]">
+      <Card className="mb-6 shadow-md">
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
-              <CardTitle>Bookings Management</CardTitle>
+              <CardTitle>Booking Management</CardTitle>
               <CardDescription>
                 View and manage all bookings
               </CardDescription>
@@ -133,8 +162,8 @@ const BookingsPage = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex-1">
+          <div className="flex flex-wrap gap-4 mb-6">
+            <div className="flex-1 min-w-[200px]">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                 <Input
@@ -146,6 +175,7 @@ const BookingsPage = () => {
                 />
               </div>
             </div>
+            
             <div className="w-full md:w-[180px]">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
@@ -160,6 +190,7 @@ const BookingsPage = () => {
                 </SelectContent>
               </Select>
             </div>
+            
             <div className="w-full md:w-[180px]">
               <Select value={paymentFilter} onValueChange={setPaymentFilter}>
                 <SelectTrigger>
@@ -173,6 +204,56 @@ const BookingsPage = () => {
                   <SelectItem value="failed">Failed</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div className="w-full md:w-auto">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "justify-start text-left font-normal",
+                      !dateRange?.from && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange?.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Date Range</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            <div>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={clearFilters}
+                title="Clear all filters"
+                disabled={!searchQuery && statusFilter === 'all' && paymentFilter === 'all' && !dateRange?.from}
+              >
+                <FilterX className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
