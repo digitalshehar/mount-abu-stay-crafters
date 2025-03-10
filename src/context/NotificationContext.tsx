@@ -1,62 +1,43 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode } from "react";
+import { useNotifications } from "@/hooks/useNotifications";
 
-interface Notification {
+export interface Notification {
   id: string;
+  title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "system" | "alert" | "info";
   read: boolean;
+  createdAt: string;
 }
 
 interface NotificationContextType {
   notifications: Notification[];
-  addNotification: (notification: Omit<Notification, 'id' | 'read'>) => void;
-  markAsRead: (id: string) => void;
-  clearNotifications: () => void;
   unreadCount: number;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
+  deleteNotification: (id: string) => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
-  }
-  return context;
-};
-
-interface NotificationProviderProps {
-  children: ReactNode;
-}
-
-export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  const addNotification = (notification: Omit<Notification, 'id' | 'read'>) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setNotifications((prev) => [...prev, { ...notification, id, read: false }]);
-  };
-
-  const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
-  };
-
-  const clearNotifications = () => {
-    setNotifications([]);
-  };
-
-  const unreadCount = notifications.filter((notification) => !notification.read).length;
+export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const notificationMethods = useNotifications();
 
   return (
-    <NotificationContext.Provider
-      value={{ notifications, addNotification, markAsRead, clearNotifications, unreadCount }}
-    >
+    <NotificationContext.Provider value={notificationMethods}>
       {children}
     </NotificationContext.Provider>
   );
+};
+
+export const useNotificationContext = (): NotificationContextType => {
+  const context = useContext(NotificationContext);
+  
+  if (context === undefined) {
+    throw new Error("useNotificationContext must be used within a NotificationProvider");
+  }
+  
+  return context;
 };

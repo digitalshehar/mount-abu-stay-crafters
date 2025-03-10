@@ -1,5 +1,6 @@
 
 import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import DashboardHeader from '@/components/admin/dashboard/DashboardHeader';
 import DashboardStats from '@/components/admin/DashboardStats';
 import DashboardCharts from '@/components/admin/DashboardCharts';
@@ -10,12 +11,27 @@ import ActivityLog from '@/components/admin/ActivityLog';
 import { Button } from '@/components/ui/button';
 import { DownloadCloud, RefreshCw } from 'lucide-react';
 
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
 const Overview: React.FC = () => {
   useEffect(() => {
     console.log("Overview component rendering");
   }, []);
   
-  const lastUpdated = new Date().toLocaleTimeString();
+  const lastUpdated = new Date().toISOString();
   
   const headerActions = (
     <>
@@ -31,25 +47,32 @@ const Overview: React.FC = () => {
   );
   
   return (
-    <div className="space-y-6">
+    <motion.div 
+      className="space-y-6"
+      variants={container}
+      initial="hidden"
+      animate="show"
+    >
       <DashboardHeader 
         title="Dashboard Overview" 
         lastUpdated={lastUpdated}
         actions={headerActions}
       />
       
-      <DashboardStats />
+      <motion.div variants={item}>
+        <DashboardStats />
+      </motion.div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <DashboardCharts />
         </div>
         <div>
           <SiteMonitoring />
         </div>
-      </div>
+      </motion.div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <RecentRecords />
         </div>
@@ -57,8 +80,8 @@ const Overview: React.FC = () => {
           <QuickActions />
           <ActivityLog />
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

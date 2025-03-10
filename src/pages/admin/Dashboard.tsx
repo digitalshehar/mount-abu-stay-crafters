@@ -7,6 +7,7 @@ import DashboardLayout from "@/components/admin/dashboard/DashboardLayout";
 import { adminNavItems } from "@/components/admin/dashboard/AdminNavItems";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useAuth } from "@/context/AuthContext";
+import { motion } from "framer-motion";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -29,10 +30,17 @@ const Dashboard = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  console.log("Dashboard component rendering");
+  useEffect(() => {
+    console.log("Dashboard component rendering");
+  }, []);
 
   return (
-    <div className="min-h-screen bg-stone-50 flex overflow-hidden">
+    <motion.div 
+      className="min-h-screen bg-stone-50 flex overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <MobileHeader sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <AdminSidebar 
         sidebarOpen={sidebarOpen} 
@@ -46,7 +54,7 @@ const Dashboard = () => {
       <DashboardLayout>
         <Outlet />
       </DashboardLayout>
-    </div>
+    </motion.div>
   );
 };
 

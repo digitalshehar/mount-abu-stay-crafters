@@ -1,104 +1,84 @@
 
-import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect, useCallback } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { Notification } from "@/context/NotificationContext";
 
-export interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  read: boolean;
-  createdAt: string;
-  type: string;
-}
-
-interface NotificationOptions {
-  type: 'system' | 'alert' | 'update' | 'message';
-  title: string;
-  message: string;
-}
+// Sample notifications for testing
+const initialNotifications: Notification[] = [
+  {
+    id: "1",
+    title: "Welcome to Mount Abu Dashboard",
+    message: "Explore the dashboard to manage your hotel and adventure listings.",
+    type: "system",
+    read: false,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "2",
+    title: "New Booking Request",
+    message: "You have received a new booking request for Hotel Shikhar.",
+    type: "alert",
+    read: false,
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+  },
+  {
+    id: "3",
+    title: "System Maintenance",
+    message: "Scheduled maintenance will be performed on June 15, 2023.",
+    type: "info",
+    read: true,
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
 
 export const useNotifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
-  // Initialize with some demo notifications
   useEffect(() => {
-    const demoNotifications: Notification[] = [
-      {
-        id: uuidv4(),
-        title: 'New Booking',
-        message: 'A new booking has been made for Hotel Grand.',
-        read: false,
-        createdAt: new Date().toISOString(),
-        type: 'system'
-      },
-      {
-        id: uuidv4(),
-        title: 'Website Traffic',
-        message: 'Website traffic increased by 25% this week.',
-        read: true,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-        type: 'update'
-      },
-      {
-        id: uuidv4(),
-        title: 'System Update',
-        message: 'The system will undergo maintenance in 24 hours.',
-        read: false,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
-        type: 'alert'
-      }
-    ];
-    setNotifications(demoNotifications);
-    updateUnreadCount(demoNotifications);
+    const count = notifications.filter(notification => !notification.read).length;
+    setUnreadCount(count);
+  }, [notifications]);
+
+  const markAsRead = useCallback((id: string) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === id 
+          ? { ...notification, read: true } 
+          : notification
+      )
+    );
   }, []);
 
-  const updateUnreadCount = (notifs: Notification[]) => {
-    const count = notifs.filter(n => !n.read).length;
-    setUnreadCount(count);
-  };
-
-  const markAsRead = (id: string) => {
-    const updated = notifications.map(notification => 
-      notification.id === id 
-        ? { ...notification, read: true } 
-        : notification
+  const markAllAsRead = useCallback(() => {
+    setNotifications(prev => 
+      prev.map(notification => ({ ...notification, read: true }))
     );
-    setNotifications(updated);
-    updateUnreadCount(updated);
-  };
+  }, []);
 
-  const markAllAsRead = () => {
-    const updated = notifications.map(notification => ({ 
-      ...notification, 
-      read: true 
-    }));
-    setNotifications(updated);
-    updateUnreadCount(updated);
-  };
+  const deleteNotification = useCallback((id: string) => {
+    setNotifications(prev => 
+      prev.filter(notification => notification.id !== id)
+    );
+  }, []);
 
-  const addNotification = (options: NotificationOptions) => {
+  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
     const newNotification: Notification = {
       id: uuidv4(),
-      title: options.title,
-      message: options.message,
+      ...notification,
       read: false,
       createdAt: new Date().toISOString(),
-      type: options.type
     };
     
-    const updated = [newNotification, ...notifications];
-    setNotifications(updated);
-    updateUnreadCount(updated);
-    
-    return newNotification;
-  };
+    setNotifications(prev => [newNotification, ...prev]);
+  }, []);
 
   return {
     notifications,
     unreadCount,
     markAsRead,
     markAllAsRead,
-    addNotification
+    deleteNotification,
+    addNotification,
   };
 };
