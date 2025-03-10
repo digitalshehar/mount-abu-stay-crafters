@@ -35,20 +35,22 @@ const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   onStatusChange,
   onPaymentStatusChange
 }) => {
-  const handleStatusChange = async (status: string) => {
+  const handleStatusChange = async (id: string, status: string) => {
     if (onStatusChange) {
-      await onStatusChange(booking.id, status);
+      return await onStatusChange(id, status);
     } else if (updateBookingStatus) {
-      await updateBookingStatus(booking.id, status);
+      return await updateBookingStatus(id, status);
     }
+    return false;
   };
 
-  const handlePaymentStatusChange = async (status: string) => {
+  const handlePaymentStatusChange = async (id: string, status: string) => {
     if (onPaymentStatusChange) {
-      await onPaymentStatusChange(booking.id, status);
+      return await onPaymentStatusChange(id, status);
     } else if (updatePaymentStatus) {
-      await updatePaymentStatus(booking.id, status);
+      return await updatePaymentStatus(id, status);
     }
+    return false;
   };
 
   const getBookingTypeLabel = (type: string) => {

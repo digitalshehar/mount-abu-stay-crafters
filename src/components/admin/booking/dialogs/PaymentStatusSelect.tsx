@@ -4,15 +4,20 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface PaymentStatusSelectProps {
+  id?: string;
   currentStatus: string;
-  onStatusChange: (status: string) => void;
+  onStatusChange: (id: string, status: string) => Promise<boolean>;
 }
 
-const PaymentStatusSelect: React.FC<PaymentStatusSelectProps> = ({ currentStatus, onStatusChange }) => {
+const PaymentStatusSelect: React.FC<PaymentStatusSelectProps> = ({ id = '', currentStatus, onStatusChange }) => {
+  const handleStatusChange = (status: string) => {
+    onStatusChange(id, status);
+  };
+
   return (
     <div className="space-y-1">
       <Label className="text-xs text-muted-foreground">Payment Status</Label>
-      <Select defaultValue={currentStatus} onValueChange={onStatusChange}>
+      <Select defaultValue={currentStatus} onValueChange={handleStatusChange}>
         <SelectTrigger>
           <SelectValue placeholder="Payment Status" />
         </SelectTrigger>

@@ -20,7 +20,8 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback?
       'guest_email', 
       'check_in_date', 
       'check_out_date', 
-      'number_of_guests'
+      'number_of_guests',
+      'booking_type'
     ];
     
     const missingFields = requiredFields.filter(field => !bookingData[field as keyof Booking]);
@@ -44,7 +45,7 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback?
     
     const { data, error } = await supabase
       .from('bookings')
-      .insert(bookingWithTax)
+      .insert(bookingWithTax as any)
       .select()
       .single();
 
@@ -63,7 +64,7 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback?
 
     // Refresh bookings after adding a new one
     if (refetchCallback) {
-      refetchCallback();
+      await refetchCallback();
     }
     
     return { success: true, error: null, data };
@@ -73,7 +74,7 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback?
   }
 };
 
-export const updateBookingStatus = async (id: string, status: string) => {
+export const updateBookingStatus = async (id: string, status: string): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('bookings')
@@ -89,7 +90,7 @@ export const updateBookingStatus = async (id: string, status: string) => {
   }
 };
 
-export const updatePaymentStatus = async (id: string, status: string) => {
+export const updatePaymentStatus = async (id: string, status: string): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('bookings')
@@ -105,7 +106,7 @@ export const updatePaymentStatus = async (id: string, status: string) => {
   }
 };
 
-export const deleteBooking = async (id: string) => {
+export const deleteBooking = async (id: string): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('bookings')
