@@ -18,12 +18,30 @@ import {
   CardHeader, 
   CardTitle 
 } from '@/components/ui/card';
-import { Search, Download, RefreshCcw, CalendarIcon, FilterX } from 'lucide-react';
+import { 
+  Search, 
+  Download, 
+  RefreshCcw, 
+  CalendarIcon, 
+  FilterX, 
+  FileText,
+  Printer,
+  Mail
+} from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
+import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const BookingsPage = () => {
   const { 
@@ -34,6 +52,7 @@ const BookingsPage = () => {
     updatePaymentStatus
   } = useBookings();
   
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [paymentFilter, setPaymentFilter] = useState('all');
@@ -86,6 +105,10 @@ const BookingsPage = () => {
 
   const handleRefresh = () => {
     fetchBookings();
+    toast({
+      title: "Refreshed",
+      description: "Booking data has been refreshed",
+    });
   };
 
   const clearFilters = () => {
@@ -93,9 +116,43 @@ const BookingsPage = () => {
     setStatusFilter('all');
     setPaymentFilter('all');
     setDateRange(undefined);
+    toast({
+      title: "Filters Cleared",
+      description: "All filters have been cleared",
+    });
   };
 
-  const handleExport = () => {
+  const handleExport = (format: string) => {
+    // Create export content based on format
+    switch (format) {
+      case 'csv':
+        exportCSV();
+        break;
+      case 'excel':
+        toast({
+          title: "Excel Export",
+          description: "Excel export is under development",
+        });
+        break;
+      case 'pdf':
+        toast({
+          title: "PDF Export",
+          description: "PDF export is under development",
+        });
+        break;
+      case 'print':
+        window.print();
+        break;
+      case 'email':
+        toast({
+          title: "Email Export",
+          description: "Email export is under development",
+        });
+        break;
+    }
+  };
+
+  const exportCSV = () => {
     // Create CSV content
     const headers = [
       'Guest Name',
@@ -136,11 +193,16 @@ const BookingsPage = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    toast({
+      title: "Export Successful",
+      description: `${filteredBookings.length} bookings exported to CSV`,
+    });
   };
 
   return (
     <div className="container mx-auto p-6 max-w-[1600px]">
-      <Card className="mb-6 shadow-md">
+      <Card className="mb-6 shadow-md animate-fade-in">
         <CardHeader>
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div>
@@ -150,14 +212,53 @@ const BookingsPage = () => {
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefresh}
+                className="transition-colors"
+              >
                 <RefreshCcw className="h-4 w-4 mr-2" />
                 Refresh
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="transition-colors"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleExport('csv')}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('excel')}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleExport('print')}>
+                    <Printer className="h-4 w-4 mr-2" />
+                    Print
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('email')}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Email
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardHeader>
@@ -165,11 +266,11 @@ const BookingsPage = () => {
           <div className="flex flex-wrap gap-4 mb-6">
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder="Search by name, email, or hotel..."
-                  className="pl-8"
+                  className="pl-8 transition-all focus:ring-2 focus:ring-ring focus:ring-offset-0"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -178,7 +279,7 @@ const BookingsPage = () => {
             
             <div className="w-full md:w-[180px]">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="transition-all focus:ring-2 focus:ring-ring focus:ring-offset-0">
                   <SelectValue placeholder="Booking Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -193,7 +294,7 @@ const BookingsPage = () => {
             
             <div className="w-full md:w-[180px]">
               <Select value={paymentFilter} onValueChange={setPaymentFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="transition-all focus:ring-2 focus:ring-ring focus:ring-offset-0">
                   <SelectValue placeholder="Payment Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,7 +313,7 @@ const BookingsPage = () => {
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "justify-start text-left font-normal",
+                      "justify-start text-left font-normal transition-all focus:ring-2 focus:ring-ring focus:ring-offset-0",
                       !dateRange?.from && "text-muted-foreground"
                     )}
                   >
@@ -251,6 +352,7 @@ const BookingsPage = () => {
                 onClick={clearFilters}
                 title="Clear all filters"
                 disabled={!searchQuery && statusFilter === 'all' && paymentFilter === 'all' && !dateRange?.from}
+                className="transition-all hover:bg-destructive/10 hover:text-destructive"
               >
                 <FilterX className="h-4 w-4" />
               </Button>

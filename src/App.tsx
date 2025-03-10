@@ -5,6 +5,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/hooks/useTheme";
+import { NotificationsProvider } from "@/context/NotificationsContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CarRentals from "./pages/CarRentals";
@@ -44,69 +48,77 @@ import AdminWebsiteSettings from "./pages/admin/WebsiteSettings";
 import AdminBookings from "./pages/admin/Bookings";
 import AdminUsers from "./pages/admin/Users";
 import AdminAnalytics from "./pages/admin/Analytics";
+import RoomAvailability from "./pages/admin/RoomAvailability";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/hotels" element={<Hotels />} />
-            <Route path="/hotels/map" element={<HotelMap />} />
-            <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
-            <Route path="/hotel/:hotelSlug/html" element={<HotelHtmlView />} />
-            <Route path="/hotel/:hotelSlug.html" element={<HotelHtmlView />} />
-            <Route path="/destinations" element={<Destinations />} />
-            <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
-            <Route path="/rentals/car" element={<CarRentals />} />
-            <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
-            <Route path="/rentals/bike" element={<BikeRentals />} />
-            <Route path="/rentals/bike/:id" element={<BikeRentalDetail />} />
-            <Route path="/adventures" element={<Adventures />} />
-            <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/about-us" element={<AboutUs />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/travel-guide" element={<TravelGuide />} />
-            <Route path="/faqs" element={<FAQs />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/cancellation-policy" element={<CancellationPolicy />} />
-            
-            {/* Auth Routes */}
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/profile" element={<Profile />} />
-            
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminDashboard />}>
-              <Route index element={<AdminOverview />} />
-              <Route path="dashboard" element={<AdminOverview />} />
-              <Route path="hotels" element={<AdminHotels />} />
-              <Route path="bookings" element={<AdminBookings />} />
-              <Route path="blog" element={<AdminBlog />} />
-              <Route path="cars" element={<AdminCarRentals />} />
-              <Route path="bikes" element={<AdminBikeRentals />} />
-              <Route path="adventures" element={<AdminAdventures />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="analytics" element={<AdminAnalytics />} />
-              <Route path="page-builder" element={<AdminPageBuilder />} />
-              <Route path="website-settings" element={<AdminWebsiteSettings />} />
-              <Route path="settings" element={<AdminSettings />} />
-            </Route>
-            
-            {/* Catch All Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <ThemeProvider>
+            <NotificationsProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<Index />} />
+                  <Route path="/hotels" element={<Hotels />} />
+                  <Route path="/hotels/map" element={<HotelMap />} />
+                  <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
+                  <Route path="/hotel/:hotelSlug/html" element={<HotelHtmlView />} />
+                  <Route path="/hotel/:hotelSlug.html" element={<HotelHtmlView />} />
+                  <Route path="/destinations" element={<Destinations />} />
+                  <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
+                  <Route path="/rentals/car" element={<CarRentals />} />
+                  <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
+                  <Route path="/rentals/bike" element={<BikeRentals />} />
+                  <Route path="/rentals/bike/:id" element={<BikeRentalDetail />} />
+                  <Route path="/adventures" element={<Adventures />} />
+                  <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/about-us" element={<AboutUs />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/travel-guide" element={<TravelGuide />} />
+                  <Route path="/faqs" element={<FAQs />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+                  
+                  {/* Auth Routes */}
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/profile" element={<Profile />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminDashboard />}>
+                    <Route index element={<AdminOverview />} />
+                    <Route path="dashboard" element={<AdminOverview />} />
+                    <Route path="hotels" element={<AdminHotels />} />
+                    <Route path="bookings" element={<AdminBookings />} />
+                    <Route path="blog" element={<AdminBlog />} />
+                    <Route path="cars" element={<AdminCarRentals />} />
+                    <Route path="bikes" element={<AdminBikeRentals />} />
+                    <Route path="adventures" element={<AdminAdventures />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="analytics" element={<AdminAnalytics />} />
+                    <Route path="room-availability" element={<RoomAvailability />} />
+                    <Route path="page-builder" element={<AdminPageBuilder />} />
+                    <Route path="website-settings" element={<AdminWebsiteSettings />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                  </Route>
+                  
+                  {/* Catch All Route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </TooltipProvider>
+            </NotificationsProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
