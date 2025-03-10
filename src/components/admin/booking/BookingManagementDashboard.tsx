@@ -6,7 +6,7 @@ import BookingStats from './BookingStats';
 import BookingCharts from './BookingCharts';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import BookingDetailsDialog from './BookingDetailsDialog';
+import BookingDetailsDialog from './dialogs/BookingDetailsDialog';
 import { Booking, BookingStats as BookingStatsType, BookingStatusType, BookingType, PaymentStatusType } from '@/hooks/useBookings';
 
 export interface BookingManagementDashboardProps {

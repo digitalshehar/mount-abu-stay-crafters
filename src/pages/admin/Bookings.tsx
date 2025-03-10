@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useBookings } from '@/hooks/useBookings';
-import { Helmet } from 'react-helmet-async';
 import BookingManagementDashboard from '@/components/admin/booking/BookingManagementDashboard';
 
 const AdminBookings = () => {
@@ -35,10 +34,6 @@ const AdminBookings = () => {
 
   return (
     <div className="space-y-6">
-      <Helmet>
-        <title>Bookings Management | Admin Dashboard</title>
-      </Helmet>
-      
       <BookingManagementDashboard 
         bookings={filteredBookings}
         bookingStats={bookingStats}
