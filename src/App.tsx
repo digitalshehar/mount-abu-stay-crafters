@@ -1,108 +1,79 @@
 
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { FavoritesProvider } from './context/FavoritesContext';
-import { NotificationProvider } from './context/NotificationContext';
-import { Toaster } from 'sonner';
-import Loading from './components/Loading';
-import PublicLayout from './layouts/PublicLayout';
-import NotFound from './pages/NotFound';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ErrorBoundary } from 'react-error-boundary';
+import Home from '@/pages/Home';
+import Hotels from '@/pages/Hotels';
+import HotelDetail from '@/pages/HotelDetail';
+import AboutUs from '@/pages/AboutUs';
+import NotFound from '@/pages/NotFound';
+import Dashboard from '@/pages/admin/Dashboard';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import Overview from '@/pages/admin/Overview';
+import HotelsManagement from '@/pages/admin/Hotels';
+import BikeRentalsManagement from '@/pages/admin/BikeRentals';
+import CarRentalsManagement from '@/pages/admin/CarRentals';
+import AdventuresManagement from '@/pages/admin/Adventures';
+import BookingManagement from '@/pages/admin/Bookings';
+import BlogManagement from '@/pages/admin/BlogManagement';
+import WebsiteSettings from '@/pages/admin/WebsiteSettings';
+import PublicLayout from '@/layouts/PublicLayout';
+import AdminLayout from '@/layouts/AdminLayout';
+import { AuthProvider } from '@/context/AuthContext';
+import { NotificationProvider } from '@/context/NotificationContext';
+import { Toaster } from '@/components/ui/toaster';
+import ErrorFallback from '@/components/ErrorBoundary';
+import { FavoritesProvider } from '@/context/FavoritesContext';
 import './App.css';
-import ErrorBoundary from './components/ErrorBoundary';
-
-// Lazy-loaded components
-const Home = lazy(() => import('./pages/Home'));
-const About = lazy(() => import('./pages/About'));
-const Contact = lazy(() => import('./pages/Contact'));
-const Hotels = lazy(() => import('./pages/Hotels'));
-const HotelDetails = lazy(() => import('./pages/HotelDetails'));
-const Adventures = lazy(() => import('./pages/Adventures'));
-const AdventureDetails = lazy(() => import('./pages/AdventureDetails'));
-const CarRentals = lazy(() => import('./pages/CarRentals'));
-const CarRentalDetails = lazy(() => import('./pages/CarRentalDetails'));
-const BikeRentals = lazy(() => import('./pages/BikeRentals'));
-const BikeRentalDetails = lazy(() => import('./pages/BikeRentalDetails'));
-const Blog = lazy(() => import('./pages/Blog'));
-const BlogPost = lazy(() => import('./pages/BlogPost'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Bookings = lazy(() => import('./pages/Bookings'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const ResetPassword = lazy(() => import('./pages/ResetPassword'));
-
-// Admin Components
-const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
-const Overview = lazy(() => import('./pages/admin/Overview'));
-const HotelsManagement = lazy(() => import('./pages/admin/Hotels'));
-const AdventuresManagement = lazy(() => import('./pages/admin/AdventuresManagement'));
-const CarRentalsManagement = lazy(() => import('./pages/admin/CarRentalsManagement'));
-const BikeRentalsManagement = lazy(() => import('./pages/admin/BikeRentalsManagement'));
-const BlogManagement = lazy(() => import('./pages/admin/BlogManagement'));
-const Settings = lazy(() => import('./pages/admin/Settings'));
-const WebsiteSettings = lazy(() => import('./pages/admin/WebsiteSettings'));
-const PageBuilder = lazy(() => import('./pages/admin/PageBuilder'));
-const BookingManagement = lazy(() => import('./pages/admin/BookingManagement'));
 
 function App() {
   return (
-    <ErrorBoundary>
-      <Router>
-        <AuthProvider>
-          <FavoritesProvider>
-            <NotificationProvider>
-              <Toaster position="bottom-right" richColors closeButton />
-              <Suspense fallback={<Loading />}>
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<PublicLayout />}>
-                    <Route index element={<Home />} />
-                    <Route path="about" element={<About />} />
-                    <Route path="contact" element={<Contact />} />
-                    <Route path="hotels" element={<Hotels />} />
-                    <Route path="hotels/:slug" element={<HotelDetails />} />
-                    <Route path="adventures" element={<Adventures />} />
-                    <Route path="adventures/:slug" element={<AdventureDetails />} />
-                    <Route path="car-rentals" element={<CarRentals />} />
-                    <Route path="car-rentals/:slug" element={<CarRentalDetails />} />
-                    <Route path="bike-rentals" element={<BikeRentals />} />
-                    <Route path="bike-rentals/:slug" element={<BikeRentalDetails />} />
-                    <Route path="blog" element={<Blog />} />
-                    <Route path="blog/:slug" element={<BlogPost />} />
-                    <Route path="profile" element={<Profile />} />
-                    <Route path="bookings" element={<Bookings />} />
-                  </Route>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <AuthProvider>
+        <FavoritesProvider>
+          <NotificationProvider>
+            <Router>
+              <Routes>
+                {/* Public Routes */}
+                <Route element={<PublicLayout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/hotels" element={<Hotels />} />
+                  <Route path="/hotels/:id" element={<HotelDetail />} />
+                  <Route path="/about" element={<AboutUs />} />
+                </Route>
 
-                  {/* Authentication Routes */}
-                  <Route path="login" element={<Login />} />
-                  <Route path="register" element={<Register />} />
-                  <Route path="forgot-password" element={<ForgotPassword />} />
-                  <Route path="reset-password" element={<ResetPassword />} />
+                {/* Auth Routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
 
-                  {/* Admin Routes */}
-                  <Route path="admin" element={<Dashboard />}>
-                    <Route index element={<Navigate to="/admin/overview" replace />} />
-                    <Route path="overview" element={<Overview />} />
+                {/* Admin Routes */}
+                <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route path="dashboard" element={<Dashboard />}>
+                    <Route index element={<Overview />} />
                     <Route path="hotels" element={<HotelsManagement />} />
-                    <Route path="booking-management" element={<BookingManagement />} />
-                    <Route path="adventures" element={<AdventuresManagement />} />
-                    <Route path="car-rentals" element={<CarRentalsManagement />} />
                     <Route path="bike-rentals" element={<BikeRentalsManagement />} />
+                    <Route path="car-rentals" element={<CarRentalsManagement />} />
+                    <Route path="adventures" element={<AdventuresManagement />} />
+                    <Route path="bookings" element={<BookingManagement />} />
                     <Route path="blog" element={<BlogManagement />} />
-                    <Route path="settings" element={<Settings />} />
-                    <Route path="website-settings" element={<WebsiteSettings />} />
-                    <Route path="page-builder" element={<PageBuilder />} />
+                    <Route path="settings" element={<WebsiteSettings />} />
                   </Route>
+                </Route>
 
-                  {/* 404 Route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </NotificationProvider>
-          </FavoritesProvider>
-        </AuthProvider>
-      </Router>
+                {/* 404 Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+            <Toaster />
+          </NotificationProvider>
+        </FavoritesProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }

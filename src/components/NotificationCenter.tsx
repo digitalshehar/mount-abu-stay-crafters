@@ -1,111 +1,94 @@
 
-import React, { useState } from 'react';
-import { Bell } from 'lucide-react';
-import { useNotifications } from '@/context/NotificationContext';
+import React from 'react';
+import { Bell, Check, Trash } from 'lucide-react';
+import { useNotificationContext, Notification } from '@/context/NotificationContext';
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
-const NotificationCenter = () => {
-  const { notifications, markAsRead, clearNotifications, unreadCount } = useNotifications();
-  const [open, setOpen] = useState(false);
+const NotificationCenter: React.FC = () => {
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotificationContext();
+  const [isOpen, setIsOpen] = React.useState(false);
 
-  const handleMarkAllAsRead = () => {
-    notifications.forEach((notification) => {
-      if (!notification.read) {
-        markAsRead(notification.id);
-      }
-    });
-  };
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'success':
-        return <span className="h-2 w-2 rounded-full bg-green-500"></span>;
-      case 'warning':
-        return <span className="h-2 w-2 rounded-full bg-yellow-500"></span>;
-      case 'error':
-        return <span className="h-2 w-2 rounded-full bg-red-500"></span>;
-      default:
-        return <span className="h-2 w-2 rounded-full bg-blue-500"></span>;
-    }
+  const togglePanel = () => {
+    setIsOpen(!isOpen);
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button size="icon" variant="ghost" className="relative">
-          <Bell size={20} />
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-              {unreadCount}
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80" align="end">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium">Notifications</h3>
-          <div className="flex gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleMarkAllAsRead}
-              className="text-xs"
-            >
-              Mark all as read
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={clearNotifications}
-              className="text-xs"
-            >
-              Clear all
-            </Button>
+    <div className="relative">
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="relative" 
+        onClick={togglePanel}
+      >
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <Badge 
+            variant="destructive" 
+            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+          >
+            {unreadCount}
+          </Badge>
+        )}
+      </Button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg overflow-hidden z-50">
+          <div className="p-4 border-b">
+            <div className="flex justify-between items-center">
+              <h3 className="font-medium">Notifications</h3>
+              {unreadCount > 0 && (
+                <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+                  <Check className="h-4 w-4 mr-1" />
+                  Mark all read
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
-        <Separator className="my-2" />
-        {notifications.length === 0 ? (
-          <div className="py-4 text-center text-sm text-muted-foreground">
-            No notifications
-          </div>
-        ) : (
-          <ScrollArea className="h-80">
-            <div className="space-y-2">
-              {notifications.map((notification) => (
+
+          <div className="max-h-[400px] overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">No notifications</div>
+            ) : (
+              notifications.map((notification) => (
                 <div 
-                  key={notification.id}
-                  className={`p-3 rounded-md ${notification.read ? 'bg-background' : 'bg-muted'}`}
+                  key={notification.id} 
+                  className={`p-4 border-b ${notification.read ? 'bg-white' : 'bg-blue-50'}`}
                 >
-                  <div className="flex gap-2 items-start">
-                    <div className="mt-1">
-                      {getNotificationIcon(notification.type)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm">{notification.message}</p>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="p-0 h-auto text-xs opacity-70"
-                        onClick={() => markAsRead(notification.id)}
+                  <div className="flex justify-between">
+                    <h4 className="font-medium text-sm">{notification.title}</h4>
+                    <div className="flex space-x-1">
+                      {!notification.read && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 w-6 p-0" 
+                          onClick={() => markAsRead(notification.id)}
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-6 w-6 p-0 text-red-500" 
+                        onClick={() => deleteNotification(notification.id)}
                       >
-                        {notification.read ? 'Read' : 'Mark as read'}
+                        <Trash className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
+                  <p className="text-sm mt-1">{notification.message}</p>
+                  <div className="text-xs text-gray-500 mt-2">
+                    {new Date(notification.createdAt).toLocaleString()}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        )}
-      </PopoverContent>
-    </Popover>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

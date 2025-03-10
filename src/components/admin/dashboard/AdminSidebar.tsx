@@ -1,149 +1,207 @@
 
-import React, { useEffect, useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
-import { NavItem } from "./AdminNavItems";
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Notification } from "@/context/NotificationContext";
-import NotificationsPanel from "@/components/admin/NotificationsPanel";
-import { User, LogOut, Bell, X } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { X, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
+import NotificationsPanel from "@/components/admin/NotificationsPanel";
+import { useAuth } from "@/context/AuthContext";
+import { NavItem } from "./AdminNavItems";
+import { Notification } from "@/context/NotificationContext";
 
 interface AdminSidebarProps {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
   navItems: NavItem[];
-  notifications?: Notification[];
-  unreadCount?: number;
-  markAsRead?: (id: string) => void;
-  markAllAsRead?: () => void;
+  notifications: Notification[];
+  unreadCount: number;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({
   sidebarOpen,
   toggleSidebar,
   navItems,
-  notifications = [],
-  unreadCount = 0,
-  markAsRead = () => {},
-  markAllAsRead = () => {},
+  notifications,
+  unreadCount,
+  markAsRead,
+  markAllAsRead,
 }) => {
-  const { user, signOut } = useAuth();
   const location = useLocation();
-  const [activeItem, setActiveItem] = useState("");
-  
-  useEffect(() => {
-    const currentPath = location.pathname;
-    const activeNavItem = navItems.find((item) =>
-      currentPath.startsWith(item.path)
-    );
-    setActiveItem(activeNavItem?.path || "");
-  }, [location.pathname, navItems]);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  // Animations for sidebar
+  const sidebarVariants = {
+    open: { x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
+    closed: { x: "-100%", transition: { type: "spring", stiffness: 300, damping: 24 } },
+  };
+
+  // Animation for notification panel
+  const notificationVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+  };
 
   return (
     <>
-      {/* Mobile overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-30 md:hidden"
-            onClick={toggleSidebar}
-          />
-        )}
-      </AnimatePresence>
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
 
       {/* Sidebar */}
       <motion.aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-screen bg-white border-r border-stone-200 shadow-sm",
-          "w-[280px] transition-transform duration-300 transform",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          "fixed left-0 top-0 bottom-0 w-[280px] bg-white border-r border-stone-200 z-50",
+          "flex flex-col shadow-sm",
+          "md:translate-x-0 transform",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
+        variants={sidebarVariants}
         initial={false}
+        animate={sidebarOpen ? "open" : "closed"}
       >
-        <div className="flex items-center justify-between h-16 px-4 border-b">
-          <div className="flex items-center">
-            <span className="ml-2 text-xl font-semibold">Mount Abu</span>
-          </div>
+        {/* Sidebar Header */}
+        <div className="flex items-center justify-between p-4 border-b border-stone-200">
+          <Link to="/admin/dashboard" className="flex items-center gap-2">
+            <div className="font-bold text-lg text-stone-900">Mount Abu Admin</div>
+          </Link>
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
             onClick={toggleSidebar}
+            className="md:hidden"
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
 
-        <div className="flex flex-col h-[calc(100vh-64px)]">
-          <ScrollArea className="flex-1 py-2">
-            <nav className="px-2 space-y-1">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center px-3 py-2.5 text-sm font-medium rounded-md",
-                      "transition-colors duration-200",
-                      isActive
-                        ? "bg-stone-100 text-stone-900"
-                        : "text-stone-600 hover:bg-stone-100 hover:text-stone-900"
-                    )
-                  }
-                  onClick={() => {
-                    if (window.innerWidth < 768) {
-                      toggleSidebar();
-                    }
-                  }}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </nav>
-          </ScrollArea>
-
-          <div className="p-4 border-t border-stone-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.image || ""} alt={user?.email || ""} />
-                  <AvatarFallback>
-                    {user?.email?.[0]?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="ml-2">
-                  <p className="text-sm font-medium">{user?.email}</p>
-                  <p className="text-xs text-stone-500">Admin</p>
+        {/* User Profile */}
+        {user && (
+          <div className="p-4 border-b border-stone-200">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-stone-200 overflow-hidden">
+                {user.user_metadata?.avatar_url ? (
+                  <img
+                    src={user.user_metadata.avatar_url}
+                    alt={user.user_metadata?.full_name || "User"}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center bg-stone-300 text-stone-600 font-medium">
+                    {user.email ? user.email.charAt(0).toUpperCase() : "U"}
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium truncate">
+                  {user.user_metadata?.full_name || user.email || "User"}
+                </div>
+                <div className="text-xs text-stone-500 truncate">
+                  {user.email}
                 </div>
               </div>
+              <div className="relative">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="relative"
+                        onClick={() => setShowNotifications(!showNotifications)}
+                      >
+                        <Bell className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                          <Badge
+                            variant="destructive"
+                            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                          >
+                            {unreadCount}
+                          </Badge>
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Notifications</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-              <div className="flex space-x-1">
-                <NotificationsPanel
-                  notifications={notifications}
-                  unreadCount={unreadCount}
-                  markAsRead={markAsRead}
-                  markAllAsRead={markAllAsRead}
-                />
-                
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => signOut?.()}
-                  className="text-stone-500 hover:text-stone-900"
-                >
-                  <LogOut className="h-5 w-5" />
-                </Button>
+                <AnimatePresence>
+                  {showNotifications && (
+                    <motion.div
+                      className="absolute top-full right-0 mt-2 z-50"
+                      variants={notificationVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                    >
+                      <NotificationsPanel
+                        notifications={notifications}
+                        markAsRead={markAsRead}
+                        markAllAsRead={markAllAsRead}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
+        )}
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4">
+          <ul className="space-y-1 px-2">
+            {navItems.map((item, index) => (
+              <React.Fragment key={item.href}>
+                {item.section && (
+                  <li className="px-3 py-2">
+                    <div className="text-xs font-medium text-stone-500 uppercase tracking-wider">
+                      {item.section}
+                    </div>
+                  </li>
+                )}
+                <li>
+                  <Link
+                    to={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                      location.pathname === item.href
+                        ? "bg-stone-100 text-stone-900"
+                        : "text-stone-600 hover:bg-stone-100"
+                    )}
+                  >
+                    {item.icon && <item.icon className="h-5 w-5" />}
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+                {index < navItems.length - 1 && item.section && <Separator className="my-2" />}
+              </React.Fragment>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="mt-auto p-4 border-t border-stone-200">
+          <Button variant="outline" className="w-full" onClick={handleLogout}>
+            Log out
+          </Button>
         </div>
       </motion.aside>
     </>

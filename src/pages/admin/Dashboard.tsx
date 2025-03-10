@@ -5,14 +5,14 @@ import AdminSidebar from "@/components/admin/dashboard/AdminSidebar";
 import MobileHeader from "@/components/admin/dashboard/MobileHeader";
 import DashboardLayout from "@/components/admin/dashboard/DashboardLayout";
 import { adminNavItems } from "@/components/admin/dashboard/AdminNavItems";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useNotificationContext } from "@/context/NotificationContext";
 import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationContext();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
