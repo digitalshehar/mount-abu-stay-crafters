@@ -13,8 +13,8 @@ const Profile = () => {
   const { favorites, loading, removeFromFavorites } = useFavorites(user);
 
   // Create a wrapper for removeFromFavorites to ensure it returns Promise<void>
-  const handleRemoveFavorite = async (id: string) => {
-    await removeFromFavorites(id, activeTab);
+  const handleRemoveFavorite = async (id: number) => {
+    await removeFromFavorites(id.toString(), activeTab);
     return;
   };
 
