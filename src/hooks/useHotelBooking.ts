@@ -56,7 +56,7 @@ export const useHotelBooking = (hotel: any) => {
         total_price: basePrice, // Service will add tax and generate reference
         booking_status: 'confirmed',
         payment_status: 'pending',
-        booking_type: 'hotel' as BookingType // Fix the TypeScript error by casting to BookingType
+        booking_type: 'hotel' as BookingType // Explicitly set booking type
       };
       
       // Add the booking

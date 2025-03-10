@@ -1,6 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { Booking } from '@/hooks/useBookings';
+import { Booking, BookingType } from '@/hooks/useBookings';
 
 export const addBooking = async (bookingData: Partial<Booking>, refetchCallback: () => Promise<void>) => {
   try {
@@ -10,9 +9,6 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
     const basePrice = bookingData.total_price || 0;
     const tax = basePrice * 0.1; // 10% tax
     const totalWithTax = basePrice + tax;
-    
-    // Generate booking reference (simple implementation)
-    const bookingRef = `BK-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
     
     // Ensure required fields
     const requiredFields = [
@@ -30,16 +26,16 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
       throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
     }
     
-    // Add the tax information and booking reference to the booking data
+    // Add the tax information to the booking data
     const bookingWithTax = {
       ...bookingData,
-      booking_reference: bookingRef,
       total_price: totalWithTax,
       base_price: basePrice,
       tax_amount: tax,
       booking_status: bookingData.booking_status || 'confirmed',
       payment_status: bookingData.payment_status || 'pending',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      booking_type: bookingData.booking_type || 'hotel' // Ensure booking_type is set
     };
     
     const { data, error } = await supabase
@@ -51,14 +47,6 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
     if (error) {
       console.error('Error adding booking:', error);
       return { success: false, error: error.message, data: null };
-    }
-
-    // Send confirmation email
-    try {
-      await sendBookingConfirmationEmail(data);
-    } catch (emailError) {
-      console.error('Error sending confirmation email:', emailError);
-      // We don't want to fail the booking if email fails
     }
 
     // Refresh bookings after adding a new one

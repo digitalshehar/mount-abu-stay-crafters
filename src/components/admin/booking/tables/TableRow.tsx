@@ -24,15 +24,19 @@ import {
 interface BookingRowProps {
   booking: Booking;
   onViewDetails: (booking: Booking) => void;
+  onDeleteClick?: (id: string) => void;
   onStatusChange?: (id: string, status: string) => Promise<boolean>;
   onPaymentStatusChange?: (id: string, status: string) => Promise<boolean>;
+  getBookingTypeLabel?: (type: string) => string;
 }
 
 const BookingRow: React.FC<BookingRowProps> = ({
   booking,
   onViewDetails,
+  onDeleteClick,
   onStatusChange,
   onPaymentStatusChange,
+  getBookingTypeLabel,
 }) => {
   const statusVariants: Record<string, string> = {
     confirmed: 'bg-green-100 text-green-800 hover:bg-green-200',
@@ -108,9 +112,7 @@ const BookingRow: React.FC<BookingRowProps> = ({
         <div className="text-xs text-muted-foreground">{booking.guest_email}</div>
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="capitalize">
-          {booking.booking_type}
-        </Badge>
+        {getBookingTypeLabel ? getBookingTypeLabel(booking.booking_type) : booking.booking_type}
       </TableCell>
       <TableCell>{getServiceName()}</TableCell>
       <TableCell>{format(new Date(booking.check_in_date), 'MMM dd, yyyy')}</TableCell>
@@ -145,15 +147,20 @@ const BookingRow: React.FC<BookingRowProps> = ({
             <DropdownMenuItem onClick={() => onViewDetails(booking)}>
               <Eye className="w-4 h-4 mr-2" /> View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleMarkAsPaid}>
+            <DropdownMenuItem onClick={() => onPaymentStatusChange && onPaymentStatusChange(booking.id, 'paid')}>
               <CheckCircle className="w-4 h-4 mr-2" /> Mark as Paid
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleCompleteBooking}>
+            <DropdownMenuItem onClick={() => onStatusChange && onStatusChange(booking.id, 'completed')}>
               <CheckCircle className="w-4 h-4 mr-2" /> Complete Booking
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleCancelBooking}>
+            <DropdownMenuItem onClick={() => onStatusChange && onStatusChange(booking.id, 'cancelled')}>
               <XCircle className="w-4 h-4 mr-2" /> Cancel Booking
             </DropdownMenuItem>
+            {onDeleteClick && (
+              <DropdownMenuItem onClick={() => onDeleteClick(booking.id)} className="text-destructive">
+                <XCircle className="w-4 h-4 mr-2" /> Delete Booking
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
