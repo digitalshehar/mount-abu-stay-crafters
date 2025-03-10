@@ -11,18 +11,49 @@ import { Check, Clock, CreditCard, Users, X } from 'lucide-react';
 
 interface BookingDetailsDialogProps {
   booking: Booking | null;
-  onClose: () => void;
-  updateBookingStatus: (id: string, status: string) => Promise<boolean>;
-  updatePaymentStatus: (id: string, status: string) => Promise<boolean>;
+  onClose?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  updateBookingStatus?: (id: string, status: string) => Promise<boolean>;
+  updatePaymentStatus?: (id: string, status: string) => Promise<boolean>;
+  onStatusChange?: (id: string, status: string) => Promise<boolean>;
+  onPaymentStatusChange?: (id: string, status: string) => Promise<boolean>;
 }
 
 const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   booking,
   onClose,
+  open,
+  onOpenChange,
   updateBookingStatus,
   updatePaymentStatus,
+  onStatusChange,
+  onPaymentStatusChange,
 }) => {
   if (!booking) return null;
+
+  const isOpen = open !== undefined ? open : !!booking;
+  const handleOpenChange = onOpenChange || (onClose ? (isOpen: boolean) => !isOpen && onClose() : undefined);
+
+  const handleStatusUpdate = async (status: string) => {
+    const updateFn = onStatusChange || updateBookingStatus;
+    if (updateFn) {
+      const success = await updateFn(booking.id, status);
+      if (success && onClose) {
+        onClose();
+      }
+    }
+  };
+
+  const handlePaymentUpdate = async (status: string) => {
+    const updateFn = onPaymentStatusChange || updatePaymentStatus;
+    if (updateFn) {
+      const success = await updateFn(booking.id, status);
+      if (success && onClose) {
+        onClose();
+      }
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -54,20 +85,6 @@ const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
     }
   };
 
-  const handleStatusUpdate = async (status: string) => {
-    const success = await updateBookingStatus(booking.id, status);
-    if (success) {
-      onClose();
-    }
-  };
-
-  const handlePaymentUpdate = async (status: string) => {
-    const success = await updatePaymentStatus(booking.id, status);
-    if (success) {
-      onClose();
-    }
-  };
-
   const getDuration = () => {
     const checkIn = new Date(booking.check_in_date);
     const checkOut = new Date(booking.check_out_date);
@@ -77,7 +94,7 @@ const BookingDetailsDialog: React.FC<BookingDetailsDialogProps> = ({
   };
 
   return (
-    <Dialog open={!!booking} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Booking Details</DialogTitle>

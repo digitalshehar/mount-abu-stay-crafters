@@ -5,21 +5,34 @@ import { Booking, BookingStats } from '@/hooks/useBookings';
 import { Bar, BarChart, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell, Legend, CartesianGrid, Sector } from 'recharts';
 
 interface BookingChartsProps {
-  bookings: Booking[];
-  stats: BookingStats;
+  bookings?: Booking[];
+  stats?: BookingStats;
+  bookingStats?: BookingStats;
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
-const BookingCharts: React.FC<BookingChartsProps> = ({ bookings, stats }) => {
+const BookingCharts: React.FC<BookingChartsProps> = ({ bookings, stats, bookingStats }) => {
+  // Use the appropriate stats object, with bookingStats taking precedence
+  const statsData = bookingStats || stats || {
+    bookingsByStatus: {},
+    bookingsByHotel: {},
+    bookingsByRoomType: {},
+    revenueByMonth: {},
+    totalBookings: 0,
+    totalRevenue: 0,
+    averageBookingValue: 0,
+    occupancyRate: 0
+  };
+  
   // Transform data for status pie chart
-  const statusData = Object.entries(stats.bookingsByStatus).map(([name, value]) => ({
+  const statusData = Object.entries(statsData.bookingsByStatus).map(([name, value]) => ({
     name,
     value,
   }));
 
   // Transform data for hotel bar chart
-  const hotelData = Object.entries(stats.bookingsByHotel)
+  const hotelData = Object.entries(statsData.bookingsByHotel)
     .map(([name, value]) => ({
       name: name.length > 15 ? name.substring(0, 15) + '...' : name,
       value,
@@ -28,13 +41,13 @@ const BookingCharts: React.FC<BookingChartsProps> = ({ bookings, stats }) => {
     .slice(0, 5);
 
   // Transform data for room type distribution
-  const roomTypeData = Object.entries(stats.bookingsByRoomType).map(([name, value]) => ({
+  const roomTypeData = Object.entries(statsData.bookingsByRoomType).map(([name, value]) => ({
     name,
     value,
   }));
 
   // Transform data for monthly revenue
-  const revenueData = Object.entries(stats.revenueByMonth)
+  const revenueData = Object.entries(statsData.revenueByMonth)
     .map(([month, revenue]) => {
       const date = new Date(month);
       return {

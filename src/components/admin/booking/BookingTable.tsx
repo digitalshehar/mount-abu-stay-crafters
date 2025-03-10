@@ -27,8 +27,11 @@ import BookingDetailsDialog from './BookingDetailsDialog';
 interface BookingTableProps {
   bookings: Booking[];
   loading: boolean;
-  updateBookingStatus: (id: string, status: string) => Promise<boolean>;
-  updatePaymentStatus: (id: string, status: string) => Promise<boolean>;
+  updateBookingStatus?: (id: string, status: string) => Promise<boolean>;
+  updatePaymentStatus?: (id: string, status: string) => Promise<boolean>;
+  onStatusChange?: (id: string, status: string) => Promise<boolean>;
+  onPaymentStatusChange?: (id: string, status: string) => Promise<boolean>;
+  onViewDetails?: (booking: Booking) => void;
 }
 
 const BookingTable: React.FC<BookingTableProps> = ({
@@ -36,8 +39,39 @@ const BookingTable: React.FC<BookingTableProps> = ({
   loading,
   updateBookingStatus,
   updatePaymentStatus,
+  onStatusChange,
+  onPaymentStatusChange,
+  onViewDetails,
 }) => {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+
+  const handleStatusUpdate = (id: string, status: string) => {
+    if (onStatusChange) {
+      return onStatusChange(id, status);
+    }
+    if (updateBookingStatus) {
+      return updateBookingStatus(id, status);
+    }
+    return Promise.resolve(false);
+  };
+
+  const handlePaymentUpdate = (id: string, status: string) => {
+    if (onPaymentStatusChange) {
+      return onPaymentStatusChange(id, status);
+    }
+    if (updatePaymentStatus) {
+      return updatePaymentStatus(id, status);
+    }
+    return Promise.resolve(false);
+  };
+
+  const handleViewDetails = (booking: Booking) => {
+    if (onViewDetails) {
+      onViewDetails(booking);
+    } else {
+      setSelectedBooking(booking);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -136,30 +170,30 @@ const BookingTable: React.FC<BookingTableProps> = ({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => setSelectedBooking(booking)}>
+                        <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuLabel>Update Status</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => updateBookingStatus(booking.id, 'confirmed')}>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(booking.id, 'confirmed')}>
                           Mark as Confirmed
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateBookingStatus(booking.id, 'completed')}>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(booking.id, 'completed')}>
                           Mark as Completed
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updateBookingStatus(booking.id, 'cancelled')}>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(booking.id, 'cancelled')}>
                           Mark as Cancelled
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuLabel>Payment Status</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => updatePaymentStatus(booking.id, 'paid')}>
+                        <DropdownMenuItem onClick={() => handlePaymentUpdate(booking.id, 'paid')}>
                           Mark as Paid
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updatePaymentStatus(booking.id, 'pending')}>
+                        <DropdownMenuItem onClick={() => handlePaymentUpdate(booking.id, 'pending')}>
                           Mark as Pending
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => updatePaymentStatus(booking.id, 'refunded')}>
+                        <DropdownMenuItem onClick={() => handlePaymentUpdate(booking.id, 'refunded')}>
                           Mark as Refunded
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -172,12 +206,14 @@ const BookingTable: React.FC<BookingTableProps> = ({
         </div>
       </ScrollArea>
 
-      <BookingDetailsDialog 
-        booking={selectedBooking} 
-        onClose={() => setSelectedBooking(null)} 
-        updateBookingStatus={updateBookingStatus}
-        updatePaymentStatus={updatePaymentStatus}
-      />
+      {!onViewDetails && selectedBooking && (
+        <BookingDetailsDialog 
+          booking={selectedBooking} 
+          onClose={() => setSelectedBooking(null)} 
+          updateBookingStatus={updateBookingStatus || handleStatusUpdate}
+          updatePaymentStatus={updatePaymentStatus || handlePaymentUpdate}
+        />
+      )}
     </>
   );
 };

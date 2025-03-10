@@ -3,7 +3,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { BookingStatusType, PaymentStatusType } from '@/hooks/useBookings';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -20,6 +20,7 @@ interface BookingFiltersProps {
   setStatusFilter: (status: BookingStatusType) => void;
   setPaymentFilter: (status: PaymentStatusType) => void;
   setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
+  exportBookingsToCSV?: () => void;
 }
 
 const BookingFilters = ({
@@ -31,6 +32,7 @@ const BookingFilters = ({
   setStatusFilter,
   setPaymentFilter,
   setDateRange,
+  exportBookingsToCSV,
 }: BookingFiltersProps) => {
   return (
     <div className="space-y-4">
@@ -131,6 +133,16 @@ const BookingFilters = ({
       </div>
       
       <div className="flex justify-end space-x-2">
+        {exportBookingsToCSV && (
+          <Button 
+            variant="outline"
+            onClick={exportBookingsToCSV}
+            className="flex items-center gap-1"
+          >
+            <Download className="h-4 w-4" /> 
+            Export CSV
+          </Button>
+        )}
         <Button
           variant="outline"
           onClick={() => {

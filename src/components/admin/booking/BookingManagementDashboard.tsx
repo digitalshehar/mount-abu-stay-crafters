@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { useBookings } from '@/hooks/useBookings';
 import BookingTable from './BookingTable';
 import BookingFilters from './BookingFilters';
 import BookingStats from './BookingStats';
@@ -8,35 +7,51 @@ import BookingCharts from './BookingCharts';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BookingDetailsDialog from './BookingDetailsDialog';
+import { Booking, BookingStats as BookingStatsType, BookingStatusType, PaymentStatusType } from '@/hooks/useBookings';
 
-const BookingManagementDashboard: React.FC = () => {
-  const {
-    filteredBookings,
-    bookingStats,
-    loading,
-    updateBookingStatus,
-    updatePaymentStatus,
-    searchQuery,
-    statusFilter,
-    paymentFilter,
-    dateRange,
-    setSearchQuery,
-    setStatusFilter,
-    setPaymentFilter,
-    setDateRange,
-    exportBookingsToCSV
-  } = useBookings();
+interface BookingManagementDashboardProps {
+  bookings: Booking[];
+  bookingStats: BookingStatsType;
+  loading: boolean;
+  searchQuery: string;
+  statusFilter: BookingStatusType;
+  paymentFilter: PaymentStatusType;
+  dateRange: { from: Date | undefined; to: Date | undefined };
+  setSearchQuery: (query: string) => void;
+  setStatusFilter: (status: BookingStatusType) => void;
+  setPaymentFilter: (status: PaymentStatusType) => void;
+  setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
+  exportBookingsToCSV: () => void;
+  onViewDetails: (booking: Booking) => void;
+  selectedBooking: Booking | null;
+  detailsOpen: boolean;
+  setDetailsOpen: (open: boolean) => void;
+  onStatusChange: (id: string, status: string) => Promise<boolean>;
+  onPaymentStatusChange: (id: string, status: string) => Promise<boolean>;
+}
 
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<any>(null);
-
-  const handleViewDetails = (booking: any) => {
-    setSelectedBooking(booking);
-    setIsDetailsOpen(true);
-  };
-
+const BookingManagementDashboard: React.FC<BookingManagementDashboardProps> = ({
+  bookings,
+  bookingStats,
+  loading,
+  searchQuery,
+  statusFilter,
+  paymentFilter,
+  dateRange,
+  setSearchQuery,
+  setStatusFilter,
+  setPaymentFilter,
+  setDateRange,
+  exportBookingsToCSV,
+  onViewDetails,
+  selectedBooking,
+  detailsOpen,
+  setDetailsOpen,
+  onStatusChange,
+  onPaymentStatusChange
+}) => {
   return (
-    <div className="container mx-auto py-6 space-y-8">
+    <div className="container mx-auto space-y-8">
       <div className="flex flex-col space-y-4">
         <h1 className="text-3xl font-bold tracking-tight">Booking Management</h1>
         <p className="text-muted-foreground">
@@ -70,11 +85,11 @@ const BookingManagementDashboard: React.FC = () => {
         </TabsList>
         <TabsContent value="list" className="space-y-4">
           <BookingTable 
-            bookings={filteredBookings}
+            bookings={bookings}
             loading={loading}
-            onStatusChange={updateBookingStatus}
-            onPaymentStatusChange={updatePaymentStatus}
-            onViewDetails={handleViewDetails}
+            onStatusChange={onStatusChange}
+            onPaymentStatusChange={onPaymentStatusChange}
+            onViewDetails={onViewDetails}
           />
         </TabsContent>
         <TabsContent value="analytics">
@@ -86,10 +101,10 @@ const BookingManagementDashboard: React.FC = () => {
       {selectedBooking && (
         <BookingDetailsDialog
           booking={selectedBooking}
-          open={isDetailsOpen}
-          onOpenChange={setIsDetailsOpen}
-          onStatusChange={updateBookingStatus}
-          onPaymentStatusChange={updatePaymentStatus}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+          onStatusChange={onStatusChange}
+          onPaymentStatusChange={onPaymentStatusChange}
         />
       )}
     </div>
