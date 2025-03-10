@@ -1,293 +1,369 @@
 
-import React, { useEffect, useState } from 'react';
-import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { Booking } from '@/hooks/useBookings';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Hotel } from '@/components/admin/hotels/types';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Filter, CalendarIcon } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Hotel } from '@/components/admin/hotels/types';
+import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
-interface RoomAvailabilityCalendarProps {
-  className?: string;
-}
-
-interface RoomAvailability {
+interface CalendarDay {
   date: Date;
-  rooms: {
-    [roomType: string]: {
-      booked: number;
-      total: number;
-      bookingIds: string[];
-    };
-  };
+  bookings: number;
+  availableRooms: number;
+  occupancyRate: number;
+  events?: string[];
 }
 
-const RoomAvailabilityCalendar: React.FC<RoomAvailabilityCalendarProps> = ({ className }) => {
-  const [date, setDate] = useState<Date>(new Date());
-  const [hotels, setHotels] = useState<Hotel[]>([]);
-  const [selectedHotelId, setSelectedHotelId] = useState<string>('');
-  const [roomTypes, setRoomTypes] = useState<string[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [availabilityData, setAvailabilityData] = useState<RoomAvailability[]>([]);
-  const [loading, setLoading] = useState(true);
+interface BookingData {
+  id: string;
+  hotel_id: number;
+  room_type: string;
+  check_in_date: string;
+  check_out_date: string;
+  guest_name: string;
+  number_of_guests: number;
+}
 
-  // Fetch hotels
+const RoomAvailabilityCalendar: React.FC = () => {
+  const [calendarData, setCalendarData] = useState<Record<string, CalendarDay>>({});
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedHotel, setSelectedHotel] = useState<number | null>(null);
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [bookings, setBookings] = useState<BookingData[]>([]);
+  const [monthOffset, setMonthOffset] = useState(0);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const { toast } = useToast();
+
+  // Fetch hotels data
   useEffect(() => {
     const fetchHotels = async () => {
-      const { data, error } = await supabase
-        .from('hotels')
-        .select('*')
-        .eq('status', 'active');
-      
-      if (error) {
+      try {
+        const { data, error } = await supabase.from('hotels').select('*');
+        if (error) throw error;
+        
+        // Convert the fetched data to match the Hotel type
+        const hotelData = data.map(hotel => ({
+          ...hotel,
+          id: hotel.id,
+          pricePerNight: hotel.price_per_night,
+          rooms: [],
+          reviewCount: hotel.review_count || 0,
+          rating: hotel.rating || 0,
+          // Set any other required fields to default values
+          stars: hotel.stars || 3,
+          status: hotel.status || 'active',
+          amenities: hotel.amenities || [],
+          categories: hotel.categories || [],
+          featured: hotel.featured || false
+        })) as Hotel[];
+        
+        setHotels(hotelData);
+        
+        // Set the first hotel as the default selected hotel
+        if (hotelData.length > 0 && !selectedHotel) {
+          setSelectedHotel(hotelData[0].id);
+        }
+      } catch (error) {
         console.error('Error fetching hotels:', error);
-        return;
-      }
-      
-      setHotels(data || []);
-      if (data && data.length > 0) {
-        setSelectedHotelId(data[0].id.toString());
+        toast({
+          title: 'Error',
+          description: 'Failed to load hotels data',
+          variant: 'destructive',
+        });
       }
     };
-    
+
     fetchHotels();
   }, []);
 
-  // Fetch room types and bookings when hotel is selected
+  // Fetch bookings for the selected hotel
   useEffect(() => {
-    if (!selectedHotelId) return;
-    
-    const fetchRoomData = async () => {
-      setLoading(true);
-      
-      // Fetch rooms for the selected hotel
-      const { data: roomsData, error: roomsError } = await supabase
-        .from('rooms')
-        .select('*')
-        .eq('hotel_id', selectedHotelId);
-      
-      if (roomsError) {
-        console.error('Error fetching rooms:', roomsError);
-        setLoading(false);
-        return;
-      }
-      
-      // Extract unique room types
-      const types = roomsData?.map(room => room.type) || [];
-      const uniqueTypes = [...new Set(types)];
-      setRoomTypes(uniqueTypes);
-      
-      // Fetch bookings for the selected hotel
-      const startDate = format(startOfMonth(date), 'yyyy-MM-dd');
-      const endDate = format(endOfMonth(date), 'yyyy-MM-dd');
-      
-      const { data: bookingsData, error: bookingsError } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('hotel_id', selectedHotelId)
-        .or(`check_in_date.gte.${startDate},check_out_date.gte.${startDate}`)
-        .lt('check_in_date', endDate);
-      
-      if (bookingsError) {
-        console.error('Error fetching bookings:', bookingsError);
-        setLoading(false);
-        return;
-      }
-      
-      setBookings(bookingsData || []);
-      
-      // Calculate availability for each day of the month
-      calculateAvailability(roomsData || [], bookingsData || []);
-      setLoading(false);
-    };
-    
-    fetchRoomData();
-  }, [selectedHotelId, date]);
-  
-  const calculateAvailability = (rooms: any[], bookings: Booking[]) => {
-    // Get all days in the current month
-    const monthDays = eachDayOfInterval({
-      start: startOfMonth(date),
-      end: endOfMonth(date)
-    });
-    
-    // Create a room inventory by type
-    const roomInventory: { [key: string]: number } = {};
-    rooms.forEach(room => {
-      roomInventory[room.type] = (roomInventory[room.type] || 0) + (room.count || 0);
-    });
-    
-    // Initialize availability data
-    const availability: RoomAvailability[] = monthDays.map(day => ({
-      date: day,
-      rooms: Object.keys(roomInventory).reduce((acc, roomType) => {
-        acc[roomType] = { booked: 0, total: roomInventory[roomType], bookingIds: [] };
-        return acc;
-      }, {} as RoomAvailability['rooms'])
-    }));
-    
-    // Calculate bookings for each day
-    bookings.forEach(booking => {
-      const checkIn = parseISO(booking.check_in_date);
-      const checkOut = parseISO(booking.check_out_date);
-      
-      // For each day between check-in and check-out
-      const stayDays = eachDayOfInterval({ start: checkIn, end: addDays(checkOut, -1) });
-      
-      stayDays.forEach(stayDay => {
-        // Find the day in our availability array
-        const dayData = availability.find(d => isSameDay(d.date, stayDay));
-        if (dayData && dayData.rooms[booking.room_type]) {
-          dayData.rooms[booking.room_type].booked += 1;
-          dayData.rooms[booking.room_type].bookingIds.push(booking.id);
+    if (selectedHotel) {
+      const fetchBookings = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('hotel_id', selectedHotel);
+          
+          if (error) throw error;
+          setBookings(data as BookingData[]);
+          
+          // Generate calendar data
+          generateCalendarData(data as BookingData[]);
+        } catch (error) {
+          console.error('Error fetching bookings:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to load booking data',
+            variant: 'destructive',
+          });
         }
-      });
+      };
+
+      fetchBookings();
+    }
+  }, [selectedHotel]);
+
+  // Generate calendar data
+  const generateCalendarData = (bookingData: BookingData[]) => {
+    const calendarMap: Record<string, CalendarDay> = {};
+    
+    // Get the selected hotel
+    const hotel = hotels.find(h => h.id === selectedHotel);
+    if (!hotel) return;
+    
+    // Calculate total number of rooms
+    const totalRooms = hotel.rooms.reduce((sum, room) => sum + room.count, 0);
+    
+    // Get current month and year
+    const now = new Date();
+    const currentMonthDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+    setCurrentMonth(currentMonthDate);
+    
+    // Generate dates for the month
+    const daysInMonth = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 0).getDate();
+    
+    // Initialize all days in the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), day);
+      const dateString = format(date, 'yyyy-MM-dd');
+      
+      calendarMap[dateString] = {
+        date: date,
+        bookings: 0,
+        availableRooms: totalRooms,
+        occupancyRate: 0,
+        events: []
+      };
+    }
+    
+    // Add booking information
+    bookingData.forEach(booking => {
+      const checkIn = new Date(booking.check_in_date);
+      const checkOut = new Date(booking.check_out_date);
+      
+      // For each day in the booking
+      const currentDate = new Date(checkIn);
+      while (currentDate <= checkOut) {
+        const dateString = format(currentDate, 'yyyy-MM-dd');
+        
+        // If this date is in the current month
+        if (calendarMap[dateString]) {
+          calendarMap[dateString].bookings += 1;
+          calendarMap[dateString].availableRooms -= 1;
+          calendarMap[dateString].occupancyRate = Math.min(
+            100,
+            ((totalRooms - calendarMap[dateString].availableRooms) / totalRooms) * 100
+          );
+          
+          // Add event
+          if (!calendarMap[dateString].events) {
+            calendarMap[dateString].events = [];
+          }
+          calendarMap[dateString].events?.push(`${booking.guest_name} - ${booking.room_type}`);
+        }
+        
+        // Move to the next day
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
     });
     
-    setAvailabilityData(availability);
+    setCalendarData(calendarMap);
   };
-  
-  const renderDay = (day: Date) => {
-    const dayData = availabilityData.find(d => isSameDay(d.date, day));
+
+  // Handle month navigation
+  const handlePreviousMonth = () => {
+    setMonthOffset(prev => prev - 1);
+  };
+
+  const handleNextMonth = () => {
+    setMonthOffset(prev => prev + 1);
+  };
+
+  // Handle hotel change
+  const handleHotelChange = (value: string) => {
+    setSelectedHotel(Number(value));
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.5 } }
+  };
+
+  const dayVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: { scale: 1, opacity: 1, transition: { duration: 0.2 } }
+  };
+
+  // Custom day renderer for Calendar
+  const renderDay = (day: Date, selectedDays: Date[], dayProps: any) => {
+    // Format date to use as key in calendarData
+    const dateString = format(day, 'yyyy-MM-dd');
+    const dayData = calendarData[dateString];
     
-    if (!dayData) return null;
-    
-    // Find the most booked room type for this day (for color coding)
-    let maxOccupancyRate = 0;
-    Object.values(dayData.rooms).forEach(room => {
-      const rate = room.total > 0 ? room.booked / room.total : 0;
-      if (rate > maxOccupancyRate) maxOccupancyRate = rate;
-    });
+    if (!dayData) {
+      return <div className="p-2">{day.getDate()}</div>;
+    }
     
     // Determine color based on occupancy rate
     let bgColor = 'bg-green-100';
-    if (maxOccupancyRate >= 0.8) bgColor = 'bg-red-100';
-    else if (maxOccupancyRate >= 0.5) bgColor = 'bg-yellow-100';
+    if (dayData.occupancyRate > 70) {
+      bgColor = 'bg-red-100';
+    } else if (dayData.occupancyRate > 30) {
+      bgColor = 'bg-yellow-100';
+    }
     
     return (
-      <div className={`h-full w-full p-1 ${bgColor} rounded-md`}>
-        <div className="text-center">{format(day, 'd')}</div>
-      </div>
+      <motion.div
+        key={dateString}
+        variants={dayVariants}
+        initial="hidden"
+        animate="visible"
+        className={`h-full w-full flex flex-col items-center justify-center ${bgColor} rounded-md p-1`}
+      >
+        <div className="font-medium">{day.getDate()}</div>
+        <div className="text-xs text-stone-600">{dayData.bookings}/{dayData.bookings + dayData.availableRooms}</div>
+      </motion.div>
     );
   };
-  
+
+  // Handle date selection
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+  };
+
+  // Get details for the selected date
+  const selectedDateDetails = selectedDate
+    ? calendarData[format(selectedDate, 'yyyy-MM-dd')]
+    : null;
+
   return (
-    <motion.div 
-      className={className}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
     >
       <Card>
-        <CardHeader>
-          <CardTitle>Room Availability Calendar</CardTitle>
-          <CardDescription>View and manage room availability</CardDescription>
-          
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <div className="w-full sm:w-1/2">
-              <label className="text-sm font-medium mb-1 block">Select Hotel</label>
-              <Select 
-                value={selectedHotelId.toString()} 
-                onValueChange={setSelectedHotelId}
-                disabled={loading || hotels.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a hotel" />
-                </SelectTrigger>
-                <SelectContent>
-                  {hotels.map(hotel => (
-                    <SelectItem key={hotel.id} value={hotel.id.toString()}>
-                      {hotel.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
-          <div className="flex items-center mt-4 gap-4">
-            <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-green-100 mr-2"></div>
-              <span className="text-sm">Low Occupancy (&lt;50%)</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-yellow-100 mr-2"></div>
-              <span className="text-sm">Medium Occupancy (50-80%)</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-red-100 mr-2"></div>
-              <span className="text-sm">High Occupancy (&gt;80%)</span>
-            </div>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-xl font-bold">Room Availability Calendar</CardTitle>
+          <div className="flex space-x-2 items-center">
+            <Select value={selectedHotel?.toString()} onValueChange={handleHotelChange}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select Hotel" />
+              </SelectTrigger>
+              <SelectContent>
+                {hotels.map((hotel) => (
+                  <SelectItem key={hotel.id} value={hotel.id.toString()}>
+                    {hotel.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-2">
+                  <h3 className="font-medium">Filter Options</h3>
+                  {/* Filter options here */}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-[400px] w-full" />
+          <div className="flex flex-col space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
+                <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+              </Button>
+              <h3 className="text-lg font-semibold">
+                {format(currentMonth, 'MMMM yyyy')}
+              </h3>
+              <Button variant="outline" size="sm" onClick={handleNextMonth}>
+                Next <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
-          ) : (
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(day) => day && setDate(day)}
-              month={date}
-              onMonthChange={setDate}
-              className="rounded-md border"
-              components={{
-                Day: ({ day, ...props }) => (
-                  <div {...props}>
-                    {renderDay(day)}
-                  </div>
-                ),
-              }}
-            />
-          )}
-          
-          <div className="mt-6 space-y-4">
-            <h3 className="font-medium text-lg">Room Availability For {format(date, 'MMMM d, yyyy')}</h3>
-            
-            {loading ? (
-              <div className="space-y-2">
-                <Skeleton className="h-8 w-full" />
-                <Skeleton className="h-8 w-full" />
-                <Skeleton className="h-8 w-full" />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-md p-1">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  month={currentMonth}
+                  className="rounded-md border"
+                  components={{
+                    Day: ({ date, day, ...props }) => renderDay(date, [selectedDate].filter(Boolean) as Date[], props)
+                  }}
+                />
               </div>
-            ) : (
-              <div className="space-y-2">
-                {roomTypes.map(roomType => {
-                  const dayData = availabilityData.find(d => isSameDay(d.date, date));
-                  if (!dayData) return null;
-                  
-                  const roomData = dayData.rooms[roomType];
-                  if (!roomData) return null;
-                  
-                  const availableRooms = roomData.total - roomData.booked;
-                  const occupancyRate = roomData.total > 0 ? (roomData.booked / roomData.total) * 100 : 0;
-                  
-                  let statusColor = 'bg-green-500';
-                  if (occupancyRate >= 80) statusColor = 'bg-red-500';
-                  else if (occupancyRate >= 50) statusColor = 'bg-yellow-500';
-                  
-                  return (
-                    <div key={roomType} className="flex items-center justify-between border p-3 rounded-md">
-                      <div>
-                        <h4 className="font-medium">{roomType}</h4>
-                        <div className="text-sm text-gray-500">
-                          {availableRooms} of {roomData.total} available
+
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-md">
+                      {selectedDate ? (
+                        <>Selected Date: {format(selectedDate, 'MMMM d, yyyy')}</>
+                      ) : (
+                        <>Select a date to view details</>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedDateDetails ? (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-blue-50 p-3 rounded-md">
+                            <p className="text-sm text-blue-600">Bookings</p>
+                            <p className="text-xl font-bold">{selectedDateDetails.bookings}</p>
+                          </div>
+                          <div className="bg-green-50 p-3 rounded-md">
+                            <p className="text-sm text-green-600">Available</p>
+                            <p className="text-xl font-bold">{selectedDateDetails.availableRooms}</p>
+                          </div>
+                          <div className="bg-purple-50 p-3 rounded-md">
+                            <p className="text-sm text-purple-600">Occupancy</p>
+                            <p className="text-xl font-bold">{selectedDateDetails.occupancyRate.toFixed(0)}%</p>
+                          </div>
                         </div>
+
+                        {selectedDateDetails.events && selectedDateDetails.events.length > 0 && (
+                          <div>
+                            <h4 className="font-medium mb-2">Bookings on this date:</h4>
+                            <ul className="space-y-1">
+                              {selectedDateDetails.events.map((event, index) => (
+                                <li key={index} className="text-sm bg-stone-50 p-2 rounded">
+                                  {event}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
-                      <Badge className={statusColor}>
-                        {occupancyRate.toFixed(0)}% Occupied
-                      </Badge>
-                    </div>
-                  );
-                })}
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-40">
+                        <CalendarIcon className="h-12 w-12 text-stone-300 mb-2" />
+                        <p className="text-stone-500">Select a date to view details</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-            )}
+            </div>
           </div>
         </CardContent>
       </Card>

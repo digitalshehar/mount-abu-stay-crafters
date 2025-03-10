@@ -12,6 +12,12 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState<'hotel' | 'adventure' | 'car' | 'bike'>('hotel');
   const { favorites, loading, removeFavorite } = useFavorites(user);
 
+  // Create a wrapper for removeFavorite to ensure it returns Promise<void>
+  const handleRemoveFavorite = async (id: string) => {
+    await removeFavorite(id);
+    return;
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-stone-50">
       <Header />
@@ -28,7 +34,7 @@ const Profile = () => {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               loading={loading}
-              onRemoveFavorite={removeFavorite}
+              onRemoveFavorite={handleRemoveFavorite}
             />
           </div>
         </div>
