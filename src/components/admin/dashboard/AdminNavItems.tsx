@@ -9,6 +9,7 @@ import {
   Settings, 
   PlusSquare,
   Globe,
+  CalendarClock,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -22,12 +23,17 @@ export const adminNavItems: NavItem[] = [
   { 
     icon: LayoutDashboard, 
     label: "Overview", 
-    path: "/admin" 
+    path: "/admin/overview" 
   },
   { 
     icon: Hotel, 
     label: "Hotels", 
     path: "/admin/hotels" 
+  },
+  { 
+    icon: CalendarClock, 
+    label: "Bookings", 
+    path: "/admin/booking-management" 
   },
   { 
     icon: FileText, 

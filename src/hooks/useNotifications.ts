@@ -6,81 +6,92 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  timestamp: Date;
   read: boolean;
-  type: 'system' | 'alert' | 'info';
+  createdAt: string;
+  type: string;
+}
+
+interface NotificationOptions {
+  type: 'system' | 'alert' | 'update' | 'message';
+  title: string;
+  message: string;
 }
 
 export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
-  // Initialize with some example notifications
+  // Initialize with some demo notifications
   useEffect(() => {
-    const initialNotifications: Notification[] = [
+    const demoNotifications: Notification[] = [
       {
         id: uuidv4(),
-        title: 'New Hotel Added',
-        message: 'The Grand Hotel has been successfully added to the system.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+        title: 'New Booking',
+        message: 'A new booking has been made for Hotel Grand.',
         read: false,
+        createdAt: new Date().toISOString(),
         type: 'system'
       },
       {
         id: uuidv4(),
-        title: 'System Maintenance',
-        message: 'The system will undergo maintenance on Sunday at 2 AM.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+        title: 'Website Traffic',
+        message: 'Website traffic increased by 25% this week.',
         read: true,
-        type: 'info'
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+        type: 'update'
       },
       {
         id: uuidv4(),
-        title: 'Booking Alert',
-        message: 'There are 5 pending bookings that require your attention.',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+        title: 'System Update',
+        message: 'The system will undergo maintenance in 24 hours.',
         read: false,
+        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
         type: 'alert'
       }
     ];
-
-    setNotifications(initialNotifications);
+    setNotifications(demoNotifications);
+    updateUnreadCount(demoNotifications);
   }, []);
 
-  // Update unread count whenever notifications change
-  useEffect(() => {
-    const count = notifications.filter(notification => !notification.read).length;
+  const updateUnreadCount = (notifs: Notification[]) => {
+    const count = notifs.filter(n => !n.read).length;
     setUnreadCount(count);
-  }, [notifications]);
+  };
 
-  // Mark a specific notification as read
   const markAsRead = (id: string) => {
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notification =>
-        notification.id === id
-          ? { ...notification, read: true }
-          : notification
-      )
+    const updated = notifications.map(notification => 
+      notification.id === id 
+        ? { ...notification, read: true } 
+        : notification
     );
+    setNotifications(updated);
+    updateUnreadCount(updated);
   };
 
-  // Mark all notifications as read
   const markAllAsRead = () => {
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notification => ({ ...notification, read: true }))
-    );
+    const updated = notifications.map(notification => ({ 
+      ...notification, 
+      read: true 
+    }));
+    setNotifications(updated);
+    updateUnreadCount(updated);
   };
 
-  // Add a new notification
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+  const addNotification = (options: NotificationOptions) => {
     const newNotification: Notification = {
       id: uuidv4(),
-      ...notification,
-      timestamp: new Date(),
-      read: false
+      title: options.title,
+      message: options.message,
+      read: false,
+      createdAt: new Date().toISOString(),
+      type: options.type
     };
-
-    setNotifications(prevNotifications => [newNotification, ...prevNotifications]);
+    
+    const updated = [newNotification, ...notifications];
+    setNotifications(updated);
+    updateUnreadCount(updated);
+    
+    return newNotification;
   };
 
   return {

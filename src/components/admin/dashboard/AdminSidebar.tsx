@@ -1,39 +1,51 @@
 
-import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { 
-  LogOut, 
-  ChevronRight,
-  X
-} from "lucide-react";
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { LogOut, ChevronRight, X, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { NavItem } from "./AdminNavItems";
-import NotificationCenter from "@/components/NotificationCenter";
+import { Badge } from "@/components/ui/badge";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  type: string;
+}
 
 interface SidebarProps {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
   navItems: NavItem[];
+  notifications?: Notification[];
+  unreadCount?: number;
+  markAsRead?: (id: string) => void;
+  markAllAsRead?: () => void;
 }
 
 const AdminSidebar: React.FC<SidebarProps> = ({ 
   sidebarOpen, 
   toggleSidebar,
-  navItems 
+  navItems,
+  notifications = [],
+  unreadCount = 0,
+  markAsRead,
+  markAllAsRead
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (window.innerWidth < 768) {
-      toggleSidebar();
-    }
-  }, [location.pathname]);
 
   const isActive = (path: string) => {
     return location.pathname === path || 
@@ -66,11 +78,68 @@ const AdminSidebar: React.FC<SidebarProps> = ({
       >
         <div className="p-4 sm:p-6 border-b border-stone-200 flex-shrink-0 flex items-center justify-between">
           <Link to="/admin" className="flex items-center gap-2">
-            <span className="bg-primary text-white text-xl p-2 rounded font-bold">HM</span>
-            <h1 className="text-xl font-bold">Admin Dashboard</h1>
+            <span className="bg-primary text-white text-xl p-2 rounded font-bold">SC</span>
+            <h1 className="text-xl font-bold">Stay Crafters</h1>
           </Link>
           <div className="flex items-center gap-2">
-            <NotificationCenter />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell size={18} />
+                  {unreadCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]">
+                      {unreadCount}
+                    </Badge>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80">
+                <div className="flex items-center justify-between p-2 border-b">
+                  <h3 className="font-semibold">Notifications</h3>
+                  {unreadCount > 0 && markAllAsRead && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={markAllAsRead}
+                      className="text-xs"
+                    >
+                      Mark all as read
+                    </Button>
+                  )}
+                </div>
+                <div className="max-h-[300px] overflow-y-auto">
+                  {notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                      <DropdownMenuItem 
+                        key={notification.id}
+                        className={cn(
+                          "p-3 cursor-default",
+                          !notification.read && "bg-primary/5"
+                        )}
+                        onClick={() => markAsRead && markAsRead(notification.id)}
+                      >
+                        <div className="w-full">
+                          <div className="flex justify-between items-start mb-1">
+                            <p className="font-medium text-sm">{notification.title}</p>
+                            <small className="text-xs text-gray-500">
+                              {new Date(notification.createdAt).toLocaleTimeString([], { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </small>
+                          </div>
+                          <p className="text-xs text-gray-600">{notification.message}</p>
+                        </div>
+                      </DropdownMenuItem>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-sm text-gray-500">
+                      No notifications
+                    </div>
+                  )}
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button 
               variant="ghost" 
               size="icon" 

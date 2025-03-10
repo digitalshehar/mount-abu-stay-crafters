@@ -82,7 +82,8 @@ function App() {
 
                   {/* Admin Routes */}
                   <Route path="admin" element={<Dashboard />}>
-                    <Route index element={<Overview />} />
+                    <Route index element={<Navigate to="/admin/overview" replace />} />
+                    <Route path="overview" element={<Overview />} />
                     <Route path="hotels" element={<HotelsManagement />} />
                     <Route path="booking-management" element={<BookingManagement />} />
                     <Route path="adventures" element={<AdventuresManagement />} />
