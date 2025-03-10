@@ -11,6 +11,7 @@ const AdminBookings = () => {
     bookingStats,
     updateBookingStatus,
     updatePaymentStatus,
+    fetchBookings,
     searchQuery,
     statusFilter,
     paymentFilter,
@@ -55,6 +56,7 @@ const AdminBookings = () => {
         setDetailsOpen={setDetailsOpen}
         onStatusChange={updateBookingStatus}
         onPaymentStatusChange={updatePaymentStatus}
+        fetchBookings={fetchBookings}
       />
     </div>
   );

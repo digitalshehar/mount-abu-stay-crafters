@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import BookingTable from './BookingTable';
 import BookingFilters from './BookingFilters';
 import BookingStats from './BookingStats';
@@ -7,6 +7,9 @@ import BookingCharts from './BookingCharts';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BookingDetailsDialog from './dialogs/BookingDetailsDialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { PlusCircle, RefreshCw, FileDown } from 'lucide-react';
 import { Booking, BookingStats as BookingStatsType, BookingStatusType, BookingType, PaymentStatusType } from '@/hooks/useBookings';
 
 export interface BookingManagementDashboardProps {
@@ -30,6 +33,7 @@ export interface BookingManagementDashboardProps {
   setDetailsOpen: (open: boolean) => void;
   onStatusChange: (id: string, status: string) => Promise<boolean>;
   onPaymentStatusChange: (id: string, status: string) => Promise<boolean>;
+  fetchBookings?: () => Promise<void>;
 }
 
 const BookingManagementDashboard: React.FC<BookingManagementDashboardProps> = ({
@@ -52,15 +56,98 @@ const BookingManagementDashboard: React.FC<BookingManagementDashboardProps> = ({
   detailsOpen,
   setDetailsOpen,
   onStatusChange,
-  onPaymentStatusChange
+  onPaymentStatusChange,
+  fetchBookings
 }) => {
+  const [activeTab, setActiveTab] = useState('list');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const handleRefresh = async () => {
+    if (fetchBookings) {
+      setIsRefreshing(true);
+      await fetchBookings();
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <div className="container mx-auto space-y-8">
-      <div className="flex flex-col space-y-4">
-        <h1 className="text-3xl font-bold tracking-tight">Booking Management</h1>
-        <p className="text-muted-foreground">
-          Manage all bookings including hotels, car rentals, bike rentals, and adventures.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Booking Management</h1>
+          <p className="text-muted-foreground">
+            Manage all bookings including hotels, car rentals, bike rentals, and adventures.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+            className="flex items-center gap-1"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={exportBookingsToCSV}
+            className="flex items-center gap-1"
+          >
+            <FileDown className="h-4 w-4" />
+            <span>Export</span>
+          </Button>
+          
+          <Button 
+            variant="default" 
+            size="sm"
+            className="flex items-center gap-1"
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span>New Booking</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Booking summary counts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-4 border-l-4 border-l-blue-500">
+          <div className="flex flex-col">
+            <span className="text-sm text-muted-foreground">Total Bookings</span>
+            <span className="text-2xl font-bold">{bookingStats.totalBookings}</span>
+          </div>
+        </Card>
+        
+        <Card className="p-4 border-l-4 border-l-green-500">
+          <div className="flex flex-col">
+            <span className="text-sm text-muted-foreground">Total Revenue</span>
+            <span className="text-2xl font-bold">₹{bookingStats.totalRevenue.toLocaleString('en-IN')}</span>
+          </div>
+        </Card>
+        
+        <Card className="p-4 border-l-4 border-l-yellow-500">
+          <div className="flex flex-col">
+            <span className="text-sm text-muted-foreground">Avg. Booking Value</span>
+            <span className="text-2xl font-bold">₹{Math.round(bookingStats.averageBookingValue).toLocaleString('en-IN')}</span>
+          </div>
+        </Card>
+        
+        <Card className="p-4 border-l-4 border-l-purple-500">
+          <div className="flex flex-col">
+            <span className="text-sm text-muted-foreground">Booking Types</span>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {bookingStats.bookingsByType && Object.entries(bookingStats.bookingsByType).map(([type, count]) => (
+                <Badge key={type} variant="outline" className="text-xs">
+                  {type}: {count}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* Stats Cards */}
@@ -84,7 +171,7 @@ const BookingManagementDashboard: React.FC<BookingManagementDashboardProps> = ({
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="list" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList>
           <TabsTrigger value="list">Booking List</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -96,6 +183,7 @@ const BookingManagementDashboard: React.FC<BookingManagementDashboardProps> = ({
             onStatusChange={onStatusChange}
             onPaymentStatusChange={onPaymentStatusChange}
             onViewDetails={onViewDetails}
+            fetchBookings={fetchBookings}
           />
         </TabsContent>
         <TabsContent value="analytics">

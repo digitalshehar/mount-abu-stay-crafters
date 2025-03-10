@@ -6,16 +6,16 @@ const BookingTableHeader: React.FC = () => {
   return (
     <UITableHeader>
       <TableRow>
-        <TableHead>Booking ID</TableHead>
-        <TableHead>Guest</TableHead>
-        <TableHead>Type</TableHead>
-        <TableHead>Service</TableHead>
-        <TableHead>Check In</TableHead>
-        <TableHead>Check Out</TableHead>
-        <TableHead>Amount</TableHead>
-        <TableHead>Status</TableHead>
-        <TableHead>Payment</TableHead>
-        <TableHead className="text-right">Actions</TableHead>
+        <TableHead className="w-[100px]">Booking ID</TableHead>
+        <TableHead className="w-[180px]">Guest</TableHead>
+        <TableHead className="w-[100px]">Type</TableHead>
+        <TableHead className="w-[180px]">Service</TableHead>
+        <TableHead className="w-[120px]">Check In</TableHead>
+        <TableHead className="w-[120px]">Check Out</TableHead>
+        <TableHead className="w-[100px]">Amount</TableHead>
+        <TableHead className="w-[100px]">Status</TableHead>
+        <TableHead className="w-[100px]">Payment</TableHead>
+        <TableHead className="text-right w-[100px]">Actions</TableHead>
       </TableRow>
     </UITableHeader>
   );

@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Booking } from '@/hooks/useBookings';
 
 export const useBookingActions = (fetchBookings: () => Promise<void>) => {
   const { toast } = useToast();
@@ -64,14 +65,36 @@ export const useBookingActions = (fetchBookings: () => Promise<void>) => {
   };
 
   // Function to add a new booking
-  const addBooking = async (bookingData: any) => {
+  const addBooking = async (bookingData: Partial<Booking>) => {
     try {
       console.log('Adding new booking:', bookingData);
+      
+      // Ensure required fields
+      const requiredFields = [
+        'guest_name', 
+        'guest_email', 
+        'check_in_date', 
+        'check_out_date', 
+        'number_of_guests',
+        'total_price',
+        'booking_type'
+      ];
+      
+      const missingFields = requiredFields.filter(field => !bookingData[field as keyof Booking]);
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
       
       // Type as 'any' to avoid TypeScript errors when using insert
       const { data, error } = await supabase
         .from('bookings')
-        .insert(bookingData as any)
+        .insert({
+          ...bookingData,
+          booking_status: bookingData.booking_status || 'confirmed',
+          payment_status: bookingData.payment_status || 'pending',
+          created_at: new Date().toISOString()
+        } as any)
         .select()
         .single();
 
@@ -105,9 +128,38 @@ export const useBookingActions = (fetchBookings: () => Promise<void>) => {
     }
   };
 
+  // Function to delete a booking
+  const deleteBooking = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      toast({
+        title: 'Booking Deleted',
+        description: 'The booking has been successfully deleted',
+      });
+      
+      fetchBookings();
+      return true;
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      toast({
+        title: 'Delete Failed',
+        description: 'Failed to delete the booking',
+        variant: 'destructive',
+      });
+      return false;
+    }
+  };
+
   return {
     updateBookingStatus,
     updatePaymentStatus,
-    addBooking
+    addBooking,
+    deleteBooking
   };
 };

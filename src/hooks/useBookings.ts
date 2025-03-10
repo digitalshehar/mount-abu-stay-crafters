@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useBookingFilters } from './bookingHooks/useBookingFilters';
@@ -191,7 +190,7 @@ export const useBookings = () => {
     }
   };
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -216,6 +215,11 @@ export const useBookings = () => {
 
       console.log('All bookings fetched:', allBookings);
       
+      // Sort by created_at date (newest first)
+      allBookings.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      
       setBookings(allBookings);
       setRecentBookings(allBookings.slice(0, 5));
       
@@ -230,17 +234,36 @@ export const useBookings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
+    // Initial fetch
     fetchBookings();
-  }, []);
+    
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('booking-updates')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        (payload) => {
+          console.log('Booking update received:', payload);
+          fetchBookings();
+        }
+      )
+      .subscribe();
+      
+    // Clean up subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchBookings]);
 
   // Use the booking stats hook with the filtered bookings
   const bookingStats = useBookingStats(filteredBookings);
 
   // Use the booking actions hook
-  const { updateBookingStatus, updatePaymentStatus, addBooking } = useBookingActions(fetchBookings);
+  const { updateBookingStatus, updatePaymentStatus, addBooking, deleteBooking } = useBookingActions(fetchBookings);
 
   // Use the booking export hook
   const { exportBookingsToCSV } = useBookingExport(filteredBookings);
@@ -256,6 +279,7 @@ export const useBookings = () => {
     addBooking,
     updateBookingStatus,
     updatePaymentStatus,
+    deleteBooking,
     setSearchQuery,
     setStatusFilter,
     setPaymentFilter,
