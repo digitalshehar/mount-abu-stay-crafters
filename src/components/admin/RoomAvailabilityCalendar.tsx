@@ -1,11 +1,12 @@
+
 import React, { useState } from 'react';
-import { DayPicker } from 'react-day-picker';
+import { DayPicker, SelectMultipleEventHandler } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
 interface RoomAvailabilityCalendarProps {
   availableDates: Date[];
   selectedDays: Date[];
-  onDayClick: (day: Date) => void;
+  onDayClick: (day: Date[]) => void;
 }
 
 const RoomAvailabilityCalendar: React.FC<RoomAvailabilityCalendarProps> = ({
@@ -60,11 +61,18 @@ const RoomAvailabilityCalendar: React.FC<RoomAvailabilityCalendarProps> = ({
     );
   };
 
+  // Fix the onSelect handler to properly handle Date[] from DayPicker
+  const handleSelect: SelectMultipleEventHandler = (days) => {
+    if (days) {
+      onDayClick(days);
+    }
+  };
+
   return (
     <DayPicker
       mode="multiple"
       selected={selectedDays}
-      onSelect={onDayClick}
+      onSelect={handleSelect}
       modifiers={modifiers}
       modifiersStyles={modifiersStyles}
       renderDay={renderDay}

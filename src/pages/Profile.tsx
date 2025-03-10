@@ -10,11 +10,11 @@ import { useFavorites } from '@/hooks/useFavorites';
 const Profile = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'hotel' | 'adventure' | 'car' | 'bike'>('hotel');
-  const { favorites, loading, removeFromFavorites } = useFavorites(user);
+  const { favorites, loading, removeFavorite } = useFavorites(user);
 
   // Create a wrapper for removeFromFavorites to handle string to number conversion
   const handleRemoveFavorite = async (id: string) => {
-    await removeFromFavorites(id, activeTab);
+    await removeFavorite(id);
     return;
   };
 
