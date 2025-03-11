@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "../images/logo.jpg"; // Adjust the path as needed
+import logo from "../images/logo.png"; // Adjust the path as needed
 
 const Logo = () => {
   return (
