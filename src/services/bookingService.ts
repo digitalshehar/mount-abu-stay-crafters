@@ -148,8 +148,10 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
     
     // Generate booking reference
     const bookingReference = generateBookingReference();
+
+    const { data: { user } } = await supabase.auth.getUser();
     
-    // Create database object (without booking_type which is not in the DB schema)
+    // Create database object
     const dbBookingData = {
       hotel_id: bookingData.hotel_id,
       guest_name: bookingData.guest_name!,
@@ -165,7 +167,8 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
       booking_status: bookingData.booking_status || 'confirmed',
       payment_status: bookingData.payment_status || 'pending',
       booking_reference: bookingReference,
-      user_id: bookingData.user_id || null
+      user_id: user?.id || null, // Add authenticated user ID if available
+      created_at: new Date().toISOString()
     };
     
     // Store the booking_type in a variable since it's not part of the database schema
@@ -188,6 +191,22 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
       booking_type: bookingType,
       booking_reference: bookingReference
     };
+
+    // Send booking confirmation email
+    try {
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-booking-confirmation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          booking: responseData
+        })
+      });
+    } catch (emailError) {
+      console.error('Error sending confirmation email:', emailError);
+    }
 
     // Refresh bookings after adding a new one
     if (refetchCallback) {
