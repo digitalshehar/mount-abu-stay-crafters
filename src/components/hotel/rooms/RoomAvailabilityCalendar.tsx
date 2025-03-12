@@ -1,161 +1,207 @@
 
-import React, { useState } from 'react';
-import { format, addDays, eachDayOfInterval, isSameDay, isBefore, isAfter, addMonths } from 'date-fns';
+import React, { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { isWithinInterval, isSameDay, format, addDays, differenceInDays } from 'date-fns';
+import { useToast } from '@/components/ui/use-toast';
 
+// Define the props for the component
 interface RoomAvailabilityCalendarProps {
+  roomId: number;
   roomType: string;
-  bookedDates?: { startDate: Date; endDate: Date }[];
+  onDateSelection?: (dates: { from: Date; to: Date }) => void;
 }
 
-const RoomAvailabilityCalendar: React.FC<RoomAvailabilityCalendarProps> = ({ 
-  roomType,
-  bookedDates = []
-}) => {
-  const today = new Date();
-  const [month, setMonth] = useState(today);
-  
-  // Generate some sample booked dates if none provided
-  const sampleBookedDates = bookedDates.length > 0 ? bookedDates : [
-    { startDate: addDays(today, 1), endDate: addDays(today, 3) },
-    { startDate: addDays(today, 8), endDate: addDays(today, 10) },
-    { startDate: addDays(today, 15), endDate: addDays(today, 18) },
-    { startDate: addDays(today, 22), endDate: addDays(today, 25) },
-  ];
+// Type for date range
+interface DateRange {
+  from: Date;
+  to?: Date;
+}
 
-  // Check if a date is booked
-  const isDateBooked = (date: Date) => {
-    return sampleBookedDates.some(booking => {
-      const bookingStart = new Date(booking.startDate);
-      const bookingEnd = new Date(booking.endDate);
-      return (
-        (isSameDay(date, bookingStart) || isAfter(date, bookingStart)) && 
-        (isSameDay(date, bookingEnd) || isBefore(date, bookingEnd))
-      );
-    });
-  };
+// Mock data for unavailable dates
+const unavailableDateRanges = [
+  { from: new Date(2023, 11, 24), to: new Date(2023, 11, 26) }, // Dec 24-26
+  { from: new Date(2023, 11, 31), to: new Date(2024, 0, 2) },   // Dec 31-Jan 2
+  { from: new Date(2024, 0, 10), to: new Date(2024, 0, 15) },   // Jan 10-15
+];
+
+// Mock data for special rates
+const specialRates = [
+  { date: new Date(2023, 11, 20), price: 4500 }, // Dec 20
+  { date: new Date(2023, 11, 21), price: 4500 }, // Dec 21
+  { date: new Date(2024, 0, 5), price: 6000 },   // Jan 5
+  { date: new Date(2024, 0, 6), price: 6000 },   // Jan 6
+];
+
+// Function to check if a date is unavailable
+const isDateUnavailable = (date: Date) => {
+  return unavailableDateRanges.some(range => 
+    isWithinInterval(date, { start: range.from, end: range.to })
+  );
+};
+
+// Function to get special price for a date if available
+const getSpecialPrice = (date: Date) => {
+  const specialRate = specialRates.find(rate => isSameDay(rate.date, date));
+  return specialRate ? specialRate.price : null;
+};
+
+// Function to calculate total nights between two dates
+const calculateNights = (from: Date, to: Date) => {
+  return differenceInDays(to, from);
+};
+
+// Function to calculate the total price for a stay
+const calculateTotalPrice = (from: Date, to: Date, basePrice: number) => {
+  let total = 0;
+  let currentDate = new Date(from);
   
-  // Get all booked dates as flat array for coloring
-  const getAllBookedDates = () => {
-    return sampleBookedDates.flatMap(booking => {
-      const start = new Date(booking.startDate);
-      const end = new Date(booking.endDate);
-      return eachDayOfInterval({ start, end });
-    });
-  };
+  while (currentDate <= to) {
+    const specialPrice = getSpecialPrice(currentDate);
+    total += specialPrice ? specialPrice : basePrice;
+    currentDate = addDays(currentDate, 1);
+  }
   
-  const bookedDatesList = getAllBookedDates();
+  return total;
+};
+
+const RoomAvailabilityCalendar: React.FC<RoomAvailabilityCalendarProps> = ({ 
+  roomId, 
+  roomType, 
+  onDateSelection 
+}) => {
+  const [date, setDate] = useState<DateRange>({ from: new Date(), to: addDays(new Date(), 3) });
+  const [basePrice] = useState(5000); // Base price per night in ₹
+  const { toast } = useToast();
   
-  // Custom day rendering
-  const renderDay = (day: Date) => {
-    const isBooked = bookedDatesList.some(bookedDate => isSameDay(day, bookedDate));
+  // Calculate total nights and price
+  const nights = date.to ? calculateNights(date.from, date.to) : 0;
+  const totalPrice = date.to ? calculateTotalPrice(date.from, date.to, basePrice) : 0;
+  
+  // Call the onDateSelection callback when dates change
+  useEffect(() => {
+    if (date.from && date.to && onDateSelection) {
+      onDateSelection({ from: date.from, to: date.to });
+    }
+  }, [date, onDateSelection]);
+  
+  const handleBookNow = () => {
+    if (!date.to) {
+      toast({
+        title: "Please select a check-out date",
+        description: "You need to select both check-in and check-out dates to proceed.",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    return (
-      <div
-        className={`relative w-full h-full flex items-center justify-center ${
-          isBooked ? 'bg-red-50' : 'bg-green-50'
-        }`}
-      >
-        <div className={isBooked ? 'text-red-800' : 'text-green-800'}>
-          {format(day, 'd')}
-        </div>
-        {isBooked && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-400" />
-        )}
-      </div>
-    );
-  };
-  
-  const nextMonth = () => {
-    setMonth(addMonths(month, 1));
-  };
-  
-  const prevMonth = () => {
-    setMonth(addMonths(month, -1));
+    // Check if any selected date is unavailable
+    let currentDate = new Date(date.from);
+    while (currentDate <= date.to) {
+      if (isDateUnavailable(currentDate)) {
+        toast({
+          title: "Invalid selection",
+          description: "Your selected dates include unavailable days. Please adjust your selection.",
+          variant: "destructive"
+        });
+        return;
+      }
+      currentDate = addDays(currentDate, 1);
+    }
+    
+    toast({
+      title: "Booking initiated",
+      description: `You're booking ${roomType} for ${nights} nights (${format(date.from, 'MMM d')} - ${format(date.to, 'MMM d')})`
+    });
+    
+    // In a real app, this would navigate to a booking form or add to cart
   };
   
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Room Availability</h3>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={prevMonth}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="text-sm font-medium">{format(month, 'MMMM yyyy')}</div>
-          <Button variant="outline" size="sm" onClick={nextMonth}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-      
-      <div className="flex flex-col gap-3">
-        <div className="flex justify-end gap-3">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-green-400"></div>
-            <span className="text-xs text-stone-600">Available</span>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Check Availability</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-2 mb-2 text-sm">
+          <div>
+            <span className="font-medium">Check-in:</span>
+            <div className="mt-1">{date.from ? format(date.from, 'EEEE, MMMM d, yyyy') : 'Select date'}</div>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-red-400"></div>
-            <span className="text-xs text-stone-600">Booked</span>
+          <div>
+            <span className="font-medium">Check-out:</span>
+            <div className="mt-1">{date.to ? format(date.to, 'EEEE, MMMM d, yyyy') : 'Select date'}</div>
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <Info className="h-3.5 w-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs max-w-52">
-                  This calendar shows room availability for {roomType}. 
-                  Dates in red are already booked.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
         
-        <div className="border rounded-md overflow-hidden">
+        <div className="border rounded-md p-1">
           <Calendar
-            mode="single"
-            month={month}
-            onMonthChange={setMonth}
-            captionLayout="buttons-only"
-            className="p-0"
-            classNames={{
-              day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-              day_today: "bg-accent text-accent-foreground",
-              day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
-            }}
-            selected={new Date()}
-            disabled={(date) => isBefore(date, new Date())}
+            // Fixed the CaptionLayout type error by using a valid value
+            captionLayout="dropdown"
+            mode="range"
+            defaultMonth={date.from}
+            selected={date}
+            onSelect={setDate as any}
+            numberOfMonths={2}
+            disabled={[
+              (date) => isDateUnavailable(date),
+              (date) => date < new Date()
+            ]}
             modifiers={{
-              booked: bookedDatesList,
+              special: (date) => specialRates.some(rate => isSameDay(rate.date, date))
             }}
-            modifiersClassNames={{
-              booked: "bg-red-50 text-red-800 hover:bg-red-100",
+            modifiersStyles={{
+              special: { backgroundColor: '#f0f9ff', color: '#0369a1' }
             }}
+            className="w-full"
           />
         </div>
-      </div>
-      
-      <div className="mt-4 bg-blue-50 p-3 rounded-md border border-blue-100">
-        <div className="flex gap-2 items-start">
-          <CalendarIcon className="h-5 w-5 text-blue-500 mt-0.5" />
-          <div>
-            <p className="text-sm text-blue-700">Book in advance!</p>
-            <p className="text-xs text-blue-600">
-              This {roomType} is in high demand. We recommend booking at least 30 days in advance.
-            </p>
+        
+        <div className="text-sm space-y-2">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200">
+              Unavailable
+            </Badge>
+            <span>Dates that are already booked</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              Special Rate
+            </Badge>
+            <span>Dates with special pricing</span>
           </div>
         </div>
-      </div>
-    </div>
+        
+        <div className="border-t border-gray-200 pt-4 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Base rate per night:</span>
+            <span>₹{basePrice.toLocaleString()}</span>
+          </div>
+          {date.to && (
+            <>
+              <div className="flex justify-between text-sm">
+                <span>Total nights:</span>
+                <span>{nights}</span>
+              </div>
+              <div className="flex justify-between font-bold">
+                <span>Total price:</span>
+                <span>₹{totalPrice.toLocaleString()}</span>
+              </div>
+            </>
+          )}
+        </div>
+        
+        <Button 
+          className="w-full" 
+          onClick={handleBookNow}
+          disabled={!date.to}
+        >
+          Book Now
+        </Button>
+      </CardContent>
+    </Card>
   );
 };
 
