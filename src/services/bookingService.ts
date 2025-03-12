@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Booking, BookingType } from '@/hooks/useBookings';
 import { v4 as uuidv4 } from 'uuid';
@@ -131,18 +130,14 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
     const totalWithTax = basePrice + tax;
     
     // Ensure number_of_guests is not optional to avoid type errors
-    if (!bookingData.number_of_guests) {
-      bookingData.number_of_guests = 1;
-    }
+    const numGuests = bookingData.number_of_guests || 1;
     
     // Ensure required fields
     const requiredFields = [
       'guest_name', 
       'guest_email', 
       'check_in_date', 
-      'check_out_date', 
-      'number_of_guests',
-      'booking_type'
+      'check_out_date'
     ];
     
     const missingFields = requiredFields.filter(field => !bookingData[field as keyof Booking]);
@@ -154,32 +149,31 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
     // Generate booking reference
     const bookingReference = generateBookingReference();
     
-    // Create a properly typed booking object without optional fields
-    const bookingWithTax = {
+    // Create database object (without booking_type which is not in the DB schema)
+    const dbBookingData = {
       hotel_id: bookingData.hotel_id,
       guest_name: bookingData.guest_name!,
       guest_email: bookingData.guest_email!,
       guest_phone: bookingData.guest_phone || null,
       check_in_date: bookingData.check_in_date!,
       check_out_date: bookingData.check_out_date!,
-      number_of_guests: bookingData.number_of_guests,
+      number_of_guests: numGuests,
       room_type: bookingData.room_type || 'Standard Room',
       total_price: totalWithTax,
       base_price: basePrice,
       tax_amount: tax,
       booking_status: bookingData.booking_status || 'confirmed',
       payment_status: bookingData.payment_status || 'pending',
-      created_at: new Date().toISOString(),
       booking_reference: bookingReference,
       user_id: bookingData.user_id || null
     };
     
     // Store the booking_type in a variable since it's not part of the database schema
-    const bookingType = bookingData.booking_type!;
+    const bookingType = bookingData.booking_type || 'hotel';
     
     const { data, error } = await supabase
       .from('bookings')
-      .insert(bookingWithTax)
+      .insert(dbBookingData)
       .select()
       .single();
 
@@ -197,7 +191,7 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
 
     // Refresh bookings after adding a new one
     if (refetchCallback) {
-      refetchCallback();
+      await refetchCallback();
     }
     
     return { success: true, error: null, data: responseData };

@@ -65,7 +65,6 @@ const MapContainer: React.FC<MapContainerProps> = ({
         <MapLoading />
       ) : (
         <GoogleMapComponent 
-          isLoaded={isLoaded}
           mapContainerStyle={mapContainerStyle}
           center={mapCenter}
           zoom={selectedMarker ? 15 : 13}

@@ -36,10 +36,16 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
     // Generate booking reference
     const bookingReference = generateBookingReference();
     
-    // Add the tax information to the booking data
-    const bookingWithTax = {
-      ...bookingData,
-      booking_type: bookingData.booking_type || 'hotel' as BookingType,
+    // Create database object (exclude booking_type as it's not in the DB schema)
+    const dbBookingData = {
+      hotel_id: bookingData.hotel_id,
+      guest_name: bookingData.guest_name!,
+      guest_email: bookingData.guest_email!,
+      guest_phone: bookingData.guest_phone || null,
+      check_in_date: bookingData.check_in_date!,
+      check_out_date: bookingData.check_out_date!,
+      number_of_guests: bookingData.number_of_guests!,
+      room_type: bookingData.room_type || 'Standard Room',
       total_price: totalWithTax,
       base_price: basePrice,
       tax_amount: tax,
@@ -47,15 +53,15 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
       payment_status: bookingData.payment_status || 'pending',
       booking_reference: bookingReference,
       created_at: new Date().toISOString(),
-      check_in_date: bookingData.check_in_date,
-      check_out_date: bookingData.check_out_date,
-      guest_name: bookingData.guest_name,
-      guest_email: bookingData.guest_email
+      user_id: bookingData.user_id || null
     };
+    
+    // Save booking type for later - it's not stored in the database
+    const bookingType = bookingData.booking_type || 'hotel';
     
     const { data, error } = await supabase
       .from('bookings')
-      .insert(bookingWithTax)
+      .insert(dbBookingData)
       .select()
       .single();
 
@@ -64,15 +70,21 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
       return { success: false, error: error.message, data: null };
     }
 
-    // Send email notification to guest
-    sendBookingConfirmationEmail(data);
+    // Send email notification to guest (mock)
+    console.log('Sending booking confirmation email to:', bookingData.guest_email);
+
+    // Add booking type back to the returned data
+    const responseData: Booking = {
+      ...data,
+      booking_type: bookingType as BookingType
+    };
 
     // Refresh bookings after adding a new one
     if (refetchCallback) {
       refetchCallback();
     }
     
-    return { success: true, error: null, data };
+    return { success: true, error: null, data: responseData };
   } catch (error: any) {
     console.error('Error in addBooking:', error);
     return { success: false, error: error.message, data: null };
@@ -148,4 +160,3 @@ export const sendBookingConfirmationEmail = async (booking: Booking) => {
     return false;
   }
 };
-

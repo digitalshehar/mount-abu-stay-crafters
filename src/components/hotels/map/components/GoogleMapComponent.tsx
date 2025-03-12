@@ -21,12 +21,42 @@ const containerStyle = {
 interface GoogleMapComponentProps {
   hotels: Hotel[];
   mapApiKey?: string;
+  mapContainerStyle?: any;
+  center?: { lat: number; lng: number };
+  zoom?: number;
+  options?: any;
+  selectedHotelId?: number | null;
+  selectedMarker?: Hotel | null;
+  setSelectedMarker?: (hotel: Hotel | null) => void;
+  handleHotelSelect?: (id: number) => void;
+  onMapLoad?: (map: google.maps.Map) => void;
+  onBoundsChanged?: () => void;
+  showHeatmap?: boolean;
 }
 
-const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ hotels, mapApiKey }) => {
-  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
+const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ 
+  hotels, 
+  mapApiKey,
+  mapContainerStyle: customContainerStyle = containerStyle,
+  center = DEFAULT_CENTER,
+  zoom = 12,
+  options = {
+    streetViewControl: false,
+    mapTypeControl: false,
+    fullscreenControl: true,
+    zoomControl: true,
+  },
+  selectedHotelId = null,
+  selectedMarker = null,
+  setSelectedMarker = () => {},
+  handleHotelSelect = () => {},
+  onMapLoad = () => {},
+  onBoundsChanged = () => {},
+  showHeatmap = false
+}) => {
+  const [localSelectedHotel, setLocalSelectedHotel] = useState<Hotel | null>(selectedMarker);
   const navigate = useNavigate();
-  const mapRef = useRef(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
   
   // Use a default API key if none is provided
   const apiKey = mapApiKey || "AIzaSyDNVFgP4YzgEGn2wxJmCbxn0Uvt6Ygu9L0"; // Default public key for demo
@@ -34,9 +64,6 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ hotels, mapApiK
   // Calculate map bounds to fit all hotels
   const calculateBounds = () => {
     if (hotels.length === 0 || !mapRef.current) return;
-    
-    // Access the map instance
-    const map = mapRef.current as google.maps.Map;
     
     // Create a new bounds object
     const bounds = new google.maps.LatLngBounds();
@@ -52,12 +79,12 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ hotels, mapApiK
     });
     
     // Adjust map to fit all markers
-    map.fitBounds(bounds);
+    mapRef.current.fitBounds(bounds);
     
     // Set a minimum zoom level if the map is too zoomed in
-    const listener = google.maps.event.addListener(map, 'idle', () => {
-      if (map.getZoom() > 15) {
-        map.setZoom(15);
+    const listener = google.maps.event.addListener(mapRef.current, 'idle', () => {
+      if (mapRef.current && mapRef.current.getZoom() > 15) {
+        mapRef.current.setZoom(15);
       }
       google.maps.event.removeListener(listener);
     });
@@ -70,36 +97,42 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ hotels, mapApiK
     }
   }, [hotels]);
   
+  useEffect(() => {
+    // Sync selected marker from props to local state
+    setLocalSelectedHotel(selectedMarker);
+  }, [selectedMarker]);
+  
   const handleMarkerClick = (hotel: Hotel) => {
-    setSelectedHotel(hotel);
+    setLocalSelectedHotel(hotel);
+    setSelectedMarker(hotel);
   };
   
   const handleInfoWindowClose = () => {
-    setSelectedHotel(null);
+    setLocalSelectedHotel(null);
+    setSelectedMarker(null);
   };
   
   const handleViewHotel = () => {
-    if (selectedHotel) {
-      navigate(`/hotel/${selectedHotel.slug}`);
+    if (localSelectedHotel) {
+      navigate(`/hotel/${localSelectedHotel.slug}`);
     }
+  };
+
+  const handleMapLoad = (map: google.maps.Map) => {
+    mapRef.current = map;
+    calculateBounds();
+    onMapLoad(map);
   };
 
   return (
     <LoadScript googleMapsApiKey={apiKey}>
       <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={DEFAULT_CENTER}
-        zoom={12}
-        options={{
-          streetViewControl: false,
-          mapTypeControl: false,
-          fullscreenControl: true,
-          zoomControl: true,
-        }}
-        onLoad={(map) => {
-          mapRef.current = map;
-          calculateBounds();
-        }}
+        mapContainerStyle={customContainerStyle}
+        center={center}
+        zoom={zoom}
+        options={options}
+        onLoad={handleMapLoad}
+        onBoundsChanged={onBoundsChanged}
       >
         {hotels.map((hotel) => (
           <Marker
@@ -116,33 +149,33 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ hotels, mapApiK
           />
         ))}
         
-        {selectedHotel && (
+        {localSelectedHotel && (
           <InfoWindow
             position={{
-              lat: Number(selectedHotel.latitude) || DEFAULT_CENTER.lat,
-              lng: Number(selectedHotel.longitude) || DEFAULT_CENTER.lng
+              lat: Number(localSelectedHotel.latitude) || DEFAULT_CENTER.lat,
+              lng: Number(localSelectedHotel.longitude) || DEFAULT_CENTER.lng
             }}
             onCloseClick={handleInfoWindowClose}
           >
             <div className="max-w-[300px] p-2">
               <div className="flex items-start gap-3">
                 <img 
-                  src={selectedHotel.image} 
-                  alt={selectedHotel.name}
+                  src={localSelectedHotel.image} 
+                  alt={localSelectedHotel.name}
                   className="w-20 h-20 object-cover rounded-md"
                 />
                 <div className="flex-1">
-                  <h3 className="font-medium text-base">{selectedHotel.name}</h3>
+                  <h3 className="font-medium text-base">{localSelectedHotel.name}</h3>
                   <div className="flex items-center text-xs text-muted-foreground mt-1">
                     <MapPin size={12} className="mr-1" />
-                    <span>{selectedHotel.location}</span>
+                    <span>{localSelectedHotel.location}</span>
                   </div>
                   <div className="flex items-center text-xs text-amber-500 mt-1">
                     <Star size={12} className="mr-1 fill-amber-500" />
-                    <span>{selectedHotel.stars}-Star Hotel</span>
+                    <span>{localSelectedHotel.stars}-Star Hotel</span>
                   </div>
                   <div className="mt-2 text-sm font-medium">
-                    ₹{selectedHotel.pricePerNight.toLocaleString()}/night
+                    ₹{localSelectedHotel.pricePerNight?.toLocaleString() || 'Price unavailable'}/night
                   </div>
                 </div>
               </div>
