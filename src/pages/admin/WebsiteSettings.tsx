@@ -1,13 +1,14 @@
 
 import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-
-// Import our refactored components
-import GeneralSettings from "./settings/GeneralSettings";
-import SeoSettings from "./settings/SeoSettings";
-import SocialSettings from "./settings/SocialSettings";
-import FooterSettings from "./settings/FooterSettings";
+import { Globe, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin, FileText } from "lucide-react";
 
 const WebsiteSettings = () => {
   const { toast } = useToast();
@@ -57,31 +58,35 @@ const WebsiteSettings = () => {
   });
   
   // Handle changes in form fields
-  const handleGeneralChange = (name, value) => {
+  const handleGeneralChange = (e) => {
+    const { name, value } = e.target;
     setGeneralSettings({
       ...generalSettings,
       [name]: value
     });
   };
   
-  const handleSeoChange = (name, value) => {
+  const handleSeoChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setSeoSettings({
       ...seoSettings,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     });
   };
   
-  const handleSocialChange = (name, value) => {
+  const handleSocialChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setSocialSettings({
       ...socialSettings,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     });
   };
   
-  const handleFooterChange = (name, value) => {
+  const handleFooterChange = (e) => {
+    const { name, value, type, checked } = e.target;
     setFooterSettings({
       ...footerSettings,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     });
   };
   
@@ -133,35 +138,389 @@ const WebsiteSettings = () => {
         </TabsList>
         
         <TabsContent value="general">
-          <GeneralSettings 
-            settings={generalSettings}
-            onChange={handleGeneralChange}
-            onSave={saveGeneralSettings}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>General Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={saveGeneralSettings} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="siteName">Site Name</Label>
+                    <div className="flex items-center">
+                      <Globe className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="siteName"
+                        name="siteName"
+                        value={generalSettings.siteName}
+                        onChange={handleGeneralChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="siteTagline">Site Tagline</Label>
+                    <Input 
+                      id="siteTagline"
+                      name="siteTagline"
+                      value={generalSettings.siteTagline}
+                      onChange={handleGeneralChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="siteDescription">Site Description</Label>
+                    <Textarea 
+                      id="siteDescription"
+                      name="siteDescription"
+                      value={generalSettings.siteDescription}
+                      onChange={handleGeneralChange}
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="siteEmail">Contact Email</Label>
+                    <div className="flex items-center">
+                      <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="siteEmail"
+                        name="siteEmail"
+                        type="email"
+                        value={generalSettings.siteEmail}
+                        onChange={handleGeneralChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="sitePhone">Contact Phone</Label>
+                    <div className="flex items-center">
+                      <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="sitePhone"
+                        name="sitePhone"
+                        value={generalSettings.sitePhone}
+                        onChange={handleGeneralChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="siteAddress">Address</Label>
+                    <div className="flex items-center">
+                      <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Textarea 
+                        id="siteAddress"
+                        name="siteAddress"
+                        value={generalSettings.siteAddress}
+                        onChange={handleGeneralChange}
+                        rows={2}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <Button type="submit">Save General Settings</Button>
+              </form>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="seo">
-          <SeoSettings 
-            settings={seoSettings}
-            onChange={handleSeoChange}
-            onSave={saveSeoSettings}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>SEO Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={saveSeoSettings} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="metaTitle">Meta Title</Label>
+                    <div className="flex items-center">
+                      <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="metaTitle"
+                        name="metaTitle"
+                        value={seoSettings.metaTitle}
+                        onChange={handleSeoChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="metaDescription">Meta Description</Label>
+                    <Textarea 
+                      id="metaDescription"
+                      name="metaDescription"
+                      value={seoSettings.metaDescription}
+                      onChange={handleSeoChange}
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="ogTitle">Open Graph Title</Label>
+                    <Input 
+                      id="ogTitle"
+                      name="ogTitle"
+                      value={seoSettings.ogTitle}
+                      onChange={handleSeoChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="ogDescription">Open Graph Description</Label>
+                    <Textarea 
+                      id="ogDescription"
+                      name="ogDescription"
+                      value={seoSettings.ogDescription}
+                      onChange={handleSeoChange}
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="ogImage">Open Graph Image URL</Label>
+                    <Input 
+                      id="ogImage"
+                      name="ogImage"
+                      value={seoSettings.ogImage}
+                      onChange={handleSeoChange}
+                      placeholder="https://example.com/og-image.jpg"
+                    />
+                  </div>
+                  
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableSitemap">Enable Sitemap</Label>
+                        <p className="text-sm text-muted-foreground">Generate an XML sitemap for search engines</p>
+                      </div>
+                      <Switch 
+                        id="enableSitemap"
+                        name="enableSitemap"
+                        checked={seoSettings.enableSitemap}
+                        onCheckedChange={(checked) => setSeoSettings({...seoSettings, enableSitemap: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableRobotsTxt">Enable robots.txt</Label>
+                        <p className="text-sm text-muted-foreground">Create a robots.txt file for search engine crawlers</p>
+                      </div>
+                      <Switch 
+                        id="enableRobotsTxt"
+                        name="enableRobotsTxt"
+                        checked={seoSettings.enableRobotsTxt}
+                        onCheckedChange={(checked) => setSeoSettings({...seoSettings, enableRobotsTxt: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableCanonicalUrls">Enable Canonical URLs</Label>
+                        <p className="text-sm text-muted-foreground">Add canonical URL tags to all pages</p>
+                      </div>
+                      <Switch 
+                        id="enableCanonicalUrls"
+                        name="enableCanonicalUrls"
+                        checked={seoSettings.enableCanonicalUrls}
+                        onCheckedChange={(checked) => setSeoSettings({...seoSettings, enableCanonicalUrls: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableStructuredData">Enable Structured Data</Label>
+                        <p className="text-sm text-muted-foreground">Add JSON-LD structured data for rich snippets</p>
+                      </div>
+                      <Switch 
+                        id="enableStructuredData"
+                        name="enableStructuredData"
+                        checked={seoSettings.enableStructuredData}
+                        onCheckedChange={(checked) => setSeoSettings({...seoSettings, enableStructuredData: checked})}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <Button type="submit">Save SEO Settings</Button>
+              </form>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="social">
-          <SocialSettings 
-            settings={socialSettings}
-            onChange={handleSocialChange}
-            onSave={saveSocialSettings}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Media Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={saveSocialSettings} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="facebookUrl">Facebook URL</Label>
+                    <div className="flex items-center">
+                      <Facebook className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="facebookUrl"
+                        name="facebookUrl"
+                        value={socialSettings.facebookUrl}
+                        onChange={handleSocialChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="twitterUrl">Twitter URL</Label>
+                    <div className="flex items-center">
+                      <Twitter className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="twitterUrl"
+                        name="twitterUrl"
+                        value={socialSettings.twitterUrl}
+                        onChange={handleSocialChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="instagramUrl">Instagram URL</Label>
+                    <div className="flex items-center">
+                      <Instagram className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="instagramUrl"
+                        name="instagramUrl"
+                        value={socialSettings.instagramUrl}
+                        onChange={handleSocialChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
+                    <div className="flex items-center">
+                      <Linkedin className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <Input 
+                        id="linkedinUrl"
+                        name="linkedinUrl"
+                        value={socialSettings.linkedinUrl}
+                        onChange={handleSocialChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="enableSocialSharing">Enable Social Sharing</Label>
+                        <p className="text-sm text-muted-foreground">Add social sharing buttons to pages</p>
+                      </div>
+                      <Switch 
+                        id="enableSocialSharing"
+                        name="enableSocialSharing"
+                        checked={socialSettings.enableSocialSharing}
+                        onCheckedChange={(checked) => setSocialSettings({...socialSettings, enableSocialSharing: checked})}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <Button type="submit">Save Social Media Settings</Button>
+              </form>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="footer">
-          <FooterSettings 
-            settings={footerSettings}
-            onChange={handleFooterChange}
-            onSave={saveFooterSettings}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Footer Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={saveFooterSettings} className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="copyrightText">Copyright Text</Label>
+                    <Input 
+                      id="copyrightText"
+                      name="copyrightText"
+                      value={footerSettings.copyrightText}
+                      onChange={handleFooterChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="footerTagline">Footer Tagline</Label>
+                    <Input 
+                      id="footerTagline"
+                      name="footerTagline"
+                      value={footerSettings.footerTagline}
+                      onChange={handleFooterChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="showSocialIcons">Show Social Icons</Label>
+                        <p className="text-sm text-muted-foreground">Display social media icons in the footer</p>
+                      </div>
+                      <Switch 
+                        id="showSocialIcons"
+                        name="showSocialIcons"
+                        checked={footerSettings.showSocialIcons}
+                        onCheckedChange={(checked) => setFooterSettings({...footerSettings, showSocialIcons: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="showContactInfo">Show Contact Info</Label>
+                        <p className="text-sm text-muted-foreground">Display contact information in the footer</p>
+                      </div>
+                      <Switch 
+                        id="showContactInfo"
+                        name="showContactInfo"
+                        checked={footerSettings.showContactInfo}
+                        onCheckedChange={(checked) => setFooterSettings({...footerSettings, showContactInfo: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="showQuickLinks">Show Quick Links</Label>
+                        <p className="text-sm text-muted-foreground">Display quick navigation links in the footer</p>
+                      </div>
+                      <Switch 
+                        id="showQuickLinks"
+                        name="showQuickLinks"
+                        checked={footerSettings.showQuickLinks}
+                        onCheckedChange={(checked) => setFooterSettings({...footerSettings, showQuickLinks: checked})}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="showNewsletterSignup">Show Newsletter Signup</Label>
+                        <p className="text-sm text-muted-foreground">Display a newsletter signup form in the footer</p>
+                      </div>
+                      <Switch 
+                        id="showNewsletterSignup"
+                        name="showNewsletterSignup"
+                        checked={footerSettings.showNewsletterSignup}
+                        onCheckedChange={(checked) => setFooterSettings({...footerSettings, showNewsletterSignup: checked})}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <Button type="submit">Save Footer Settings</Button>
+              </form>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

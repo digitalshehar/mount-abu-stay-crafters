@@ -1,89 +1,91 @@
 
 import React from 'react';
+import { Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Wifi, Coffee, Tv, Bath, Wind, Utensils } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import RoomAvailabilityCalendar from './RoomAvailabilityCalendar';
 
-export interface RoomDetailsExpandedProps {
-  roomType: string;
-  capacity: number;
-  description?: string;
-  amenities?: string[];
-  price?: number;
-  onSelect?: () => void;
+interface RoomDetailsExpandedProps {
+  room: {
+    type: string;
+    capacity: number;
+    price: number;
+    count?: number;
+    images?: string[];
+  };
+  onBookRoom?: (roomType: string) => void;
 }
 
-const RoomDetailsExpanded: React.FC<RoomDetailsExpandedProps> = ({
-  roomType,
-  capacity,
-  description = "Spacious and comfortable room with modern amenities.",
-  amenities = ["Free WiFi", "TV", "Air conditioning", "Private bathroom", "Breakfast included"],
-  price = 5000,
-  onSelect
-}) => {
+const RoomDetailsExpanded: React.FC<RoomDetailsExpandedProps> = ({ room, onBookRoom }) => {
+  const roomAmenities = [
+    { name: 'Air Conditioning', included: true },
+    { name: 'Free WiFi', included: true },
+    { name: 'TV', included: true },
+    { name: 'Room Service', included: true },
+    { name: 'Minibar', included: room.type === 'Deluxe Room' || room.type === 'Suite' },
+    { name: 'Coffee Machine', included: room.type === 'Deluxe Room' || room.type === 'Suite' },
+    { name: 'Balcony', included: room.type === 'Suite' },
+    { name: 'Bathtub', included: room.type === 'Suite' }
+  ];
+
   return (
-    <div className="p-4">
-      <h3 className="text-lg font-semibold mb-1">{roomType}</h3>
-      <p className="text-sm text-gray-600 mb-3">Accommodates up to {capacity} {capacity === 1 ? 'person' : 'people'}</p>
-      
-      <p className="text-sm mb-4">{description}</p>
-      
-      <div className="mb-4">
-        <h4 className="text-sm font-medium mb-2">Room Amenities</h4>
-        <div className="grid grid-cols-2 gap-2">
-          {amenities.includes('Free WiFi') && (
-            <div className="flex items-center text-sm">
-              <Wifi className="h-4 w-4 mr-2 text-gray-500" />
-              <span>Free WiFi</span>
-            </div>
-          )}
-          {amenities.includes('Breakfast included') && (
-            <div className="flex items-center text-sm">
-              <Coffee className="h-4 w-4 mr-2 text-gray-500" />
-              <span>Breakfast</span>
-            </div>
-          )}
-          {amenities.includes('TV') && (
-            <div className="flex items-center text-sm">
-              <Tv className="h-4 w-4 mr-2 text-gray-500" />
-              <span>Flat-screen TV</span>
-            </div>
-          )}
-          {amenities.includes('Private bathroom') && (
-            <div className="flex items-center text-sm">
-              <Bath className="h-4 w-4 mr-2 text-gray-500" />
-              <span>Private bathroom</span>
-            </div>
-          )}
-          {amenities.includes('Air conditioning') && (
-            <div className="flex items-center text-sm">
-              <Wind className="h-4 w-4 mr-2 text-gray-500" />
-              <span>Air conditioning</span>
-            </div>
-          )}
-          {amenities.includes('Room service') && (
-            <div className="flex items-center text-sm">
-              <Utensils className="h-4 w-4 mr-2 text-gray-500" />
-              <span>Room service</span>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      <div className="flex justify-between items-center">
+    <div className="pt-4 pb-3 px-4 bg-stone-50 rounded-md">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
-          <span className="text-lg font-bold">₹{price}</span>
-          <span className="text-sm text-gray-600 ml-1">per night</span>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Sample badges for room status */}
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            Available
-          </Badge>
+          <h4 className="font-medium text-lg mb-3">Room Details</h4>
+          <div className="space-y-4">
+            <div>
+              <h5 className="text-sm font-medium mb-2">Description</h5>
+              <p className="text-sm text-stone-600">
+                {room.type === 'Suite' 
+                  ? 'Spacious and elegant suite with separate living room, premium amenities, and stunning views.'
+                  : room.type === 'Deluxe Room'
+                    ? 'Comfortable deluxe room with modern furnishings, extra space, and upgraded amenities.'
+                    : 'Cozy standard room with all essential amenities for a comfortable stay.'}
+              </p>
+            </div>
+            
+            <div>
+              <h5 className="text-sm font-medium mb-2">Amenities</h5>
+              <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                {roomAmenities.map((amenity, index) => (
+                  <div key={index} className="flex items-center text-sm">
+                    {amenity.included ? (
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                    ) : (
+                      <X className="h-4 w-4 text-stone-300 mr-2" />
+                    )}
+                    <span className={amenity.included ? "text-stone-700" : "text-stone-400"}>
+                      {amenity.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <h5 className="text-sm font-medium mb-2">Additional Information</h5>
+              <ul className="text-sm text-stone-600 space-y-1">
+                <li>• Room size: {room.type === 'Suite' ? '55-65' : room.type === 'Deluxe Room' ? '35-40' : '25-30'} sq m</li>
+                <li>• Max occupancy: {room.capacity} {room.capacity > 1 ? 'persons' : 'person'}</li>
+                <li>• Bed type: {room.type === 'Suite' ? 'King' : room.type === 'Deluxe Room' ? 'Queen' : 'Twin/Double'}</li>
+                <li>• Check-in: 2:00 PM, Check-out: 12:00 PM</li>
+              </ul>
+            </div>
+          </div>
           
-          <Button size="sm" onClick={onSelect}>
-            Select
+          <Separator className="my-4" />
+          
+          <Button 
+            onClick={() => onBookRoom && onBookRoom(room.type)}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+          >
+            Book this room
           </Button>
+        </div>
+        
+        <div>
+          <RoomAvailabilityCalendar roomType={room.type} />
         </div>
       </div>
     </div>

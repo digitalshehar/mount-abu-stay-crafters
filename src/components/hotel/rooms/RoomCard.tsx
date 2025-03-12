@@ -1,136 +1,105 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, Users } from 'lucide-react';
-import RoomDetailsExpanded from './RoomDetailsExpanded';
+import React from "react";
+import { Check, Coffee, Wifi, Tv, Utensils, Users, Maximize } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import RoomAmenities from "./RoomAmenities";
+import RoomPriceDisplay from "./RoomPriceDisplay";
+import RoomCountSelector from "./RoomCountSelector";
+import RoomDetailsExpanded from "./RoomDetailsExpanded";
 
 interface RoomCardProps {
-  id: number;
-  name: string;
-  type: string;
-  description: string;
-  capacity: number;
-  price: number;
-  image: string;
-  amenities: string[];
-  availability: number;
-  onSelect?: () => void;
+  room: {
+    type: string;
+    capacity: number;
+    price: number;
+    count?: number;
+    images?: string[];
+  };
+  index: number;
+  expandedRoom: string | null;
+  roomCounts: Record<string, number>;
+  toggleRoomDetails: (roomType: string) => void;
+  increaseRoomCount: (roomType: string) => void;
+  decreaseRoomCount: (roomType: string) => void;
+  onBookRoom?: (roomType: string) => void;
 }
 
-const RoomCard: React.FC<RoomCardProps> = ({
-  id,
-  name,
-  type,
-  description,
-  capacity,
-  price,
-  image,
-  amenities,
-  availability,
-  onSelect
-}) => {
-  const [expanded, setExpanded] = useState(false);
-  
-  const toggleExpanded = () => {
-    setExpanded(!expanded);
-  };
-  
+const RoomCard = ({
+  room,
+  index,
+  expandedRoom,
+  roomCounts,
+  toggleRoomDetails,
+  increaseRoomCount,
+  decreaseRoomCount,
+  onBookRoom,
+}: RoomCardProps) => {
   return (
-    <Card className="overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-3">
-        <div className="md:col-span-1">
-          <div className="h-full">
-            <img 
-              src={image} 
-              alt={name} 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.src = 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&q=80&w=1374';
-              }}
-            />
-          </div>
-        </div>
-        
-        <div className="md:col-span-2">
-          <CardContent className="p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-lg font-semibold">{name}</h3>
-                <p className="text-sm text-gray-600">{type}</p>
-              </div>
-              <div className="flex items-center">
-                <Users className="h-4 w-4 mr-1 text-gray-500" />
-                <span className="text-sm">Up to {capacity} {capacity === 1 ? 'person' : 'people'}</span>
-              </div>
-            </div>
-            
-            <div className="mt-2">
-              <p className="text-sm line-clamp-2">{description}</p>
-            </div>
-            
-            <div className="mt-2 flex flex-wrap gap-1">
-              {amenities.slice(0, 3).map((amenity, index) => (
-                <Badge key={index} variant="outline" className="bg-gray-100">
-                  {amenity}
-                </Badge>
-              ))}
-              {amenities.length > 3 && (
-                <Badge variant="outline" className="bg-gray-100">
-                  +{amenities.length - 3} more
-                </Badge>
+    <div className="border border-stone-200 rounded-lg overflow-hidden">
+      {/* Room Header */}
+      <div className="bg-white p-5 flex flex-col md:flex-row gap-4 justify-between">
+        <div className="flex-grow">
+          <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <h3 className="font-semibold text-lg">{room.type}</h3>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                Best Seller
+              </Badge>
+              {index === 0 && (
+                <Badge className="bg-green-500">Best Value</Badge>
               )}
             </div>
-            
-            <div className="mt-4 flex justify-between items-center">
-              <div>
-                <span className="text-lg font-bold">₹{price}</span>
-                <span className="text-sm text-gray-600 ml-1">per night</span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                {availability > 0 ? (
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    {availability} {availability === 1 ? 'room' : 'rooms'} left
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-                    Sold out
-                  </Badge>
-                )}
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="p-0 h-auto"
-                  onClick={toggleExpanded}
-                >
-                  {expanded ? (
-                    <ChevronUp className="h-5 w-5" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5" />
-                  )}
-                </Button>
-              </div>
+          </div>
+          
+          <div className="flex items-center gap-4 text-sm text-stone-600 mb-3">
+            <div className="flex items-center">
+              <Users className="h-4 w-4 mr-1" />
+              <span>Max {room.capacity} guests</span>
             </div>
+            <div className="flex items-center">
+              <Maximize className="h-4 w-4 mr-1" />
+              <span>{room.type.includes('Suite') ? '48' : room.type.includes('Deluxe') ? '32' : '24'} sqm</span>
+            </div>
+          </div>
+          
+          <RoomAmenities roomType={room.type} />
+          
+          <Button 
+            variant="link" 
+            className="px-0 text-sm h-auto mt-2"
+            onClick={() => toggleRoomDetails(room.type)}
+          >
+            {expandedRoom === room.type ? 'Hide details' : 'Show more details'}
+          </Button>
+        </div>
+        
+        <div className="flex flex-col justify-between min-w-[160px] text-right">
+          <RoomPriceDisplay price={room.price} />
+          
+          <div className="mt-3">
+            <RoomCountSelector 
+              roomType={room.type}
+              count={roomCounts[room.type] || 1}
+              onIncrease={increaseRoomCount}
+              onDecrease={decreaseRoomCount}
+            />
             
-            {expanded && (
-              <div className="mt-4 pt-4 border-t">
-                <RoomDetailsExpanded 
-                  roomType={type} 
-                  capacity={capacity} 
-                  description={description}
-                  amenities={amenities}
-                  price={price}
-                  onSelect={onSelect}
-                />
-              </div>
-            )}
-          </CardContent>
+            <Button 
+              className="w-full" 
+              onClick={() => onBookRoom && onBookRoom(room.type)}
+            >
+              Book Now
+            </Button>
+          </div>
         </div>
       </div>
-    </Card>
+      
+      {/* Expanded Room Details */}
+      {expandedRoom === room.type && (
+        <RoomDetailsExpanded roomType={room.type} capacity={room.capacity} />
+      )}
+    </div>
   );
 };
 
