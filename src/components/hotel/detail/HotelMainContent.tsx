@@ -67,7 +67,7 @@ const HotelMainContent = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <Tabs defaultValue="rooms" className="w-full" onValueChange={setActiveTab} value={activeTab}>
-              <HotelTabNavigation activeTab={activeTab} onChange={setActiveTab} />
+              <HotelTabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
               <HotelTabContent 
                 activeTab={activeTab}
                 hotel={hotel}

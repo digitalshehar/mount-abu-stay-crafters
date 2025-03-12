@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Hotel } from '@/components/admin/hotels/types';
@@ -11,6 +11,7 @@ import HotelContent from '../HotelContent';
 import CompareHotelsFeature from '../comparison/CompareHotelsFeature';
 import { useMapFilters } from './hooks/useMapFilters';
 import { useHotelComparison } from '@/hooks/useHotelComparison';
+import { useMapState } from './hooks/useMapState';
 import './HotelMapStyles.css';
 
 // Define map container styles
@@ -96,55 +97,46 @@ interface HotelMapProps {
 const HotelMap: React.FC<HotelMapProps> = ({ 
   hotels, 
   isLoading, 
-  selectedHotelId,
-  setSelectedHotelId,
+  selectedHotelId: externalSelectedHotelId,
+  setSelectedHotelId: externalSetSelectedHotelId,
   onMapMove
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const mapRef = useRef<google.maps.Map | null>(null);
+  
+  // Custom hooks for state management
+  const { 
+    viewMode, setViewMode,
+    selectedHotelId: localSelectedHotelId, 
+    setSelectedHotelId: localSetSelectedHotelId,
+    selectedMarker, setSelectedMarker,
+    showHeatmap, setShowHeatmap,
+    mapRef, onMapLoad, 
+    handleUserLocation, handleZoneSelect
+  } = useMapState();
+  
+  const { compareList, addToCompare, removeFromCompare, clearCompare, isInCompare } = useHotelComparison();
+  
+  // Filter states and handlers from custom hook
+  const {
+    searchQuery, setSearchQuery,
+    selectedStars, setSelectedStars,
+    selectedAmenities, setSelectedAmenities,
+    priceRange, setPriceRange,
+    mapBounds, setMapBounds,
+    activeFilterCount, clearFilters,
+    handleStarFilter, handleAmenityFilter,
+    filterHotels, getVisibleHotels
+  } = useMapFilters();
   
   // Get the selected hotel slug from URL query parameters
   const queryParams = new URLSearchParams(location.search);
   const selectedHotelSlug = queryParams.get('selected');
   
-  // View state (map or list)
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
-  
-  // State for selected hotel and info window
-  const [localSelectedHotelId, setLocalSelectedHotelId] = useState<number | null>(selectedHotelId || null);
-  const [selectedMarker, setSelectedMarker] = useState<Hotel | null>(null);
-  
-  // Map feature states
-  const [showHeatmap, setShowHeatmap] = useState(false);
-
-  // Hotel comparison
-  const { compareList, addToCompare, removeFromCompare, clearCompare, isInCompare } = useHotelComparison();
-
-  // Filter states and handlers from custom hook
-  const {
-    searchQuery,
-    setSearchQuery,
-    selectedStars,
-    setSelectedStars,
-    selectedAmenities,
-    setSelectedAmenities,
-    priceRange,
-    setPriceRange,
-    mapBounds,
-    setMapBounds,
-    activeFilterCount,
-    clearFilters,
-    handleStarFilter,
-    handleAmenityFilter,
-    filterHotels,
-    getVisibleHotels
-  } = useMapFilters();
-  
   // Load Google Maps script with the API key from env variables
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries: libraries,
+    libraries,
   });
   
   // Set selected hotel based on URL parameter
@@ -153,7 +145,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
       const hotel = hotels.find(h => h.slug === selectedHotelSlug);
       if (hotel) {
         setSelectedMarker(hotel);
-        setLocalSelectedHotelId(hotel.id);
+        localSetSelectedHotelId(hotel.id);
         
         // If the map is loaded, center on the selected hotel
         if (mapRef.current && hotel.latitude && hotel.longitude) {
@@ -162,30 +154,27 @@ const HotelMap: React.FC<HotelMapProps> = ({
         }
       }
     }
-  }, [selectedHotelSlug, hotels, isLoaded]);
+  }, [selectedHotelSlug, hotels, isLoaded, localSetSelectedHotelId, setSelectedMarker]);
   
   // Calculate filtered hotels
   const filteredHotels = filterHotels(hotels);
   
   // Get visible hotels
   const visibleHotels = getVisibleHotels(filteredHotels, viewMode);
-
+  
   // Use local or external selectedHotelId depending on props
   const handleHotelSelect = (id: number) => {
-    if (setSelectedHotelId) {
-      setSelectedHotelId(id);
+    if (externalSetSelectedHotelId) {
+      externalSetSelectedHotelId(id);
     } else {
-      setLocalSelectedHotelId(id);
+      localSetSelectedHotelId(id);
     }
   };
-
-  // Get effective selected hotel ID
-  const effectiveSelectedHotelId = selectedHotelId !== undefined ? selectedHotelId : localSelectedHotelId;
   
-  // Handle map load
-  const onMapLoad = useCallback((map: google.maps.Map) => {
-    mapRef.current = map;
-  }, []);
+  // Get effective selected hotel ID
+  const effectiveSelectedHotelId = externalSelectedHotelId !== undefined 
+    ? externalSelectedHotelId 
+    : localSelectedHotelId;
   
   // Handle map bounds change
   const handleBoundsChanged = () => {
@@ -200,62 +189,6 @@ const HotelMap: React.FC<HotelMapProps> = ({
           getEast: () => bounds.getNorthEast().lng(),
         });
       }
-    }
-  };
-  
-  // Handle zone selection
-  const handleZoneSelect = (bounds: any) => {
-    if (!mapRef.current || !bounds) return;
-    
-    const newBounds = new google.maps.LatLngBounds(
-      new google.maps.LatLng(bounds.getSouth(), bounds.getWest()),
-      new google.maps.LatLng(bounds.getNorth(), bounds.getEast())
-    );
-    
-    mapRef.current.fitBounds(newBounds, {
-      top: 50, bottom: 50, left: 50, right: 50
-    });
-    
-    // Notify parent component about bounds change if callback provided
-    if (onMapMove) {
-      onMapMove(bounds);
-    }
-  };
-
-  // Handle user location
-  const handleUserLocation = () => {
-    if (navigator.geolocation && mapRef.current) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const pos = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          
-          mapRef.current?.setCenter(pos);
-          mapRef.current?.setZoom(14);
-          
-          // Create a marker for user location
-          new google.maps.Marker({
-            position: pos,
-            map: mapRef.current,
-            icon: {
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 7,
-              fillColor: "#4285F4",
-              fillOpacity: 1,
-              strokeColor: "#ffffff",
-              strokeWeight: 2,
-            },
-            title: "Your Location",
-          });
-        },
-        () => {
-          alert("Error: The Geolocation service failed.");
-        }
-      );
-    } else {
-      alert("Error: Your browser doesn't support geolocation.");
     }
   };
   
@@ -353,6 +286,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
             visibleHotels={visibleHotels}
             showHeatmap={showHeatmap}
             viewMode={viewMode}
+            totalHotels={hotels.length}
           />
         </div>
       </div>
