@@ -1,9 +1,14 @@
+
 import React from "react";
 
 const Logo = () => {
   return (
-    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg shadow-sm">
-      <img src="/images/logo.jpg" alt="Logo" className="w-full h-full object-contain" />
+    <div className="flex items-center gap-2">
+      <img 
+        src="/lovable-uploads/c7b5c378-5d41-419f-b641-b6311f53d1f3.png" 
+        alt="Hotel In Mount Abu Logo" 
+        className="h-10 object-contain"
+      />
     </div>
   );
 };
