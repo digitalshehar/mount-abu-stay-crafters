@@ -257,6 +257,11 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   };
   
+  // Toggle heatmap
+  const handleToggleHeatmap = () => {
+    setShowHeatmap(prev => !prev);
+  };
+  
   // Common amenities for filter
   const commonAmenities = [
     "WiFi", "Swimming Pool", "Restaurant", "Spa", "Gym", 
@@ -342,10 +347,11 @@ const HotelMap: React.FC<HotelMapProps> = ({
               />
               
               <MapFeatures 
-                onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
+                onToggleHeatmap={handleToggleHeatmap}
                 onToggleLandmarks={() => setShowLandmarks(!showLandmarks)}
                 onToggleTraffic={() => setShowTraffic(!showTraffic)}
                 onUserLocation={handleUserLocation}
+                showHeatmap={showHeatmap}
               />
             </div>
           ) : (
@@ -359,7 +365,8 @@ const HotelMap: React.FC<HotelMapProps> = ({
           
           <div className="bg-stone-50 p-4 rounded-lg">
             <p className="text-sm text-stone-600">
-              Showing {visibleHotels.length} hotels in Mount Abu. Use the map to explore hotel locations or switch to list view to see detailed listings.
+              Showing {visibleHotels.length} hotels in Mount Abu. 
+              {showHeatmap && viewMode === 'map' && ' The heatmap displays areas with high hotel concentration.'}
             </p>
           </div>
         </div>

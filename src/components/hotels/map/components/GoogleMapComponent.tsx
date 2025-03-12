@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow, useJsApiLoader, HeatmapLayer } from '@react-google-maps/api';
 import { Hotel } from '@/components/admin/hotels/types';
 
 export interface GoogleMapComponentProps {
@@ -33,6 +33,25 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
   showHeatmap = false
 }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
+  
+  // Create heatmap data points from hotel locations
+  useEffect(() => {
+    if (hotels.length > 0) {
+      const points = hotels
+        .filter(hotel => hotel.latitude && hotel.longitude)
+        .map(hotel => {
+          // Create weighted points based on hotel price or rating
+          const weight = hotel.featured ? 2 : 1; // Featured hotels have more weight
+          return {
+            location: new google.maps.LatLng(hotel.latitude || 0, hotel.longitude || 0),
+            weight
+          };
+        });
+      
+      setHeatmapData(points.map(p => p.location));
+    }
+  }, [hotels]);
   
   const handleMapLoad = useCallback((mapInstance: google.maps.Map) => {
     setMap(mapInstance);
@@ -52,6 +71,33 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
       onLoad={handleMapLoad}
       onBoundsChanged={handleBoundsChanged}
     >
+      {/* Heatmap layer */}
+      {showHeatmap && heatmapData.length > 0 && (
+        <HeatmapLayer
+          data={heatmapData}
+          options={{
+            radius: 20,
+            opacity: 0.7,
+            gradient: [
+              'rgba(0, 255, 255, 0)',
+              'rgba(0, 255, 255, 1)',
+              'rgba(0, 191, 255, 1)',
+              'rgba(0, 127, 255, 1)',
+              'rgba(0, 63, 255, 1)',
+              'rgba(0, 0, 255, 1)',
+              'rgba(0, 0, 223, 1)',
+              'rgba(0, 0, 191, 1)',
+              'rgba(0, 0, 159, 1)',
+              'rgba(0, 0, 127, 1)',
+              'rgba(63, 0, 91, 1)',
+              'rgba(127, 0, 63, 1)',
+              'rgba(191, 0, 31, 1)',
+              'rgba(255, 0, 0, 1)'
+            ]
+          }}
+        />
+      )}
+
       {/* Map hotel markers */}
       {hotels.map((hotel) => (
         <Marker
