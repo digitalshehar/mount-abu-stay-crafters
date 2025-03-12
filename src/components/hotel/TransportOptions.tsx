@@ -1,269 +1,277 @@
 
-import React, { useState } from 'react';
-import { Car, Bus, Train, Plane, MapPin, Calendar, Clock, Info } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import { Car, Bike, Bus, Plane } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export interface TransportOptionsProps {
-  hotel: any;
+interface TransportOptionsProps {
+  hotelLocation: string;
 }
 
-const TransportOptions: React.FC<TransportOptionsProps> = ({ hotel }) => {
-  const [transportTab, setTransportTab] = useState('taxi');
-  const [date, setDate] = useState<Date>();
-  
-  const handleBookTransport = (type: string) => {
-    if (!date) {
-      toast.error('Please select a date first');
-      return;
-    }
-    
-    toast.success(`${type} booked successfully!`, {
-      description: `Your ${type.toLowerCase()} to ${hotel.name} on ${format(date, 'PPP')} has been booked.`,
-    });
-  };
+const TransportOptions = ({ hotelLocation }: TransportOptionsProps) => {
+  const [activeTab, setActiveTab] = useState("taxi");
   
   return (
     <div>
       <h2 className="text-2xl font-display font-semibold mb-6">Transportation Options</h2>
       
-      <Tabs defaultValue="taxi" onValueChange={setTransportTab} value={transportTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="taxi" className="flex items-center gap-2">
-            <Car className="h-4 w-4" />
-            <span>Taxi</span>
+      <Tabs defaultValue="taxi" className="w-full" onValueChange={setActiveTab} value={activeTab}>
+        <TabsList className="grid grid-cols-4 mb-6">
+          <TabsTrigger value="taxi" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <Car className="h-4 w-4 mr-2" />
+            Taxi
           </TabsTrigger>
-          <TabsTrigger value="bus" className="flex items-center gap-2">
-            <Bus className="h-4 w-4" />
-            <span>Bus</span>
+          <TabsTrigger value="rental" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <Car className="h-4 w-4 mr-2" />
+            Rentals
           </TabsTrigger>
-          <TabsTrigger value="train" className="flex items-center gap-2">
-            <Train className="h-4 w-4" />
-            <span>Train</span>
+          <TabsTrigger value="bike" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <Bike className="h-4 w-4 mr-2" />
+            Bikes
           </TabsTrigger>
-          <TabsTrigger value="airplane" className="flex items-center gap-2">
-            <Plane className="h-4 w-4" />
-            <span>Flights</span>
+          <TabsTrigger value="shuttle" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <Bus className="h-4 w-4 mr-2" />
+            Shuttle
           </TabsTrigger>
         </TabsList>
         
-        <div className="mt-6">
-          <TabsContent value="taxi">
-            <TransportTabContent
-              title="Taxi Service"
-              description="Book a comfortable taxi to and from the hotel"
-              options={[
-                { name: "Standard Sedan", price: 1200, details: "AC, 4 seats, 2 luggage" },
-                { name: "Premium SUV", price: 1800, details: "AC, 6 seats, 4 luggage" },
-                { name: "Luxury Car", price: 3500, details: "AC, 4 seats, premium service" }
-              ]}
-              icon={<Car className="h-5 w-5" />}
-              date={date}
-              setDate={setDate}
-              onBook={() => handleBookTransport('Taxi')}
-              location={hotel.location}
-            />
+        <div className="bg-white rounded-lg border border-stone-200 p-6">
+          <TabsContent value="taxi" className="mt-0 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="pickup">Pickup Location</Label>
+                <Input 
+                  id="pickup" 
+                  placeholder="Airport, train station, etc." 
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="dropoff">Dropoff Location</Label>
+                <Input 
+                  id="dropoff" 
+                  value={hotelLocation} 
+                  className="mt-1"
+                  readOnly
+                />
+              </div>
+              <div>
+                <Label htmlFor="date">Date</Label>
+                <Input 
+                  id="date" 
+                  type="date"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="time">Time</Label>
+                <Input 
+                  id="time" 
+                  type="time"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label className="block mb-3">Vehicle Type</Label>
+              <RadioGroup defaultValue="sedan" className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-2 bg-stone-50 p-3 rounded-md border border-stone-200">
+                  <RadioGroupItem value="sedan" id="sedan" />
+                  <Label htmlFor="sedan" className="font-normal">Sedan (4 seats)</Label>
+                </div>
+                <div className="flex items-center space-x-2 bg-stone-50 p-3 rounded-md border border-stone-200">
+                  <RadioGroupItem value="suv" id="suv" />
+                  <Label htmlFor="suv" className="font-normal">SUV (6 seats)</Label>
+                </div>
+                <div className="flex items-center space-x-2 bg-stone-50 p-3 rounded-md border border-stone-200">
+                  <RadioGroupItem value="van" id="van" />
+                  <Label htmlFor="van" className="font-normal">Van (10 seats)</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            <Button className="w-full">Book Taxi Service</Button>
+            
+            <p className="text-sm text-stone-500 text-center">
+              Taxi services are provided by our trusted partners and can be paid directly to the driver.
+            </p>
           </TabsContent>
           
-          <TabsContent value="bus">
-            <TransportTabContent
-              title="Bus Service"
-              description="Book a bus ticket to and from Mount Abu"
-              options={[
-                { name: "Regular Bus", price: 250, details: "Non-AC, Standard" },
-                { name: "Deluxe Bus", price: 500, details: "AC, Comfortable Seating" },
-                { name: "Sleeper Bus", price: 800, details: "AC, Sleeper Berths" }
-              ]}
-              icon={<Bus className="h-5 w-5" />}
-              date={date}
-              setDate={setDate}
-              onBook={() => handleBookTransport('Bus')}
-              location={hotel.location}
-            />
+          <TabsContent value="rental" className="mt-0 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="pickup-date">Pickup Date</Label>
+                <Input 
+                  id="pickup-date" 
+                  type="date"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="return-date">Return Date</Label>
+                <Input 
+                  id="return-date" 
+                  type="date"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="car-type">Car Type</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select car type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="economy">Economy</SelectItem>
+                    <SelectItem value="compact">Compact</SelectItem>
+                    <SelectItem value="midsize">Midsize</SelectItem>
+                    <SelectItem value="suv">SUV</SelectItem>
+                    <SelectItem value="luxury">Luxury</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="driver">Driver</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select option" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="self">Self Drive</SelectItem>
+                    <SelectItem value="with-driver">With Driver</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <Button className="w-full">Browse Available Cars</Button>
           </TabsContent>
           
-          <TabsContent value="train">
-            <TransportTabContent
-              title="Train Service"
-              description="Book a train ticket to Mount Abu Road Station"
-              options={[
-                { name: "Sleeper Class", price: 350, details: "Basic accommodation" },
-                { name: "AC 3 Tier", price: 850, details: "AC, Comfortable berths" },
-                { name: "AC 2 Tier", price: 1200, details: "AC, More spacious" }
-              ]}
-              icon={<Train className="h-5 w-5" />}
-              date={date}
-              setDate={setDate}
-              onBook={() => handleBookTransport('Train')}
-              location="Mount Abu Road Station (29km from hotel)"
-            />
+          <TabsContent value="bike" className="mt-0 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="bike-pickup">Pickup Date</Label>
+                <Input 
+                  id="bike-pickup" 
+                  type="date"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="bike-return">Return Date</Label>
+                <Input 
+                  id="bike-return" 
+                  type="date"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="bike-type">Bike Type</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select bike type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="scooter">Scooter</SelectItem>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="cruiser">Cruiser</SelectItem>
+                    <SelectItem value="sports">Sports</SelectItem>
+                    <SelectItem value="adventure">Adventure</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="helmet">Helmet(s)</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select number" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 Helmet</SelectItem>
+                    <SelectItem value="2">2 Helmets</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-amber-50 rounded-md border border-amber-100 text-sm text-amber-800">
+              <p>
+                <span className="font-medium">Safety Note:</span> Helmets are mandatory by law. Valid driving license required.
+              </p>
+            </div>
+            
+            <Button className="w-full">Browse Available Bikes</Button>
           </TabsContent>
           
-          <TabsContent value="airplane">
-            <TransportTabContent
-              title="Flight Service"
-              description="Book a flight to Udaipur Airport (nearest to Mount Abu)"
-              options={[
-                { name: "Economy Class", price: 5500, details: "Standard service" },
-                { name: "Premium Economy", price: 7500, details: "Extra legroom, Priority boarding" },
-                { name: "Business Class", price: 12500, details: "Premium service, Lounge access" }
-              ]}
-              icon={<Plane className="h-5 w-5" />}
-              date={date}
-              setDate={setDate}
-              onBook={() => handleBookTransport('Flight')}
-              location="Udaipur Airport (100km from hotel)"
-            />
+          <TabsContent value="shuttle" className="mt-0 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="shuttle-from">From</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select pickup location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="airport">Udaipur Airport (100 km)</SelectItem>
+                    <SelectItem value="bus-station">Mount Abu Bus Station (1.5 km)</SelectItem>
+                    <SelectItem value="train-station">Abu Road Railway Station (28 km)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="shuttle-date">Date</Label>
+                <Input 
+                  id="shuttle-date" 
+                  type="date"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="shuttle-time">Preferred Time</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="morning">Morning (8:00 AM - 12:00 PM)</SelectItem>
+                    <SelectItem value="afternoon">Afternoon (12:00 PM - 4:00 PM)</SelectItem>
+                    <SelectItem value="evening">Evening (4:00 PM - 8:00 PM)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="passengers">Passengers</Label>
+                <Select>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select number" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6].map(num => (
+                      <SelectItem key={num} value={num.toString()}>{num} {num === 1 ? 'Passenger' : 'Passengers'}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-blue-50 rounded-md border border-blue-100 space-y-2">
+              <p className="text-sm text-blue-800 font-medium">Shuttle Schedule Information:</p>
+              <ul className="text-sm text-blue-700 space-y-1 list-disc pl-5">
+                <li>Airport Shuttle: 2 times daily (10:00 AM, 4:00 PM)</li>
+                <li>Bus Station Shuttle: Every 2 hours from 8:00 AM to 8:00 PM</li>
+                <li>Railway Station Shuttle: 3 times daily (9:00 AM, 2:00 PM, 7:00 PM)</li>
+              </ul>
+            </div>
+            
+            <Button className="w-full">Book Shuttle Service</Button>
           </TabsContent>
         </div>
       </Tabs>
-      
-      <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
-        <div className="flex gap-3">
-          <Info className="h-6 w-6 text-blue-500 flex-shrink-0" />
-          <div>
-            <h3 className="text-blue-700 font-medium">Transport Assistance</h3>
-            <p className="text-sm text-blue-600 mt-1">
-              Need help arranging your transportation? Contact our concierge desk and we'll assist you with all your travel needs.
-            </p>
-            <p className="text-sm font-medium text-blue-700 mt-2">
-              Concierge: +91 2974 123456
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-interface TransportOption {
-  name: string;
-  price: number;
-  details: string;
-}
-
-interface TransportTabContentProps {
-  title: string;
-  description: string;
-  options: TransportOption[];
-  icon: React.ReactNode;
-  date: Date | undefined;
-  setDate: (date: Date | undefined) => void;
-  onBook: () => void;
-  location: string;
-}
-
-const TransportTabContent: React.FC<TransportTabContentProps> = ({
-  title,
-  description,
-  options,
-  icon,
-  date,
-  setDate,
-  onBook,
-  location
-}) => {
-  return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <div className="bg-primary/10 text-primary p-3 rounded-full">
-          {icon}
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <p className="text-sm text-stone-500">{description}</p>
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <div className="flex items-start gap-2 mb-4">
-            <MapPin className="h-5 w-5 text-primary mt-0.5" />
-            <div>
-              <span className="text-sm font-medium">Destination</span>
-              <p className="text-sm text-stone-600">{location}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start gap-2">
-            <Calendar className="h-5 w-5 text-primary mt-0.5" />
-            <div>
-              <span className="text-sm font-medium">Travel Date</span>
-              <div className="mt-1">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                      )}
-                    >
-                      {date ? format(date, 'PPP') : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-center p-4 bg-stone-50 rounded-lg border border-stone-100">
-          <div className="text-center">
-            <Clock className="h-6 w-6 text-primary mx-auto mb-2" />
-            <p className="text-stone-600 text-sm">Estimated travel time:</p>
-            <p className="font-medium">
-              {title.includes('Taxi') ? '2 hours' : 
-               title.includes('Bus') ? '2.5 hours' : 
-               title.includes('Train') ? '3 hours' : '1 hour flight + 2 hours drive'}
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="space-y-4">
-        <h4 className="font-medium">Available Options</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {options.map((option, index) => (
-            <Card key={index}>
-              <CardHeader className="pb-2">
-                <CardTitle>{option.name}</CardTitle>
-                <CardDescription>{option.details}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-semibold text-primary">₹{option.price}</p>
-                <p className="text-xs text-stone-500">per journey</p>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  onClick={onBook} 
-                  className="w-full"
-                  disabled={!date}
-                >
-                  Book Now
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </div>
     </div>
   );
 };

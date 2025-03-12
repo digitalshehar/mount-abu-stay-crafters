@@ -1,6 +1,5 @@
 
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import Header from "../components/Header";
 import Hero from "../components/Hero";
 import FeatureSection from "../components/FeatureSection";
@@ -13,37 +12,49 @@ import TravelGuide from "../components/TravelGuide";
 import EventsCalendar from "../components/EventsCalendar";
 import PersonalizedRecommendations from "../components/PersonalizedRecommendations";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const [featuredHotels, setFeaturedHotels] = useState([]);
-  
-  // Fetch featured hotels from supabase
-  const { data: hotels, isLoading } = useQuery({
-    queryKey: ['featuredHotels'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('hotels')
-        .select('*')
-        .eq('featured', true)
-        .limit(3);
-        
-      if (error) {
-        console.error("Error fetching featured hotels:", error);
-        throw error;
-      }
-      
-      return data || [];
-    }
-  });
+  // Sample featured hotels data
+  const featuredHotels = [
+    {
+      id: 1,
+      name: "Hilltop Luxury Resort",
+      slug: "hilltop-luxury-resort",
+      image: "https://images.unsplash.com/photo-1455587734955-081b22074882?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      price: 5800,
+      location: "Near Nakki Lake",
+      rating: 4.8,
+      reviewCount: 312,
+      amenities: ["Wifi", "Breakfast", "Swimming Pool", "Spa"],
+      featured: true,
+    },
+    {
+      id: 2,
+      name: "Palace Heritage Hotel",
+      slug: "palace-heritage-hotel",
+      image: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      price: 7200,
+      location: "Central Mount Abu",
+      rating: 4.9,
+      reviewCount: 245,
+      amenities: ["Wifi", "Breakfast", "Restaurant", "Gym"],
+    },
+    {
+      id: 3,
+      name: "Green Valley Resort",
+      slug: "green-valley-resort",
+      image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      price: 4300,
+      location: "Near Wildlife Sanctuary",
+      rating: 4.6,
+      reviewCount: 187,
+      amenities: ["Wifi", "Parking", "Restaurant", "Garden"],
+    },
+  ];
 
   useEffect(() => {
     document.title = "HotelInMountAbu - Find the Perfect Stay in Mount Abu";
-    
-    if (hotels && hotels.length > 0) {
-      setFeaturedHotels(hotels);
-    }
-  }, [hotels]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -84,40 +95,9 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {isLoading ? (
-              // Show skeleton loaders while fetching
-              Array(3).fill(0).map((_, i) => (
-                <div key={i} className="rounded-lg border border-gray-200 overflow-hidden">
-                  <div className="w-full h-48 bg-gray-200 animate-pulse"></div>
-                  <div className="p-4 space-y-3">
-                    <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-                  </div>
-                </div>
-              ))
-            ) : featuredHotels.length > 0 ? (
-              featuredHotels.map((hotel) => (
-                <HotelCard 
-                  key={hotel.id}
-                  id={hotel.id}
-                  name={hotel.name}
-                  slug={hotel.slug || `hotel-${hotel.id}`}
-                  image={hotel.image}
-                  price={hotel.price_per_night || hotel.price || 0}
-                  location={hotel.location}
-                  rating={hotel.rating || 4.5}
-                  reviewCount={hotel.review_count || 0}
-                  amenities={hotel.amenities || []}
-                  featured={hotel.featured}
-                />
-              ))
-            ) : (
-              // Fallback if no featured hotels found
-              <div className="col-span-3 text-center py-8">
-                <p className="text-gray-500">No featured hotels available at the moment.</p>
-              </div>
-            )}
+            {featuredHotels.map((hotel) => (
+              <HotelCard key={hotel.id} {...hotel} />
+            ))}
           </div>
         </div>
       </section>

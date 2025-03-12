@@ -1,119 +1,107 @@
-import { useEffect, lazy, Suspense } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "./context/AuthContext";
-import { ThemeProvider } from "./context/ThemeContext";
-import { BookingProvider } from "./context/BookingContext";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-import AdminRoute from "./components/auth/AdminRoute";
-import LoadingScreen from "./components/LoadingScreen";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthContext";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+import CarRentals from "./pages/CarRentals";
+import BikeRentals from "./pages/BikeRentals";
+import Adventures from "./pages/Adventures";
+import Blog from "./pages/Blog";
+import HotelDetail from "./pages/HotelDetail";
+import HotelHtmlView from "./pages/HotelHtmlView";
+import AboutUs from "./pages/AboutUs";
+import Contact from "./pages/Contact";
+import TravelGuide from "./pages/TravelGuide";
+import FAQs from "./pages/FAQs";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import CancellationPolicy from "./pages/CancellationPolicy";
+import Hotels from "./pages/Hotels";
+import HotelMap from "./pages/HotelMap";
+import Destinations from "./pages/Destinations";
+import AdventureDetail from "./pages/AdventureDetail";
+import DestinationDetail from "./pages/DestinationDetail";
+import CarRentalDetail from "./pages/CarRentalDetail";
+import BikeRentalDetail from "./pages/BikeRentalDetail";
+import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 
-// Lazy-loaded pages
-const Index = lazy(() => import("./pages/Index"));
-const Hotels = lazy(() => import("./pages/Hotels"));
-const HotelDetail = lazy(() => import("./pages/HotelDetail"));
-const Destinations = lazy(() => import("./pages/Destinations"));
-const DestinationDetail = lazy(() => import("./pages/DestinationDetail"));
-const Adventures = lazy(() => import("./pages/Adventures"));
-const AdventureDetail = lazy(() => import("./pages/AdventureDetail"));
-const CarRentals = lazy(() => import("./pages/CarRentals"));
-const BikeRentals = lazy(() => import("./pages/BikeRentals"));
-const Blog = lazy(() => import("./pages/Blog"));
-const BlogPost = lazy(() => import("./pages/BlogPost"));
-const About = lazy(() => import("./pages/About"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Auth = lazy(() => import("./pages/Auth"));
-const UserProfile = lazy(() => import("./pages/UserProfile"));
-const Checkout = lazy(() => import("./pages/Checkout"));
-const BookingConfirmation = lazy(() => import("./pages/BookingConfirmation"));
-const BookingHistory = lazy(() => import("./pages/BookingHistory"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+// Admin Pages
+import AdminDashboard from "./pages/admin/Dashboard";
+import AdminOverview from "./pages/admin/Overview";
+import AdminHotels from "./pages/admin/Hotels";
+import AdminBlog from "./pages/admin/Blog";
+import AdminCarRentals from "./pages/admin/CarRentals";
+import AdminBikeRentals from "./pages/admin/BikeRentals";
+import AdminAdventures from "./pages/admin/Adventures";
+import AdminSettings from "./pages/admin/Settings";
+import AdminPageBuilder from "./pages/admin/PageBuilder";
+import AdminWebsiteSettings from "./pages/admin/WebsiteSettings";
+import AdminBookings from "./pages/admin/Bookings";
 
-// Admin pages
-const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
-const AdminHotels = lazy(() => import("./pages/admin/Hotels"));
-const AdminHotelEdit = lazy(() => import("./pages/admin/HotelEdit"));
-const AdminBookings = lazy(() => import("./pages/admin/Bookings"));
-const AdminUsers = lazy(() => import("./pages/admin/Users"));
-const AdminReviews = lazy(() => import("./pages/admin/Reviews"));
-const AdminSettings = lazy(() => import("./pages/admin/Settings"));
-const WebsiteSettings = lazy(() => import("./pages/admin/WebsiteSettings"));
-const WebsiteContent = lazy(() => import("./pages/admin/WebsiteContent"));
+const queryClient = new QueryClient();
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-    },
-  },
-});
-
-function App() {
-  useEffect(() => {
-    // Initialize any global services or listeners here
-  }, []);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <BookingProvider>
-            <Router>
-              <Suspense fallback={<LoadingScreen />}>
-                <Routes>
-                  {/* Public routes */}
-                  <Route path="/" element={<Index />} />
-                  <Route path="/hotels" element={<Hotels />} />
-                  <Route path="/hotel/:slug" element={<HotelDetail />} />
-                  <Route path="/destinations" element={<Destinations />} />
-                  <Route path="/destination/:slug" element={<DestinationDetail />} />
-                  <Route path="/adventures" element={<Adventures />} />
-                  <Route path="/adventure/:slug" element={<AdventureDetail />} />
-                  <Route path="/rentals/car" element={<CarRentals />} />
-                  <Route path="/rentals/bike" element={<BikeRentals />} />
-                  <Route path="/blog" element={<Blog />} />
-                  <Route path="/blog/:slug" element={<BlogPost />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/auth" element={<Auth />} />
-
-                  {/* Protected routes */}
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/profile" element={<UserProfile />} />
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/booking/confirmation" element={<BookingConfirmation />} />
-                    <Route path="/bookings" element={<BookingHistory />} />
-                  </Route>
-
-                  {/* Admin routes */}
-                  <Route element={<AdminRoute />}>
-                    <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                    <Route path="/admin/hotels" element={<AdminHotels />} />
-                    <Route path="/admin/hotels/:id" element={<AdminHotelEdit />} />
-                    <Route path="/admin/bookings" element={<AdminBookings />} />
-                    <Route path="/admin/users" element={<AdminUsers />} />
-                    <Route path="/admin/reviews" element={<AdminReviews />} />
-                    <Route path="/admin/settings" element={<AdminSettings />} />
-                    <Route path="/admin/website-settings" element={<WebsiteSettings />} />
-                    <Route path="/admin/website-content" element={<WebsiteContent />} />
-                  </Route>
-
-                  {/* 404 route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </Router>
-            <Toaster />
-          </BookingProvider>
-        </AuthProvider>
-      </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  );
-}
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/hotels" element={<Hotels />} />
+            <Route path="/hotels/map" element={<HotelMap />} />
+            <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
+            <Route path="/hotel/:hotelSlug/html" element={<HotelHtmlView />} />
+            <Route path="/hotel/:hotelSlug.html" element={<HotelHtmlView />} />
+            <Route path="/destinations" element={<Destinations />} />
+            <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
+            <Route path="/rentals/car" element={<CarRentals />} />
+            <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
+            <Route path="/rentals/bike" element={<BikeRentals />} />
+            <Route path="/rentals/bike/:id" element={<BikeRentalDetail />} />
+            <Route path="/adventures" element={<Adventures />} />
+            <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/travel-guide" element={<TravelGuide />} />
+            <Route path="/faqs" element={<FAQs />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+            
+            {/* Auth Routes */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile" element={<Profile />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminDashboard />}>
+              <Route index element={<AdminOverview />} />
+              <Route path="hotels" element={<AdminHotels />} />
+              <Route path="blog" element={<AdminBlog />} />
+              <Route path="bookings" element={<AdminBookings />} />
+              <Route path="rentals/car" element={<AdminCarRentals />} />
+              <Route path="rentals/bike" element={<AdminBikeRentals />} />
+              <Route path="adventures" element={<AdminAdventures />} />
+              <Route path="page-builder" element={<AdminPageBuilder />} />
+              <Route path="website-settings" element={<AdminWebsiteSettings />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
+            
+            {/* Catch All Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </QueryClientProvider>
+);
 
 export default App;

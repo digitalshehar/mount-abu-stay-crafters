@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Cloud, CloudRain, Sun, Snowflake, Wind } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useQuery } from '@tanstack/react-query';
 
 interface WeatherData {
   location: string;
@@ -20,37 +19,37 @@ interface WeatherData {
   }[];
 }
 
-// OpenWeatherMap API key would typically be stored in an environment variable
-// For this demo we'll use a mock implementation that simulates API fetching
-const fetchWeatherData = async (): Promise<WeatherData> => {
-  // In a real implementation, this would be an API call to a weather service
-  // For this demo, we'll simulate a delay and return mock data
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  return {
-    location: 'Mount Abu, Rajasthan',
-    temperature: 24,
-    condition: 'Sunny',
-    icon: 'sun',
-    humidity: 45,
-    windSpeed: 10,
-    forecast: [
-      { day: 'Mon', temperature: 24, condition: 'Sunny', icon: 'sun' },
-      { day: 'Tue', temperature: 23, condition: 'Partly Cloudy', icon: 'cloud' },
-      { day: 'Wed', temperature: 22, condition: 'Cloudy', icon: 'cloud' },
-      { day: 'Thu', temperature: 20, condition: 'Rain', icon: 'rain' },
-      { day: 'Fri', temperature: 22, condition: 'Partly Cloudy', icon: 'cloud' },
-    ],
-  };
+// Mock weather data for Mount Abu
+const mockWeatherData: WeatherData = {
+  location: 'Mount Abu, Rajasthan',
+  temperature: 24,
+  condition: 'Sunny',
+  icon: 'sun',
+  humidity: 45,
+  windSpeed: 10,
+  forecast: [
+    { day: 'Mon', temperature: 24, condition: 'Sunny', icon: 'sun' },
+    { day: 'Tue', temperature: 23, condition: 'Partly Cloudy', icon: 'cloud' },
+    { day: 'Wed', temperature: 22, condition: 'Cloudy', icon: 'cloud' },
+    { day: 'Thu', temperature: 20, condition: 'Rain', icon: 'rain' },
+    { day: 'Fri', temperature: 22, condition: 'Partly Cloudy', icon: 'cloud' },
+  ],
 };
 
 const WeatherWidget: React.FC = () => {
-  const { data: weather, isLoading } = useQuery({
-    queryKey: ['weather'],
-    queryFn: fetchWeatherData,
-    staleTime: 1000 * 60 * 30, // 30 minutes
-    retry: 1
-  });
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // In a real application, this would be an API call to a weather service
+    // For this demo, we'll use the mock data after a short delay
+    const timer = setTimeout(() => {
+      setWeather(mockWeatherData);
+      setLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const renderWeatherIcon = (icon: string) => {
     switch (icon) {
@@ -67,7 +66,7 @@ const WeatherWidget: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <Card className="overflow-hidden">
         <CardContent className="p-4">

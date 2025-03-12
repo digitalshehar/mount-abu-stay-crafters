@@ -1,91 +1,91 @@
 
-import React from 'react';
-import { Check, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import RoomAvailabilityCalendar from './RoomAvailabilityCalendar';
+import React from "react";
+import { Check } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { getRoomAmenities } from "./RoomAmenities";
 
 interface RoomDetailsExpandedProps {
-  room: {
-    type: string;
-    capacity: number;
-    price: number;
-    count?: number;
-    images?: string[];
-  };
-  onBookRoom?: (roomType: string) => void;
+  roomType: string;
+  capacity: number;
 }
 
-const RoomDetailsExpanded: React.FC<RoomDetailsExpandedProps> = ({ room, onBookRoom }) => {
-  const roomAmenities = [
-    { name: 'Air Conditioning', included: true },
-    { name: 'Free WiFi', included: true },
-    { name: 'TV', included: true },
-    { name: 'Room Service', included: true },
-    { name: 'Minibar', included: room.type === 'Deluxe Room' || room.type === 'Suite' },
-    { name: 'Coffee Machine', included: room.type === 'Deluxe Room' || room.type === 'Suite' },
-    { name: 'Balcony', included: room.type === 'Suite' },
-    { name: 'Bathtub', included: room.type === 'Suite' }
-  ];
-
+const RoomDetailsExpanded = ({ roomType, capacity }: RoomDetailsExpandedProps) => {
   return (
-    <div className="pt-4 pb-3 px-4 bg-stone-50 rounded-md">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <h4 className="font-medium text-lg mb-3">Room Details</h4>
-          <div className="space-y-4">
-            <div>
-              <h5 className="text-sm font-medium mb-2">Description</h5>
+    <div className="bg-stone-50 border-t border-stone-200 p-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="md:col-span-2">
+          <h4 className="font-medium mb-3">Room Details</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-8">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Room Size</p>
+              <p className="text-sm text-stone-600">{roomType.includes('Suite') ? '48' : roomType.includes('Deluxe') ? '32' : '24'} square meters</p>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Bed Type</p>
               <p className="text-sm text-stone-600">
-                {room.type === 'Suite' 
-                  ? 'Spacious and elegant suite with separate living room, premium amenities, and stunning views.'
-                  : room.type === 'Deluxe Room'
-                    ? 'Comfortable deluxe room with modern furnishings, extra space, and upgraded amenities.'
-                    : 'Cozy standard room with all essential amenities for a comfortable stay.'}
+                {roomType.includes('Suite') || roomType.includes('Deluxe') 
+                  ? 'King-size bed' 
+                  : 'Queen-size bed'}
               </p>
             </div>
             
-            <div>
-              <h5 className="text-sm font-medium mb-2">Amenities</h5>
-              <div className="grid grid-cols-2 gap-y-2 gap-x-4">
-                {roomAmenities.map((amenity, index) => (
-                  <div key={index} className="flex items-center text-sm">
-                    {amenity.included ? (
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                    ) : (
-                      <X className="h-4 w-4 text-stone-300 mr-2" />
-                    )}
-                    <span className={amenity.included ? "text-stone-700" : "text-stone-400"}>
-                      {amenity.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">View</p>
+              <p className="text-sm text-stone-600">
+                {roomType.includes('Suite') 
+                  ? 'Lake view' 
+                  : roomType.includes('Deluxe') 
+                    ? 'Mountain view' 
+                    : 'Garden view'}
+              </p>
             </div>
             
-            <div>
-              <h5 className="text-sm font-medium mb-2">Additional Information</h5>
-              <ul className="text-sm text-stone-600 space-y-1">
-                <li>• Room size: {room.type === 'Suite' ? '55-65' : room.type === 'Deluxe Room' ? '35-40' : '25-30'} sq m</li>
-                <li>• Max occupancy: {room.capacity} {room.capacity > 1 ? 'persons' : 'person'}</li>
-                <li>• Bed type: {room.type === 'Suite' ? 'King' : room.type === 'Deluxe Room' ? 'Queen' : 'Twin/Double'}</li>
-                <li>• Check-in: 2:00 PM, Check-out: 12:00 PM</li>
-              </ul>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Occupancy</p>
+              <p className="text-sm text-stone-600">Maximum {capacity} guests</p>
             </div>
           </div>
           
           <Separator className="my-4" />
           
-          <Button 
-            onClick={() => onBookRoom && onBookRoom(room.type)}
-            className="w-full bg-green-600 hover:bg-green-700 text-white"
-          >
-            Book this room
-          </Button>
+          <div>
+            <h4 className="font-medium mb-3">Room Amenities</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-4">
+              {getRoomAmenities(roomType).concat([
+                { icon: <Check className="h-3 w-3 mr-1" />, text: 'Air conditioning' },
+                { icon: <Check className="h-3 w-3 mr-1" />, text: 'Private bathroom' },
+                { icon: <Check className="h-3 w-3 mr-1" />, text: 'Safe deposit box' },
+                { icon: <Check className="h-3 w-3 mr-1" />, text: 'Mini fridge' },
+                { icon: <Check className="h-3 w-3 mr-1" />, text: 'Room service' },
+                { icon: <Check className="h-3 w-3 mr-1" />, text: 'Daily housekeeping' },
+              ]).map((amenity, i) => (
+                <div key={i} className="flex items-center text-sm text-stone-600">
+                  {amenity.icon} {amenity.text}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
         
         <div>
-          <RoomAvailabilityCalendar roomType={room.type} />
+          <h4 className="font-medium mb-3">Room Policies</h4>
+          <div className="space-y-3 text-sm">
+            <div>
+              <p className="font-medium">Cancellation Policy</p>
+              <p className="text-stone-600">Free cancellation before 48 hours of check-in. One night charge after that.</p>
+            </div>
+            
+            <div>
+              <p className="font-medium">Payment</p>
+              <p className="text-stone-600">No prepayment needed – pay at the property</p>
+            </div>
+            
+            <div>
+              <p className="font-medium">Meals</p>
+              <p className="text-green-600">Breakfast included in the price</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
