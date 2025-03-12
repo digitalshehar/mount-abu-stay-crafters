@@ -1,164 +1,163 @@
 
-import React, { useRef, useEffect, useState } from 'react';
-import { GoogleMap, MarkerF, InfoWindowF } from '@react-google-maps/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { Hotel } from '@/components/admin/hotels/types';
-import { formatCurrency } from '@/utils/hotel';
+import { Clock, Star, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+
+// Default center for Mount Abu
+const DEFAULT_CENTER = {
+  lat: 24.5927,
+  lng: 72.7156
+};
+
+const containerStyle = {
+  width: '100%',
+  height: '100%',
+  borderRadius: '8px'
+};
 
 interface GoogleMapComponentProps {
-  isLoaded: boolean;
-  mapContainerStyle: any;
-  center: { lat: number; lng: number };
-  zoom: number;
-  options: any;
   hotels: Hotel[];
-  selectedHotelId: number | null;
-  selectedMarker: Hotel | null;
-  setSelectedMarker: (hotel: Hotel | null) => void;
-  handleHotelSelect: (id: number) => void;
-  onMapLoad?: (map: google.maps.Map) => void;
-  onBoundsChanged?: () => void;
-  showHeatmap?: boolean;
+  mapApiKey?: string;
 }
 
-const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
-  isLoaded,
-  mapContainerStyle,
-  center,
-  zoom,
-  options,
-  hotels,
-  selectedHotelId,
-  selectedMarker,
-  setSelectedMarker,
-  handleHotelSelect,
-  onMapLoad,
-  onBoundsChanged,
-  showHeatmap = false
-}) => {
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const [heatmap, setHeatmap] = useState<google.maps.visualization.HeatmapLayer | null>(null);
-
-  // Map load handler
-  const handleMapLoad = (map: google.maps.Map) => {
-    mapRef.current = map;
-    if (onMapLoad) {
-      onMapLoad(map);
+const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ hotels, mapApiKey }) => {
+  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
+  const navigate = useNavigate();
+  const mapRef = useRef(null);
+  
+  // Use a default API key if none is provided
+  const apiKey = mapApiKey || "AIzaSyDNVFgP4YzgEGn2wxJmCbxn0Uvt6Ygu9L0"; // Default public key for demo
+  
+  // Calculate map bounds to fit all hotels
+  const calculateBounds = () => {
+    if (hotels.length === 0 || !mapRef.current) return;
+    
+    // Access the map instance
+    const map = mapRef.current as google.maps.Map;
+    
+    // Create a new bounds object
+    const bounds = new google.maps.LatLngBounds();
+    
+    // Add each hotel location to the bounds
+    hotels.forEach(hotel => {
+      if (hotel.latitude && hotel.longitude) {
+        bounds.extend(new google.maps.LatLng(
+          Number(hotel.latitude),
+          Number(hotel.longitude)
+        ));
+      }
+    });
+    
+    // Adjust map to fit all markers
+    map.fitBounds(bounds);
+    
+    // Set a minimum zoom level if the map is too zoomed in
+    const listener = google.maps.event.addListener(map, 'idle', () => {
+      if (map.getZoom() > 15) {
+        map.setZoom(15);
+      }
+      google.maps.event.removeListener(listener);
+    });
+  };
+  
+  useEffect(() => {
+    // When hotels change, recalculate bounds
+    if (hotels.length > 0 && mapRef.current) {
+      calculateBounds();
+    }
+  }, [hotels]);
+  
+  const handleMarkerClick = (hotel: Hotel) => {
+    setSelectedHotel(hotel);
+  };
+  
+  const handleInfoWindowClose = () => {
+    setSelectedHotel(null);
+  };
+  
+  const handleViewHotel = () => {
+    if (selectedHotel) {
+      navigate(`/hotel/${selectedHotel.slug}`);
     }
   };
 
-  // Effect for heatmap visualization
-  useEffect(() => {
-    if (isLoaded && mapRef.current && hotels.length > 0 && showHeatmap) {
-      try {
-        // Check if visualization library is available
-        if (typeof google !== 'undefined' && google.maps && google.maps.visualization) {
-          // Remove existing heatmap if it exists
-          if (heatmap) {
-            heatmap.setMap(null);
-          }
-          
-          // Prepare heatmap data points from hotel prices and locations
-          const heatmapData = hotels
-            .filter(hotel => hotel.latitude && hotel.longitude)
-            .map(hotel => {
-              // Higher priced hotels get more "weight" in the heatmap
-              const weight = Math.min(hotel.pricePerNight / 5000, 1);
-              return {
-                location: new google.maps.LatLng(hotel.latitude!, hotel.longitude!),
-                weight
-              };
-            });
-
-          if (heatmapData.length > 0) {
-            // Create new heatmap
-            const newHeatmap = new google.maps.visualization.HeatmapLayer({
-              data: heatmapData,
-              map: showHeatmap ? mapRef.current : null,
-              radius: 20,
-              opacity: 0.7,
-            });
-            setHeatmap(newHeatmap);
-          }
-        } else {
-          console.warn('Google Maps Visualization library not loaded');
-        }
-      } catch (error) {
-        console.error("Error creating heatmap:", error);
-      }
-    } else if (heatmap && (!showHeatmap || !isLoaded)) {
-      // Hide heatmap when toggled off
-      heatmap.setMap(null);
-    }
-  }, [isLoaded, hotels, showHeatmap, heatmap]);
-
-  return isLoaded ? (
-    <GoogleMap
-      mapContainerStyle={mapContainerStyle}
-      center={center}
-      zoom={zoom}
-      options={options}
-      onLoad={handleMapLoad}
-      onBoundsChanged={onBoundsChanged}
-    >
-      {/* Hotel Markers */}
-      {hotels.map(hotel => {
-        if (!hotel.latitude || !hotel.longitude) return null;
-        
-        const isSelected = selectedHotelId === hotel.id;
-        const isInfoOpen = selectedMarker && selectedMarker.id === hotel.id;
-        
-        return (
-          <MarkerF
+  return (
+    <LoadScript googleMapsApiKey={apiKey}>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={DEFAULT_CENTER}
+        zoom={12}
+        options={{
+          streetViewControl: false,
+          mapTypeControl: false,
+          fullscreenControl: true,
+          zoomControl: true,
+        }}
+        onLoad={(map) => {
+          mapRef.current = map;
+          calculateBounds();
+        }}
+      >
+        {hotels.map((hotel) => (
+          <Marker
             key={hotel.id}
-            position={{ lat: hotel.latitude, lng: hotel.longitude }}
-            onClick={() => {
-              handleHotelSelect(hotel.id);
-              setSelectedMarker(hotel);
+            position={{
+              lat: Number(hotel.latitude) || DEFAULT_CENTER.lat,
+              lng: Number(hotel.longitude) || DEFAULT_CENTER.lng
             }}
+            onClick={() => handleMarkerClick(hotel)}
             icon={{
-              path: "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z",
-              fillColor: isSelected ? '#2563eb' : '#1e293b',
-              fillOpacity: 1,
-              strokeColor: '#fff',
-              strokeWeight: 2,
-              scale: 1.2,
-              labelOrigin: new google.maps.Point(0, -30)
+              url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+              scaledSize: new google.maps.Size(40, 40)
             }}
-            label={{
-              text: formatCurrency(hotel.pricePerNight),
-              color: '#ffffff',
-              fontSize: '12px',
-              fontWeight: 'bold'
+          />
+        ))}
+        
+        {selectedHotel && (
+          <InfoWindow
+            position={{
+              lat: Number(selectedHotel.latitude) || DEFAULT_CENTER.lat,
+              lng: Number(selectedHotel.longitude) || DEFAULT_CENTER.lng
             }}
+            onCloseClick={handleInfoWindowClose}
           >
-            {isInfoOpen && (
-              <InfoWindowF
-                position={{ lat: hotel.latitude, lng: hotel.longitude }}
-                onCloseClick={() => setSelectedMarker(null)}
-              >
-                <div className="p-1 max-w-[200px]">
-                  <div className="text-sm font-semibold mb-1">{hotel.name}</div>
-                  <div className="text-xs text-stone-600 mb-1">{hotel.location}</div>
-                  <div className="flex items-center mb-1">
-                    <div className="flex">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <span key={i} className={`text-xs ${i < hotel.stars ? 'text-yellow-500' : 'text-gray-300'}`}>★</span>
-                      ))}
-                    </div>
-                    <span className="text-xs text-stone-500 ml-1">({hotel.stars}-star)</span>
+            <div className="max-w-[300px] p-2">
+              <div className="flex items-start gap-3">
+                <img 
+                  src={selectedHotel.image} 
+                  alt={selectedHotel.name}
+                  className="w-20 h-20 object-cover rounded-md"
+                />
+                <div className="flex-1">
+                  <h3 className="font-medium text-base">{selectedHotel.name}</h3>
+                  <div className="flex items-center text-xs text-muted-foreground mt-1">
+                    <MapPin size={12} className="mr-1" />
+                    <span>{selectedHotel.location}</span>
                   </div>
-                  <div className="text-sm font-medium text-blue-600">
-                    {formatCurrency(hotel.pricePerNight)}/night
+                  <div className="flex items-center text-xs text-amber-500 mt-1">
+                    <Star size={12} className="mr-1 fill-amber-500" />
+                    <span>{selectedHotel.stars}-Star Hotel</span>
+                  </div>
+                  <div className="mt-2 text-sm font-medium">
+                    ₹{selectedHotel.pricePerNight.toLocaleString()}/night
                   </div>
                 </div>
-              </InfoWindowF>
-            )}
-          </MarkerF>
-        );
-      })}
-    </GoogleMap>
-  ) : (
-    <div>Loading Map...</div>
+              </div>
+              <Button 
+                size="sm" 
+                className="w-full mt-3"
+                onClick={handleViewHotel}
+              >
+                View Hotel
+              </Button>
+            </div>
+          </InfoWindow>
+        )}
+      </GoogleMap>
+    </LoadScript>
   );
 };
 

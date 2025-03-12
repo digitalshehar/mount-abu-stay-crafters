@@ -130,6 +130,11 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
     const tax = basePrice * 0.1; // 10% tax
     const totalWithTax = basePrice + tax;
     
+    // Ensure number_of_guests is not optional to avoid type errors
+    if (!bookingData.number_of_guests) {
+      bookingData.number_of_guests = 1;
+    }
+    
     // Ensure required fields
     const requiredFields = [
       'guest_name', 
@@ -157,7 +162,7 @@ export const addBooking = async (bookingData: Partial<Booking>, refetchCallback:
       guest_phone: bookingData.guest_phone || null,
       check_in_date: bookingData.check_in_date!,
       check_out_date: bookingData.check_out_date!,
-      number_of_guests: bookingData.number_of_guests!,
+      number_of_guests: bookingData.number_of_guests,
       room_type: bookingData.room_type || 'Standard Room',
       total_price: totalWithTax,
       base_price: basePrice,
