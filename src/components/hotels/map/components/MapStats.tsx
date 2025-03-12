@@ -2,6 +2,7 @@
 import React from 'react';
 import { Hotel } from '@/components/admin/hotels/types';
 import { Badge } from '@/components/ui/badge';
+import { formatCurrency } from '@/utils/hotel';
 
 interface MapStatsProps {
   visibleHotels: Hotel[];
@@ -16,9 +17,17 @@ const MapStats: React.FC<MapStatsProps> = ({
   viewMode,
   totalHotels
 }) => {
+  const avgPrice = visibleHotels.length > 0 
+    ? visibleHotels.reduce((sum, hotel) => sum + (hotel.pricePerNight || 0), 0) / visibleHotels.length 
+    : 0;
+    
+  const topRatedHotel = visibleHotels.length > 0 
+    ? visibleHotels.reduce((prev, current) => (current.rating > prev.rating) ? current : prev, visibleHotels[0])
+    : null;
+
   return (
     <div className="bg-stone-50 p-4 rounded-lg shadow-sm">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 mb-2">
         <p className="text-sm text-stone-600">
           Showing <span className="font-semibold">{visibleHotels.length}</span> of {totalHotels} hotels in Mount Abu.
         </p>
@@ -33,6 +42,16 @@ const MapStats: React.FC<MapStatsProps> = ({
           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
             Filters applied
           </Badge>
+        )}
+      </div>
+      
+      <div className="flex flex-wrap gap-3 mt-1 text-xs text-stone-500">
+        {avgPrice > 0 && (
+          <span>Average price: <span className="font-medium">{formatCurrency(avgPrice)}</span></span>
+        )}
+        
+        {topRatedHotel && (
+          <span>Top rated: <span className="font-medium">{topRatedHotel.name}</span> ({topRatedHotel.rating}★)</span>
         )}
       </div>
       
