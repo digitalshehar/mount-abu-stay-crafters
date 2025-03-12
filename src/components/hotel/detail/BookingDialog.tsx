@@ -53,14 +53,52 @@ export const BookingSuccessDialog = ({
   selectedRoom, 
   onClose, 
   onBookTransport,
-  bookingReference = "UNKNOWN"
+  bookingReference = "UNKNOWN",
+  checkInDate,
+  checkOutDate,
+  guestName,
+  guestEmail,
+  totalPrice,
 }: { 
   hotel: any; 
   selectedRoom: string | null; 
   onClose: () => void; 
   onBookTransport: () => void;
   bookingReference?: string;
+  checkInDate?: string;
+  checkOutDate?: string;
+  guestName?: string;
+  guestEmail?: string;
+  totalPrice?: number;
 }) => {
+  // Format dates if they exist
+  const formattedCheckIn = checkInDate 
+    ? new Date(checkInDate).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    : 'Not specified';
+    
+  const formattedCheckOut = checkOutDate
+    ? new Date(checkOutDate).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    : 'Not specified';
+    
+  // Format price if it exists
+  const formattedPrice = totalPrice
+    ? new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0,
+      }).format(totalPrice)
+    : 'Not specified';
+
   return (
     <DialogContent className="sm:max-w-[500px]">
       <DialogHeader>
@@ -79,13 +117,17 @@ export const BookingSuccessDialog = ({
           <p><span className="font-medium">Hotel:</span> {hotel.name}</p>
           {selectedRoom && <p><span className="font-medium">Room Type:</span> {selectedRoom}</p>}
           <p><span className="font-medium">Confirmation #:</span> {bookingReference}</p>
+          <p><span className="font-medium">Guest:</span> {guestName || 'Not specified'}</p>
+          <p><span className="font-medium">Check-in:</span> {formattedCheckIn}</p>
+          <p><span className="font-medium">Check-out:</span> {formattedCheckOut}</p>
+          <p><span className="font-medium">Total:</span> {formattedPrice}</p>
           <p><span className="font-medium">Status:</span> Confirmed</p>
           <p><span className="font-medium">Payment:</span> Pending</p>
         </div>
       </div>
       
       <p className="text-sm text-stone-600 mb-4">
-        A confirmation email has been sent to your email address with all the details of your booking.
+        A confirmation email has been sent to {guestEmail || 'your email address'} with all the details of your booking.
         Your invoice includes all applicable taxes and fees.
       </p>
       

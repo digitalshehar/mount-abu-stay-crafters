@@ -11,6 +11,19 @@ export const useHotelBooking = (hotel: any) => {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
   const [bookingReference, setBookingReference] = useState<string>("");
+  const [bookingDetails, setBookingDetails] = useState<{
+    guestName: string;
+    guestEmail: string;
+    checkInDate: string;
+    checkOutDate: string;
+    totalPrice: number;
+  }>({
+    guestName: "",
+    guestEmail: "",
+    checkInDate: "",
+    checkOutDate: "",
+    totalPrice: 0
+  });
   const { addBooking } = useBookings();
 
   const handleInitiateBooking = (roomType?: string) => {
@@ -42,13 +55,18 @@ export const useHotelBooking = (hotel: any) => {
       // Calculate base price
       const basePrice = calculateTotalPrice(selectedRoom);
       
+      // Set default dates (today and tomorrow)
+      const checkInDate = new Date();
+      const checkOutDate = new Date(checkInDate);
+      checkOutDate.setDate(checkOutDate.getDate() + 1);
+      
       // Create booking data
       const bookingData = {
         hotel_id: hotel.id,
         hotel_name: hotel.name,
         room_type: selectedRoom || 'Standard Room',
-        check_in_date: new Date().toISOString(),
-        check_out_date: new Date(Date.now() + 86400000).toISOString(), // 1 day later
+        check_in_date: checkInDate.toISOString(),
+        check_out_date: checkOutDate.toISOString(),
         guest_name: data.fullName,
         guest_email: data.email,
         guest_phone: data.phone,
@@ -63,8 +81,15 @@ export const useHotelBooking = (hotel: any) => {
       const result = await addBooking(bookingData);
       
       if (result) {
-        // Get booking reference from result
+        // Store booking details for success dialog
         setBookingReference(result.booking_reference || '');
+        setBookingDetails({
+          guestName: data.fullName,
+          guestEmail: data.email,
+          checkInDate: checkInDate.toISOString(),
+          checkOutDate: checkOutDate.toISOString(),
+          totalPrice: result.total_price || basePrice
+        });
         
         setShowBookingForm(false);
         setShowBookingSuccess(true);
@@ -91,6 +116,7 @@ export const useHotelBooking = (hotel: any) => {
     showBookingSuccess,
     setShowBookingSuccess,
     bookingReference,
+    bookingDetails,
     handleInitiateBooking,
     handleBookingSubmit
   };

@@ -1,7 +1,8 @@
+
 import React from 'react';
+import { Hotel } from '@/components/admin/hotels/types';
 import GoogleMapComponent from './GoogleMapComponent';
 import MapLoading from '../MapLoading';
-import { Hotel } from '@/components/admin/hotels/types';
 
 interface MapContainerProps {
   isLoading: boolean;
@@ -14,9 +15,12 @@ interface MapContainerProps {
   selectedMarker: Hotel | null;
   setSelectedMarker: (hotel: Hotel | null) => void;
   handleHotelSelect: (id: number) => void;
-  onMapLoad: (map: google.maps.Map) => void;
+  onMapLoad?: (map: google.maps.Map) => void;
   handleBoundsChanged: () => void;
-  showHeatmap?: boolean;
+  showHeatmap: boolean;
+  compareList?: number[];
+  onAddToCompare?: (hotelId: number) => void;
+  isInCompare?: (hotelId: number) => boolean;
 }
 
 const MapContainer: React.FC<MapContainerProps> = ({
@@ -32,52 +36,42 @@ const MapContainer: React.FC<MapContainerProps> = ({
   handleHotelSelect,
   onMapLoad,
   handleBoundsChanged,
-  showHeatmap = false
+  showHeatmap,
+  compareList,
+  onAddToCompare,
+  isInCompare,
 }) => {
-  const mapCenter = React.useMemo(() => {
-    // If there's a selected marker with coordinates, center on it
-    if (selectedMarker && selectedMarker.latitude && selectedMarker.longitude) {
-      return { lat: selectedMarker.latitude, lng: selectedMarker.longitude };
-    }
-    
-    // Otherwise find the first hotel with coordinates
-    const hotelWithCoords = filteredHotels.find(h => h.latitude && h.longitude);
-    if (hotelWithCoords && hotelWithCoords.latitude && hotelWithCoords.longitude) {
-      return { lat: hotelWithCoords.latitude, lng: hotelWithCoords.longitude };
-    }
-    
-    // Default to Mount Abu center
-    return mountAbuCenter;
-  }, [selectedMarker, filteredHotels, mountAbuCenter]);
+  if (!isLoaded) {
+    return <MapLoading />;
+  }
 
   return (
-    <div className="h-[500px] rounded-lg overflow-hidden shadow-md relative">
-      {!import.meta.env.VITE_GOOGLE_MAPS_API_KEY && (
-        <div className="absolute inset-0 bg-white bg-opacity-90 z-10 flex flex-col items-center justify-center p-6 text-center">
-          <div className="text-lg font-medium text-red-600 mb-2">Google Maps API Key Missing</div>
-          <p className="text-sm text-stone-600 mb-4">
-            Please add your Google Maps API key to the .env file as VITE_GOOGLE_MAPS_API_KEY.
-          </p>
-        </div>
-      )}
+    <div className="relative h-[calc(100vh-250px)] min-h-[500px] rounded-lg overflow-hidden shadow-md">
+      <GoogleMapComponent
+        mapContainerStyle={mapContainerStyle}
+        center={mountAbuCenter}
+        zoom={13}
+        options={mapOptions}
+        hotels={filteredHotels}
+        selectedHotelId={selectedHotelId}
+        selectedMarker={selectedMarker}
+        setSelectedMarker={setSelectedMarker}
+        handleHotelSelect={handleHotelSelect}
+        onMapLoad={onMapLoad}
+        onBoundsChanged={handleBoundsChanged}
+        showHeatmap={showHeatmap}
+        compareList={compareList}
+        onAddToCompare={onAddToCompare}
+        isInCompare={isInCompare}
+      />
       
-      {isLoading || !isLoaded ? (
-        <MapLoading />
-      ) : (
-        <GoogleMapComponent 
-          mapContainerStyle={mapContainerStyle}
-          center={mapCenter}
-          zoom={selectedMarker ? 15 : 13}
-          options={mapOptions}
-          hotels={filteredHotels}
-          selectedHotelId={selectedHotelId}
-          selectedMarker={selectedMarker}
-          setSelectedMarker={setSelectedMarker}
-          handleHotelSelect={handleHotelSelect}
-          onBoundsChanged={handleBoundsChanged}
-          onMapLoad={onMapLoad}
-          showHeatmap={showHeatmap}
-        />
+      {isLoading && (
+        <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+            <p className="mt-2">Loading hotel data...</p>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -10,6 +10,8 @@ interface MapFeaturesProps {
   onToggleTraffic: () => void;
   onUserLocation: () => void;
   showHeatmap?: boolean;
+  showLandmarks?: boolean;
+  showTraffic?: boolean;
 }
 
 const MapFeatures: React.FC<MapFeaturesProps> = ({
@@ -17,7 +19,9 @@ const MapFeatures: React.FC<MapFeaturesProps> = ({
   onToggleLandmarks,
   onToggleTraffic,
   onUserLocation,
-  showHeatmap = false
+  showHeatmap = false,
+  showLandmarks = false,
+  showTraffic = false
 }) => {
   return (
     <div className="absolute top-4 right-4 bg-white rounded-md shadow-md p-2 flex flex-col gap-2 z-10">
@@ -41,32 +45,32 @@ const MapFeatures: React.FC<MapFeaturesProps> = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <Button 
-              variant="outline" 
+              variant={showLandmarks ? "default" : "outline"}
               size="icon" 
-              className="h-8 w-8"
+              className={`h-8 w-8 ${showLandmarks ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
               onClick={onToggleLandmarks}
             >
-              <Landmark className="h-4 w-4" />
+              <Landmark className={`h-4 w-4 ${showLandmarks ? 'text-white' : ''}`} />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="left">
-            <p>Show landmarks</p>
+            <p>{showLandmarks ? 'Hide' : 'Show'} landmarks</p>
           </TooltipContent>
         </Tooltip>
         
         <Tooltip>
           <TooltipTrigger asChild>
             <Button 
-              variant="outline" 
+              variant={showTraffic ? "default" : "outline"}
               size="icon" 
-              className="h-8 w-8"
+              className={`h-8 w-8 ${showTraffic ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
               onClick={onToggleTraffic}
             >
-              <Map className="h-4 w-4" />
+              <Map className={`h-4 w-4 ${showTraffic ? 'text-white' : ''}`} />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="left">
-            <p>Show traffic</p>
+            <p>{showTraffic ? 'Hide' : 'Show'} traffic</p>
           </TooltipContent>
         </Tooltip>
         

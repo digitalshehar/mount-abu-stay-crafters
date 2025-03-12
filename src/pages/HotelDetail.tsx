@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Dialog } from "@/components/ui/dialog";
@@ -29,6 +30,8 @@ const HotelDetail = () => {
     selectedRoom,
     showBookingSuccess,
     setShowBookingSuccess,
+    bookingReference,
+    bookingDetails,
     handleInitiateBooking,
     handleBookingSubmit
   } = useHotelBooking(hotel);
@@ -127,6 +130,12 @@ const HotelDetail = () => {
             setShowBookingSuccess(false);
             setActiveTab("transport");
           }}
+          bookingReference={bookingReference}
+          checkInDate={bookingDetails.checkInDate}
+          checkOutDate={bookingDetails.checkOutDate}
+          guestName={bookingDetails.guestName}
+          guestEmail={bookingDetails.guestEmail}
+          totalPrice={bookingDetails.totalPrice}
         />
       </Dialog>
     </HotelPageStructure>

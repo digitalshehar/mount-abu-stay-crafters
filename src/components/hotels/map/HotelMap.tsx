@@ -2,14 +2,15 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Hotel } from '@/components/admin/hotels/types';
-import ZoneSelector from './ZoneSelector';
-import ActiveFilters from '../ActiveFilters';
-import FilterSidebar from '../FilterSidebar';
-import HotelContent from '../HotelContent';
-import MapControls from './components/MapControls';
+import MapHeader from './components/MapHeader';
+import MapSidebar from './components/MapSidebar';
 import MapContainer from './components/MapContainer';
-import MapFeatures from './components/MapFeatures';
+import MapFeaturesManager from './components/MapFeaturesManager';
+import MapStats from './components/MapStats';
+import HotelContent from '../HotelContent';
+import CompareHotelsFeature from '../comparison/CompareHotelsFeature';
 import { useMapFilters } from './hooks/useMapFilters';
+import { useHotelComparison } from '@/hooks/useHotelComparison';
 import './HotelMapStyles.css';
 
 // Define map container styles
@@ -116,8 +117,9 @@ const HotelMap: React.FC<HotelMapProps> = ({
   
   // Map feature states
   const [showHeatmap, setShowHeatmap] = useState(false);
-  const [showLandmarks, setShowLandmarks] = useState(false);
-  const [showTraffic, setShowTraffic] = useState(false);
+
+  // Hotel comparison
+  const { compareList, addToCompare, removeFromCompare, clearCompare, isInCompare } = useHotelComparison();
 
   // Filter states and handlers from custom hook
   const {
@@ -257,11 +259,6 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   };
   
-  // Toggle heatmap
-  const handleToggleHeatmap = () => {
-    setShowHeatmap(prev => !prev);
-  };
-  
   // Common amenities for filter
   const commonAmenities = [
     "WiFi", "Swimming Pool", "Restaurant", "Spa", "Gym", 
@@ -283,46 +280,33 @@ const HotelMap: React.FC<HotelMapProps> = ({
   
   return (
     <div className="container mx-auto py-6 lg:py-8 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">Hotels in Mount Abu</h1>
-        
-        <MapControls viewMode={viewMode} setViewMode={setViewMode} />
-      </div>
-      
-      {activeFilterCount > 0 && (
-        <div className="mb-6">
-          <ActiveFilters 
-            activeFilterCount={activeFilterCount}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedStars={selectedStars}
-            setSelectedStars={setSelectedStars}
-            selectedAmenities={selectedAmenities}
-            setSelectedAmenities={setSelectedAmenities}
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
-            clearFilters={clearFilters}
-          />
-        </div>
-      )}
+      <MapHeader 
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        activeFilterCount={activeFilterCount}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedStars={selectedStars}
+        setSelectedStars={setSelectedStars}
+        selectedAmenities={selectedAmenities}
+        setSelectedAmenities={setSelectedAmenities}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        clearFilters={clearFilters}
+      />
       
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
-        <div>
-          <FilterSidebar 
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
-            selectedStars={selectedStars}
-            handleStarFilter={handleStarFilter}
-            selectedAmenities={selectedAmenities}
-            handleAmenityFilter={handleAmenityFilter}
-            clearFilters={clearFilters}
-            commonAmenities={commonAmenities}
-          />
-          
-          <div className="mt-6">
-            <ZoneSelector onSelectZone={handleZoneSelect} />
-          </div>
-        </div>
+        <MapSidebar 
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          selectedStars={selectedStars}
+          handleStarFilter={handleStarFilter}
+          selectedAmenities={selectedAmenities}
+          handleAmenityFilter={handleAmenityFilter}
+          clearFilters={clearFilters}
+          commonAmenities={commonAmenities}
+          onSelectZone={handleZoneSelect}
+        />
         
         <div className="space-y-6">
           {viewMode === 'map' ? (
@@ -332,10 +316,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
                 isLoaded={isLoaded}
                 mapContainerStyle={mapContainerStyle}
                 mountAbuCenter={mountAbuCenter}
-                mapOptions={{
-                  ...mapOptions,
-                  showTraffic,
-                }}
+                mapOptions={mapOptions}
                 filteredHotels={filteredHotels}
                 selectedHotelId={effectiveSelectedHotelId}
                 selectedMarker={selectedMarker}
@@ -344,13 +325,14 @@ const HotelMap: React.FC<HotelMapProps> = ({
                 onMapLoad={onMapLoad}
                 handleBoundsChanged={handleBoundsChanged}
                 showHeatmap={showHeatmap}
+                compareList={compareList}
+                onAddToCompare={addToCompare}
+                isInCompare={isInCompare}
               />
               
-              <MapFeatures 
-                onToggleHeatmap={handleToggleHeatmap}
-                onToggleLandmarks={() => setShowLandmarks(!showLandmarks)}
-                onToggleTraffic={() => setShowTraffic(!showTraffic)}
+              <MapFeaturesManager 
                 onUserLocation={handleUserLocation}
+                setShowHeatmap={setShowHeatmap}
                 showHeatmap={showHeatmap}
               />
             </div>
@@ -360,17 +342,29 @@ const HotelMap: React.FC<HotelMapProps> = ({
               filteredHotels={filteredHotels}
               activeFilterCount={activeFilterCount}
               clearFilters={clearFilters}
+              compareList={compareList}
+              onAddToCompare={addToCompare}
+              onRemoveFromCompare={removeFromCompare}
+              isInCompare={isInCompare}
             />
           )}
           
-          <div className="bg-stone-50 p-4 rounded-lg">
-            <p className="text-sm text-stone-600">
-              Showing {visibleHotels.length} hotels in Mount Abu. 
-              {showHeatmap && viewMode === 'map' && ' The heatmap displays areas with high hotel concentration.'}
-            </p>
-          </div>
+          <MapStats 
+            visibleHotels={visibleHotels}
+            showHeatmap={showHeatmap}
+            viewMode={viewMode}
+          />
         </div>
       </div>
+      
+      {/* Hotel Comparison Feature */}
+      <CompareHotelsFeature 
+        hotels={hotels}
+        compareList={compareList}
+        onAddToCompare={addToCompare}
+        onRemoveFromCompare={removeFromCompare}
+        onClearCompare={clearCompare}
+      />
     </div>
   );
 };

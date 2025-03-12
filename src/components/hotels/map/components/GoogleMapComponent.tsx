@@ -1,7 +1,9 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { GoogleMap, Marker, InfoWindow, useJsApiLoader, HeatmapLayer } from '@react-google-maps/api';
+import { GoogleMap, Marker, InfoWindow, HeatmapLayer } from '@react-google-maps/api';
 import { Hotel } from '@/components/admin/hotels/types';
+import { Button } from '@/components/ui/button';
+import { Plus, Check } from 'lucide-react';
 
 export interface GoogleMapComponentProps {
   mapContainerStyle: any;
@@ -16,6 +18,9 @@ export interface GoogleMapComponentProps {
   onBoundsChanged?: () => void;
   onMapLoad?: (map: google.maps.Map) => void;
   showHeatmap?: boolean;
+  compareList?: number[];
+  onAddToCompare?: (hotelId: number) => void;
+  isInCompare?: (hotelId: number) => boolean;
 }
 
 const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
@@ -30,7 +35,10 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
   handleHotelSelect,
   onBoundsChanged,
   onMapLoad,
-  showHeatmap = false
+  showHeatmap = false,
+  compareList = [],
+  onAddToCompare,
+  isInCompare = () => false,
 }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
@@ -109,9 +117,11 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
           onClick={() => setSelectedMarker(hotel)}
           animation={selectedHotelId === hotel.id ? google.maps.Animation.BOUNCE : undefined}
           icon={{
-            url: hotel.featured 
-              ? "/marker-featured.svg" 
-              : "/marker.svg",
+            url: isInCompare(hotel.id) 
+              ? "/marker-compare.svg" 
+              : (hotel.featured 
+                ? "/marker-featured.svg" 
+                : "/marker.svg"),
             scaledSize: new google.maps.Size(30, 40)
           }}
         />
@@ -142,12 +152,31 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
             <p className="text-sm font-medium text-green-600 mb-2">
               ₹{selectedMarker.pricePerNight}/night
             </p>
-            <button
-              onClick={() => handleHotelSelect(selectedMarker.id)}
-              className="text-xs bg-blue-600 text-white px-2 py-1 rounded w-full hover:bg-blue-700 transition-colors"
-            >
-              View Details
-            </button>
+            <div className="flex gap-2 mt-2">
+              <Button
+                onClick={() => handleHotelSelect(selectedMarker.id)}
+                className="text-xs px-2 py-1 h-auto"
+                size="sm"
+              >
+                View Details
+              </Button>
+              
+              {onAddToCompare && (
+                <Button
+                  onClick={() => onAddToCompare(selectedMarker.id)}
+                  className="text-xs px-2 py-1 h-auto"
+                  variant={isInCompare(selectedMarker.id) ? "secondary" : "outline"}
+                  size="sm"
+                  disabled={isInCompare(selectedMarker.id)}
+                >
+                  {isInCompare(selectedMarker.id) ? (
+                    <><Check className="h-3 w-3 mr-1" /> In Compare</>
+                  ) : (
+                    <><Plus className="h-3 w-3 mr-1" /> Compare</>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
         </InfoWindow>
       )}
