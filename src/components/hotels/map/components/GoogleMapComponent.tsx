@@ -94,7 +94,7 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
               </span>
             </div>
             <p className="text-sm font-medium text-green-600 mb-2">
-              ₹{selectedMarker.price_per_night}/night
+              ₹{selectedMarker.pricePerNight}/night
             </p>
             <button
               onClick={() => handleHotelSelect(selectedMarker.id)}
