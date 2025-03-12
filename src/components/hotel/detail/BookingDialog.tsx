@@ -13,6 +13,7 @@ import BookingForm, { BookingFormValues } from "@/components/BookingForm";
 interface BookingDialogProps {
   hotel: {
     name: string;
+    id?: number;
   };
   selectedRoom: string | null;
   isLoading: boolean;
