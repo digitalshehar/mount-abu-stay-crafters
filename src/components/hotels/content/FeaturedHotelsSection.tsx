@@ -1,45 +1,42 @@
 
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Hotel } from "@/components/admin/hotels/types";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Hotel } from '@/components/admin/hotels/types';
+import HotelCard from '@/components/HotelCard';
 
 interface FeaturedHotelsSectionProps {
-  hotels?: Hotel[];
+  title?: string;
+  subtitle?: string;
   compareList?: number[];
   onAddToCompare?: (hotelId: number) => void;
   onRemoveFromCompare?: (hotelId: number) => void;
   isInCompare?: (hotelId: number) => boolean;
+  limit?: number;
 }
 
-const FeaturedHotelsSection = ({ 
-  hotels: propHotels,
+const FeaturedHotelsSection: React.FC<FeaturedHotelsSectionProps> = ({
+  title = "Featured Hotels in Mount Abu",
+  subtitle = "Discover our handpicked selection of the finest accommodations in Mount Abu, offering comfort, luxury, and unforgettable experiences.",
   compareList = [],
-  onAddToCompare = () => {},
-  onRemoveFromCompare = () => {},
-  isInCompare = () => false
-}: FeaturedHotelsSectionProps) => {
-  const [hotels, setHotels] = useState<Hotel[]>([]);
-  const [loading, setLoading] = useState(propHotels ? false : true);
+  onAddToCompare,
+  onRemoveFromCompare,
+  isInCompare = () => false,
+  limit = 3
+}) => {
+  const [featuredHotels, setFeaturedHotels] = useState<Hotel[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (propHotels) {
-      setHotels(propHotels);
-      return;
-    }
-
-    // Fetch featured hotels
     const fetchFeaturedHotels = async () => {
+      setIsLoading(true);
       try {
-        setLoading(true);
         const { data, error } = await supabase
-          .from("hotels")
-          .select("*")
-          .eq("featured", true)
-          .eq("status", "active")
-          .order("price_per_night", { ascending: false })
-          .limit(4);
+          .from('hotels')
+          .select('*')
+          .eq('featured', true)
+          .order('rating', { ascending: false })
+          .limit(limit);
 
         if (error) throw error;
 
@@ -59,88 +56,84 @@ const FeaturedHotelsSection = ({
             featured: item.featured || false,
             reviewCount: item.review_count || 0,
             rating: item.rating || 0,
+            gallery: Array.isArray(item.gallery) ? item.gallery : [],
+            categories: item.categories || [],
+            rooms: [], // Initializing as empty array
+            seasonalPricing: []
           }));
 
-          setHotels(mappedHotels);
+          setFeaturedHotels(mappedHotels);
         }
       } catch (error) {
-        console.error("Error fetching featured hotels:", error);
+        console.error('Error fetching featured hotels:', error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchFeaturedHotels();
-  }, [propHotels]);
+  }, [limit]);
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-[200px] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="py-12 sm:py-16 md:py-20">
+        <div className="container-custom">
+          <div className="flex justify-between items-end mb-8 md:mb-12">
+            <div>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold mb-3 md:mb-6">{title}</h2>
+              <p className="text-sm md:text-base text-muted-foreground">{subtitle}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="rounded-lg border border-stone-200 bg-white shadow-sm p-6 animate-pulse">
+                <div className="w-full h-48 bg-stone-200 rounded-md mb-4"></div>
+                <div className="h-6 bg-stone-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-stone-200 rounded w-1/2 mb-4"></div>
+                <div className="h-4 bg-stone-200 rounded w-full mb-2"></div>
+                <div className="h-4 bg-stone-200 rounded w-full mb-2"></div>
+                <div className="h-10 bg-stone-200 rounded w-full mt-4"></div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (hotels.length === 0) {
+  if (featuredHotels.length === 0) {
     return null;
   }
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Featured Hotels</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {hotels.map((hotel) => (
-          <div 
-            key={hotel.id} 
-            className="bg-white rounded-lg shadow-sm border border-stone-100 overflow-hidden flex flex-col md:flex-row hover:shadow-md transition-shadow"
-          >
-            <img 
-              src={hotel.image} 
-              alt={hotel.name} 
-              className="w-full md:w-40 h-40 object-cover"
-            />
-            <div className="p-4 flex-1">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold">
-                    <Link to={`/hotel/${hotel.slug}`} className="hover:text-primary transition-colors">
-                      {hotel.name}
-                    </Link>
-                  </h3>
-                  <p className="text-sm text-stone-500">{hotel.location}</p>
-                </div>
-                {hotel.rating > 0 && (
-                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                    {hotel.rating.toFixed(1)}★
-                  </span>
-                )}
-              </div>
-              <p className="text-sm mt-2 line-clamp-2">{hotel.description}</p>
-              <div className="mt-4 flex justify-between items-center">
-                <span className="font-semibold">₹{hotel.pricePerNight}/night</span>
-                <Link to={`/hotel/${hotel.slug}`} className="text-blue-600 text-sm hover:underline">
-                  View Details
-                </Link>
-              </div>
-              {hotel.amenities && hotel.amenities.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {hotel.amenities.slice(0, 3).map((amenity, index) => (
-                    <span key={index} className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">
-                      {amenity}
-                    </span>
-                  ))}
-                  {hotel.amenities.length > 3 && (
-                    <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full">
-                      +{hotel.amenities.length - 3}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+    <section className="py-12 sm:py-16 md:py-20">
+      <div className="container-custom">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12">
+          <div className="max-w-2xl">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-display font-bold mb-3 md:mb-6">{title}</h2>
+            <p className="text-sm md:text-base text-muted-foreground">{subtitle}</p>
           </div>
-        ))}
+          <Link
+            to="/hotels"
+            className="mt-4 md:mt-0 px-4 py-2 sm:px-5 sm:py-3 border border-primary text-primary font-medium rounded-lg hover:bg-primary hover:text-white transition-colors text-sm sm:text-base"
+          >
+            View All Hotels
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {featuredHotels.map((hotel) => (
+            <HotelCard 
+              key={hotel.id} 
+              {...hotel} 
+              inCompareList={isInCompare(hotel.id)}
+              onAddToCompare={onAddToCompare ? () => onAddToCompare(hotel.id) : undefined}
+              onRemoveFromCompare={onRemoveFromCompare ? () => onRemoveFromCompare(hotel.id) : undefined}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

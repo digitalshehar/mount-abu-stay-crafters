@@ -1,187 +1,146 @@
 
-import { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { ChevronRight } from "lucide-react";
 
 interface Destination {
   id: number;
   name: string;
-  description: string;
-  image: string;
-  activities: string[];
-  location: string;
   slug: string;
-  properties: number;
-}
-
-interface DestinationCardProps {
-  image: string;
-  title: string;
   description: string;
-  properties: number;
-  link: string;
+  image: string;
+  distance: string;
+  activities: number;
+  popular: boolean;
 }
-
-const DestinationCard = ({ image, title, description, properties, link }: DestinationCardProps) => {
-  return (
-    <div className="group relative h-[400px] overflow-hidden rounded-xl">
-      <div className="absolute inset-0 image-fade">
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-        />
-      </div>
-      <div className="absolute inset-0 flex flex-col justify-end p-6 z-20">
-        <div className="bg-white/90 backdrop-blur-sm p-6 rounded-xl transition-transform duration-500 transform translate-y-2 group-hover:translate-y-0">
-          <h3 className="text-xl font-display font-semibold mb-2">{title}</h3>
-          <p className="text-stone-600 text-sm mb-4">{description}</p>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-stone-500">{properties} properties</span>
-            <Link
-              to={link}
-              className="text-primary font-medium flex items-center text-sm group-hover:underline"
-            >
-              Explore
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const DestinationSection = () => {
-  const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDestinations = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch destinations from Supabase
-        const { data, error } = await supabase
-          .from("destinations")
-          .select("*")
-          .limit(4);
-          
-        if (error) throw error;
-        
-        if (data) {
-          // Count hotels for each destination
-          const destinationsWithProperties = await Promise.all(
-            data.map(async (destination) => {
-              // Get count of hotels for this destination location
-              const { count, error: countError } = await supabase
-                .from("hotels")
-                .select("*", { count: "exact", head: true })
-                .ilike("location", `%${destination.name}%`);
-                
-              if (countError) {
-                console.error("Error counting hotels:", countError);
-                return {
-                  ...destination,
-                  properties: 0
-                };
-              }
-              
-              return {
-                ...destination,
-                properties: count || 0
-              };
-            })
-          );
-          
-          setDestinations(destinationsWithProperties);
-        }
-      } catch (error) {
-        console.error("Error fetching destinations:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchDestinations();
-  }, []);
-
-  // Default destinations if none from database
-  const defaultDestinations = [
+  // Real Mount Abu destinations
+  const destinations: Destination[] = [
     {
       id: 1,
-      image: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      title: "Nakki Lake",
-      description: "Explore hotels around the beautiful Nakki Lake, the heart of Mount Abu.",
-      properties: 15,
-      link: "/hotels?location=nakki-lake",
-      slug: "nakki-lake"
+      name: "Nakki Lake",
+      slug: "nakki-lake",
+      description: "The sacred lake in the heart of Mount Abu, known for boating and surrounding scenic beauty.",
+      image: "https://images.unsplash.com/photo-1601794590530-93b57767e259?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      distance: "0.8 km from city center",
+      activities: 5,
+      popular: true
     },
     {
       id: 2,
-      image: "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      title: "Guru Shikhar",
-      description: "Stay near the highest peak of the Aravalli Range for breathtaking views.",
-      properties: 8,
-      link: "/hotels?location=guru-shikhar",
-      slug: "guru-shikhar"
+      name: "Dilwara Temples",
+      slug: "dilwara-temples",
+      description: "Exquisite Jain temples renowned worldwide for their extraordinary marble carvings dating back to 11th century.",
+      image: "https://images.unsplash.com/photo-1585468274952-66591eb14165?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      distance: "2.5 km from city center",
+      activities: 3,
+      popular: true
     },
     {
       id: 3,
-      image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      title: "Dilwara Temples",
-      description: "Find accommodation near the famous Jain temples of Mount Abu.",
-      properties: 12,
-      link: "/hotels?location=dilwara-temples",
-      slug: "dilwara-temples"
+      name: "Sunset Point",
+      slug: "sunset-point",
+      description: "A popular viewpoint offering breathtaking panoramic views of the sunset over the Aravalli range.",
+      image: "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      distance: "3.2 km from city center",
+      activities: 4,
+      popular: true
     },
     {
       id: 4,
-      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      title: "Wildlife Sanctuary",
-      description: "Stay close to nature at Mount Abu Wildlife Sanctuary.",
-      properties: 6,
-      link: "/hotels?location=wildlife-sanctuary",
-      slug: "wildlife-sanctuary"
+      name: "Mount Abu Wildlife Sanctuary",
+      slug: "wildlife-sanctuary",
+      description: "Home to diverse flora and fauna including leopards, sambhar deer, and over 250 species of birds.",
+      image: "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      distance: "4.6 km from city center",
+      activities: 8,
+      popular: true
     },
+    {
+      id: 5,
+      name: "Guru Shikhar",
+      slug: "guru-shikhar",
+      description: "The highest peak of the Aravalli Range at 1,722 meters, offering spectacular views of Mount Abu and surrounding regions.",
+      image: "https://images.unsplash.com/photo-1519583272095-6433daf26b6e?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      distance: "12 km from city center",
+      activities: 6,
+      popular: true
+    },
+    {
+      id: 6,
+      name: "Achalgarh Fort",
+      slug: "achalgarh-fort",
+      description: "Ancient fort built by the Paramara dynasty, featuring stunning temples and historic architecture.",
+      image: "https://images.unsplash.com/photo-1517091622280-58f22c8dd039?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      distance: "11 km from city center",
+      activities: 5,
+      popular: true
+    }
   ];
 
-  const displayDestinations = destinations.length > 0 
-    ? destinations.map(dest => ({
-        id: dest.id,
-        image: dest.image,
-        title: dest.name,
-        description: dest.description,
-        properties: dest.properties,
-        link: `/destination/${dest.slug}`,
-        slug: dest.slug
-      }))
-    : defaultDestinations;
-
   return (
-    <section className="py-20 bg-white">
+    <section className="py-16 sm:py-20 bg-stone-50">
       <div className="container-custom">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
-          <div className="max-w-2xl">
-            <h2 className="title-medium mb-6">Popular Destinations in Mount Abu</h2>
-            <p className="subtitle">
-              Discover the most sought-after locations in Mount Abu and find the perfect stay for
-              your vacation.
-            </p>
-          </div>
-          <Link
-            to="/destinations"
-            className="mt-6 md:mt-0 px-5 py-3 border border-primary text-primary font-medium rounded-lg hover:bg-primary hover:text-white transition-colors"
-          >
-            View All Destinations
-          </Link>
+        <div className="text-center mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mb-4">
+            Popular Destinations in Mount Abu
+          </h2>
+          <p className="text-stone-600 max-w-2xl mx-auto">
+            Explore Mount Abu's most cherished attractions, from serene lakes and ancient temples to breathtaking viewpoints and natural wonders.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {displayDestinations.map((destination, index) => (
-            <DestinationCard key={destination.id} {...destination} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {destinations.map((destination) => (
+            <Link
+              key={destination.id}
+              to={`/destinations/${destination.slug}`}
+              className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
+              
+              <img
+                src={destination.image}
+                alt={destination.name}
+                className="w-full h-[250px] object-cover group-hover:scale-105 transition-transform duration-500"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                }}
+              />
+              
+              <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
+                <h3 className="text-white font-display font-semibold text-xl mb-1">
+                  {destination.name}
+                </h3>
+                <p className="text-white/90 text-sm mb-3 line-clamp-2">
+                  {destination.description}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80 text-xs">
+                    {destination.distance}
+                  </span>
+                  <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                    {destination.activities} {destination.activities === 1 ? 'Activity' : 'Activities'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="absolute top-4 right-4 z-20 bg-white/20 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <ChevronRight className="h-4 w-4 text-white" />
+              </div>
+            </Link>
           ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <Link
+            to="/destinations"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-medium rounded-lg shadow hover:bg-primary/90 transition-colors"
+          >
+            <span>Explore All Destinations</span>
+            <ChevronRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>

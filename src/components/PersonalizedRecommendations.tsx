@@ -1,42 +1,41 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAuth } from '@/context/AuthContext';
-import PreferenceSelector from './recommendations/PreferenceSelector';
-import RecommendationItem from './recommendations/RecommendationItem';
+import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Hotel } from '@/components/admin/hotels/types';
-import { useRecommendations } from '@/hooks/useRecommendations';
-import { Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-interface PersonalizedRecommendationsProps {
-  className?: string;
+type RecommendationType = "hotel" | "activity" | "restaurant" | "attraction";
+
+interface RecommendationItem {
+  id: number;
+  name: string;
+  type: RecommendationType;
+  description: string;
+  image: string;
+  price: string;
+  rating: number;
+  tags: string[];
 }
 
-const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = ({ className = '' }) => {
-  const { user } = useAuth();
-  const { preferences, togglePreference } = useRecommendations();
-  const [showPreferences, setShowPreferences] = useState(false);
+const PersonalizedRecommendations = () => {
+  const [activeTab, setActiveTab] = useState<string>("forYou");
+  const [recommendations, setRecommendations] = useState<RecommendationItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [hotels, setHotels] = useState<Hotel[]>([]);
-  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    // Fetch hotels from Supabase
     const fetchHotels = async () => {
       try {
-        setLoading(true);
-        
-        // Fetch hotels from Supabase
         const { data, error } = await supabase
-          .from("hotels")
-          .select("id, name, location, price_per_night, image, rating, review_count, amenities, stars, slug")
-          .eq("status", "active")
+          .from('hotels')
+          .select('*')
           .order('rating', { ascending: false })
-          .limit(4);
-          
+          .limit(3);
+
         if (error) throw error;
-        
+
         if (data) {
           // Transform data to match the Hotel type
           const mappedHotels: Hotel[] = data.map((item: any) => ({
@@ -47,223 +46,239 @@ const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = 
             stars: item.stars,
             pricePerNight: item.price_per_night,
             image: item.image,
+            status: item.status as "active" | "inactive",
+            description: item.description || "",
             amenities: item.amenities || [],
+            featured: item.featured || false,
             reviewCount: item.review_count || 0,
             rating: item.rating || 0,
+            gallery: Array.isArray(item.gallery) ? item.gallery : [],
+            categories: item.categories || [],
+            rooms: [], // Initializing as empty array
+            seasonalPricing: []
           }));
-          
+
           setHotels(mappedHotels);
         }
       } catch (error) {
-        console.error("Error fetching hotels for recommendations:", error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching hotels:', error);
       }
     };
-    
+
+    // Generate personalized recommendations
+    const generateRecommendations = () => {
+      const baseRecommendations: RecommendationItem[] = [
+        {
+          id: 1,
+          name: "Nakki Lake Paddle Boating",
+          type: "activity" as RecommendationType,
+          description: "Experience the serene waters of Nakki Lake with our paddle boats. Perfect for couples and families.",
+          image: "https://images.unsplash.com/photo-1601794590530-93b57767e259?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+          price: "₹350 per hour",
+          rating: 4.8,
+          tags: ["Outdoors", "Water Activity", "Family-friendly"]
+        },
+        {
+          id: 2,
+          name: "Sunset Point Jeep Safari",
+          type: "activity" as RecommendationType,
+          description: "Explore the wilderness around Mount Abu's famous Sunset Point with our guided jeep safaris.",
+          image: "https://images.unsplash.com/photo-1501612780327-45045538702b?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+          price: "₹1,200 per person",
+          rating: 4.7,
+          tags: ["Adventure", "Wildlife", "Sunset Views"]
+        },
+        {
+          id: 3,
+          name: "Arbuda Restaurant",
+          type: "restaurant" as RecommendationType,
+          description: "Traditional Rajasthani cuisine in a royal setting with live folk music performances.",
+          image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+          price: "₹800 for two",
+          rating: 4.6,
+          tags: ["Rajasthani Cuisine", "Live Music", "Dinner"]
+        },
+        {
+          id: 4,
+          name: "Dilwara Temples Tour",
+          type: "attraction" as RecommendationType,
+          description: "Guided tour of the magnificent Jain temples known for their remarkable marble carvings.",
+          image: "https://images.unsplash.com/photo-1585468274952-66591eb14165?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+          price: "₹500 per person",
+          rating: 4.9,
+          tags: ["Cultural", "Historical", "Architecture"]
+        },
+        {
+          id: 5,
+          name: "Mount Abu Wildlife Sanctuary Trek",
+          type: "activity" as RecommendationType,
+          description: "Half-day guided trek through the wildlife sanctuary to spot indigenous flora and fauna.",
+          image: "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+          price: "₹950 per person",
+          rating: 4.5,
+          tags: ["Trekking", "Wildlife", "Nature"]
+        }
+      ];
+
+      setRecommendations(baseRecommendations);
+      setIsLoading(false);
+    };
+
     fetchHotels();
+    generateRecommendations();
   }, []);
-  
-  // Transform hotels to recommendation items
-  const getRecommendationItems = () => {
-    return hotels.map(hotel => {
-      // Define tags based on hotel features
-      const tags: string[] = [];
-      
-      // Add luxury or budget tag based on price
-      if (hotel.pricePerNight > 4000) {
-        tags.push('luxury');
-      } else if (hotel.pricePerNight < 2000) {
-        tags.push('budget');
-      }
-      
-      // Check amenities for preferences
-      if (hotel.amenities) {
-        if (hotel.amenities.some(a => a.toLowerCase().includes('family') || a.toLowerCase().includes('kid'))) {
-          tags.push('family-friendly');
-        }
-        if (hotel.amenities.some(a => a.toLowerCase().includes('spa') || a.toLowerCase().includes('massage'))) {
-          tags.push('relaxation');
-        }
-        if (hotel.amenities.some(a => a.toLowerCase().includes('restaurant') || a.toLowerCase().includes('dining'))) {
-          tags.push('food');
-        }
-        if (hotel.amenities.some(a => a.toLowerCase().includes('heritage') || a.toLowerCase().includes('historic'))) {
-          tags.push('historic');
-        }
-      }
-      
-      // Add couple-friendly for high-rated hotels
-      if (hotel.rating > 4.5) {
-        tags.push('couples');
-      }
-      
-      // Add location-based tags
-      if (hotel.location.toLowerCase().includes('lake')) {
-        tags.push('nature');
-      }
-      if (hotel.location.toLowerCase().includes('temple') || hotel.location.toLowerCase().includes('dilwara')) {
-        tags.push('cultural');
-      }
-      
-      // Make sure we have at least 2 tags
-      if (tags.length < 2) {
-        if (!tags.includes('photography') && Math.random() > 0.5) {
-          tags.push('photography');
-        }
-        if (!tags.includes('shopping') && Math.random() > 0.5) {
-          tags.push('shopping');
-        }
-      }
-      
-      return {
-        id: hotel.id,
-        name: hotel.name,
-        type: 'hotel',
-        description: `${hotel.stars}-star hotel in ${hotel.location}`,
-        image: hotel.image,
-        price: `₹${hotel.pricePerNight}/night`,
-        rating: hotel.rating,
-        tags: tags
-      };
-    });
+
+  const getRecommendationsForTab = (tab: string): RecommendationItem[] => {
+    switch (tab) {
+      case "forYou":
+        return recommendations.filter(r => r.rating >= 4.7);
+      case "trending":
+        return recommendations.filter(r => r.tags.includes("Adventure") || r.tags.includes("Wildlife"));
+      case "popular":
+        return [...recommendations].sort((a, b) => b.rating - a.rating);
+      default:
+        return recommendations;
+    }
   };
 
-  // Filter recommendations based on preferences
-  const getFilteredRecommendations = () => {
-    const items = getRecommendationItems();
-    
-    if (preferences.length === 0) {
-      return items;
-    }
-    
-    return items.filter(item => 
-      item.tags.some(tag => preferences.includes(tag))
+  // Get recommendations for the active tab
+  const currentRecommendations = getRecommendationsForTab(activeTab);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg border border-stone-200 shadow-sm p-6 animate-pulse">
+        <div className="h-6 bg-stone-200 rounded w-3/4 mb-6"></div>
+        <div className="h-4 bg-stone-200 rounded w-full mb-8"></div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, index) => (
+            <div key={index} className="h-20 bg-stone-200 rounded mb-2"></div>
+          ))}
+        </div>
+      </div>
     );
-  };
-  
-  const filteredRecommendations = getFilteredRecommendations();
-
-  // Add some adventure activities to recommendations
-  const adventureActivities = [
-    {
-      id: 999,
-      name: "Sunset Point Trekking",
-      type: "activity",
-      description: "Experience breathtaking sunset views with guided trekking tour",
-      image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      price: "₹800/person",
-      rating: 4.7,
-      tags: ["adventure", "nature", "photography"]
-    },
-    {
-      id: 998,
-      name: "Heritage Walk Tour",
-      type: "activity",
-      description: "Guided tour through historic temples and colonial architecture",
-      image: "https://images.unsplash.com/photo-1592639296346-560c37a0f711?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      price: "₹500/person",
-      rating: 4.6,
-      tags: ["cultural", "historic", "photography"]
-    }
-  ];
-  
-  // Add restaurant recommendations
-  const restaurantRecommendations = [
-    {
-      id: 997,
-      name: "Rajasthani Flavors",
-      type: "restaurant",
-      description: "Authentic Rajasthani cuisine with lake views",
-      image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
-      price: "₹600 for two",
-      rating: 4.5,
-      tags: ["food", "cultural"]
-    }
-  ];
-  
-  // Combine all recommendations
-  const allRecommendations = [...filteredRecommendations];
-  
-  // Add adventure activities and restaurants if preferences match
-  if (preferences.includes('adventure') || preferences.includes('nature') || preferences.length === 0) {
-    allRecommendations.push(adventureActivities[0]);
-  }
-  
-  if (preferences.includes('cultural') || preferences.includes('historic') || preferences.length === 0) {
-    allRecommendations.push(adventureActivities[1]);
-  }
-  
-  if (preferences.includes('food') || preferences.includes('cultural') || preferences.length === 0) {
-    allRecommendations.push(restaurantRecommendations[0]);
   }
 
   return (
-    <Card className={`overflow-hidden ${className}`}>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle>Personalized Recommendations</CardTitle>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setShowPreferences(!showPreferences)}
-          >
-            {showPreferences ? 'Hide Preferences' : 'Set Preferences'}
-          </Button>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pb-4">
-        {showPreferences && (
-          <PreferenceSelector 
-            preferences={preferences}
-            togglePreference={togglePreference}
-          />
-        )}
-        
-        {loading ? (
-          <div className="h-[200px] flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-        ) : (
-          <ScrollArea className="h-[300px]">
-            <div className="space-y-3">
-              {!user && !showPreferences && (
-                <div className="bg-gray-50 p-3 rounded-lg mb-3">
-                  <p className="text-sm">
-                    <a href="/auth" className="text-primary font-medium">Sign in</a> to receive personalized recommendations based on your preferences.
-                  </p>
-                </div>
-              )}
-              
-              {allRecommendations.length > 0 ? (
-                allRecommendations.map(item => (
-                  <RecommendationItem 
-                    key={item.id} 
-                    item={item} 
-                    preferences={preferences} 
-                  />
-                ))
-              ) : (
-                <div className="text-center p-6 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-500">
-                    No recommendations match your current preferences.
-                  </p>
-                  <Button 
-                    variant="link" 
-                    size="sm" 
-                    onClick={() => togglePreference(preferences[0] || 'luxury')}
-                    className="mt-2"
-                  >
-                    Try different preferences
-                  </Button>
-                </div>
-              )}
+    <div className="bg-white rounded-lg border border-stone-200 shadow-sm p-6">
+      <h3 className="text-xl font-display font-semibold mb-2">Personalized Recommendations</h3>
+      <p className="text-stone-600 text-sm mb-6">
+        Curated experiences in Mount Abu based on your interests and browsing history.
+      </p>
+
+      <Tabs defaultValue="forYou" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4 bg-stone-100">
+          <TabsTrigger value="forYou">For You</TabsTrigger>
+          <TabsTrigger value="trending">Trending</TabsTrigger>
+          <TabsTrigger value="popular">Popular</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="space-y-4">
+          {currentRecommendations.length > 0 ? (
+            currentRecommendations.map((item) => (
+              <RecommendationCard key={item.id} item={item} />
+            ))
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-stone-500">No recommendations available</p>
             </div>
-          </ScrollArea>
-        )}
-      </CardContent>
-    </Card>
+          )}
+          
+          {/* Hotel recommendations */}
+          {hotels.length > 0 && activeTab === "forYou" && (
+            <div className="pt-4 border-t border-stone-200">
+              <h4 className="text-md font-semibold mb-3">Hotels You Might Like</h4>
+              <div className="space-y-3">
+                {hotels.slice(0, 2).map((hotel) => (
+                  <Link
+                    key={hotel.id}
+                    to={`/hotel/${hotel.slug}`}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-stone-50 transition-colors"
+                  >
+                    <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                      <img 
+                        src={hotel.image} 
+                        alt={hotel.name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/placeholder.svg";
+                        }}
+                      />
+                    </div>
+                    <div className="flex-grow">
+                      <h5 className="font-medium text-sm">{hotel.name}</h5>
+                      <p className="text-xs text-stone-500">{hotel.location}</p>
+                      <div className="flex items-center mt-1">
+                        <div className="flex">
+                          {[...Array(Math.floor(hotel.rating))].map((_, i) => (
+                            <span key={i} className="text-yellow-500 text-xs">★</span>
+                          ))}
+                        </div>
+                        <span className="text-xs text-stone-500 ml-1">
+                          ({hotel.rating.toFixed(1)})
+                        </span>
+                        <span className="text-xs font-medium text-green-600 ml-auto">
+                          ₹{hotel.pricePerNight}/night
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <Link 
+                to="/hotels" 
+                className="block text-center text-sm text-primary font-medium mt-4 hover:underline"
+              >
+                View All Hotels
+              </Link>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+const RecommendationCard: React.FC<{ item: RecommendationItem }> = ({ item }) => {
+  // Determine the link based on the recommendation type
+  const getLink = (item: RecommendationItem) => {
+    switch (item.type) {
+      case "hotel":
+        return `/hotels/${item.id}`;
+      case "activity":
+        return `/adventures/${item.id}`;
+      case "restaurant":
+        return `/dining/${item.id}`;
+      case "attraction":
+        return `/destinations/${item.id}`;
+      default:
+        return "#";
+    }
+  };
+
+  return (
+    <Link to={getLink(item)} className="flex group hover:bg-stone-50 p-2 rounded-lg transition-colors">
+      <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+        <img 
+          src={item.image} 
+          alt={item.name} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = "/placeholder.svg";
+          }}
+        />
+      </div>
+      <div className="ml-3 flex-grow">
+        <h4 className="font-medium text-sm group-hover:text-primary transition-colors">{item.name}</h4>
+        <p className="text-xs text-stone-500 line-clamp-1">{item.description}</p>
+        <div className="flex items-center justify-between mt-1">
+          <div className="flex items-center">
+            <span className="text-yellow-500 text-xs">★</span>
+            <span className="text-xs ml-1">{item.rating.toFixed(1)}</span>
+          </div>
+          <span className="text-xs font-medium text-green-600">{item.price}</span>
+        </div>
+      </div>
+    </Link>
   );
 };
 
