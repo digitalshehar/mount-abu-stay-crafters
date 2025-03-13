@@ -1,14 +1,12 @@
 
 import React from "react";
-import { Check, Coffee, Wifi, Tv, Utensils, Users, Maximize } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import RoomAmenities from "./RoomAmenities";
-import RoomPriceDisplay from "./RoomPriceDisplay";
-import RoomCountSelector from "./RoomCountSelector";
 import RoomDetailsExpanded from "./RoomDetailsExpanded";
+import RoomCountSelector from "./RoomCountSelector";
+import RoomPriceDisplay from "./RoomPriceDisplay";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-interface Room {
+export interface Room {
   type: string;
   capacity: number;
   price: number;
@@ -16,7 +14,7 @@ interface Room {
   images?: string[];
 }
 
-interface RoomCardProps {
+export interface RoomCardProps {
   room: Room;
   index: number;
   expandedRoom: string | null;
@@ -27,7 +25,7 @@ interface RoomCardProps {
   onBookRoom?: (roomType: string) => void;
 }
 
-const RoomCard = ({
+const RoomCard: React.FC<RoomCardProps> = ({
   room,
   index,
   expandedRoom,
@@ -36,71 +34,75 @@ const RoomCard = ({
   increaseRoomCount,
   decreaseRoomCount,
   onBookRoom,
-}: RoomCardProps) => {
+}) => {
+  const isExpanded = expandedRoom === room.type;
+  const roomCount = roomCounts[room.type] || 1;
+
   return (
-    <div className="border border-stone-200 rounded-lg overflow-hidden">
-      {/* Room Header */}
-      <div className="bg-white p-5 flex flex-col md:flex-row gap-4 justify-between">
-        <div className="flex-grow">
-          <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+    <div className="bg-white rounded-lg border border-stone-200 overflow-hidden">
+      <div className="p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
             <h3 className="font-semibold text-lg">{room.type}</h3>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                Best Seller
-              </Badge>
-              {index === 0 && (
-                <Badge className="bg-green-500">Best Value</Badge>
-              )}
-            </div>
+            <p className="text-stone-600 text-sm">
+              Up to {room.capacity} {room.capacity === 1 ? "person" : "people"}
+            </p>
           </div>
-          
-          <div className="flex items-center gap-4 text-sm text-stone-600 mb-3">
-            <div className="flex items-center">
-              <Users className="h-4 w-4 mr-1" />
-              <span>Max {room.capacity} guests</span>
-            </div>
-            <div className="flex items-center">
-              <Maximize className="h-4 w-4 mr-1" />
-              <span>{room.type.includes('Suite') ? '48' : room.type.includes('Deluxe') ? '32' : '24'} sqm</span>
-            </div>
-          </div>
-          
-          <RoomAmenities roomType={room.type} />
-          
-          <Button 
-            variant="link" 
-            className="px-0 text-sm h-auto mt-2"
-            onClick={() => toggleRoomDetails(room.type)}
-          >
-            {expandedRoom === room.type ? 'Hide details' : 'Show more details'}
-          </Button>
+
+          <RoomPriceDisplay price={room.price} roomCount={roomCount} />
         </div>
-        
-        <div className="flex flex-col justify-between min-w-[160px] text-right">
-          <RoomPriceDisplay price={room.price} />
-          
-          <div className="mt-3">
-            <RoomCountSelector 
-              roomType={room.type}
-              count={roomCounts[room.type] || 1}
-              onIncrease={increaseRoomCount}
-              onDecrease={decreaseRoomCount}
+
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
+          <button
+            type="button"
+            onClick={() => toggleRoomDetails(room.type)}
+            className="text-primary text-sm flex items-center hover:underline"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="h-4 w-4 mr-1" />
+                Hide details
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4 mr-1" />
+                Show details
+              </>
+            )}
+          </button>
+
+          <div className="flex items-center gap-4">
+            <RoomCountSelector
+              roomCount={roomCount}
+              onDecrease={() => decreaseRoomCount(room.type)}
+              onIncrease={() => increaseRoomCount(room.type)}
             />
-            
-            <Button 
-              className="w-full" 
+
+            <Button
               onClick={() => onBookRoom && onBookRoom(room.type)}
+              className="w-32"
             >
               Book Now
             </Button>
           </div>
         </div>
+
+        {isExpanded && (
+          <RoomDetailsExpanded
+            room={room}
+            roomType={room.type}
+            amenities={[
+              "Free WiFi",
+              "Air conditioning",
+              "Flat-screen TV",
+              "Private bathroom",
+              "Desk",
+              "Toiletries",
+            ]}
+            description="This comfortable and well-appointed room offers all the amenities you need for a relaxing stay."
+          />
+        )}
       </div>
-      
-      {/* Expanded Room Details */}
-      {expandedRoom === room.type && (
-        <RoomDetailsExpanded roomType={room.type} capacity={room.capacity} />
-      )}
     </div>
   );
 };

@@ -29,6 +29,9 @@ import CarRentalDetail from "./pages/CarRentalDetail";
 import BikeRentalDetail from "./pages/BikeRentalDetail";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import HotelNotFound from "./pages/HotelNotFound";
+import DestinationNotFound from "./pages/DestinationNotFound";
+import AdventureNotFound from "./pages/AdventureNotFound";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -58,16 +61,19 @@ const App = () => (
             <Route path="/hotels" element={<Hotels />} />
             <Route path="/hotels/map" element={<HotelMap />} />
             <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
+            <Route path="/hotel-not-found" element={<HotelNotFound />} />
             <Route path="/hotel/:hotelSlug/html" element={<HotelHtmlView />} />
             <Route path="/hotel/:hotelSlug.html" element={<HotelHtmlView />} />
             <Route path="/destinations" element={<Destinations />} />
             <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
+            <Route path="/destination-not-found" element={<DestinationNotFound />} />
             <Route path="/rentals/car" element={<CarRentals />} />
             <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
             <Route path="/rentals/bike" element={<BikeRentals />} />
             <Route path="/rentals/bike/:id" element={<BikeRentalDetail />} />
             <Route path="/adventures" element={<Adventures />} />
             <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
+            <Route path="/adventure-not-found" element={<AdventureNotFound />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/contact" element={<Contact />} />

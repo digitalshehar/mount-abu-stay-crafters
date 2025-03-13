@@ -1,52 +1,45 @@
 
 import React from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Bed, 
-  Coffee, 
-  FileText, 
-  MessageSquare, 
-  Map, 
-  Car, 
-  Shield, 
-  TrendingUp 
-} from 'lucide-react';
+import { cn } from "@/lib/utils";
 
-interface HotelTabNavigationProps {
+export interface HotelTabNavigationProps {
   activeTab: string;
-  setActiveTab: (tab: string) => void;
+  onChange: (value: string) => void;
 }
 
-const HotelTabNavigation: React.FC<HotelTabNavigationProps> = ({
+const HotelTabNavigation: React.FC<HotelTabNavigationProps> = ({ 
   activeTab,
-  setActiveTab
+  onChange
 }) => {
   const tabs = [
-    { id: 'rooms', label: 'Rooms', icon: <Bed className="h-4 w-4 mr-2" /> },
-    { id: 'amenities', label: 'Amenities', icon: <Coffee className="h-4 w-4 mr-2" /> },
-    { id: 'policies', label: 'Policies', icon: <FileText className="h-4 w-4 mr-2" /> },
-    { id: 'reviews', label: 'Reviews', icon: <MessageSquare className="h-4 w-4 mr-2" /> },
-    { id: 'attractions', label: 'Attractions', icon: <Map className="h-4 w-4 mr-2" /> },
-    { id: 'transport', label: 'Transport', icon: <Car className="h-4 w-4 mr-2" /> },
-    { id: 'safety', label: 'Safety', icon: <Shield className="h-4 w-4 mr-2" /> },
-    { id: 'price-history', label: 'Price History', icon: <TrendingUp className="h-4 w-4 mr-2" /> }
+    { id: 'overview', label: 'Overview' },
+    { id: 'rooms', label: 'Rooms' },
+    { id: 'amenities', label: 'Amenities' },
+    { id: 'policies', label: 'Policies' },
+    { id: 'reviews', label: 'Reviews' },
+    { id: 'location', label: 'Location' },
+    { id: 'attractions', label: 'Attractions' },
   ];
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="w-full h-auto overflow-x-auto flex-wrap justify-start p-1 bg-stone-100">
-        {tabs.map(tab => (
-          <TabsTrigger
+    <div className="border-b border-stone-200 mb-8">
+      <div className="flex gap-2 md:gap-6 overflow-x-auto no-scrollbar">
+        {tabs.map((tab) => (
+          <button
             key={tab.id}
-            value={tab.id}
-            className="flex items-center data-[state=active]:bg-white"
+            onClick={() => onChange(tab.id)}
+            className={cn(
+              "px-4 py-3 text-sm md:text-base whitespace-nowrap transition-colors",
+              activeTab === tab.id
+                ? "text-primary font-medium border-b-2 border-primary"
+                : "text-stone-500 hover:text-stone-800"
+            )}
           >
-            {tab.icon}
             {tab.label}
-          </TabsTrigger>
+          </button>
         ))}
-      </TabsList>
-    </Tabs>
+      </div>
+    </div>
   );
 };
 

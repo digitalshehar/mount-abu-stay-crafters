@@ -7,14 +7,20 @@ interface Attraction {
   description: string;
 }
 
-interface HotelAttractionsProps {
+export interface HotelAttractionsProps {
   attractions: Attraction[];
+  hotelLocation?: string;
 }
 
-const HotelAttractions = ({ attractions }: HotelAttractionsProps) => {
+const HotelAttractions = ({ attractions, hotelLocation }: HotelAttractionsProps) => {
   return (
     <div>
       <h2 className="text-2xl font-display font-semibold mb-6">Nearby Attractions</h2>
+      {hotelLocation && (
+        <p className="mb-4 text-stone-600">
+          Explore these popular attractions near {hotelLocation}:
+        </p>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {attractions.map((attraction, index) => (
           <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-stone-100">

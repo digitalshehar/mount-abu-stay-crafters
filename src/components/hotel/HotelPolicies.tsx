@@ -1,131 +1,106 @@
 
 import React from "react";
-import { Clock, MapPin, Phone, Mail, Globe, Shield } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Clock, CreditCard, ShieldCheck, Users } from "lucide-react";
 
-interface HotelPoliciesProps {
-  checkInTime: string;
-  checkOutTime: string;
-  policies: string[];
-  contactInfo: {
-    phone: string;
-    email: string;
-    website: string;
+export interface HotelPoliciesProps {
+  checkInTime?: string;
+  checkOutTime?: string;
+  policies?: string[];
+  contactInfo?: {
+    phone?: string;
+    email?: string;
   };
-  address: string;
-  landmarks: {
-    airport: string;
-    busStation: string;
-    cityCenter: string;
-  };
+  cancellationPolicy?: string;
+  paymentOptions?: string[];
 }
 
-const HotelPolicies = ({ 
-  checkInTime, 
-  checkOutTime, 
-  policies,
-  contactInfo,
-  address,
-  landmarks 
+const HotelPolicies = ({
+  checkInTime = "12:00 PM",
+  checkOutTime = "10:00 AM",
+  policies = [],
+  contactInfo = {},
+  cancellationPolicy = "Free cancellation up to 24 hours before check-in",
+  paymentOptions = ["Credit Card", "Debit Card", "Cash"]
 }: HotelPoliciesProps) => {
+  // Default policies if none provided
+  const defaultPolicies = [
+    "Pets are not allowed",
+    "Non-smoking rooms available",
+    "No parties or events",
+    "ID required at check-in"
+  ];
+
+  const allPolicies = policies.length > 0 ? policies : defaultPolicies;
+
   return (
     <div>
-      <h2 className="text-2xl font-display font-semibold mb-6">Hotel Policies & Information</h2>
-      <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="check-in-out">
-          <AccordionTrigger className="font-medium">Check-in & Check-out</AccordionTrigger>
-          <AccordionContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Check-in Time</p>
-                  <p className="text-stone-600">{checkInTime}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-medium">Check-out Time</p>
-                  <p className="text-stone-600">{checkOutTime}</p>
-                </div>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+      <h2 className="text-2xl font-display font-semibold mb-6">Hotel Policies</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-stone-100">
+          <div className="flex items-center gap-3 mb-4">
+            <Clock className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold">Check-in & Check-out</h3>
+          </div>
+          <div className="space-y-2 text-stone-600">
+            <p className="text-sm">Check-in: from {checkInTime}</p>
+            <p className="text-sm">Check-out: until {checkOutTime}</p>
+            <p className="text-sm mt-4">
+              Early check-in and late check-out available on request, subject to availability.
+            </p>
+          </div>
+        </div>
         
-        <AccordionItem value="hotel-policies">
-          <AccordionTrigger className="font-medium">Hotel Policies</AccordionTrigger>
-          <AccordionContent>
-            <ul className="space-y-2 text-stone-600">
-              {policies.map((policy: string, idx: number) => (
-                <li key={idx} className="flex items-start">
-                  <Shield className="h-4 w-4 mr-2 mt-1 text-primary flex-shrink-0" />
-                  <span>{policy}</span>
-                </li>
-              ))}
-            </ul>
-          </AccordionContent>
-        </AccordionItem>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-stone-100">
+          <div className="flex items-center gap-3 mb-4">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold">Cancellation Policy</h3>
+          </div>
+          <p className="text-sm text-stone-600">{cancellationPolicy}</p>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-stone-100">
+          <div className="flex items-center gap-3 mb-4">
+            <Users className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold">General Policies</h3>
+          </div>
+          <ul className="list-disc list-inside space-y-2 text-sm text-stone-600">
+            {allPolicies.map((policy, index) => (
+              <li key={index}>{policy}</li>
+            ))}
+          </ul>
+        </div>
         
-        <AccordionItem value="contact-information">
-          <AccordionTrigger className="font-medium">Contact Information</AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                <p className="text-stone-600">{address}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-5 w-5 text-primary" />
-                <p className="text-stone-600">{contactInfo.phone}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-5 w-5 text-primary" />
-                <p className="text-stone-600">{contactInfo.email}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Globe className="h-5 w-5 text-primary" />
-                <p className="text-stone-600">{contactInfo.website}</p>
-              </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-stone-100">
+          <div className="flex items-center gap-3 mb-4">
+            <CreditCard className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold">Payment Options</h3>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <ul className="list-disc list-inside space-y-2 text-sm text-stone-600">
+                {paymentOptions.map((option, index) => (
+                  <li key={index}>{option}</li>
+                ))}
+              </ul>
             </div>
-          </AccordionContent>
-        </AccordionItem>
-        
-        <AccordionItem value="nearby-landmarks">
-          <AccordionTrigger className="font-medium">Nearby Landmarks</AccordionTrigger>
-          <AccordionContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" />
-                <div>
-                  <p className="font-medium">Airport</p>
-                  <p className="text-stone-600">{landmarks.airport}</p>
-                </div>
+            
+            {(contactInfo.phone || contactInfo.email) && (
+              <div className="mt-4 pt-4 border-t border-stone-100">
+                <h4 className="font-medium text-sm mb-2">Contact for inquiries:</h4>
+                {contactInfo.phone && (
+                  <p className="text-sm text-stone-600">Phone: {contactInfo.phone}</p>
+                )}
+                {contactInfo.email && (
+                  <p className="text-sm text-stone-600">Email: {contactInfo.email}</p>
+                )}
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" />
-                <div>
-                  <p className="font-medium">Bus Station</p>
-                  <p className="text-stone-600">{landmarks.busStation}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-primary" />
-                <div>
-                  <p className="font-medium">City Center</p>
-                  <p className="text-stone-600">{landmarks.cityCenter}</p>
-                </div>
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
