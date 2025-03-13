@@ -2,6 +2,7 @@
 import React from 'react';
 import { Tabs, TabsList, TabsContent, TabsTrigger } from '@/components/ui/tabs';
 import FavoriteItem from './FavoriteItem';
+import { Favorite as FavoriteType } from '@/types/favorites';
 
 export interface Favorite {
   id: string;
@@ -12,7 +13,7 @@ export interface Favorite {
 }
 
 interface FavoritesListProps {
-  favorites: Favorite[];
+  favorites: FavoriteType[];
   activeTab: string;
   setActiveTab: (value: string) => void;
   loading: boolean;

@@ -1,12 +1,19 @@
 
-export type Favorite = {
+export interface Favorite {
   id: string;
-  item_type: string;  // Changed from a union type to string to match the backend
-  item_id: number;
-  name?: string;
-  image?: string;
-  price?: number;
-  location?: string;
-  created_at?: string;
-  user_id?: string;
-};
+  user_id: string;
+  item_id: string | number;
+  item_type: string;
+  created_at: string;
+  // Additional properties for joins
+  hotels?: any;
+  destinations?: any;
+  adventures?: any;
+  activities?: any;
+}
+
+export interface FavoritesState {
+  favorites: Favorite[];
+  loading: boolean;
+  error: string | null;
+}
