@@ -14,6 +14,8 @@ export type AuthContextType = {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  isLoading: boolean; // Added for AdminRoute and ProtectedRoute
+  isAdmin: boolean; // Added for AdminRoute
   signUp: (email: string, password: string, username: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;

@@ -1,81 +1,49 @@
 
 import React from "react";
-import HotelCard from "@/components/HotelCard";
-import { Button } from "@/components/ui/button";
-import { SortAsc, SortDesc } from "lucide-react";
+import { Hotel } from "@/components/admin/hotels/types";
 
 interface RegularHotelsSectionProps {
-  hotels: any[];
+  hotels: Hotel[];
+  compareList?: number[];
+  onAddToCompare?: (hotelId: number) => void;
+  onRemoveFromCompare?: (hotelId: number) => void;
+  isInCompare?: (hotelId: number) => boolean;
 }
 
-const RegularHotelsSection = ({ hotels }: RegularHotelsSectionProps) => {
-  const [sortBy, setSortBy] = React.useState<"price" | "rating">("price");
-  const [sortOrder, setSortOrder] = React.useState<"asc" | "desc">("asc");
-
-  const handleSort = (type: "price" | "rating") => {
-    if (sortBy === type) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(type);
-      setSortOrder("asc");
-    }
-  };
-
-  const sortedHotels = [...hotels].sort((a, b) => {
-    const aValue = sortBy === "price" ? a.price_per_night : a.rating || 0;
-    const bValue = sortBy === "price" ? b.price_per_night : b.rating || 0;
-    
-    return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-  });
-
+const RegularHotelsSection = ({ 
+  hotels,
+  compareList = [],
+  onAddToCompare = () => {},
+  onRemoveFromCompare = () => {},
+  isInCompare = () => false
+}: RegularHotelsSectionProps) => {
   return (
-    <>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">All Properties</h3>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-stone-500 mr-2">Sort by:</span>
-          <Button 
-            variant={sortBy === "price" ? "secondary" : "outline"} 
-            size="sm"
-            onClick={() => handleSort("price")}
-            className="flex items-center gap-1 text-xs"
-          >
-            Price
-            {sortBy === "price" && (
-              sortOrder === "asc" ? <SortAsc size={14} /> : <SortDesc size={14} />
-            )}
-          </Button>
-          <Button 
-            variant={sortBy === "rating" ? "secondary" : "outline"} 
-            size="sm"
-            onClick={() => handleSort("rating")}
-            className="flex items-center gap-1 text-xs"
-          >
-            Rating
-            {sortBy === "rating" && (
-              sortOrder === "asc" ? <SortAsc size={14} /> : <SortDesc size={14} />
-            )}
-          </Button>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {sortedHotels.map((hotel) => (
-          <HotelCard
-            key={hotel.id}
-            id={hotel.id}
-            name={hotel.name}
-            image={hotel.image}
-            price={hotel.price_per_night}
-            location={hotel.location}
-            rating={hotel.rating || 0}
-            reviewCount={hotel.review_count || 0}
-            amenities={hotel.amenities || []}
-            featured={false}
-            slug={hotel.slug}
-          />
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Hotels in Mount Abu</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {hotels.map((hotel) => (
+          <div key={hotel.id} className="bg-white rounded-lg shadow-sm border border-stone-100 overflow-hidden">
+            <img 
+              src={hotel.image} 
+              alt={hotel.name} 
+              className="w-full h-48 object-cover"
+            />
+            <div className="p-4">
+              <h3 className="font-semibold">{hotel.name}</h3>
+              <p className="text-sm text-stone-500">{hotel.location}</p>
+              <div className="mt-4 flex justify-between items-center">
+                <span className="font-semibold">₹{hotel.pricePerNight}/night</span>
+                {hotel.rating > 0 && (
+                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                    {hotel.rating.toFixed(1)}★
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
-    </>
+    </div>
   );
 };
 

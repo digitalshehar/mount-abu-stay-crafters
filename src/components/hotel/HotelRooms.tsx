@@ -51,7 +51,7 @@ const HotelRooms = ({ rooms, onBookRoom }: HotelRoomsProps) => {
       <RoomHeader />
       
       <div className="space-y-4">
-        {sortedRooms.map((room: Room, index: number) => (
+        {sortedRooms.map((room, index) => (
           <RoomCard
             key={index}
             room={room}

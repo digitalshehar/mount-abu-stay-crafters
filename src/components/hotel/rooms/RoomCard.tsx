@@ -8,14 +8,16 @@ import RoomPriceDisplay from "./RoomPriceDisplay";
 import RoomCountSelector from "./RoomCountSelector";
 import RoomDetailsExpanded from "./RoomDetailsExpanded";
 
+interface Room {
+  type: string;
+  capacity: number;
+  price: number;
+  count?: number;
+  images?: string[];
+}
+
 interface RoomCardProps {
-  room: {
-    type: string;
-    capacity: number;
-    price: number;
-    count?: number;
-    images?: string[];
-  };
+  room: Room;
   index: number;
   expandedRoom: string | null;
   roomCounts: Record<string, number>;

@@ -14,6 +14,11 @@ interface HotelContentProps {
   filteredHotels: any[];
   activeFilterCount: number;
   clearFilters: () => void;
+  // Add the missing compare properties
+  compareList?: number[];
+  onAddToCompare?: (hotelId: number) => void;
+  onRemoveFromCompare?: (hotelId: number) => void;
+  isInCompare?: (hotelId: number) => boolean;
 }
 
 const HotelContent = ({
@@ -21,6 +26,10 @@ const HotelContent = ({
   filteredHotels,
   activeFilterCount,
   clearFilters,
+  compareList = [],
+  onAddToCompare = () => {},
+  onRemoveFromCompare = () => {},
+  isInCompare = () => false,
 }: HotelContentProps) => {
   // Separate featured hotels
   const featuredHotels = filteredHotels.filter(hotel => hotel.featured);
@@ -39,7 +48,13 @@ const HotelContent = ({
           </p>
           
           {featuredHotels.length > 0 && (
-            <FeaturedHotelsSection hotels={featuredHotels} />
+            <FeaturedHotelsSection 
+              hotels={featuredHotels} 
+              compareList={compareList}
+              onAddToCompare={onAddToCompare}
+              onRemoveFromCompare={onRemoveFromCompare}
+              isInCompare={isInCompare}
+            />
           )}
           
           {featuredHotels.length > 0 && regularHotels.length > 0 && 
@@ -47,7 +62,13 @@ const HotelContent = ({
           }
           
           {regularHotels.length > 0 && (
-            <RegularHotelsSection hotels={regularHotels} />
+            <RegularHotelsSection 
+              hotels={regularHotels}
+              compareList={compareList}
+              onAddToCompare={onAddToCompare}
+              onRemoveFromCompare={onRemoveFromCompare}
+              isInCompare={isInCompare}
+            />
           )}
         </>
       ) : (
