@@ -5,13 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import ProfileCard from '@/components/profile/ProfileCard';
 import FavoritesList from '@/components/profile/FavoritesList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useFavorites, Favorite } from '@/hooks/useFavorites';
+import { useFavorites } from '@/hooks/useFavorites';
 
 const UserProfile = () => {
   const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
-  const [favoriteType, setFavoriteType] = useState<'hotel' | 'adventure' | 'car' | 'bike'>('hotel');
+  const [favoriteType, setFavoriteType] = useState<string>('hotel');
   
   // Use the hook to manage favorites
   const { favorites, loading: favoritesLoading, removeFavorite } = useFavorites(user);
@@ -35,13 +35,14 @@ const UserProfile = () => {
     console.log('Update profile with:', data);
   };
 
-  const handleRemoveFavorite = async (id: string) => {
-    try {
-      await removeFavorite(id);
-    } catch (error) {
-      console.error('Error removing favorite:', error);
-    }
-  };
+  // Convert our useFavorites favorites to FavoritesList component format
+  const formattedFavorites = favorites.map(fav => ({
+    id: fav.id,
+    user_id: fav.user_id,
+    item_id: fav.item_id,
+    item_type: fav.item_type as 'hotel' | 'destination' | 'adventure' | 'activity',
+    created_at: fav.created_at || new Date().toISOString()
+  }));
 
   return (
     <div className="container mx-auto py-8">
@@ -57,19 +58,19 @@ const UserProfile = () => {
         
         <TabsContent value="profile">
           <ProfileCard 
-            user={user}
             profile={profile}
+            userEmail={user.email || ''}
             onUpdateProfile={handleUpdateProfile}
           />
         </TabsContent>
         
         <TabsContent value="favorites">
           <FavoritesList 
-            favorites={favorites} 
+            favorites={formattedFavorites} 
             activeTab={favoriteType} 
-            setActiveTab={setFavoriteType}
+            setActiveTab={(value: string) => setFavoriteType(value)}
             loading={favoritesLoading}
-            onRemoveFavorite={handleRemoveFavorite}
+            onRemoveFavorite={(id: string) => removeFavorite(id)}
           />
         </TabsContent>
         

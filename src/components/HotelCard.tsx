@@ -11,13 +11,17 @@ interface HotelCardProps {
   id: number;
   name: string;
   image: string;
-  price: number;
+  price?: number;
+  pricePerNight?: number; // Added for compatibility
   location: string;
   rating: number;
-  reviewCount: number;
-  amenities: string[];
+  reviewCount?: number;
+  amenities?: string[];
   featured?: boolean;
   slug?: string;
+  inCompareList?: boolean;
+  onAddToCompare?: () => void;
+  onRemoveFromCompare?: () => void;
 }
 
 const HotelCard = ({
@@ -25,20 +29,27 @@ const HotelCard = ({
   name,
   image,
   price,
+  pricePerNight,
   location,
   rating,
-  reviewCount,
-  amenities,
+  reviewCount = 0,
+  amenities = [],
   featured = false,
   slug,
+  inCompareList = false,
+  onAddToCompare,
+  onRemoveFromCompare
 }: HotelCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isReviewVisible, setIsReviewVisible] = useState(false);
   const hotelSlug = slug || name.toLowerCase().replace(/\s+/g, '-');
   
+  // Use pricePerNight if price is not provided
+  const displayPrice = price || pricePerNight || 0;
+  
   // Calculate discount for display purposes (just for UI)
-  const originalPrice = Math.round(price * 1.2);
-  const discountPercent = Math.round((1 - price / originalPrice) * 100);
+  const originalPrice = Math.round(displayPrice * 1.2);
+  const discountPercent = Math.round((1 - displayPrice / originalPrice) * 100);
 
   // Prevent click propagation on favorite button
   const handleFavoriteClick = (e: React.MouseEvent) => {
@@ -51,6 +62,18 @@ const HotelCard = ({
         ? `${name} has been removed from your favorites` 
         : `${name} has been added to your favorites`
     });
+  };
+
+  // Handle compare toggle
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (inCompareList) {
+      onRemoveFromCompare?.();
+    } else {
+      onAddToCompare?.();
+    }
   };
 
   const toggleReview = (e: React.MouseEvent) => {
@@ -76,6 +99,9 @@ const HotelCard = ({
             src={image} 
             alt={name}
             className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/placeholder.svg";
+            }}
           />
         </Link>
         
@@ -91,6 +117,22 @@ const HotelCard = ({
         >
           <Heart className={cn("h-4 w-4", isFavorite && "fill-current")} />
         </button>
+        
+        {/* Compare button */}
+        {(onAddToCompare || onRemoveFromCompare) && (
+          <button 
+            className={cn(
+              "absolute top-3 right-14 w-8 h-8 rounded-full flex items-center justify-center transition-colors z-10",
+              inCompareList
+                ? "bg-blue-500 text-white"
+                : "bg-white/80 text-stone-500 hover:bg-white hover:text-blue-500"
+            )}
+            onClick={handleCompareClick}
+            title={inCompareList ? "Remove from comparison" : "Add to comparison"}
+          >
+            <Check className={cn("h-4 w-4", inCompareList && "fill-current")} />
+          </button>
+        )}
         
         {/* Featured badge */}
         {featured && (
@@ -113,7 +155,7 @@ const HotelCard = ({
           </Link>
           
           <div className="flex items-center gap-1 bg-blue-600 text-white px-2 py-1 rounded text-sm font-semibold whitespace-nowrap">
-            <span>{rating.toFixed(1)}</span>
+            <span>{rating?.toFixed(1) || "N/A"}</span>
             <Star className="h-3 w-3 fill-current" />
           </div>
         </div>
@@ -125,27 +167,31 @@ const HotelCard = ({
         </div>
 
         {/* Amenities */}
-        <div className="mt-2 mb-auto">
-          <div className="grid grid-cols-2 gap-1">
-            {amenities.slice(0, 4).map((amenity, index) => (
-              <div key={index} className="flex items-center text-xs text-stone-500">
-                <Check className="h-3 w-3 mr-1 text-green-500" />
-                <span className="truncate">{amenity}</span>
-              </div>
-            ))}
+        {amenities && amenities.length > 0 && (
+          <div className="mt-2 mb-auto">
+            <div className="grid grid-cols-2 gap-1">
+              {amenities.slice(0, 4).map((amenity, index) => (
+                <div key={index} className="flex items-center text-xs text-stone-500">
+                  <Check className="h-3 w-3 mr-1 text-green-500" />
+                  <span className="truncate">{amenity}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Review preview */}
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={toggleReview} 
-          className="text-xs text-blue-600 px-1 py-0 h-auto flex items-center justify-start my-2"
-        >
-          <MessageCircle className="h-3 w-3 mr-1" />
-          {reviewCount} reviews
-        </Button>
+        {reviewCount > 0 && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={toggleReview} 
+            className="text-xs text-blue-600 px-1 py-0 h-auto flex items-center justify-start my-2"
+          >
+            <MessageCircle className="h-3 w-3 mr-1" />
+            {reviewCount} reviews
+          </Button>
+        )}
         
         {isReviewVisible && (
           <div className="bg-stone-50 p-2 rounded-md mb-2 text-xs">
@@ -178,7 +224,7 @@ const HotelCard = ({
         <div className="mt-auto">
           <div className="flex items-baseline mb-2">
             <span className="text-xs text-stone-500 line-through mr-1">₹{originalPrice.toLocaleString()}</span>
-            <span className="text-lg font-semibold text-blue-600">₹{price.toLocaleString()}</span>
+            <span className="text-lg font-semibold text-blue-600">₹{displayPrice.toLocaleString()}</span>
             <span className="text-xs text-stone-500 ml-1">/night</span>
           </div>
           

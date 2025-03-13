@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Hotel } from '@/components/admin/hotels/types';
@@ -7,7 +6,7 @@ import { Star, X, Map, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export interface Favorite {
-  id: number;
+  id: string; // Changed from number to string
   user_id: string;
   item_id: number;
   item_type: 'hotel' | 'destination' | 'adventure' | 'activity';
@@ -23,7 +22,7 @@ export interface FavoritesListProps {
   activeTab: string;
   setActiveTab: (value: string) => void;
   loading: boolean;
-  onRemoveFavorite: (id: number) => void;
+  onRemoveFavorite: (id: string) => void; // Changed from number to string
 }
 
 const FavoritesList: React.FC<FavoritesListProps> = ({
@@ -169,7 +168,7 @@ const FavoritesList: React.FC<FavoritesListProps> = ({
 // Hotel Favorite Card
 const HotelFavoriteCard: React.FC<{ 
   favorite: Favorite; 
-  onRemove: (id: number) => void;
+  onRemove: (id: string) => void; // Changed from number to string
 }> = ({ favorite, onRemove }) => {
   // Default data if hotel is not loaded
   const hotel = favorite.hotel || {
@@ -226,10 +225,10 @@ const HotelFavoriteCard: React.FC<{
   );
 };
 
-// Destination Favorite Card
+// Other card components (update all to use string IDs)
 const DestinationFavoriteCard: React.FC<{ 
   favorite: Favorite; 
-  onRemove: (id: number) => void;
+  onRemove: (id: string) => void; // Changed from number to string
 }> = ({ favorite, onRemove }) => {
   return (
     <div className="flex border border-stone-200 rounded-lg overflow-hidden group hover:border-primary transition-colors">
@@ -261,7 +260,7 @@ const DestinationFavoriteCard: React.FC<{
 // Adventure Favorite Card
 const AdventureFavoriteCard: React.FC<{ 
   favorite: Favorite; 
-  onRemove: (id: number) => void;
+  onRemove: (id: string) => void;
 }> = ({ favorite, onRemove }) => {
   return (
     <div className="flex border border-stone-200 rounded-lg overflow-hidden group hover:border-primary transition-colors">
@@ -293,7 +292,7 @@ const AdventureFavoriteCard: React.FC<{
 // Activity Favorite Card
 const ActivityFavoriteCard: React.FC<{ 
   favorite: Favorite; 
-  onRemove: (id: number) => void;
+  onRemove: (id: string) => void;
 }> = ({ favorite, onRemove }) => {
   return (
     <div className="flex border border-stone-200 rounded-lg overflow-hidden group hover:border-primary transition-colors">

@@ -19,17 +19,24 @@ export interface UserProfile {
 
 export interface ProfileCardProps {
   profile: UserProfile;
-  userEmail: string;
+  userEmail?: string;
+  user?: User;
   onEdit?: () => void;
+  onUpdateProfile?: (data: any) => Promise<void>;
   isCurrentUser?: boolean;
 }
 
 const ProfileCard: React.FC<ProfileCardProps> = ({ 
   profile, 
   userEmail, 
+  user,
   onEdit, 
+  onUpdateProfile,
   isCurrentUser = true 
 }) => {
+  // Use either direct userEmail or get it from user object
+  const email = userEmail || user?.email || '';
+  
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <div className="h-32 bg-gradient-to-r from-primary/80 to-primary"></div>
@@ -65,7 +72,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
         
         <div className="flex items-center gap-2 mb-2">
           <Mail className="h-4 w-4 text-stone-400" />
-          <span className="text-sm text-stone-600">{userEmail}</span>
+          <span className="text-sm text-stone-600">{email}</span>
         </div>
         
         {profile.location && (

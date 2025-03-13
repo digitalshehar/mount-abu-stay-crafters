@@ -14,6 +14,7 @@ interface RegularHotelsSectionProps {
   isInCompare?: (hotelId: number) => boolean;
   limit?: number;
   excludeFeatured?: boolean;
+  hotels?: Hotel[]; // Added to support direct hotel data passing
 }
 
 const RegularHotelsSection: React.FC<RegularHotelsSectionProps> = ({
@@ -24,12 +25,20 @@ const RegularHotelsSection: React.FC<RegularHotelsSectionProps> = ({
   onRemoveFromCompare,
   isInCompare = () => false,
   limit = 6,
-  excludeFeatured = true
+  excludeFeatured = true,
+  hotels: directHotels // Renamed to avoid conflict with state variable
 }) => {
   const [hotels, setHotels] = useState<Hotel[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(directHotels ? false : true);
 
   useEffect(() => {
+    // If hotels are directly provided, use them instead of fetching
+    if (directHotels) {
+      setHotels(directHotels);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchHotels = async () => {
       setIsLoading(true);
       try {
@@ -79,7 +88,7 @@ const RegularHotelsSection: React.FC<RegularHotelsSectionProps> = ({
     };
 
     fetchHotels();
-  }, [limit, excludeFeatured]);
+  }, [limit, excludeFeatured, directHotels]);
 
   if (isLoading) {
     return (
@@ -131,8 +140,17 @@ const RegularHotelsSection: React.FC<RegularHotelsSectionProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {hotels.map((hotel) => (
             <HotelCard 
-              key={hotel.id} 
-              {...hotel}
+              key={hotel.id}
+              id={hotel.id}
+              name={hotel.name}
+              slug={hotel.slug}
+              location={hotel.location}
+              rating={hotel.rating}
+              reviewCount={hotel.reviewCount}
+              image={hotel.image}
+              featured={hotel.featured}
+              amenities={hotel.amenities}
+              pricePerNight={hotel.pricePerNight}
               inCompareList={isInCompare(hotel.id)}
               onAddToCompare={onAddToCompare ? () => onAddToCompare(hotel.id) : undefined}
               onRemoveFromCompare={onRemoveFromCompare ? () => onRemoveFromCompare(hotel.id) : undefined}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '@/context/AuthContext';
@@ -57,11 +56,21 @@ const Profile = () => {
     try {
       const { data, error } = await supabase
         .from('favorites')
-        .select(`*, hotels:item_id(*)`)
+        .select(`*`)
         .eq('user_id', user?.id);
 
       if (error) throw error;
-      setFavorites(data || []);
+      
+      // Transform to match our Favorite type
+      const mappedFavorites: Favorite[] = (data || []).map((item: any) => ({
+        id: item.id,
+        user_id: item.user_id,
+        item_id: item.item_id,
+        item_type: item.item_type,
+        created_at: item.created_at,
+      }));
+      
+      setFavorites(mappedFavorites);
     } catch (error) {
       console.error('Error fetching favorites:', error);
       setFavorites([]);
@@ -70,7 +79,7 @@ const Profile = () => {
     }
   };
 
-  const handleRemoveFavorite = async (favoriteId: number) => {
+  const handleRemoveFavorite = async (favoriteId: string) => {
     try {
       const { error } = await supabase
         .from('favorites')
