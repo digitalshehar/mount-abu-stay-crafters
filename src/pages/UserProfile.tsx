@@ -37,7 +37,7 @@ const UserProfile = () => {
 
   // Convert our useFavorites favorites to FavoritesList component format
   const formattedFavorites = favorites.map(fav => ({
-    id: fav.id,
+    id: fav.id, // Already a string from useFavorites
     user_id: fav.user_id,
     item_id: fav.item_id,
     item_type: fav.item_type as 'hotel' | 'destination' | 'adventure' | 'activity',

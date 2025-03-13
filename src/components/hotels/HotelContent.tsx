@@ -14,7 +14,6 @@ interface HotelContentProps {
   filteredHotels: any[];
   activeFilterCount: number;
   clearFilters: () => void;
-  // Add the missing compare properties
   compareList?: number[];
   onAddToCompare?: (hotelId: number) => void;
   onRemoveFromCompare?: (hotelId: number) => void;
@@ -49,6 +48,8 @@ const HotelContent = ({
           
           {featuredHotels.length > 0 && (
             <FeaturedHotelsSection 
+              title="Featured Hotels" 
+              subtitle="Our handpicked premium accommodations"
               hotels={featuredHotels} 
               compareList={compareList}
               onAddToCompare={onAddToCompare}
@@ -63,6 +64,8 @@ const HotelContent = ({
           
           {regularHotels.length > 0 && (
             <RegularHotelsSection 
+              title="All Hotels"
+              subtitle="Explore all accommodations in Mount Abu"
               hotels={regularHotels}
               compareList={compareList}
               onAddToCompare={onAddToCompare}

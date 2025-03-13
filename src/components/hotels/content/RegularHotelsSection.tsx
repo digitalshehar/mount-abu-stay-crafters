@@ -151,9 +151,10 @@ const RegularHotelsSection: React.FC<RegularHotelsSectionProps> = ({
               featured={hotel.featured}
               amenities={hotel.amenities}
               pricePerNight={hotel.pricePerNight}
-              inCompareList={isInCompare(hotel.id)}
+              compareList={compareList}
               onAddToCompare={onAddToCompare ? () => onAddToCompare(hotel.id) : undefined}
               onRemoveFromCompare={onRemoveFromCompare ? () => onRemoveFromCompare(hotel.id) : undefined}
+              isInCompare={isInCompare ? () => isInCompare(hotel.id) : undefined}
             />
           ))}
         </div>
