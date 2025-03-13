@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,7 +57,7 @@ const WebsiteSettings = () => {
   });
   
   // Handle changes in form fields
-  const handleGeneralChange = (e) => {
+  const handleGeneralChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setGeneralSettings({
       ...generalSettings,
@@ -66,24 +65,30 @@ const WebsiteSettings = () => {
     });
   };
   
-  const handleSeoChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleSeoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
     setSeoSettings({
       ...seoSettings,
       [name]: type === 'checkbox' ? checked : value
     });
   };
   
-  const handleSocialChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleSocialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type } = e.target;
+    const checked = type === 'checkbox' ? e.target.checked : undefined;
+    
     setSocialSettings({
       ...socialSettings,
       [name]: type === 'checkbox' ? checked : value
     });
   };
   
-  const handleFooterChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleFooterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type } = e.target;
+    const checked = type === 'checkbox' ? e.target.checked : undefined;
+    
     setFooterSettings({
       ...footerSettings,
       [name]: type === 'checkbox' ? checked : value
@@ -91,7 +96,7 @@ const WebsiteSettings = () => {
   };
   
   // Handle form submissions
-  const saveGeneralSettings = (e) => {
+  const saveGeneralSettings = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
       title: "General settings saved",
@@ -99,7 +104,7 @@ const WebsiteSettings = () => {
     });
   };
   
-  const saveSeoSettings = (e) => {
+  const saveSeoSettings = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
       title: "SEO settings saved",
@@ -107,7 +112,7 @@ const WebsiteSettings = () => {
     });
   };
   
-  const saveSocialSettings = (e) => {
+  const saveSocialSettings = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
       title: "Social media settings saved",
@@ -115,7 +120,7 @@ const WebsiteSettings = () => {
     });
   };
   
-  const saveFooterSettings = (e) => {
+  const saveFooterSettings = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
       title: "Footer settings saved",

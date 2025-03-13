@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { 
@@ -21,12 +20,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/context/AuthContext";
 
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const { signOut } = useAuth();
 
   // Close sidebar when navigating on mobile
   useEffect(() => {
@@ -39,13 +40,21 @@ const AdminDashboard = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const handleLogout = () => {
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of the admin dashboard",
-    });
-    // In a real app, you would implement actual logout functionality here
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of the admin dashboard",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Error logging out",
+        description: "There was a problem logging you out",
+        variant: "destructive"
+      });
+    }
   };
 
   const isActive = (path: string) => {

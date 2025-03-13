@@ -6,7 +6,7 @@ import FavoriteItem from './FavoriteItem';
 export interface Favorite {
   id: string;
   user_id: string;
-  item_id: number | string;
+  item_id: string | number;
   item_type: 'hotel' | 'destination' | 'adventure' | 'activity';
   created_at: string;
 }

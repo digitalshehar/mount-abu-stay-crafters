@@ -45,6 +45,7 @@ import AdminSettings from "./pages/admin/Settings";
 import AdminPageBuilder from "./pages/admin/PageBuilder";
 import AdminWebsiteSettings from "./pages/admin/WebsiteSettings";
 import AdminBookings from "./pages/admin/Bookings";
+import AdminRoute from "./components/auth/AdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -87,8 +88,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminDashboard />}>
+            {/* Admin Routes - Protected by AdminRoute */}
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>}>
               <Route index element={<AdminOverview />} />
               <Route path="hotels" element={<AdminHotels />} />
               <Route path="blog" element={<AdminBlog />} />
