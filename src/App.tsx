@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import PageTransition from "./components/PageTransition";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CarRentals from "./pages/CarRentals";
@@ -60,35 +61,35 @@ const App = () => (
             <Sonner />
             <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<Index />} />
-              <Route path="/hotels" element={<Hotels />} />
-              <Route path="/hotels/map" element={<HotelMap />} />
-              <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
-              <Route path="/hotel-not-found" element={<HotelNotFound />} />
-              <Route path="/hotel/:hotelSlug/html" element={<HotelHtmlView />} />
-              <Route path="/hotel/:hotelSlug.html" element={<HotelHtmlView />} />
-              <Route path="/destinations" element={<Destinations />} />
-              <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
-              <Route path="/destination-not-found" element={<DestinationNotFound />} />
-              <Route path="/rentals/car" element={<CarRentals />} />
-              <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
-              <Route path="/rentals/bike" element={<BikeRentals />} />
-              <Route path="/rentals/bike/:id" element={<BikeRentalDetail />} />
-              <Route path="/adventures" element={<Adventures />} />
-              <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
-              <Route path="/adventure-not-found" element={<AdventureNotFound />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/about-us" element={<AboutUs />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/travel-guide" element={<TravelGuide />} />
-              <Route path="/faqs" element={<FAQs />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+              <Route path="/" element={<PageTransition><Index /></PageTransition>} />
+              <Route path="/hotels" element={<PageTransition><Hotels /></PageTransition>} />
+              <Route path="/hotels/map" element={<PageTransition><HotelMap /></PageTransition>} />
+              <Route path="/hotel/:hotelSlug" element={<PageTransition><HotelDetail /></PageTransition>} />
+              <Route path="/hotel-not-found" element={<PageTransition><HotelNotFound /></PageTransition>} />
+              <Route path="/hotel/:hotelSlug/html" element={<PageTransition><HotelHtmlView /></PageTransition>} />
+              <Route path="/hotel/:hotelSlug.html" element={<PageTransition><HotelHtmlView /></PageTransition>} />
+              <Route path="/destinations" element={<PageTransition><Destinations /></PageTransition>} />
+              <Route path="/destination/:destinationSlug" element={<PageTransition><DestinationDetail /></PageTransition>} />
+              <Route path="/destination-not-found" element={<PageTransition><DestinationNotFound /></PageTransition>} />
+              <Route path="/rentals/car" element={<PageTransition><CarRentals /></PageTransition>} />
+              <Route path="/rentals/car/:id" element={<PageTransition><CarRentalDetail /></PageTransition>} />
+              <Route path="/rentals/bike" element={<PageTransition><BikeRentals /></PageTransition>} />
+              <Route path="/rentals/bike/:id" element={<PageTransition><BikeRentalDetail /></PageTransition>} />
+              <Route path="/adventures" element={<PageTransition><Adventures /></PageTransition>} />
+              <Route path="/adventure/:adventureSlug" element={<PageTransition><AdventureDetail /></PageTransition>} />
+              <Route path="/adventure-not-found" element={<PageTransition><AdventureNotFound /></PageTransition>} />
+              <Route path="/blog" element={<PageTransition><Blog /></PageTransition>} />
+              <Route path="/about-us" element={<PageTransition><AboutUs /></PageTransition>} />
+              <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+              <Route path="/travel-guide" element={<PageTransition><TravelGuide /></PageTransition>} />
+              <Route path="/faqs" element={<PageTransition><FAQs /></PageTransition>} />
+              <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
+              <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+              <Route path="/cancellation-policy" element={<PageTransition><CancellationPolicy /></PageTransition>} />
               
               {/* Auth Routes */}
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+              <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
               
               {/* Admin Routes - Protected by AdminRoute */}
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>}>
@@ -105,7 +106,7 @@ const App = () => (
               </Route>
               
               {/* Catch All Route */}
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
             </Routes>
           </TooltipProvider>
         </AuthProvider>
