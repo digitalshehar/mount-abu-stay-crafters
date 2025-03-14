@@ -469,6 +469,21 @@ export type Database = {
         }
         Relationships: []
       }
+      permissions: {
+        Row: {
+          id: number
+          permission_name: string
+        }
+        Insert: {
+          id?: never
+          permission_name: string
+        }
+        Update: {
+          id?: never
+          permission_name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -526,6 +541,51 @@ export type Database = {
           item_type?: string
           rating?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          permission_id: number
+          role_id: number
+        }
+        Insert: {
+          permission_id: number
+          role_id: number
+        }
+        Update: {
+          permission_id?: number
+          role_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          id: number
+          role_name: string
+        }
+        Insert: {
+          id?: never
+          role_name: string
+        }
+        Update: {
+          id?: never
+          role_name?: string
         }
         Relationships: []
       }
@@ -625,6 +685,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string | null
+          password: string
+          role_id: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string | null
+          password: string
+          role_id?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string | null
+          password?: string
+          role_id?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
