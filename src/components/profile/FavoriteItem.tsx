@@ -17,7 +17,7 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, onRemove }) => {
   const price = itemData.price || itemData.price_per_night || 0;
   
   return (
-    <div className="bg-stone-50 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+    <div className="bg-stone-50 dark:bg-stone-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md dark:shadow-stone-900/50 transition-all duration-300">
       <div className="aspect-video relative overflow-hidden">
         <img 
           src={image} 
@@ -26,10 +26,10 @@ const FavoriteItem: React.FC<FavoriteItemProps> = ({ favorite, onRemove }) => {
         />
       </div>
       <div className="p-4">
-        <h3 className="font-medium">{name}</h3>
-        <p className="text-sm text-stone-500 mt-1">{location}</p>
+        <h3 className="font-medium dark:text-white">{name}</h3>
+        <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">{location}</p>
         <div className="flex justify-between items-center mt-3">
-          <span className="font-semibold">₹{price.toLocaleString() || 'N/A'}</span>
+          <span className="font-semibold dark:text-white">₹{price.toLocaleString() || 'N/A'}</span>
           <Button 
             variant="destructive" 
             size="sm"
