@@ -60,11 +60,11 @@ const Auth = () => {
   };
 
   // Handle sign in with error handling
-  const handleSignIn = async (formData: any) => {
+  const handleSignIn = async (formData: { email: string, password: string }) => {
     setAuthError(null);
     try {
-      const result = await signIn(formData);
-      if (result?.error) {
+      const result = await signIn(formData.email, formData.password);
+      if (result && 'error' in result) {
         setAuthError(result.error.message);
       }
     } catch (error: any) {
@@ -73,11 +73,11 @@ const Auth = () => {
   };
 
   // Handle sign up with error handling
-  const handleSignUp = async (formData: any) => {
+  const handleSignUp = async (formData: { email: string, password: string, username: string }) => {
     setAuthError(null);
     try {
-      const result = await signUp(formData);
-      if (result?.error) {
+      const result = await signUp(formData.email, formData.password, formData.username);
+      if (result && 'error' in result) {
         setAuthError(result.error.message);
       }
     } catch (error: any) {
