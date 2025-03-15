@@ -4,6 +4,8 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, ShieldCheck, User } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { supabase } from '@/integrations/supabase/client';
 import LoginForm from '@/components/auth/LoginForm';
@@ -14,6 +16,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isAdmin = searchParams.get('admin') === 'true';
+  const returnUrl = searchParams.get('returnUrl') || '/';
   
   // Redirect if already logged in
   useEffect(() => {
@@ -24,14 +27,14 @@ const Auth = () => {
           if (isAdmin) {
             navigate('/admin/dashboard');
           } else {
-            navigate('/');
+            navigate(returnUrl !== '/admin' ? returnUrl : '/');
           }
         });
       } else {
-        navigate('/');
+        navigate(returnUrl);
       }
     }
-  }, [user, navigate, isAdmin]);
+  }, [user, navigate, isAdmin, returnUrl]);
 
   // Check if user has admin role
   const checkIsAdmin = async (userId: string): Promise<boolean> => {
@@ -55,6 +58,17 @@ const Auth = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="container mx-auto max-w-md py-12 flex justify-center items-center min-h-[60vh]">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-lg font-medium text-gray-700">Checking authentication status...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto max-w-md py-12">
       <div className="flex justify-center mb-8">
@@ -65,11 +79,14 @@ const Auth = () => {
       </div>
       
       {isAdmin ? (
-        <Card className="border-primary/20">
+        <Card className="border-primary/20 shadow-lg">
           <CardHeader className="space-y-1">
+            <div className="flex justify-center mb-2">
+              <ShieldCheck className="h-12 w-12 text-primary" />
+            </div>
             <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
             <CardDescription className="text-center">
-              Enter your admin credentials to access the dashboard
+              Enter your administrator credentials to access the dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -87,13 +104,19 @@ const Auth = () => {
         </Card>
       ) : (
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="login" className="text-base py-3">
+              <User className="mr-2 h-4 w-4" />
+              Login
+            </TabsTrigger>
+            <TabsTrigger value="signup" className="text-base py-3">
+              <User className="mr-2 h-4 w-4" />
+              Sign Up
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="login">
-            <Card>
+            <Card className="shadow-md">
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
                 <CardDescription className="text-center">
@@ -115,7 +138,7 @@ const Auth = () => {
           </TabsContent>
           
           <TabsContent value="signup">
-            <Card>
+            <Card className="shadow-md">
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl text-center">Create an account</CardTitle>
                 <CardDescription className="text-center">

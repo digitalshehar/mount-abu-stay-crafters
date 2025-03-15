@@ -52,3 +52,40 @@
     padding: 0 2rem;
   }
 }
+
+/* Animation classes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Tab transition effects */
+.tabContent-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.tabContent-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.tabContent-exit {
+  opacity: 1;
+}
+
+.tabContent-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}
