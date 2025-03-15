@@ -1,8 +1,9 @@
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface AdminRouteProps {
   children?: ReactNode;
@@ -11,9 +12,23 @@ interface AdminRouteProps {
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { isLoading, isAdmin, user } = useAuth();
   const location = useLocation();
+  const [isChecking, setIsChecking] = useState(true);
+  const [adminVerified, setAdminVerified] = useState(false);
+
+  // Effect to verify admin status with a small delay for better UX
+  useEffect(() => {
+    if (!isLoading) {
+      const timer = setTimeout(() => {
+        setAdminVerified(isAdmin);
+        setIsChecking(false);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, isAdmin]);
 
   // Show a better loading state
-  if (isLoading) {
+  if (isLoading || isChecking) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 dark:bg-stone-900 transition-colors duration-300">
         <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
@@ -27,22 +42,31 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     return <Navigate to="/auth?admin=true" replace state={{ from: location }} />;
   }
 
-  // If logged in but not admin, redirect to home page
-  if (!isAdmin) {
+  // If logged in but not admin, show access denied
+  if (!adminVerified) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 dark:bg-stone-900 transition-colors duration-300">
         <div className="bg-white dark:bg-stone-800 p-8 rounded-xl shadow-md dark:shadow-stone-900/30 max-w-md w-full text-center transition-colors duration-300">
+          <div className="mx-auto h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mb-4">
+            <ShieldAlert className="h-8 w-8 text-red-600 dark:text-red-500" />
+          </div>
           <h2 className="text-2xl font-bold text-red-600 dark:text-red-500 mb-4">Access Denied</h2>
           <p className="text-stone-600 dark:text-stone-300 mb-6">
-            You don't have admin privileges to access this page.
+            You don't have admin privileges to access this page. Please contact the system administrator if you believe this is an error.
           </p>
-          <div className="flex justify-center">
-            <a 
-              href="/" 
-              className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 transition-colors"
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button 
+              variant="default"
+              onClick={() => window.location.href = "/"}
             >
               Return to Home
-            </a>
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = "/auth?admin=true"}
+            >
+              Login as Admin
+            </Button>
           </div>
         </div>
       </div>

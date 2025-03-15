@@ -55,6 +55,24 @@ const Auth = () => {
     }
   };
 
+  // Handle login submission
+  const handleSignIn = async (email: string, password: string): Promise<void> => {
+    try {
+      await signIn(email, password);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign in');
+    }
+  };
+
+  // Handle signup submission
+  const handleSignUp = async (email: string, password: string, username: string): Promise<void> => {
+    try {
+      await signUp(email, password, username);
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sign up');
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-md py-12">
       <div className="flex justify-center mb-8">
@@ -74,15 +92,23 @@ const Auth = () => {
           </CardHeader>
           <CardContent>
             <LoginForm 
-              onSubmit={signIn} 
+              onSubmit={handleSignIn} 
               loading={loading} 
               isAdmin={true}
             />
           </CardContent>
           <CardFooter className="flex justify-center border-t pt-6">
-            <Link to="/auth" className="text-sm text-primary hover:underline">
-              Back to regular login
-            </Link>
+            <div className="space-y-2 w-full text-center">
+              <Link to="/admin/forgot-password" className="text-sm text-primary hover:underline block">
+                Forgot password?
+              </Link>
+              <Link to="/admin/register" className="text-sm text-primary hover:underline block">
+                Register as Admin
+              </Link>
+              <Link to="/auth" className="text-sm text-muted-foreground hover:underline block">
+                Back to regular login
+              </Link>
+            </div>
           </CardFooter>
         </Card>
       ) : (
@@ -102,10 +128,13 @@ const Auth = () => {
               </CardHeader>
               <CardContent>
                 <LoginForm 
-                  onSubmit={signIn} 
+                  onSubmit={handleSignIn} 
                   loading={loading}
                 />
                 <div className="mt-4 text-center">
+                  <Link to="/forgot-password" className="text-sm text-primary hover:underline block mb-2">
+                    Forgot password?
+                  </Link>
                   <Link to="/auth?admin=true" className="text-sm text-primary hover:underline">
                     Admin Login
                   </Link>
@@ -124,7 +153,7 @@ const Auth = () => {
               </CardHeader>
               <CardContent>
                 <SignupForm 
-                  onSubmit={signUp} 
+                  onSubmit={handleSignUp} 
                   loading={loading}
                 />
               </CardContent>
