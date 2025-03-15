@@ -1,8 +1,8 @@
-
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  text-align: left;
+  padding: 2rem;
+  text-align: center;
 }
 
 .logo {
@@ -11,11 +11,9 @@
   will-change: filter;
   transition: filter 300ms;
 }
-
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
-
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -35,57 +33,10 @@
   }
 }
 
+.card {
+  padding: 2em;
+}
+
 .read-the-docs {
   color: #888;
-}
-
-/* New styles for our tourism app */
-.container-custom {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-@media (min-width: 768px) {
-  .container-custom {
-    padding: 0 2rem;
-  }
-}
-
-/* Animation classes */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* Tab transition effects */
-.tabContent-enter {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.tabContent-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 300ms, transform 300ms;
-}
-
-.tabContent-exit {
-  opacity: 1;
-}
-
-.tabContent-exit-active {
-  opacity: 0;
-  transition: opacity 300ms;
 }

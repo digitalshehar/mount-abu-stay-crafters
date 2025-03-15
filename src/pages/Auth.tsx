@@ -1,11 +1,9 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, ShieldCheck, User, AlertTriangle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { supabase } from '@/integrations/supabase/client';
 import LoginForm from '@/components/auth/LoginForm';
@@ -16,8 +14,6 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isAdmin = searchParams.get('admin') === 'true';
-  const returnUrl = searchParams.get('returnUrl') || '/';
-  const [authError, setAuthError] = useState<string | null>(null);
   
   // Redirect if already logged in
   useEffect(() => {
@@ -28,14 +24,14 @@ const Auth = () => {
           if (isAdmin) {
             navigate('/admin/dashboard');
           } else {
-            navigate(returnUrl !== '/admin' ? returnUrl : '/');
+            navigate('/');
           }
         });
       } else {
-        navigate(returnUrl);
+        navigate('/');
       }
     }
-  }, [user, navigate, isAdmin, returnUrl]);
+  }, [user, navigate, isAdmin]);
 
   // Check if user has admin role
   const checkIsAdmin = async (userId: string): Promise<boolean> => {
@@ -59,74 +55,26 @@ const Auth = () => {
     }
   };
 
-  // Handle sign in with error handling
-  const handleSignIn = async (formData: { email: string, password: string }) => {
-    setAuthError(null);
-    try {
-      const result = await signIn(formData.email, formData.password);
-      if (result && 'error' in result) {
-        setAuthError(result.error.message);
-      }
-    } catch (error: any) {
-      setAuthError(error.message || "An error occurred during sign in");
-    }
-  };
-
-  // Handle sign up with error handling
-  const handleSignUp = async (formData: { email: string, password: string, username: string }) => {
-    setAuthError(null);
-    try {
-      const result = await signUp(formData.email, formData.password, formData.username);
-      if (result && 'error' in result) {
-        setAuthError(result.error.message);
-      }
-    } catch (error: any) {
-      setAuthError(error.message || "An error occurred during sign up");
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="container mx-auto max-w-md py-12 flex justify-center items-center min-h-[60vh]">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-lg font-medium text-stone-700">Checking authentication status...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto max-w-md py-12">
       <div className="flex justify-center mb-8">
         <Link to="/" className="flex items-center space-x-2">
           <Logo />
-          <span className="text-xl font-bold">Hotel Mount Abu</span>
+          <span className="text-xl font-bold">Mount Abu</span>
         </Link>
       </div>
       
-      {authError && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Authentication Error</AlertTitle>
-          <AlertDescription>{authError}</AlertDescription>
-        </Alert>
-      )}
-      
       {isAdmin ? (
-        <Card className="border-primary/20 shadow-lg">
+        <Card className="border-primary/20">
           <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-2">
-              <ShieldCheck className="h-12 w-12 text-primary" />
-            </div>
             <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
             <CardDescription className="text-center">
-              Enter your administrator credentials to access the dashboard
+              Enter your admin credentials to access the dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
             <LoginForm 
-              onSubmit={handleSignIn} 
+              onSubmit={signIn} 
               loading={loading} 
               isAdmin={true}
             />
@@ -139,19 +87,13 @@ const Auth = () => {
         </Card>
       ) : (
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="login" className="text-base py-3">
-              <User className="mr-2 h-4 w-4" />
-              Login
-            </TabsTrigger>
-            <TabsTrigger value="signup" className="text-base py-3">
-              <User className="mr-2 h-4 w-4" />
-              Sign Up
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="login" className="animate-fade-in">
-            <Card className="shadow-md">
+          <TabsContent value="login">
+            <Card>
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
                 <CardDescription className="text-center">
@@ -160,7 +102,7 @@ const Auth = () => {
               </CardHeader>
               <CardContent>
                 <LoginForm 
-                  onSubmit={handleSignIn} 
+                  onSubmit={signIn} 
                   loading={loading}
                 />
                 <div className="mt-4 text-center">
@@ -172,8 +114,8 @@ const Auth = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="signup" className="animate-fade-in">
-            <Card className="shadow-md">
+          <TabsContent value="signup">
+            <Card>
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl text-center">Create an account</CardTitle>
                 <CardDescription className="text-center">
@@ -182,7 +124,7 @@ const Auth = () => {
               </CardHeader>
               <CardContent>
                 <SignupForm 
-                  onSubmit={handleSignUp} 
+                  onSubmit={signUp} 
                   loading={loading}
                 />
               </CardContent>
