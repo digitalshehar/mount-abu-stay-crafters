@@ -1,11 +1,11 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, ShieldCheck, User } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Loader2, ShieldCheck, User, AlertTriangle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { supabase } from '@/integrations/supabase/client';
 import LoginForm from '@/components/auth/LoginForm';
@@ -17,6 +17,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const isAdmin = searchParams.get('admin') === 'true';
   const returnUrl = searchParams.get('returnUrl') || '/';
+  const [authError, setAuthError] = useState<string | null>(null);
   
   // Redirect if already logged in
   useEffect(() => {
@@ -58,12 +59,38 @@ const Auth = () => {
     }
   };
 
+  // Handle sign in with error handling
+  const handleSignIn = async (formData: any) => {
+    setAuthError(null);
+    try {
+      const result = await signIn(formData);
+      if (result?.error) {
+        setAuthError(result.error.message);
+      }
+    } catch (error: any) {
+      setAuthError(error.message || "An error occurred during sign in");
+    }
+  };
+
+  // Handle sign up with error handling
+  const handleSignUp = async (formData: any) => {
+    setAuthError(null);
+    try {
+      const result = await signUp(formData);
+      if (result?.error) {
+        setAuthError(result.error.message);
+      }
+    } catch (error: any) {
+      setAuthError(error.message || "An error occurred during sign up");
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto max-w-md py-12 flex justify-center items-center min-h-[60vh]">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-700">Checking authentication status...</p>
+          <p className="text-lg font-medium text-stone-700">Checking authentication status...</p>
         </div>
       </div>
     );
@@ -74,9 +101,17 @@ const Auth = () => {
       <div className="flex justify-center mb-8">
         <Link to="/" className="flex items-center space-x-2">
           <Logo />
-          <span className="text-xl font-bold">Mount Abu</span>
+          <span className="text-xl font-bold">Hotel Mount Abu</span>
         </Link>
       </div>
+      
+      {authError && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Authentication Error</AlertTitle>
+          <AlertDescription>{authError}</AlertDescription>
+        </Alert>
+      )}
       
       {isAdmin ? (
         <Card className="border-primary/20 shadow-lg">
@@ -91,7 +126,7 @@ const Auth = () => {
           </CardHeader>
           <CardContent>
             <LoginForm 
-              onSubmit={signIn} 
+              onSubmit={handleSignIn} 
               loading={loading} 
               isAdmin={true}
             />
@@ -115,7 +150,7 @@ const Auth = () => {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="login">
+          <TabsContent value="login" className="animate-fade-in">
             <Card className="shadow-md">
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
@@ -125,7 +160,7 @@ const Auth = () => {
               </CardHeader>
               <CardContent>
                 <LoginForm 
-                  onSubmit={signIn} 
+                  onSubmit={handleSignIn} 
                   loading={loading}
                 />
                 <div className="mt-4 text-center">
@@ -137,7 +172,7 @@ const Auth = () => {
             </Card>
           </TabsContent>
           
-          <TabsContent value="signup">
+          <TabsContent value="signup" className="animate-fade-in">
             <Card className="shadow-md">
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl text-center">Create an account</CardTitle>
@@ -147,7 +182,7 @@ const Auth = () => {
               </CardHeader>
               <CardContent>
                 <SignupForm 
-                  onSubmit={signUp} 
+                  onSubmit={handleSignUp} 
                   loading={loading}
                 />
               </CardContent>
