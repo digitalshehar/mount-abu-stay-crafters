@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,7 +71,7 @@ const AdminRegister = () => {
           toast({
             title: "Registration successful",
             description: "You can now login with your admin credentials.",
-            variant: "success",
+            variant: "default",
           });
           
           // Redirect to admin login
