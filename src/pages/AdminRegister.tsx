@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +15,6 @@ const AdminRegister = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [adminCode, setAdminCode] = useState('');
-  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ const AdminRegister = () => {
     e.preventDefault();
     setError('');
     
-    if (!email || !password || !confirmPassword || !adminCode || !username) {
+    if (!email || !password || !confirmPassword || !adminCode) {
       setError('Please fill in all fields');
       return;
     }
@@ -116,16 +116,6 @@ const AdminRegister = () => {
                 placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input 
-                id="username"
-                type="text"
-                placeholder="adminuser"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div className="space-y-2">
