@@ -51,7 +51,7 @@ const AdminRegister = () => {
       // Create the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password,
+        password
       });
       
       if (authError) throw authError;
