@@ -13,6 +13,7 @@ import './App.css';
 
 import Index from '@/pages/Index';
 import NotFound from '@/components/NotFound';
+import AdminDashboard from '@/pages/admin/Dashboard';
 
 function App() {
   return (
@@ -34,7 +35,7 @@ function App() {
             
             {/* Protected routes for admin users */}
             <Route element={<AdminRoute />}>
-              <Route path="/admin/dashboard" element={<div>Admin Dashboard</div>} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/hotels" element={<div>Hotel Management</div>} />
               <Route path="/admin/bookings" element={<div>Booking Management</div>} />
               <Route path="/admin/users" element={<div>User Management</div>} />

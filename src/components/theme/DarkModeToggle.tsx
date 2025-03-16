@@ -1,36 +1,25 @@
 
 import React from 'react';
-import { useTheme } from '@/context/ThemeContext';
 import { Moon, Sun } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from "@/components/ui/button";
+import { useTheme } from '@/components/theme-provider';
 
-const DarkModeToggle: React.FC = () => {
-  const { theme, toggleTheme } = useTheme();
-
+const DarkModeToggle = () => {
+  const { theme, setTheme } = useTheme();
+  
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="rounded-full w-9 h-9 transition-all duration-200"
-            aria-label="Toggle dark mode"
-          >
-            {theme === 'light' ? (
-              <Moon className="h-[1.2rem] w-[1.2rem] transition-all" />
-            ) : (
-              <Sun className="h-[1.2rem] w-[1.2rem] transition-all" />
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      aria-label="Toggle theme"
+    >
+      {theme === 'dark' ? (
+        <Sun className="h-5 w-5" />
+      ) : (
+        <Moon className="h-5 w-5" />
+      )}
+    </Button>
   );
 };
 

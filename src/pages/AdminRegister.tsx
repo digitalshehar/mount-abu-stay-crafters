@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import Logo from '@/components/Logo';
+import { useToast } from '@/hooks/use-toast';
 
 const AdminRegister = () => {
   const [email, setEmail] = useState('');
@@ -18,6 +19,7 @@ const AdminRegister = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,31 +53,38 @@ const AdminRegister = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            username,
-          },
-        },
       });
       
       if (authError) throw authError;
       
       if (authData.user) {
-        // Assign admin role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({ user_id: authData.user.id, role: 'admin' });
-        
-        if (roleError) throw roleError;
-        
-        // Redirect to admin login
-        navigate('/auth?admin=true', { 
-          state: { 
-            message: 'Registration successful! You can now login with your credentials.' 
-          } 
-        });
+        try {
+          // Assign admin role
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({ 
+              user_id: authData.user.id, 
+              role: 'admin' 
+            });
+          
+          if (roleError) throw roleError;
+          
+          toast({
+            title: "Registration successful",
+            description: "You can now login with your admin credentials.",
+            variant: "success",
+          });
+          
+          // Redirect to admin login
+          navigate('/auth?admin=true');
+          
+        } catch (roleError: any) {
+          console.error("Role assignment error:", roleError);
+          setError(roleError.message || 'Failed to assign admin role');
+        }
       }
     } catch (error: any) {
+      console.error("Signup error:", error);
       setError(error.message || 'An error occurred during registration');
     } finally {
       setLoading(false);
