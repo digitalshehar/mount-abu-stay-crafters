@@ -1,47 +1,38 @@
 
 import React from 'react';
-import FilterSidebar from '../../FilterSidebar';
-import ZoneSelector from '../ZoneSelector';
+import { HotelCard } from '@/components/hotels/HotelCard';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MapSidebarProps {
-  priceRange: [number, number];
-  setPriceRange: (range: [number, number]) => void;
-  selectedStars: number[];
-  handleStarFilter: (star: number) => void;
-  selectedAmenities: string[];
-  handleAmenityFilter: (amenity: string) => void;
-  clearFilters: () => void;
-  commonAmenities: string[];
-  onSelectZone: (bounds: any) => void;
+  hotels: any[];
+  selectedHotel: any | null;
+  onSelectHotel: (hotel: any) => void;
 }
 
-const MapSidebar: React.FC<MapSidebarProps> = ({
-  priceRange,
-  setPriceRange,
-  selectedStars,
-  handleStarFilter,
-  selectedAmenities,
-  handleAmenityFilter,
-  clearFilters,
-  commonAmenities,
-  onSelectZone
-}) => {
+const MapSidebar: React.FC<MapSidebarProps> = ({ hotels, selectedHotel, onSelectHotel }) => {
   return (
-    <div>
-      <FilterSidebar 
-        priceRange={priceRange}
-        setPriceRange={setPriceRange}
-        selectedStars={selectedStars}
-        handleStarFilter={handleStarFilter}
-        selectedAmenities={selectedAmenities}
-        handleAmenityFilter={handleAmenityFilter}
-        clearFilters={clearFilters}
-        commonAmenities={commonAmenities}
-      />
-      
-      <div className="mt-6">
-        <ZoneSelector onSelectZone={onSelectZone} />
+    <div className="w-full lg:w-96 bg-white border-l border-gray-200 h-full">
+      <div className="p-4 border-b">
+        <h2 className="text-lg font-semibold">
+          {hotels.length} {hotels.length === 1 ? 'Hotel' : 'Hotels'} in Mount Abu
+        </h2>
       </div>
+      
+      <ScrollArea className="h-[calc(100vh-200px)]">
+        <div className="p-4 space-y-4">
+          {hotels.map(hotel => (
+            <div 
+              key={hotel.id}
+              className={`cursor-pointer transition-all ${
+                selectedHotel?.id === hotel.id ? 'ring-2 ring-primary rounded-lg' : ''
+              }`}
+              onClick={() => onSelectHotel(hotel)}
+            >
+              <HotelCard hotel={hotel} variant="compact" />
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 };

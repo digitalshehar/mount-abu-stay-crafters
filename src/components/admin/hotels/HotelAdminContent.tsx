@@ -1,30 +1,32 @@
 
-import React from "react";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import HotelSearchBar from "@/components/admin/hotels/HotelSearchBar";
+import HotelManagementHeader from "@/components/admin/hotels/HotelManagementHeader";
+import FeaturedHotels from "@/components/admin/hotels/FeaturedHotels";
 import HotelList from "@/components/admin/hotels/HotelList";
-import { FilterOptions, Hotel } from "@/components/admin/hotels/types";
 
 interface HotelAdminContentProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   handleSearch: () => void;
-  handleFilterChange: (filters: FilterOptions) => void;
+  handleFilterChange: (filters: any) => void;
   handleClearFilters: () => void;
-  setIsFilterPanelOpen: (isOpen: boolean) => void;
-  filterOptions: FilterOptions;
-  hotels: Hotel[];
-  filteredHotels: Hotel[];
+  setIsFilterPanelOpen: (open: boolean) => void;
+  filterOptions: any;
+  hotels: any[];
+  filteredHotels: any[];
   loading: boolean;
   showFavoritesOnly: boolean;
   toggleFavoritesFilter: () => void;
   handleDeleteHotel: (id: number) => void;
   handleOpenEditHotel: (id: number) => void;
-  handleToggleStatus: (id: number, currentStatus?: string) => void;
-  handleToggleFeatured: (id: number, featured: boolean) => void;
-  handleCloneHotel: (hotel: Hotel) => void;
-  handleBulkAction: (actionType: string, hotelIds: number[]) => void;
+  handleToggleStatus: (id: number) => void;
+  handleToggleFeatured: (id: number) => void;
+  handleCloneHotel: (id: number) => void;
+  handleBulkAction: (action: string, ids: number[]) => void;
   handleOpenVersionHistory: (id: number) => void;
-  handleOpenAuditLog: (id: number) => void;
+  handleOpenAuditLog: (id?: number) => void;
   addNotification: (notification: any) => void;
 }
 
@@ -51,51 +53,68 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
   handleOpenAuditLog,
   addNotification
 }) => {
+  const [viewMode, setViewMode] = useState<'all' | 'featured'>('all');
+  
   return (
-    <div className="grid grid-cols-1 gap-6">
-      <div className="space-y-4">
+    <div className="space-y-4">
+      <div className="bg-white p-4 rounded-lg shadow-sm">
         <HotelSearchBar 
-          searchQuery={searchTerm} 
-          setSearchQuery={setSearchTerm} 
-          handleFilter={() => setIsFilterPanelOpen(true)}
-          onSearch={handleSearch}
-          activeFilters={filterOptions}
-          onClearFilters={handleClearFilters}
-          showFavoritesOnly={showFavoritesOnly}
-          onToggleFavoritesFilter={toggleFavoritesFilter}
-        />
-
-        <HotelList
-          hotels={hotels}
-          filteredHotels={filteredHotels}
-          onDelete={(id) => {
-            handleDeleteHotel(id);
-            addNotification({
-              type: 'alert',
-              title: 'Hotel Deleted',
-              message: 'A hotel has been removed from the system.'
-            });
-          }}
-          onEdit={handleOpenEditHotel}
-          onToggleStatus={(id) => {
-            const hotel = hotels.find(h => h.id === id);
-            if (hotel) {
-              handleToggleStatus(id, hotel.status);
-              addNotification({
-                type: 'system',
-                title: 'Hotel Status Changed',
-                message: `Hotel "${hotel.name}" status changed to ${hotel.status === 'active' ? 'inactive' : 'active'}.`
-              });
-            }
-          }}
-          onToggleFeatured={handleToggleFeatured}
-          onClone={handleCloneHotel}
-          onBulkAction={handleBulkAction}
-          onViewHistory={handleOpenVersionHistory}
-          onViewAuditLog={handleOpenAuditLog}
-          isLoading={loading}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          handleSearch={handleSearch}
+          setIsFilterPanelOpen={setIsFilterPanelOpen}
+          handleClearFilters={handleClearFilters}
+          filterCount={Object.values(filterOptions).flat().length}
         />
       </div>
+      
+      <HotelManagementHeader 
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        showFavoritesOnly={showFavoritesOnly}
+        toggleFavoritesFilter={toggleFavoritesFilter}
+      />
+      
+      {viewMode === 'featured' ? (
+        <FeaturedHotels 
+          hotels={filteredHotels.filter(hotel => hotel.featured)}
+          loading={loading}
+          handleDeleteHotel={handleDeleteHotel}
+          handleOpenEditHotel={handleOpenEditHotel}
+          handleToggleStatus={handleToggleStatus}
+          handleToggleFeatured={handleToggleFeatured}
+          handleCloneHotel={handleCloneHotel}
+          handleOpenVersionHistory={handleOpenVersionHistory}
+          handleOpenAuditLog={handleOpenAuditLog}
+        />
+      ) : (
+        <HotelList 
+          hotels={filteredHotels}
+          loading={loading}
+          handleDeleteHotel={handleDeleteHotel}
+          handleOpenEditHotel={handleOpenEditHotel}
+          handleToggleStatus={handleToggleStatus}
+          handleToggleFeatured={handleToggleFeatured}
+          handleCloneHotel={handleCloneHotel}
+          handleBulkAction={handleBulkAction}
+          handleOpenVersionHistory={handleOpenVersionHistory}
+          handleOpenAuditLog={handleOpenAuditLog}
+          addNotification={addNotification}
+        />
+      )}
+      
+      {!loading && filteredHotels.length === 0 && (
+        <div className="bg-white p-8 rounded-lg shadow-sm text-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No hotels found</h3>
+          <p className="text-gray-500 mb-4">Try clearing filters or adding a new hotel.</p>
+          <Button 
+            onClick={() => handleClearFilters()}
+            className="bg-stone-100 text-stone-800 hover:bg-stone-200"
+          >
+            Clear Filters
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

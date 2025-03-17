@@ -18,6 +18,9 @@ import UsersPage from '@/pages/admin/Users';
 import Hotels from '@/pages/Hotels';
 import BikeRentals from '@/pages/BikeRentals';
 import CarRentals from '@/pages/CarRentals';
+import AdminHotels from '@/pages/admin/Hotels';
+import AdminBikeRentals from '@/pages/admin/BikeRentals';
+import AdminCarRentals from '@/pages/admin/CarRentals';
 
 function App() {
   return (
@@ -43,7 +46,9 @@ function App() {
             {/* Protected routes for admin users */}
             <Route element={<AdminRoute />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/hotels" element={<div>Hotel Management</div>} />
+              <Route path="/admin/hotels" element={<AdminHotels />} />
+              <Route path="/admin/bikes" element={<AdminBikeRentals />} />
+              <Route path="/admin/cars" element={<AdminCarRentals />} />
               <Route path="/admin/bookings" element={<div>Booking Management</div>} />
               <Route path="/admin/users" element={<UsersPage />} />
             </Route>

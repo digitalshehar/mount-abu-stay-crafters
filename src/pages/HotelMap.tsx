@@ -1,70 +1,74 @@
 
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Helmet } from 'react-helmet-async';
-import HotelMap from '@/components/hotels/map/HotelMap';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import { supabase } from '@/integrations/supabase/client';
-import { Hotel } from '@/components/admin/hotels/types';
+import React, { useState } from 'react';
+import { useHotels } from '@/hooks/useHotels';
+import MapContainer from '@/components/hotels/map/components/MapContainer';
+import MapHeader from '@/components/hotels/map/components/MapHeader';
+import MapSidebar from '@/components/hotels/map/components/MapSidebar';
+import { useMapFunctions } from '@/components/hotels/map/hooks/useMapFunctions';
+import { useMapFilters } from '@/components/hotels/map/hooks/useMapFilters';
+import HotelFilters from '@/components/hotels/HotelFilters';
+import MapLoading from '@/components/hotels/map/MapLoading';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
-const HotelMapPage = () => {
-  // Fetch hotels data
-  const { data: hotels, isLoading } = useQuery({
-    queryKey: ['hotels'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('hotels')
-        .select('*')
-        .order('id', { ascending: true });
-      
-      if (error) {
-        throw error;
-      }
-      
-      // Transform data to match the Hotel type
-      return (data || []).map(hotel => ({
-        id: hotel.id,
-        name: hotel.name,
-        slug: hotel.slug,
-        location: hotel.location,
-        stars: hotel.stars,
-        pricePerNight: hotel.price_per_night,
-        image: hotel.image,
-        status: hotel.status as 'active' | 'inactive',
-        description: hotel.description || '',
-        amenities: hotel.amenities || [],
-        rooms: [],
-        featured: hotel.featured || false,
-        reviewCount: hotel.review_count || 0,
-        rating: hotel.rating || 0,
-        gallery: hotel.gallery || [],
-        categories: hotel.categories || [],
-        latitude: hotel.latitude,
-        longitude: hotel.longitude,
-      })) as Hotel[];
-    }
-  });
+const HotelMap = () => {
+  const { hotels, loading } = useHotels();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   
+  const { filters, filterOptions, handleFilterChange, handleClearFilters, filteredHotels } = 
+    useMapFilters(hotels, "");
+  
+  const {
+    mapCenter,
+    mapZoom,
+    selectedHotel,
+    setSelectedHotel,
+    onMapLoad
+  } = useMapFunctions(filteredHotels);
+
+  if (loading) {
+    return <MapLoading />;
+  }
+
   return (
-    <>
-      <Helmet>
-        <title>Hotel Map | Mount Abu Hotels</title>
-        <meta name="description" content="Explore hotels in Mount Abu on an interactive map. Find the perfect location for your stay." />
-      </Helmet>
+    <div className="h-screen flex flex-col">
+      <MapHeader 
+        selectedHotel={selectedHotel}
+        hotelsCount={filteredHotels.length}
+        onOpenFilter={() => setIsFilterOpen(true)}
+      />
       
-      <Header />
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 relative">
+          <MapContainer
+            center={mapCenter}
+            zoom={mapZoom}
+            onLoad={onMapLoad}
+          />
+        </div>
+        
+        <div className="hidden lg:block">
+          <MapSidebar 
+            hotels={filteredHotels}
+            selectedHotel={selectedHotel}
+            onSelectHotel={setSelectedHotel}
+          />
+        </div>
+      </div>
       
-      <main className="min-h-screen bg-stone-50 pt-16">
-        <HotelMap 
-          hotels={hotels || []} 
-          isLoading={isLoading} 
-        />
-      </main>
-      
-      <Footer />
-    </>
+      <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+        <SheetContent side="left" className="w-full sm:max-w-md">
+          <HotelFilters 
+            filters={filters}
+            filterOptions={filterOptions}
+            handleFilterChange={handleFilterChange}
+            handleClearFilters={handleClearFilters}
+            activeFilterCount={Object.values(filters).flat().length}
+            filtersApplied={Object.values(filters).some(v => v.length > 0)}
+          />
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 };
 
-export default HotelMapPage;
+export default HotelMap;

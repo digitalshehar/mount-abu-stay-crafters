@@ -1,61 +1,46 @@
 
 import React from 'react';
-import MapControls from './MapControls';
-import ActiveFilters from '../../ActiveFilters';
+import { ArrowLeft, List, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 interface MapHeaderProps {
-  viewMode: 'map' | 'list';
-  setViewMode: (mode: 'map' | 'list') => void;
-  activeFilterCount: number;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  selectedStars: number[];
-  setSelectedStars: (stars: number[]) => void;
-  selectedAmenities: string[];
-  setSelectedAmenities: (amenities: string[]) => void;
-  priceRange: [number, number];
-  setPriceRange: (range: [number, number]) => void;
-  clearFilters: () => void;
+  selectedHotel: any | null;
+  hotelsCount: number;
+  onOpenFilter: () => void;
 }
 
-const MapHeader: React.FC<MapHeaderProps> = ({
-  viewMode,
-  setViewMode,
-  activeFilterCount,
-  searchQuery,
-  setSearchQuery,
-  selectedStars,
-  setSelectedStars,
-  selectedAmenities,
-  setSelectedAmenities,
-  priceRange,
-  setPriceRange,
-  clearFilters
-}) => {
+const MapHeader: React.FC<MapHeaderProps> = ({ selectedHotel, hotelsCount, onOpenFilter }) => {
   return (
-    <>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold">Hotels in Mount Abu</h1>
-        <MapControls viewMode={viewMode} setViewMode={setViewMode} />
+    <div className="bg-white p-4 shadow-sm flex justify-between items-center">
+      <div className="flex items-center gap-2">
+        <Link to="/hotels">
+          <Button variant="ghost" size="icon" className="mr-2">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        </Link>
+        
+        {selectedHotel ? (
+          <div className="flex items-center">
+            <MapPin className="h-5 w-5 text-primary mr-2" />
+            <h1 className="text-lg font-medium">{selectedHotel.name}</h1>
+          </div>
+        ) : (
+          <div className="flex items-center">
+            <MapPin className="h-5 w-5 text-primary mr-2" />
+            <h1 className="text-lg font-medium">Map View</h1>
+            <span className="ml-2 text-sm text-muted-foreground">
+              {hotelsCount} {hotelsCount === 1 ? 'hotel' : 'hotels'} found
+            </span>
+          </div>
+        )}
       </div>
       
-      {activeFilterCount > 0 && (
-        <div className="mb-6">
-          <ActiveFilters 
-            activeFilterCount={activeFilterCount}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedStars={selectedStars}
-            setSelectedStars={setSelectedStars}
-            selectedAmenities={selectedAmenities}
-            setSelectedAmenities={setSelectedAmenities}
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
-            clearFilters={clearFilters}
-          />
-        </div>
-      )}
-    </>
+      <Button variant="outline" size="sm" onClick={onOpenFilter}>
+        <List className="h-4 w-4 mr-2" />
+        Filters
+      </Button>
+    </div>
   );
 };
 
