@@ -8,6 +8,11 @@ import { useMapFunctions } from '@/components/hotels/map/hooks/useMapFunctions';
 import { useMapFilters } from '@/components/hotels/map/hooks/useMapFilters';
 import MapLoading from '@/components/hotels/map/MapLoading';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
+import { Hotel as IntegrationHotel } from '@/integrations/supabase/custom-types';
+
+// Use the Hotel type that matches the schema expected by components
+type Hotel = IntegrationHotel;
 
 const HotelMap = () => {
   const { hotels, loading } = useHotels();
@@ -15,7 +20,26 @@ const HotelMap = () => {
   
   // Create simplified versions of these objects for the page
   const mapFilters = useMapFilters();
-  const filteredHotels = mapFilters.filterHotels(hotels);
+  
+  // Convert AdminHotel type to IntegrationHotel type if needed
+  const adaptedHotels: Hotel[] = hotels.map((hotel: AdminHotel): Hotel => ({
+    id: hotel.id,
+    name: hotel.name,
+    slug: hotel.slug,
+    location: hotel.location,
+    stars: hotel.stars,
+    price_per_night: hotel.pricePerNight,
+    image: hotel.image,
+    status: hotel.status,
+    description: hotel.description,
+    amenities: hotel.amenities,
+    review_count: hotel.reviewCount,
+    rating: hotel.rating,
+    featured: hotel.featured,
+    rooms: hotel.rooms
+  }));
+  
+  const filteredHotels = mapFilters.filterHotels(adaptedHotels);
   
   const {
     mapCenter,
@@ -35,6 +59,18 @@ const HotelMap = () => {
         selectedHotel={selectedHotel}
         hotelsCount={filteredHotels.length}
         onOpenFilter={() => setIsFilterOpen(true)}
+        viewMode="map"
+        setViewMode={() => {}} // Placeholder
+        activeFilterCount={mapFilters.activeFilterCount}
+        searchQuery={mapFilters.searchQuery}
+        setSearchQuery={mapFilters.setSearchQuery}
+        selectedStars={mapFilters.selectedStars}
+        setSelectedStars={mapFilters.setSelectedStars}
+        selectedAmenities={mapFilters.selectedAmenities}
+        setSelectedAmenities={mapFilters.setSelectedAmenities}
+        priceRange={mapFilters.priceRange}
+        setPriceRange={mapFilters.setPriceRange}
+        clearFilters={mapFilters.clearFilters}
       />
       
       <div className="flex flex-1 overflow-hidden">

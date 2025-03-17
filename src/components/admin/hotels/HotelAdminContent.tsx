@@ -6,6 +6,15 @@ import HotelManagementHeader from "@/components/admin/hotels/HotelManagementHead
 import FeaturedHotels from "@/components/admin/hotels/FeaturedHotels";
 import HotelList from "@/components/admin/hotels/HotelList";
 
+interface HotelSearchBarProps {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  handleSearch: () => void;
+  setIsFilterPanelOpen: (open: boolean) => void;
+  handleClearFilters: () => void;
+  filterCount: number;
+}
+
 interface HotelAdminContentProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;

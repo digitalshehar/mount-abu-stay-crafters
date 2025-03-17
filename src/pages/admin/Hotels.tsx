@@ -4,6 +4,7 @@ import { useHotelManagement } from "@/hooks/useHotelManagement";
 import HotelAdminHeader from "@/components/admin/hotels/HotelAdminHeader";
 import HotelAdminContent from "@/components/admin/hotels/HotelAdminContent";
 import HotelDialogs from "@/components/admin/hotels/HotelDialogs";
+import { Hotel } from "@/components/admin/hotels/types";
 
 const HotelsManagement = () => {
   const hotelManagement = useHotelManagement();

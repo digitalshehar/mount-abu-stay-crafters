@@ -11,6 +11,8 @@ interface Hotel {
   price_per_night: number;
   rating?: number;
   stars: number;
+  slug: string;
+  reviewCount: number;
   [key: string]: any;
 }
 
@@ -18,9 +20,32 @@ interface MapSidebarProps {
   hotels: Hotel[];
   selectedHotel: Hotel | null;
   onSelectHotel: (hotel: Hotel) => void;
+  // New props to match the props in HotelMap.tsx
+  priceRange?: [number, number];
+  setPriceRange?: (range: [number, number]) => void;
+  selectedStars?: number[];
+  handleStarFilter?: (star: number) => void;
+  selectedAmenities?: string[];
+  handleAmenityFilter?: (amenity: string) => void;
+  clearFilters?: () => void;
+  commonAmenities?: string[];
+  onSelectZone?: (bounds: any) => void;
 }
 
-const MapSidebar = ({ hotels, selectedHotel, onSelectHotel }: MapSidebarProps) => {
+const MapSidebar = ({ 
+  hotels, 
+  selectedHotel, 
+  onSelectHotel,
+  priceRange,
+  setPriceRange,
+  selectedStars,
+  handleStarFilter,
+  selectedAmenities,
+  handleAmenityFilter,
+  clearFilters,
+  commonAmenities,
+  onSelectZone
+}: MapSidebarProps) => {
   return (
     <div className="w-full lg:w-96 bg-white border-l border-gray-200 h-full">
       <div className="p-4 border-b">
@@ -40,8 +65,16 @@ const MapSidebar = ({ hotels, selectedHotel, onSelectHotel }: MapSidebarProps) =
               onClick={() => onSelectHotel(hotel)}
             >
               <HotelCard
-                hotel={hotel}
-                variant="compact"
+                id={hotel.id}
+                name={hotel.name}
+                slug={hotel.slug}
+                location={hotel.location}
+                rating={hotel.rating || 0}
+                reviewCount={hotel.reviewCount || 0}
+                image={hotel.image}
+                pricePerNight={hotel.price_per_night}
+                featured={hotel.featured}
+                amenities={hotel.amenities}
               />
             </div>
           ))}
