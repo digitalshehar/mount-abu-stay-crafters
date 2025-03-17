@@ -27,15 +27,18 @@ const HotelMap = () => {
     slug: hotel.slug,
     location: hotel.location,
     stars: hotel.stars,
-    price_per_night: hotel.pricePerNight,
+    price_per_night: hotel.pricePerNight || 0,
     image: hotel.image,
-    status: hotel.status,
-    description: hotel.description,
-    amenities: hotel.amenities,
-    review_count: hotel.reviewCount,
-    rating: hotel.rating,
-    featured: hotel.featured,
-    rooms: hotel.rooms
+    status: hotel.status || 'active',
+    description: hotel.description || '',
+    amenities: hotel.amenities || [],
+    review_count: hotel.reviewCount || 0,
+    rating: hotel.rating || 0,
+    featured: hotel.featured || false,
+    rooms: hotel.rooms || [],
+    // Add lat/lng for map functionality
+    latitude: hotel.latitude || 24.5927,
+    longitude: hotel.longitude || 72.7156
   }));
   
   const filteredHotels = mapFilters.filterHotels(adaptedHotels);

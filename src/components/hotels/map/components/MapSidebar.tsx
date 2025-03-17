@@ -12,7 +12,14 @@ interface Hotel {
   rating?: number;
   stars: number;
   slug: string;
-  reviewCount: number;
+  review_count?: number;
+  status: string;
+  amenities?: string[];
+  description?: string;
+  featured?: boolean;
+  rooms?: any[];
+  latitude?: number;
+  longitude?: number;
   [key: string]: any;
 }
 
@@ -70,11 +77,11 @@ const MapSidebar = ({
                 slug={hotel.slug}
                 location={hotel.location}
                 rating={hotel.rating || 0}
-                reviewCount={hotel.reviewCount || 0}
+                reviewCount={hotel.review_count || 0}
                 image={hotel.image}
                 pricePerNight={hotel.price_per_night}
-                featured={hotel.featured}
-                amenities={hotel.amenities}
+                featured={hotel.featured || false}
+                amenities={hotel.amenities || []}
               />
             </div>
           ))}

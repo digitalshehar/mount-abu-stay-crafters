@@ -26,6 +26,9 @@ const mountAbuCenter = {
   lng: 72.7156,
 };
 
+// Default zoom level
+const defaultZoom = 13;
+
 // Map options
 const mapOptions = {
   disableDefaultUI: false,
@@ -116,6 +119,10 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const [localSelectedHotelId, setLocalSelectedHotelId] = useState<number | null>(selectedHotelId || null);
   const [selectedMarker, setSelectedMarker] = useState<Hotel | null>(null);
   
+  // Map center and zoom
+  const [mapCenter, setMapCenter] = useState(mountAbuCenter);
+  const [mapZoom, setMapZoom] = useState(defaultZoom);
+  
   // Map feature states
   const [showHeatmap, setShowHeatmap] = useState(false);
 
@@ -158,15 +165,31 @@ const HotelMap: React.FC<HotelMapProps> = ({
         
         // If the map is loaded, center on the selected hotel
         if (mapRef.current && hotel.latitude && hotel.longitude) {
-          mapRef.current.panTo({ lat: hotel.latitude, lng: hotel.longitude });
-          mapRef.current.setZoom(15);
+          setMapCenter({
+            lat: hotel.latitude,
+            lng: hotel.longitude
+          });
+          setMapZoom(15);
         }
       }
     }
   }, [selectedHotelSlug, hotels, isLoaded]);
   
-  // Calculate filtered hotels
-  const filteredHotels = filterHotels(hotels);
+  // Calculate filtered hotels 
+  // We need to convert admin hotels type to integration hotels type
+  const convertedHotels = hotels.map(hotel => ({
+    ...hotel,
+    price_per_night: hotel.pricePerNight || hotel.price_per_night,
+    review_count: hotel.reviewCount || hotel.review_count || 0,
+    // Ensure all required properties are present
+    status: hotel.status || 'active',
+    description: hotel.description || '',
+    amenities: hotel.amenities || [],
+    featured: hotel.featured || false,
+    rooms: hotel.rooms || []
+  }));
+  
+  const filteredHotels = filterHotels(convertedHotels);
   
   // Get visible hotels
   const visibleHotels = getVisibleHotels(filteredHotels, viewMode);
@@ -279,6 +302,11 @@ const HotelMap: React.FC<HotelMapProps> = ({
     );
   }
   
+  // Create a wrapper function for setSelectedMarker that accepts a Hotel parameter
+  const handleSelectHotel = (hotel: Hotel) => {
+    setSelectedMarker(hotel);
+  };
+  
   return (
     <div className="container mx-auto py-6 lg:py-8 px-4">
       <MapHeader 
@@ -303,7 +331,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
         <MapSidebar 
           hotels={filteredHotels}
           selectedHotel={selectedMarker}
-          onSelectHotel={setSelectedMarker}
+          onSelectHotel={handleSelectHotel}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           selectedStars={selectedStars}
@@ -322,15 +350,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
                 center={mapCenter}
                 zoom={mapZoom}
                 onLoad={onMapLoad}
-                isLoading={isLoading}
-                isLoaded={isLoaded}
-                mapContainerStyle={mapContainerStyle}
-                mapOptions={mapOptions}
-                handleBoundsChanged={handleBoundsChanged}
-                showHeatmap={showHeatmap}
-              >
-                {/* Map children would go here */}
-              </MapContainer>
+              />
               
               <MapFeaturesManager 
                 onUserLocation={handleUserLocation}
@@ -341,7 +361,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
           ) : (
             <HotelContent 
               isLoading={isLoading}
-              filteredHotels={filteredHotels}
+              filteredHotels={filteredHotels as any[]}
               activeFilterCount={activeFilterCount}
               clearFilters={clearFilters}
               compareList={compareList}
@@ -361,7 +381,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
       
       {/* Hotel Comparison Feature */}
       <CompareHotelsFeature 
-        hotels={hotels}
+        hotels={hotels as any[]}
         compareList={compareList}
         onAddToCompare={addToCompare}
         onRemoveFromCompare={removeFromCompare}
