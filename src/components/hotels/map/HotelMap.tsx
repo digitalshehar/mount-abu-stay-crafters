@@ -12,25 +12,21 @@ import HotelContent from '../HotelContent';
 import CompareHotelsFeature from '../comparison/CompareHotelsFeature';
 import { useMapFilters } from './hooks/useMapFilters';
 import { useHotelComparison } from '@/hooks/useHotelComparison';
-import { adminToIntegrationHotel } from '@/utils/hotelTypeAdapter';
+import { adminToIntegrationHotel, convertAdminToIntegrationHotels } from '@/utils/hotelTypeAdapter';
 import './HotelMapStyles.css';
 
-// Define map container styles
 const mapContainerStyle = {
   width: '100%',
   height: '100%',
 };
 
-// Mount Abu center coordinates
 const mountAbuCenter = {
   lat: 24.5927,
   lng: 72.7156,
 };
 
-// Default zoom level
 const defaultZoom = 13;
 
-// Map options
 const mapOptions = {
   disableDefaultUI: false,
   zoomControl: true,
@@ -87,7 +83,6 @@ const mapOptions = {
   ],
 };
 
-// Define libraries array statically to prevent unnecessary reloads
 const libraries = ['places', 'visualization'] as ("places" | "drawing" | "geometry" | "visualization")[];
 
 interface HotelMapProps {
@@ -109,28 +104,21 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const location = useLocation();
   const mapRef = useRef<google.maps.Map | null>(null);
   
-  // Get the selected hotel slug from URL query parameters
   const queryParams = new URLSearchParams(location.search);
   const selectedHotelSlug = queryParams.get('selected');
   
-  // View state (map or list)
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   
-  // State for selected hotel and info window
   const [localSelectedHotelId, setLocalSelectedHotelId] = useState<number | null>(selectedHotelId || null);
   const [selectedMarker, setSelectedMarker] = useState<Hotel | null>(null);
   
-  // Map center and zoom
   const [mapCenter, setMapCenter] = useState(mountAbuCenter);
   const [mapZoom, setMapZoom] = useState(defaultZoom);
   
-  // Map feature states
   const [showHeatmap, setShowHeatmap] = useState(false);
 
-  // Hotel comparison
   const { compareList, addToCompare, removeFromCompare, clearCompare, isInCompare } = useHotelComparison();
 
-  // Filter states and handlers from custom hook
   const {
     searchQuery,
     setSearchQuery,
@@ -150,24 +138,20 @@ const HotelMap: React.FC<HotelMapProps> = ({
     getVisibleHotels
   } = useMapFilters();
   
-  // Load Google Maps script with the API key from env variables
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
     libraries: libraries,
   });
   
-  // Set selected hotel based on URL parameter
   useEffect(() => {
     if (selectedHotelSlug && hotels.length > 0) {
       const hotel = hotels.find(h => h.slug === selectedHotelSlug);
       
       if (hotel) {
-        // Convert to integration hotel format
         const integrationHotel = adminToIntegrationHotel(hotel);
         setSelectedMarker(integrationHotel);
         setLocalSelectedHotelId(hotel.id);
         
-        // If the map is loaded, center on the selected hotel
         if (mapRef.current && hotel.latitude && hotel.longitude) {
           setMapCenter({
             lat: hotel.latitude,
@@ -179,32 +163,12 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   }, [selectedHotelSlug, hotels, isLoaded]);
   
-  // Convert admin hotels to integration hotels format
-  const convertedHotels: Hotel[] = hotels.map(hotel => ({
-    id: hotel.id,
-    name: hotel.name,
-    slug: hotel.slug,
-    location: hotel.location,
-    stars: hotel.stars,
-    price_per_night: hotel.pricePerNight,
-    image: hotel.image,
-    review_count: hotel.reviewCount,
-    rating: hotel.rating,
-    status: hotel.status,
-    description: hotel.description,
-    amenities: hotel.amenities,
-    featured: hotel.featured,
-    rooms: hotel.rooms,
-    latitude: hotel.latitude,
-    longitude: hotel.longitude
-  }));
+  const convertedHotels: Hotel[] = convertAdminToIntegrationHotels(hotels);
   
   const filteredHotels = filterHotels(convertedHotels);
   
-  // Get visible hotels
   const visibleHotels = getVisibleHotels(filteredHotels, viewMode);
 
-  // Use local or external selectedHotelId depending on props
   const handleHotelSelect = (id: number) => {
     if (setSelectedHotelId) {
       setSelectedHotelId(id);
@@ -213,15 +177,12 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   };
 
-  // Get effective selected hotel ID
   const effectiveSelectedHotelId = selectedHotelId !== undefined ? selectedHotelId : localSelectedHotelId;
   
-  // Handle map load
   const onMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
   }, []);
   
-  // Handle map bounds change
   const handleBoundsChanged = () => {
     if (mapRef.current && onMapMove) {
       const bounds = mapRef.current.getBounds();
@@ -237,12 +198,10 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   };
   
-  // Create a wrapper function for setSelectedMarker that accepts a Hotel parameter
   const handleSelectHotel = (hotel: Hotel) => {
     setSelectedMarker(hotel);
   };
   
-  // Handle rendering errors
   if (loadError) {
     return (
       <div className="container mx-auto py-6 px-4 text-center">
@@ -308,7 +267,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
           ) : (
             <HotelContent 
               isLoading={isLoading}
-              filteredHotels={[]} // This needs to be fixed in a separate issue
+              filteredHotels={convertedHotels} 
               activeFilterCount={activeFilterCount}
               clearFilters={clearFilters}
               compareList={compareList}
@@ -326,9 +285,8 @@ const HotelMap: React.FC<HotelMapProps> = ({
         </div>
       </div>
       
-      {/* Hotel Comparison Feature */}
       <CompareHotelsFeature 
-        hotels={[]} // This also needs to be fixed separately
+        hotels={convertedHotels} 
         compareList={compareList}
         onAddToCompare={addToCompare}
         onRemoveFromCompare={removeFromCompare}

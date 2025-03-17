@@ -40,7 +40,7 @@ export const adminToIntegrationHotel = (hotel: AdminHotel): IntegrationHotel => 
     stars: hotel.stars,
     price_per_night: hotel.pricePerNight,
     image: hotel.image,
-    status: hotel.status,
+    status: hotel.status as 'active' | 'inactive',
     description: hotel.description,
     amenities: hotel.amenities,
     review_count: hotel.reviewCount,
@@ -50,4 +50,18 @@ export const adminToIntegrationHotel = (hotel: AdminHotel): IntegrationHotel => 
     latitude: hotel.latitude,
     longitude: hotel.longitude
   };
+};
+
+/**
+ * Converts an array of IntegrationHotels to AdminHotels
+ */
+export const convertIntegrationToAdminHotels = (hotels: IntegrationHotel[]): AdminHotel[] => {
+  return hotels.map(integrationToAdminHotel);
+};
+
+/**
+ * Converts an array of AdminHotels to IntegrationHotels
+ */
+export const convertAdminToIntegrationHotels = (hotels: AdminHotel[]): IntegrationHotel[] => {
+  return hotels.map(adminToIntegrationHotel);
 };
