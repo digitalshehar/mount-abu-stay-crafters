@@ -8,13 +8,21 @@ interface HotelManagementHeaderProps {
   onOpenAuditLog: () => void;
   onOpenUserRoles: () => void;
   canManageRoles: boolean;
+  viewMode?: 'all' | 'featured';
+  setViewMode?: (mode: 'all' | 'featured') => void;
+  showFavoritesOnly?: boolean;
+  toggleFavoritesFilter?: () => void;
 }
 
 const HotelManagementHeader = ({ 
   onAddHotel, 
   onOpenAuditLog, 
   onOpenUserRoles,
-  canManageRoles
+  canManageRoles,
+  viewMode,
+  setViewMode,
+  showFavoritesOnly,
+  toggleFavoritesFilter
 }: HotelManagementHeaderProps) => {
   return (
     <div className="flex justify-between items-center mb-6">

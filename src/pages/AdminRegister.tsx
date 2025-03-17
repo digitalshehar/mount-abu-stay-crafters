@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -56,22 +55,48 @@ const AdminRegister = () => {
       // Create the user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: {
+            username: email.split('@')[0],
+          },
+        },
       });
       
       if (authError) throw authError;
       
       if (authData.user) {
         try {
-          // Assign admin role in user_roles table
-          const { error: roleError } = await supabase
+          // First check if a role already exists for this user
+          const { data: existingRole, error: checkError } = await supabase
             .from('user_roles')
-            .insert({ 
-              user_id: authData.user.id, 
-              role: 'admin' 
-            });
+            .select('*')
+            .eq('user_id', authData.user.id)
+            .single();
+            
+          if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+            throw checkError;
+          }
           
-          if (roleError) throw roleError;
+          // If role exists, update it
+          if (existingRole) {
+            const { error: updateError } = await supabase
+              .from('user_roles')
+              .update({ role: 'admin' })
+              .eq('user_id', authData.user.id);
+              
+            if (updateError) throw updateError;
+          } else {
+            // Otherwise insert new role
+            const { error: roleError } = await supabase
+              .from('user_roles')
+              .insert({ 
+                user_id: authData.user.id, 
+                role: 'admin' 
+              });
+            
+            if (roleError) throw roleError;
+          }
           
           toast({
             title: "Admin registration successful",
