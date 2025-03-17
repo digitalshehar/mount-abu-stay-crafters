@@ -1,5 +1,5 @@
 
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2, ShieldAlert } from 'lucide-react';
@@ -12,23 +12,9 @@ interface AdminRouteProps {
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { isLoading, isAdmin, user } = useAuth();
   const location = useLocation();
-  const [isChecking, setIsChecking] = useState(true);
-  const [adminVerified, setAdminVerified] = useState(false);
 
-  // Effect to verify admin status with a small delay for better UX
-  useEffect(() => {
-    if (!isLoading) {
-      const timer = setTimeout(() => {
-        setAdminVerified(isAdmin);
-        setIsChecking(false);
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, isAdmin]);
-
-  // Show a better loading state
-  if (isLoading || isChecking) {
+  // Show loading state
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 dark:bg-stone-900 transition-colors duration-300">
         <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
@@ -43,7 +29,7 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   }
 
   // If logged in but not admin, show access denied
-  if (!adminVerified) {
+  if (!isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 dark:bg-stone-900 transition-colors duration-300">
         <div className="bg-white dark:bg-stone-800 p-8 rounded-xl shadow-md dark:shadow-stone-900/30 max-w-md w-full text-center transition-colors duration-300">

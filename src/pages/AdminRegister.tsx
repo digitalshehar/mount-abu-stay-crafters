@@ -20,10 +20,15 @@ const AdminRegister = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  // The admin code is fixed for demonstration purposes
+  // In a production environment, you would use a more secure approach
+  const ADMIN_CODE = 'mountabu2024';
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
+    // Form validation
     if (!email || !password || !confirmPassword || !adminCode) {
       setError('Please fill in all fields');
       return;
@@ -39,8 +44,8 @@ const AdminRegister = () => {
       return;
     }
     
-    // Simple admin verification - You can replace this with an actual verification system
-    if (adminCode !== 'mountabu2024') {
+    // Verify admin code
+    if (adminCode !== ADMIN_CODE) {
       setError('Invalid admin registration code');
       return;
     }
@@ -48,7 +53,7 @@ const AdminRegister = () => {
     setLoading(true);
     
     try {
-      // Create the user
+      // Create the user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password
@@ -58,7 +63,7 @@ const AdminRegister = () => {
       
       if (authData.user) {
         try {
-          // Assign admin role
+          // Assign admin role in user_roles table
           const { error: roleError } = await supabase
             .from('user_roles')
             .insert({ 
@@ -69,7 +74,7 @@ const AdminRegister = () => {
           if (roleError) throw roleError;
           
           toast({
-            title: "Registration successful",
+            title: "Admin registration successful",
             description: "You can now login with your admin credentials.",
             variant: "default",
           });

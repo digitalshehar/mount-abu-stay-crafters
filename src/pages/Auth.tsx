@@ -10,55 +10,33 @@ import LoginForm from '@/components/auth/LoginForm';
 import SignupForm from '@/components/auth/SignupForm';
 
 const Auth = () => {
-  const { signIn, signUp, loading, user } = useAuth();
+  const { signIn, signUp, loading, user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const isAdmin = searchParams.get('admin') === 'true';
+  const isAdminLogin = searchParams.get('admin') === 'true';
   
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      // Check if user is admin and admin page is requested
-      if (isAdmin) {
-        checkIsAdmin(user.id).then(isAdmin => {
-          if (isAdmin) {
-            navigate('/admin/dashboard');
-          } else {
-            navigate('/');
-          }
-        });
+      if (isAdminLogin) {
+        // If admin login is requested, check if user has admin role
+        if (isAdmin) {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/');
+        }
       } else {
+        // Regular user flow
         navigate('/');
       }
     }
-  }, [user, navigate, isAdmin]);
-
-  // Check if user has admin role
-  const checkIsAdmin = async (userId: string): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'admin')
-        .single();
-      
-      if (error) {
-        console.error("Error checking admin role:", error);
-        return false;
-      }
-      
-      return !!data;
-    } catch (error) {
-      console.error("Error in checkIsAdmin:", error);
-      return false;
-    }
-  };
+  }, [user, navigate, isAdminLogin, isAdmin]);
 
   // Handle login submission
   const handleSignIn = async (email: string, password: string): Promise<void> => {
     try {
       await signIn(email, password);
+      // Navigation is handled in the useEffect above
     } catch (error: any) {
       throw new Error(error.message || 'Failed to sign in');
     }
@@ -82,7 +60,7 @@ const Auth = () => {
         </Link>
       </div>
       
-      {isAdmin ? (
+      {isAdminLogin ? (
         <Card className="border-primary/20">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
