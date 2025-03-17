@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HotelCard } from '@/components/hotels/HotelCard';
+import HotelCard from '@/components/HotelCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MapSidebarProps {
@@ -28,7 +28,17 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ hotels, selectedHotel, onSelect
               }`}
               onClick={() => onSelectHotel(hotel)}
             >
-              <HotelCard hotel={hotel} variant="compact" />
+              <HotelCard 
+                id={hotel.id}
+                name={hotel.name}
+                slug={hotel.slug}
+                location={hotel.location}
+                rating={hotel.rating}
+                reviewCount={hotel.reviewCount}
+                image={hotel.image}
+                pricePerNight={hotel.price || hotel.pricePerNight}
+                featured={hotel.featured}
+              />
             </div>
           ))}
         </div>
