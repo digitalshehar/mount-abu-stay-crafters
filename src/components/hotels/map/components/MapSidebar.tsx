@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HotelCard } from '@/components/HotelCard';
+import HotelCard from '@/components/HotelCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Hotel {

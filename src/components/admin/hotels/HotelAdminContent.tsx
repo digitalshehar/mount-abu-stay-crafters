@@ -64,9 +64,9 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
     <div className="space-y-4">
       <div className="bg-white p-4 rounded-lg shadow-sm">
         <HotelSearchBar 
-          searchQuery={searchTerm}
-          setSearchQuery={setSearchTerm}
-          onSearch={handleSearch}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          handleSearch={handleSearch}
           setIsFilterPanelOpen={setIsFilterPanelOpen}
           handleClearFilters={handleClearFilters}
           filterCount={getFilterCount()}
@@ -98,6 +98,7 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
         />
       ) : (
         <HotelList 
+          hotels={hotels}
           filteredHotels={filteredHotels}
           isLoading={loading}
           onDelete={handleDeleteHotel}

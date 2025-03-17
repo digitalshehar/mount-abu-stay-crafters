@@ -18,6 +18,9 @@ interface HotelSearchBarProps {
   setIsFilterPanelOpen: (open: boolean) => void;
   handleClearFilters: () => void;
   filterCount: number;
+  searchQuery?: string;
+  setSearchQuery?: (term: string) => void;
+  onSearch?: () => void;
 }
 
 const CURRENCIES: Currency[] = [
@@ -41,20 +44,28 @@ const HotelSearchBar: React.FC<HotelSearchBarProps> = ({
   setIsFilterPanelOpen,
   handleClearFilters,
   filterCount,
+  searchQuery,
+  setSearchQuery,
+  onSearch,
 }) => {
   const { user } = useAuth();
   const [currency, setCurrency] = useState(CURRENCIES[0]);
   const [language, setLanguage] = useState(LANGUAGES[0]);
   
+  // Use provided search props or fall back to the original ones
+  const effectiveSearchQuery = searchQuery || searchTerm;
+  const effectiveSetSearchQuery = setSearchQuery || setSearchTerm;
+  const effectiveOnSearch = onSearch || handleSearch;
+  
   return (
     <div className="flex flex-wrap gap-3 items-center justify-between bg-white p-4 rounded-lg border shadow-sm">
       <div className="w-full md:w-auto flex items-center flex-1 gap-2">
         <SearchInput 
-          searchQuery={searchTerm}
-          setSearchQuery={setSearchTerm}
-          onSearch={handleSearch}
+          searchQuery={effectiveSearchQuery}
+          setSearchQuery={effectiveSetSearchQuery}
+          onSearch={effectiveOnSearch}
         />
-        <Button onClick={handleSearch}>Search</Button>
+        <Button onClick={effectiveOnSearch}>Search</Button>
       </div>
       
       <div className="flex gap-2 flex-wrap mt-3 md:mt-0">
