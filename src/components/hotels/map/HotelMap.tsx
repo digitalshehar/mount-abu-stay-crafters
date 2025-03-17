@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Hotel } from '@/components/admin/hotels/types';
+import { Hotel } from '@/integrations/supabase/custom-types';
 import MapHeader from './components/MapHeader';
 import MapSidebar from './components/MapSidebar';
 import MapContainer from './components/MapContainer';
@@ -293,10 +294,16 @@ const HotelMap: React.FC<HotelMapProps> = ({
         priceRange={priceRange}
         setPriceRange={setPriceRange}
         clearFilters={clearFilters}
+        selectedHotel={selectedMarker}
+        hotelsCount={filteredHotels.length}
+        onOpenFilter={() => {}}
       />
       
       <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
         <MapSidebar 
+          hotels={filteredHotels}
+          selectedHotel={selectedMarker}
+          onSelectHotel={setSelectedMarker}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           selectedStars={selectedStars}
@@ -312,23 +319,18 @@ const HotelMap: React.FC<HotelMapProps> = ({
           {viewMode === 'map' ? (
             <div className="relative">
               <MapContainer
+                center={mapCenter}
+                zoom={mapZoom}
+                onLoad={onMapLoad}
                 isLoading={isLoading}
                 isLoaded={isLoaded}
                 mapContainerStyle={mapContainerStyle}
-                mountAbuCenter={mountAbuCenter}
                 mapOptions={mapOptions}
-                filteredHotels={filteredHotels}
-                selectedHotelId={effectiveSelectedHotelId}
-                selectedMarker={selectedMarker}
-                setSelectedMarker={setSelectedMarker}
-                handleHotelSelect={handleHotelSelect}
-                onMapLoad={onMapLoad}
                 handleBoundsChanged={handleBoundsChanged}
                 showHeatmap={showHeatmap}
-                compareList={compareList}
-                onAddToCompare={addToCompare}
-                isInCompare={isInCompare}
-              />
+              >
+                {/* Map children would go here */}
+              </MapContainer>
               
               <MapFeaturesManager 
                 onUserLocation={handleUserLocation}

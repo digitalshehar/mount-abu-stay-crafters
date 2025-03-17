@@ -20,7 +20,7 @@ interface MapSidebarProps {
   hotels: Hotel[];
   selectedHotel: Hotel | null;
   onSelectHotel: (hotel: Hotel) => void;
-  // New props to match the props in HotelMap.tsx
+  // Filter props
   priceRange?: [number, number];
   setPriceRange?: (range: [number, number]) => void;
   selectedStars?: number[];

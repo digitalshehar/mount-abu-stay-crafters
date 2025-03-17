@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import MapLoading from '../MapLoading';
@@ -50,13 +51,18 @@ const MapContainer: React.FC<MapContainerProps> = ({
   onLoad, 
   children,
   mapContainerStyle = defaultMapContainerStyle,
+  isLoading,
+  isLoaded: explicitIsLoaded,
 }) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
   });
 
-  if (!isLoaded) {
+  // Use explicit isLoaded prop if provided, otherwise use the hook's isLoaded
+  const mapIsLoaded = explicitIsLoaded !== undefined ? explicitIsLoaded : isLoaded;
+
+  if (!mapIsLoaded || isLoading) {
     return <MapLoading />;
   }
 
