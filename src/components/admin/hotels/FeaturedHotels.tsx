@@ -4,9 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star, Trash } from "lucide-react";
+import { Hotel } from "@/components/admin/hotels/types";
 
 interface FeaturedHotelsProps {
-  hotels: any[];
+  hotels: Hotel[];
   isLoading: boolean;
   onDelete: (id: number) => void;
   onEdit: (id: number) => void;
@@ -82,7 +83,7 @@ const FeaturedHotels: React.FC<FeaturedHotelsProps> = ({
               <div>
                 <h3 className="font-medium">{hotel.name}</h3>
                 <p className="text-xs text-stone-500">{hotel.location}</p>
-                <p className="text-sm mt-1">₹{hotel.pricePerNight || hotel.price_per_night}/night</p>
+                <p className="text-sm mt-1">₹{hotel.pricePerNight}/night</p>
               </div>
               <Button
                 variant="ghost"

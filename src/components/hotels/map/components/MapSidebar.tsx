@@ -2,26 +2,7 @@
 import React from 'react';
 import HotelCard from '@/components/HotelCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-interface Hotel {
-  id: number;
-  name: string;
-  location: string;
-  image: string;
-  price_per_night: number;
-  rating?: number;
-  stars: number;
-  slug: string;
-  review_count?: number;
-  status: string;
-  amenities?: string[];
-  description?: string;
-  featured?: boolean;
-  rooms?: any[];
-  latitude?: number;
-  longitude?: number;
-  [key: string]: any;
-}
+import { Hotel } from '@/integrations/supabase/custom-types';
 
 interface MapSidebarProps {
   hotels: Hotel[];

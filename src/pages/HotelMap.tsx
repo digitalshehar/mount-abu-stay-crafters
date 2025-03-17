@@ -8,10 +8,7 @@ import { useMapFunctions } from '@/components/hotels/map/hooks/useMapFunctions';
 import { useMapFilters } from '@/components/hotels/map/hooks/useMapFilters';
 import MapLoading from '@/components/hotels/map/MapLoading';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { Hotel as IntegrationHotel } from '@/integrations/supabase/custom-types';
-
-// Use the Hotel type that matches the schema expected by components
-type Hotel = IntegrationHotel;
+import { Hotel } from '@/integrations/supabase/custom-types';
 
 const HotelMap = () => {
   const { hotels, loading } = useHotels();
@@ -20,7 +17,7 @@ const HotelMap = () => {
   // Create simplified versions of these objects for the page
   const mapFilters = useMapFilters();
   
-  // Use proper type for filteredHotels
+  // Convert admin hotel type to the integration hotel type which matches the expected schema
   const adaptedHotels: Hotel[] = hotels.map((hotel): Hotel => ({
     id: hotel.id,
     name: hotel.name,
