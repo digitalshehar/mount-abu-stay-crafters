@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -168,7 +167,6 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   }, [selectedHotelSlug, hotels, isLoaded]);
   
-  // Convert admin hotels to integration hotels format for the map and filtering
   const convertedHotels: Hotel[] = convertAdminToIntegrationHotels(hotels);
   
   const filteredHotels = filterHotels(convertedHotels);
@@ -204,7 +202,6 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   };
   
-  // Handler to select a hotel with proper type conversion
   const handleSelectHotel = (hotel: Hotel) => {
     setSelectedMarker(hotel);
   };
@@ -285,7 +282,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
           )}
           
           <MapStats 
-            visibleHotels={visibleHotels}
+            visibleHotels={convertIntegrationToAdminHotels(visibleHotels)}
             showHeatmap={showHeatmap}
             viewMode={viewMode}
           />
