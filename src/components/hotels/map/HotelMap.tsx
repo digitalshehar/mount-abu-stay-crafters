@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -12,7 +13,11 @@ import HotelContent from '../HotelContent';
 import CompareHotelsFeature from '../comparison/CompareHotelsFeature';
 import { useMapFilters } from './hooks/useMapFilters';
 import { useHotelComparison } from '@/hooks/useHotelComparison';
-import { adminToIntegrationHotel, convertAdminToIntegrationHotels } from '@/utils/hotelTypeAdapter';
+import { 
+  adminToIntegrationHotel, 
+  convertAdminToIntegrationHotels, 
+  convertIntegrationToAdminHotels 
+} from '@/utils/hotelTypeAdapter';
 import './HotelMapStyles.css';
 
 const mapContainerStyle = {
@@ -163,6 +168,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   }, [selectedHotelSlug, hotels, isLoaded]);
   
+  // Convert admin hotels to integration hotels format for the map and filtering
   const convertedHotels: Hotel[] = convertAdminToIntegrationHotels(hotels);
   
   const filteredHotels = filterHotels(convertedHotels);
@@ -198,6 +204,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   };
   
+  // Handler to select a hotel with proper type conversion
   const handleSelectHotel = (hotel: Hotel) => {
     setSelectedMarker(hotel);
   };
@@ -267,7 +274,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
           ) : (
             <HotelContent 
               isLoading={isLoading}
-              filteredHotels={convertedHotels} 
+              filteredHotels={convertIntegrationToAdminHotels(filteredHotels)} 
               activeFilterCount={activeFilterCount}
               clearFilters={clearFilters}
               compareList={compareList}
@@ -286,7 +293,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
       </div>
       
       <CompareHotelsFeature 
-        hotels={convertedHotels} 
+        hotels={convertIntegrationToAdminHotels(convertedHotels)} 
         compareList={compareList}
         onAddToCompare={addToCompare}
         onRemoveFromCompare={removeFromCompare}
