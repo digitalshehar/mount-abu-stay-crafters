@@ -19,7 +19,7 @@ export interface GoogleMapComponentProps {
   onBoundsChanged?: () => void;
   onMapLoad?: (map: google.maps.Map) => void;
   showHeatmap?: boolean;
-  compareList?: number[];
+  compareList?: Hotel[];
   onAddToCompare?: (hotelId: number) => void;
   isInCompare?: (hotelId: number) => boolean;
 }
@@ -74,6 +74,15 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
     if (onBoundsChanged) onBoundsChanged();
   }, [onBoundsChanged]);
 
+  // Helper function for safely converting types
+  const handleMarkerSelect = (hotelIntegration: IntegrationHotel) => {
+    // Find the matching admin hotel
+    const adminHotel = hotels.find(h => h.id === hotelIntegration.id);
+    if (adminHotel) {
+      setSelectedMarker(adminHotel);
+    }
+  };
+
   return (
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
@@ -83,7 +92,7 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
       onLoad={handleMapLoad}
       onBoundsChanged={handleBoundsChanged}
     >
-      {/* Heatmap layer */}
+      {/* Heatmap layer - Enhanced professional visualization */}
       {showHeatmap && heatmapData.length > 0 && (
         <HeatmapLayer
           data={heatmapData}
@@ -114,8 +123,8 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({
       <MapMarkers 
         hotels={integrationHotels}
         selectedHotelId={selectedHotelId}
-        selectedMarker={selectedMarker as IntegrationHotel} 
-        setSelectedMarker={setSelectedMarker as (hotel: IntegrationHotel | null) => void}
+        selectedMarker={selectedMarker ? convertAdminToIntegrationHotels([selectedMarker])[0] : null}
+        setSelectedMarker={handleMarkerSelect}
         handleHotelSelect={handleHotelSelect}
         onAddToCompare={onAddToCompare}
         isInCompare={isInCompare}

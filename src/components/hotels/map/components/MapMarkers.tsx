@@ -2,7 +2,6 @@
 import React from 'react';
 import { Marker, InfoWindow } from '@react-google-maps/api';
 import { Hotel } from '@/integrations/supabase/custom-types';
-import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
 import { Button } from '@/components/ui/button';
 import { Plus, Check } from 'lucide-react';
 
@@ -12,7 +11,6 @@ interface MapMarkersProps {
   selectedMarker: Hotel | null;
   setSelectedMarker: (hotel: Hotel | null) => void;
   handleHotelSelect: (id: number) => void;
-  compareList?: AdminHotel[];
   onAddToCompare?: (hotelId: number) => void;
   isInCompare?: (hotelId: number) => boolean;
 }
@@ -23,7 +21,6 @@ const MapMarkers: React.FC<MapMarkersProps> = ({
   selectedMarker,
   setSelectedMarker,
   handleHotelSelect,
-  compareList = [],
   onAddToCompare,
   isInCompare = () => false,
 }) => {

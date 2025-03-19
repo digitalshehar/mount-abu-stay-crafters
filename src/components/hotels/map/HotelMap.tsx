@@ -6,7 +6,6 @@ import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
 import MapHeader from './components/MapHeader';
 import MapSidebar from './components/MapSidebar';
 import MapLayout from './components/MapLayout';
-import CompareHotelsFeature from '../comparison/CompareHotelsFeature';
 import { useMapFilters } from './hooks/useMapFilters';
 import { useHotelComparison } from '@/hooks/useHotelComparison';
 import { useMapState } from './hooks/useMapState';
@@ -16,6 +15,7 @@ import {
   convertIntegrationToAdminHotels 
 } from '@/utils/hotelTypeAdapter';
 import './HotelMapStyles.css';
+import CompareHotelsWrapped from './components/CompareHotelsWrapped';
 
 const libraries = ['places', 'visualization'] as ("places" | "drawing" | "geometry" | "visualization")[];
 
@@ -101,10 +101,8 @@ const HotelMap: React.FC<HotelMapProps> = ({
     setMapZoom,
     showHeatmap,
     setShowHeatmap,
-    mapRef,
     onMapLoad,
     handleBoundsChanged,
-    handleSelectHotel
   } = useMapState();
   
   const {
@@ -150,10 +148,6 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const convertedHotels: Hotel[] = convertAdminToIntegrationHotels(hotels);
   const filteredHotels = filterHotels(convertedHotels);
   const visibleHotels = getVisibleHotels(filteredHotels, viewMode);
-  
-  // Convert back to AdminHotel type for components that expect it
-  const adminFilteredHotels = convertIntegrationToAdminHotels(filteredHotels);
-  const adminVisibleHotels = convertIntegrationToAdminHotels(visibleHotels);
   
   if (loadError) {
     return (
@@ -221,8 +215,8 @@ const HotelMap: React.FC<HotelMapProps> = ({
         />
       </div>
       
-      <CompareHotelsFeature 
-        hotels={adminFilteredHotels} 
+      <CompareHotelsWrapped 
+        hotels={convertIntegrationToAdminHotels(filteredHotels)}
         compareList={compareList}
         onAddToCompare={addToCompare}
         onRemoveFromCompare={removeFromCompare}

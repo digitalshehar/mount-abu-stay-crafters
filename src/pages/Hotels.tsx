@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, QueryClientProvider, QueryClient } from "@tanstack/react-query";
@@ -53,7 +52,7 @@ const Hotels = () => {
           stars: hotel.stars,
           pricePerNight: hotel.price_per_night,
           image: hotel.image,
-          status: hotel.status || 'active',
+          status: hotel.status === 'active' ? 'active' : 'inactive',
           description: hotel.description || '',
           amenities: hotel.amenities || [],
           reviewCount: hotel.review_count || 0,
@@ -132,7 +131,7 @@ const Hotels = () => {
                   <span>Mount Abu, Rajasthan, India</span>
                   <span className="mx-2">•</span>
                   <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30 border-none">
-                    {filteredHotels.length} properties
+                    {hotels?.length || 0} properties
                   </Badge>
                 </div>
               </div>
@@ -219,7 +218,7 @@ const Hotels = () => {
                   <HotelZone 
                     hotels={hotels || []}
                     isLoading={isLoading}
-                    clearFilters={clearFilters}
+                    clearFilters={() => {}}
                   />
                 </TabsContent>
               </Tabs>
