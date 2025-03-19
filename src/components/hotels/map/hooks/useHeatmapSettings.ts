@@ -7,6 +7,20 @@ export const useHeatmapSettings = () => {
   const [heatmapIntensity, setHeatmapIntensity] = useState(0.7);
   const [heatmapColorScheme, setHeatmapColorScheme] = useState('default');
   
+  // List of available color schemes
+  const colorSchemes = [
+    { id: 'default', name: 'Default Blue-Red' },
+    { id: 'green', name: 'Green Intensity' },
+    { id: 'purple', name: 'Purple Spectrum' }
+  ];
+  
+  // Reset heatmap settings to defaults
+  const resetHeatmapSettings = () => {
+    setHeatmapRadius(20);
+    setHeatmapIntensity(0.7);
+    setHeatmapColorScheme('default');
+  };
+  
   return {
     showHeatmap,
     setShowHeatmap,
@@ -15,6 +29,8 @@ export const useHeatmapSettings = () => {
     heatmapIntensity,
     setHeatmapIntensity,
     heatmapColorScheme,
-    setHeatmapColorScheme
+    setHeatmapColorScheme,
+    colorSchemes,
+    resetHeatmapSettings
   };
 };

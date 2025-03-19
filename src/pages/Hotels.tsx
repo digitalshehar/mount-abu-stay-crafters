@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, QueryClientProvider, QueryClient } from "@tanstack/react-query";
@@ -19,8 +18,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import HotelZone from "@/components/hotels/HotelZone";
 import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
+import { useHotelFilters } from "@/components/hotels/useHotelFilters";
 
-// Create a new query client instance
 const queryClient = new QueryClient();
 
 const Hotels = () => {
@@ -43,7 +42,6 @@ const Hotels = () => {
           throw error;
         }
         
-        // Convert the raw data to the AdminHotel type
         const adminHotels: AdminHotel[] = (data || []).map(hotel => ({
           id: hotel.id,
           name: hotel.name,
@@ -58,7 +56,7 @@ const Hotels = () => {
           reviewCount: hotel.review_count || 0,
           rating: hotel.rating || 0,
           featured: hotel.featured || false,
-          rooms: [], // Initialize as empty array
+          rooms: [],
           categories: hotel.categories || [],
           gallery: hotel.gallery || [],
           latitude: hotel.latitude,
@@ -236,7 +234,6 @@ const Hotels = () => {
   );
 };
 
-// Wrap the Hotels component with QueryClientProvider
 const HotelsWithQueryClient = () => {
   return (
     <QueryClientProvider client={queryClient}>

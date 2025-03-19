@@ -5,6 +5,7 @@ import { Hotel } from '@/integrations/supabase/custom-types';
 import MapContainer from './MapContainer';
 import MapFeaturesManager from './MapFeaturesManager';
 import MapStats from './MapStats';
+import MapSearch from './MapSearch';
 import HotelContent from '../../HotelContent';
 import { convertIntegrationToAdminHotels } from '@/utils/hotelTypeAdapter';
 import HeatmapControls from './HeatmapControls';
@@ -26,6 +27,10 @@ interface MapLayoutProps {
   addToCompare: (id: number) => void;
   removeFromCompare: (id: number) => void;
   isInCompare: (id: number) => boolean;
+  mapSearchQuery?: string;
+  setMapSearchQuery?: (query: string) => void;
+  handleMapSearch?: (query: string, hotels: Hotel[]) => Hotel[];
+  isSearching?: boolean;
 }
 
 const MapLayout: React.FC<MapLayoutProps> = ({
@@ -43,7 +48,11 @@ const MapLayout: React.FC<MapLayoutProps> = ({
   compareList,
   addToCompare,
   removeFromCompare,
-  isInCompare
+  isInCompare,
+  mapSearchQuery = '',
+  setMapSearchQuery = () => {},
+  handleMapSearch = () => [],
+  isSearching = false
 }) => {
   // Heatmap customization state
   const [heatmapRadius, setHeatmapRadius] = useState(20);
@@ -71,6 +80,14 @@ const MapLayout: React.FC<MapLayoutProps> = ({
               colorScheme={heatmapColorScheme}
             />
           </MapContainer>
+          
+          <MapSearch 
+            onSearch={handleMapSearch}
+            isSearching={isSearching}
+            hotels={filteredHotels}
+            searchQuery={mapSearchQuery}
+            setSearchQuery={setMapSearchQuery}
+          />
           
           <MapFeaturesManager 
             onUserLocation={() => {}}

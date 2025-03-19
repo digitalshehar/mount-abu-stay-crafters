@@ -15,24 +15,58 @@ export const useMapFilters = () => {
     handleAmenityFilter
   } = useFilterState();
   
+  // Map search state
+  const [mapSearchQuery, setMapSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<Hotel[]>([]);
+  
   // Handle map bounds
   const { mapBounds, setMapBounds } = useMapBounds();
   
   // Calculate active filter count
   const activeFilterCount = useMemo(() => (
     (searchQuery ? 1 : 0) + 
+    (mapSearchQuery ? 1 : 0) +
     selectedStars.length + 
     selectedAmenities.length + 
     (priceRange[0] > 0 || priceRange[1] < 20000 ? 1 : 0)
-  ), [searchQuery, selectedStars, selectedAmenities, priceRange]);
+  ), [searchQuery, mapSearchQuery, selectedStars, selectedAmenities, priceRange]);
   
   // Clear all filters
   const clearFilters = useCallback(() => {
     setSearchQuery('');
+    setMapSearchQuery('');
     setSelectedStars([]);
     setSelectedAmenities([]);
     setPriceRange([0, 20000]);
+    setSearchResults([]);
   }, [setSearchQuery, setSelectedStars, setSelectedAmenities, setPriceRange]);
+  
+  // Handle map search
+  const handleMapSearch = useCallback((query: string, hotels: Hotel[]) => {
+    setMapSearchQuery(query);
+    setIsSearching(true);
+    
+    if (!query.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+    
+    const lowercaseQuery = query.toLowerCase();
+    const results = hotels.filter(hotel => 
+      hotel.name.toLowerCase().includes(lowercaseQuery) ||
+      hotel.location.toLowerCase().includes(lowercaseQuery) ||
+      (hotel.amenities && hotel.amenities.some(amenity => 
+        amenity.toLowerCase().includes(lowercaseQuery)
+      ))
+    );
+    
+    setSearchResults(results);
+    setIsSearching(false);
+    
+    return results;
+  }, []);
   
   // Filter hotels based on criteria
   const filterHotels = useCallback((hotels: Hotel[]): Hotel[] => {
@@ -62,9 +96,16 @@ export const useMapFilters = () => {
         return false;
       }
       
+      // Filter by map search query results
+      if (mapSearchQuery && searchResults.length > 0) {
+        if (!searchResults.some(result => result.id === hotel.id)) {
+          return false;
+        }
+      }
+      
       return true;
     });
-  }, [searchQuery, selectedStars, selectedAmenities, priceRange]);
+  }, [searchQuery, selectedStars, selectedAmenities, priceRange, mapSearchQuery, searchResults]);
   
   // Get visible hotels based on view mode and filters
   const getVisibleHotels = useCallback((hotels: Hotel[], viewMode: 'map' | 'list'): Hotel[] => {
@@ -83,6 +124,11 @@ export const useMapFilters = () => {
   return {
     searchQuery,
     setSearchQuery,
+    mapSearchQuery,
+    setMapSearchQuery,
+    handleMapSearch,
+    isSearching,
+    searchResults,
     selectedStars,
     setSelectedStars,
     selectedAmenities,

@@ -38,7 +38,13 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   
   // Hotel comparison state
-  const { compareList, addToCompare, removeFromCompare, clearCompare, isInCompare } = useHotelComparison();
+  const { 
+    compareList, 
+    addToCompare, 
+    removeFromCompare, 
+    clearCompare, 
+    isInCompare 
+  } = useHotelComparison();
 
   // Map state management
   const {
@@ -66,6 +72,10 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const {
     searchQuery,
     setSearchQuery,
+    mapSearchQuery,
+    setMapSearchQuery,
+    handleMapSearch,
+    isSearching,
     selectedStars,
     setSelectedStars,
     selectedAmenities,
@@ -140,7 +150,9 @@ const HotelMap: React.FC<HotelMapProps> = ({
         <MapSidebar 
           hotels={filteredHotels}
           selectedHotel={selectedMarker}
-          onSelectHotel={handleHotelSelect}
+          onSelectHotel={(hotel: Hotel) => {
+            handleHotelSelect(hotel.id);
+          }}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           selectedStars={selectedStars}
@@ -167,6 +179,10 @@ const HotelMap: React.FC<HotelMapProps> = ({
           addToCompare={addToCompare}
           removeFromCompare={removeFromCompare}
           isInCompare={isInCompare}
+          mapSearchQuery={mapSearchQuery}
+          setMapSearchQuery={setMapSearchQuery}
+          handleMapSearch={handleMapSearch}
+          isSearching={isSearching}
         />
       </div>
       
