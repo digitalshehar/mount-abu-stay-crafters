@@ -1,6 +1,7 @@
+
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { MapPin, Info, Filter, Search, Sparkles } from "lucide-react";
 import Header from "@/components/Header";
@@ -18,6 +19,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import HotelZone from "@/components/hotels/HotelZone";
+import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
+
+// Create a new query client instance
+const queryClient = new QueryClient();
 
 const Hotels = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,7 +44,29 @@ const Hotels = () => {
           throw error;
         }
         
-        return data || [];
+        // Convert the raw data to the AdminHotel type
+        const adminHotels: AdminHotel[] = (data || []).map(hotel => ({
+          id: hotel.id,
+          name: hotel.name,
+          slug: hotel.slug || '',
+          location: hotel.location,
+          stars: hotel.stars,
+          pricePerNight: hotel.price_per_night,
+          image: hotel.image,
+          status: hotel.status || 'active',
+          description: hotel.description || '',
+          amenities: hotel.amenities || [],
+          reviewCount: hotel.review_count || 0,
+          rating: hotel.rating || 0,
+          featured: hotel.featured || false,
+          rooms: hotel.rooms || [],
+          categories: hotel.categories || [],
+          gallery: hotel.gallery || [],
+          latitude: hotel.latitude,
+          longitude: hotel.longitude
+        }));
+        
+        return adminHotels;
       } catch (error) {
         console.error("Error in fetchHotels:", error);
         throw error;
@@ -210,4 +237,13 @@ const Hotels = () => {
   );
 };
 
-export default Hotels;
+// Wrap the Hotels component with QueryClientProvider
+const HotelsWithQueryClient = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Hotels />
+    </QueryClientProvider>
+  );
+};
+
+export default HotelsWithQueryClient;

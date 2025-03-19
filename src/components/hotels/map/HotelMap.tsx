@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { Hotel } from '@/integrations/supabase/custom-types';
@@ -150,6 +151,10 @@ const HotelMap: React.FC<HotelMapProps> = ({
   const filteredHotels = filterHotels(convertedHotels);
   const visibleHotels = getVisibleHotels(filteredHotels, viewMode);
   
+  // Convert back to AdminHotel type for components that expect it
+  const adminFilteredHotels = convertIntegrationToAdminHotels(filteredHotels);
+  const adminVisibleHotels = convertIntegrationToAdminHotels(visibleHotels);
+  
   if (loadError) {
     return (
       <div className="container mx-auto py-6 px-4 text-center">
@@ -217,7 +222,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
       </div>
       
       <CompareHotelsFeature 
-        hotels={convertIntegrationToAdminHotels(convertedHotels)} 
+        hotels={adminFilteredHotels} 
         compareList={compareList}
         onAddToCompare={addToCompare}
         onRemoveFromCompare={removeFromCompare}
