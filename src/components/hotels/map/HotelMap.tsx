@@ -1,35 +1,22 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { Hotel } from '@/integrations/supabase/custom-types';
 import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
 import MapHeader from './components/MapHeader';
 import MapSidebar from './components/MapSidebar';
-import MapContainer from './components/MapContainer';
-import MapFeaturesManager from './components/MapFeaturesManager';
-import MapStats from './components/MapStats';
-import HotelContent from '../HotelContent';
+import MapLayout from './components/MapLayout';
 import CompareHotelsFeature from '../comparison/CompareHotelsFeature';
 import { useMapFilters } from './hooks/useMapFilters';
 import { useHotelComparison } from '@/hooks/useHotelComparison';
+import { useMapState } from './hooks/useMapState';
+import { useSelectedHotel } from './hooks/useSelectedHotel';
 import { 
-  adminToIntegrationHotel, 
   convertAdminToIntegrationHotels, 
   convertIntegrationToAdminHotels 
 } from '@/utils/hotelTypeAdapter';
 import './HotelMapStyles.css';
 
-const mapContainerStyle = {
-  width: '100%',
-  height: '100%',
-};
-
-const mountAbuCenter = {
-  lat: 24.5927,
-  lng: 72.7156,
-};
-
-const defaultZoom = 13;
+const libraries = ['places', 'visualization'] as ("places" | "drawing" | "geometry" | "visualization")[];
 
 const mapOptions = {
   disableDefaultUI: false,
@@ -87,8 +74,6 @@ const mapOptions = {
   ],
 };
 
-const libraries = ['places', 'visualization'] as ("places" | "drawing" | "geometry" | "visualization")[];
-
 interface HotelMapProps {
   hotels: AdminHotel[];
   isLoading: boolean;
@@ -104,25 +89,31 @@ const HotelMap: React.FC<HotelMapProps> = ({
   setSelectedHotelId,
   onMapMove
 }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const mapRef = useRef<google.maps.Map | null>(null);
-  
-  const queryParams = new URLSearchParams(location.search);
-  const selectedHotelSlug = queryParams.get('selected');
-  
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   
-  const [localSelectedHotelId, setLocalSelectedHotelId] = useState<number | null>(selectedHotelId || null);
-  const [selectedMarker, setSelectedMarker] = useState<Hotel | null>(null);
-  
-  const [mapCenter, setMapCenter] = useState(mountAbuCenter);
-  const [mapZoom, setMapZoom] = useState(defaultZoom);
-  
-  const [showHeatmap, setShowHeatmap] = useState(false);
-
   const { compareList, addToCompare, removeFromCompare, clearCompare, isInCompare } = useHotelComparison();
 
+  const {
+    mapCenter,
+    setMapCenter,
+    mapZoom,
+    setMapZoom,
+    showHeatmap,
+    setShowHeatmap,
+    mapRef,
+    onMapLoad,
+    handleBoundsChanged,
+    handleSelectHotel
+  } = useMapState();
+  
+  const {
+    localSelectedHotelId,
+    setLocalSelectedHotelId,
+    selectedMarker,
+    setSelectedMarker,
+    handleHotelSelect
+  } = useSelectedHotel(hotels, true, setMapCenter, setMapZoom);
+  
   const {
     searchQuery,
     setSearchQuery,
@@ -132,7 +123,6 @@ const HotelMap: React.FC<HotelMapProps> = ({
     setSelectedAmenities,
     priceRange,
     setPriceRange,
-    mapBounds,
     setMapBounds,
     activeFilterCount,
     clearFilters,
@@ -146,65 +136,19 @@ const HotelMap: React.FC<HotelMapProps> = ({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
     libraries: libraries,
   });
-  
-  useEffect(() => {
-    if (selectedHotelSlug && hotels.length > 0) {
-      const hotel = hotels.find(h => h.slug === selectedHotelSlug);
-      
-      if (hotel) {
-        const integrationHotel = adminToIntegrationHotel(hotel);
-        setSelectedMarker(integrationHotel);
-        setLocalSelectedHotelId(hotel.id);
-        
-        if (mapRef.current && hotel.latitude && hotel.longitude) {
-          setMapCenter({
-            lat: hotel.latitude,
-            lng: hotel.longitude
-          });
-          setMapZoom(15);
-        }
-      }
-    }
-  }, [selectedHotelSlug, hotels, isLoaded]);
-  
-  const convertedHotels: Hotel[] = convertAdminToIntegrationHotels(hotels);
-  
-  const filteredHotels = filterHotels(convertedHotels);
-  
-  const visibleHotels = getVisibleHotels(filteredHotels, viewMode);
 
-  const handleHotelSelect = (id: number) => {
-    if (setSelectedHotelId) {
-      setSelectedHotelId(id);
-    } else {
-      setLocalSelectedHotelId(id);
+  const handleMapBoundsChanged = () => {
+    const bounds = handleBoundsChanged();
+    if (bounds && onMapMove) {
+      onMapMove(bounds);
     }
   };
-
+  
   const effectiveSelectedHotelId = selectedHotelId !== undefined ? selectedHotelId : localSelectedHotelId;
   
-  const onMapLoad = useCallback((map: google.maps.Map) => {
-    mapRef.current = map;
-  }, []);
-  
-  const handleBoundsChanged = () => {
-    if (mapRef.current && onMapMove) {
-      const bounds = mapRef.current.getBounds();
-      if (bounds) {
-        setMapBounds(bounds);
-        onMapMove({
-          getSouth: () => bounds.getSouthWest().lat(),
-          getNorth: () => bounds.getNorthEast().lat(),
-          getWest: () => bounds.getSouthWest().lng(),
-          getEast: () => bounds.getNorthEast().lng(),
-        });
-      }
-    }
-  };
-  
-  const handleSelectHotel = (hotel: Hotel) => {
-    setSelectedMarker(hotel);
-  };
+  const convertedHotels: Hotel[] = convertAdminToIntegrationHotels(hotels);
+  const filteredHotels = filterHotels(convertedHotels);
+  const visibleHotels = getVisibleHotels(filteredHotels, viewMode);
   
   if (loadError) {
     return (
@@ -253,40 +197,23 @@ const HotelMap: React.FC<HotelMapProps> = ({
           commonAmenities={['WiFi', 'Swimming Pool', 'Restaurant', 'Spa', 'Gym']}
         />
         
-        <div className="space-y-6">
-          {viewMode === 'map' ? (
-            <div className="relative">
-              <MapContainer
-                center={mapCenter}
-                zoom={mapZoom}
-                onLoad={onMapLoad}
-              />
-              
-              <MapFeaturesManager 
-                onUserLocation={() => {}}
-                setShowHeatmap={setShowHeatmap}
-                showHeatmap={showHeatmap}
-              />
-            </div>
-          ) : (
-            <HotelContent 
-              isLoading={isLoading}
-              filteredHotels={convertIntegrationToAdminHotels(filteredHotels)} 
-              activeFilterCount={activeFilterCount}
-              clearFilters={clearFilters}
-              compareList={compareList}
-              onAddToCompare={addToCompare}
-              onRemoveFromCompare={removeFromCompare}
-              isInCompare={isInCompare}
-            />
-          )}
-          
-          <MapStats 
-            visibleHotels={convertIntegrationToAdminHotels(visibleHotels)}
-            showHeatmap={showHeatmap}
-            viewMode={viewMode}
-          />
-        </div>
+        <MapLayout 
+          viewMode={viewMode}
+          isLoading={isLoading}
+          mapCenter={mapCenter}
+          mapZoom={mapZoom}
+          onMapLoad={onMapLoad}
+          showHeatmap={showHeatmap}
+          setShowHeatmap={setShowHeatmap}
+          filteredHotels={filteredHotels}
+          visibleHotels={visibleHotels}
+          activeFilterCount={activeFilterCount}
+          clearFilters={clearFilters}
+          compareList={compareList}
+          addToCompare={addToCompare}
+          removeFromCompare={removeFromCompare}
+          isInCompare={isInCompare}
+        />
       </div>
       
       <CompareHotelsFeature 
