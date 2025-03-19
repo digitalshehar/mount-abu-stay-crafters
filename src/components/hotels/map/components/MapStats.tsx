@@ -24,7 +24,7 @@ const MapStats: React.FC<MapStatsProps> = ({ visibleHotels, showHeatmap, viewMod
   const stats = [
     {
       icon: MapPin,
-      label: 'Visible Hotels',
+      label: 'Visible Properties',
       value: totalHotels.toString(),
       color: 'text-blue-500',
     },
@@ -36,7 +36,7 @@ const MapStats: React.FC<MapStatsProps> = ({ visibleHotels, showHeatmap, viewMod
     },
     {
       icon: Crosshair,
-      label: 'Featured Hotels',
+      label: 'Featured Properties',
       value: featuredHotels.toString(),
       color: 'text-purple-500',
     },

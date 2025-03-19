@@ -10,6 +10,7 @@ import { useMapFilters } from './hooks/useMapFilters';
 import { useHotelComparison } from '@/hooks/useHotelComparison';
 import { useMapState } from './hooks/useMapState';
 import { useSelectedHotel } from './hooks/useSelectedHotel';
+import { useHeatmapSettings } from './hooks/useHeatmapSettings';
 import { 
   convertAdminToIntegrationHotels, 
   convertIntegrationToAdminHotels 
@@ -18,62 +19,6 @@ import './HotelMapStyles.css';
 import CompareHotelsWrapped from './components/CompareHotelsWrapped';
 
 const libraries = ['places', 'visualization'] as ("places" | "drawing" | "geometry" | "visualization")[];
-
-const mapOptions = {
-  disableDefaultUI: false,
-  zoomControl: true,
-  mapTypeControl: true,
-  fullscreenControl: true,
-  streetViewControl: false,
-  mapTypeId: 'roadmap' as const,
-  styles: [
-    {
-      featureType: "water",
-      elementType: "geometry",
-      stylers: [{ color: "#e9e9e9" }, { lightness: 17 }]
-    },
-    {
-      featureType: "landscape",
-      elementType: "geometry",
-      stylers: [{ color: "#f5f5f5" }, { lightness: 20 }]
-    },
-    {
-      featureType: "road.highway",
-      elementType: "geometry.fill",
-      stylers: [{ color: "#ffffff" }, { lightness: 17 }]
-    },
-    {
-      featureType: "road.highway",
-      elementType: "geometry.stroke",
-      stylers: [{ color: "#ffffff" }, { lightness: 29 }, { weight: 0.2 }]
-    },
-    {
-      featureType: "road.arterial",
-      elementType: "geometry",
-      stylers: [{ color: "#ffffff" }, { lightness: 18 }]
-    },
-    {
-      featureType: "road.local",
-      elementType: "geometry",
-      stylers: [{ color: "#ffffff" }, { lightness: 16 }]
-    },
-    {
-      featureType: "poi",
-      elementType: "geometry",
-      stylers: [{ color: "#f5f5f5" }, { lightness: 21 }]
-    },
-    {
-      featureType: "poi.park",
-      elementType: "geometry",
-      stylers: [{ color: "#dedede" }, { lightness: 21 }]
-    },
-    {
-      featureType: "transit",
-      elementType: "geometry",
-      stylers: [{ color: "#f2f2f2" }, { lightness: 19 }]
-    }
-  ],
-};
 
 interface HotelMapProps {
   hotels: AdminHotel[];
@@ -92,19 +37,23 @@ const HotelMap: React.FC<HotelMapProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   
+  // Hotel comparison state
   const { compareList, addToCompare, removeFromCompare, clearCompare, isInCompare } = useHotelComparison();
 
+  // Map state management
   const {
     mapCenter,
     setMapCenter,
     mapZoom,
     setMapZoom,
-    showHeatmap,
-    setShowHeatmap,
     onMapLoad,
     handleBoundsChanged,
   } = useMapState();
   
+  // Heatmap settings
+  const heatmapSettings = useHeatmapSettings();
+  
+  // Selected hotel state
   const {
     localSelectedHotelId,
     setLocalSelectedHotelId,
@@ -113,6 +62,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
     handleHotelSelect
   } = useSelectedHotel(hotels, true, setMapCenter, setMapZoom);
   
+  // Map filters
   const {
     searchQuery,
     setSearchQuery,
@@ -131,11 +81,13 @@ const HotelMap: React.FC<HotelMapProps> = ({
     getVisibleHotels
   } = useMapFilters();
   
+  // Load Google Maps
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
     libraries: libraries,
   });
 
+  // Handle map bounds changes
   const handleMapBoundsChanged = () => {
     const bounds = handleBoundsChanged();
     if (bounds && onMapMove) {
@@ -143,12 +95,15 @@ const HotelMap: React.FC<HotelMapProps> = ({
     }
   };
   
+  // Determine the active selected hotel ID
   const effectiveSelectedHotelId = selectedHotelId !== undefined ? selectedHotelId : localSelectedHotelId;
   
+  // Filter and convert hotels
   const convertedHotels: Hotel[] = convertAdminToIntegrationHotels(hotels);
   const filteredHotels = filterHotels(convertedHotels);
   const visibleHotels = getVisibleHotels(filteredHotels, viewMode);
   
+  // Handle errors loading Google Maps
   if (loadError) {
     return (
       <div className="container mx-auto py-6 px-4 text-center">
@@ -185,7 +140,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
         <MapSidebar 
           hotels={filteredHotels}
           selectedHotel={selectedMarker}
-          onSelectHotel={handleSelectHotel}
+          onSelectHotel={handleHotelSelect}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           selectedStars={selectedStars}
@@ -202,8 +157,8 @@ const HotelMap: React.FC<HotelMapProps> = ({
           mapCenter={mapCenter}
           mapZoom={mapZoom}
           onMapLoad={onMapLoad}
-          showHeatmap={showHeatmap}
-          setShowHeatmap={setShowHeatmap}
+          showHeatmap={heatmapSettings.showHeatmap}
+          setShowHeatmap={heatmapSettings.setShowHeatmap}
           filteredHotels={filteredHotels}
           visibleHotels={visibleHotels}
           activeFilterCount={activeFilterCount}

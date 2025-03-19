@@ -4,7 +4,7 @@ import { GoogleMap, HeatmapLayer } from '@react-google-maps/api';
 import { Hotel } from '@/components/admin/hotels/types';
 import MapMarkers from './MapMarkers';
 import { Hotel as IntegrationHotel } from '@/integrations/supabase/custom-types';
-import { convertAdminToIntegrationHotels } from '@/utils/hotelTypeAdapter';
+import { convertAdminToIntegrationHotels, convertIntegrationToAdminHotels } from '@/utils/hotelTypeAdapter';
 
 export interface GoogleMapComponentProps {
   mapContainerStyle: any;

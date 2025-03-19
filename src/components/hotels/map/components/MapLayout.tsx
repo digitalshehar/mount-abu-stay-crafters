@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
 import { Hotel } from '@/integrations/supabase/custom-types';
 import MapContainer from './MapContainer';
@@ -7,6 +7,8 @@ import MapFeaturesManager from './MapFeaturesManager';
 import MapStats from './MapStats';
 import HotelContent from '../../HotelContent';
 import { convertIntegrationToAdminHotels } from '@/utils/hotelTypeAdapter';
+import HeatmapControls from './HeatmapControls';
+import HeatmapLayer from './HeatmapLayer';
 
 interface MapLayoutProps {
   viewMode: 'map' | 'list';
@@ -43,6 +45,11 @@ const MapLayout: React.FC<MapLayoutProps> = ({
   removeFromCompare,
   isInCompare
 }) => {
+  // Heatmap customization state
+  const [heatmapRadius, setHeatmapRadius] = useState(20);
+  const [heatmapIntensity, setHeatmapIntensity] = useState(0.7);
+  const [heatmapColorScheme, setHeatmapColorScheme] = useState('default');
+  
   // Convert hotels to admin format for components that expect that type
   const adminFilteredHotels = convertIntegrationToAdminHotels(filteredHotels);
   const adminVisibleHotels = convertIntegrationToAdminHotels(visibleHotels);
@@ -55,12 +62,32 @@ const MapLayout: React.FC<MapLayoutProps> = ({
             center={mapCenter}
             zoom={mapZoom}
             onLoad={onMapLoad}
-          />
+          >
+            <HeatmapLayer 
+              hotels={adminFilteredHotels}
+              visible={showHeatmap}
+              radius={heatmapRadius}
+              opacity={heatmapIntensity}
+              colorScheme={heatmapColorScheme}
+            />
+          </MapContainer>
           
           <MapFeaturesManager 
             onUserLocation={() => {}}
             setShowHeatmap={setShowHeatmap}
             showHeatmap={showHeatmap}
+          />
+          
+          <HeatmapControls 
+            showHeatmap={showHeatmap}
+            setShowHeatmap={setShowHeatmap}
+            dataPoints={adminFilteredHotels.length}
+            heatmapRadius={heatmapRadius}
+            setHeatmapRadius={setHeatmapRadius}
+            heatmapIntensity={heatmapIntensity}
+            setHeatmapIntensity={setHeatmapIntensity}
+            heatmapColorScheme={heatmapColorScheme}
+            setHeatmapColorScheme={setHeatmapColorScheme}
           />
         </div>
       ) : (

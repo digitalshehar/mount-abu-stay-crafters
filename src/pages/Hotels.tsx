@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery, QueryClientProvider, QueryClient } from "@tanstack/react-query";
@@ -12,7 +13,6 @@ import FilterSidebar from "@/components/hotels/FilterSidebar";
 import MobileFilter from "@/components/hotels/MobileFilter";
 import HotelContent from "@/components/hotels/HotelContent";
 import HotelInfoSections from "@/components/hotels/HotelInfoSections";
-import { useHotelFilters } from "@/components/hotels/useHotelFilters";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,7 +58,7 @@ const Hotels = () => {
           reviewCount: hotel.review_count || 0,
           rating: hotel.rating || 0,
           featured: hotel.featured || false,
-          rooms: hotel.rooms || [],
+          rooms: [], // Initialize as empty array
           categories: hotel.categories || [],
           gallery: hotel.gallery || [],
           latitude: hotel.latitude,
