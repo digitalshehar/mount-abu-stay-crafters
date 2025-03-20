@@ -10,6 +10,7 @@ if (rootElement) {
   rootElement.style.width = "100%";
   rootElement.style.margin = "0";
   rootElement.style.padding = "0";
+  rootElement.style.overflow = "hidden"; // Prevent horizontal scrollbar
 }
 
 createRoot(rootElement!).render(<App />);

@@ -12,7 +12,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import './App.css';
 
 import Index from '@/pages/Index';
-import NotFound from '@/components/NotFound';
+import NotFound from '@/pages/NotFound';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import UsersPage from '@/pages/admin/Users';
 import Hotels from '@/pages/Hotels';
@@ -24,6 +24,15 @@ import AdminCarRentals from '@/pages/admin/CarRentals';
 import Destinations from '@/pages/Destinations';
 import Adventures from '@/pages/Adventures';
 import Blog from '@/pages/Blog';
+import HotelDetail from '@/pages/HotelDetail';
+import HotelNotFound from '@/pages/HotelNotFound';
+import DestinationDetail from '@/pages/DestinationDetail';
+import DestinationNotFound from '@/pages/DestinationNotFound';
+import AdventureDetail from '@/pages/AdventureDetail';
+import AdventureNotFound from '@/pages/AdventureNotFound';
+import BikeRentalDetail from '@/pages/BikeRentalDetail';
+import CarRentalDetail from '@/pages/CarRentalDetail';
+import BookingNotFound from '@/pages/BookingNotFound';
 
 function App() {
   return (
@@ -36,12 +45,31 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
             <Route path="/admin/register" element={<AdminRegister />} />
+            
+            {/* Hotel routes */}
             <Route path="/hotels" element={<Hotels />} />
+            <Route path="/hotel/:hotelId" element={<HotelDetail />} />
+            <Route path="/hotel-not-found" element={<HotelNotFound />} />
+            
+            {/* Rental routes */}
             <Route path="/bike-rentals" element={<BikeRentals />} />
+            <Route path="/bike-rental/:id" element={<BikeRentalDetail />} />
             <Route path="/car-rentals" element={<CarRentals />} />
+            <Route path="/car-rental/:id" element={<CarRentalDetail />} />
+            
+            {/* Destination routes */}
             <Route path="/destinations" element={<Destinations />} />
+            <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
+            <Route path="/destination-not-found" element={<DestinationNotFound />} />
+            
+            {/* Adventure routes */}
             <Route path="/adventures" element={<Adventures />} />
+            <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
+            <Route path="/adventure-not-found" element={<AdventureNotFound />} />
+            
+            {/* Content routes */}
             <Route path="/blog" element={<Blog />} />
+            <Route path="/booking-not-found" element={<BookingNotFound />} />
             
             {/* Protected routes for regular users */}
             <Route element={<ProtectedRoute />}>
@@ -59,7 +87,7 @@ function App() {
               <Route path="/admin/users" element={<UsersPage />} />
             </Route>
             
-            {/* 404 */}
+            {/* 404 catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />

@@ -3,6 +3,9 @@ import React from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Dialog } from "@/components/ui/dialog";
+import { Link } from "react-router-dom";
+import { ArrowLeft, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface HotelPageStructureProps {
   children: React.ReactNode;
@@ -13,6 +16,7 @@ interface HotelPageStructureProps {
   isLoading?: boolean;
   error?: string | null;
   errorMessage?: string;
+  errorImage?: string;
 }
 
 const HotelPageStructure = ({ 
@@ -23,7 +27,8 @@ const HotelPageStructure = ({
   schemaMarkup,
   isLoading,
   error,
-  errorMessage = "Sorry, we couldn't find the hotel you're looking for."
+  errorMessage = "Sorry, we couldn't find the hotel you're looking for.",
+  errorImage = "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3"
 }: HotelPageStructureProps) => {
   
   if (isLoading) {
@@ -59,16 +64,49 @@ const HotelPageStructure = ({
       <div className="min-h-screen bg-stone-50 flex flex-col w-full">
         <Header />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center p-8 max-w-md">
-            <h1 className="text-3xl font-bold mb-4">Hotel Not Found</h1>
-            <p className="text-stone-600 mb-6">{error || errorMessage}</p>
-            <div className="space-y-4">
-              <button className="w-full bg-primary text-white py-2 rounded">
-                <a href="/hotels">Browse All Hotels</a>
-              </button>
-              <button className="w-full border border-primary text-primary py-2 rounded">
-                <a href="/">Return to Home</a>
-              </button>
+          <div className="container-custom py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <div className="order-2 lg:order-1">
+                <div className="max-w-lg">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-4">
+                    Hotel Not Found
+                  </h1>
+                  <p className="text-stone-600 text-lg mb-8">
+                    {error || errorMessage}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button
+                      onClick={() => window.history.back()}
+                      variant="outline"
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                      <span>Go Back</span>
+                    </Button>
+                    <Button
+                      asChild
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <Link to="/hotels">
+                        <Home className="h-5 w-5" />
+                        <span>Browse All Hotels</span>
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div className="order-1 lg:order-2">
+                <div className="rounded-2xl overflow-hidden shadow-lg max-h-[500px]">
+                  <img
+                    src={errorImage}
+                    alt="Not Found"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
