@@ -141,6 +141,9 @@ const MapLayout: React.FC<MapLayoutProps> = ({
               setHeatmapIntensity={() => {}}
               heatmapColorScheme={defaultHeatmapColorScheme}
               setHeatmapColorScheme={() => {}}
+              weightByPopularity={defaultWeightByPopularity}
+              setWeightByPopularity={() => {}}
+              colorSchemes={[]}
             />
           )}
         </div>

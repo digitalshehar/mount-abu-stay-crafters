@@ -24,6 +24,28 @@ export const convertAdminToIntegrationHotels = (adminHotels: AdminHotel[]): Inte
   }));
 };
 
+// Convert a single admin hotel to integration hotel format
+export const adminToIntegrationHotel = (adminHotel: AdminHotel): IntegrationHotel => {
+  return {
+    id: adminHotel.id,
+    name: adminHotel.name,
+    slug: adminHotel.slug,
+    location: adminHotel.location,
+    stars: adminHotel.stars,
+    price_per_night: adminHotel.pricePerNight,
+    image: adminHotel.image,
+    status: adminHotel.status as 'active' | 'inactive',
+    description: adminHotel.description || '',
+    amenities: adminHotel.amenities || [],
+    review_count: adminHotel.reviewCount || 0,
+    rating: adminHotel.rating || 0,
+    featured: adminHotel.featured || false,
+    latitude: adminHotel.latitude,
+    longitude: adminHotel.longitude,
+    rooms: adminHotel.rooms || [],
+  };
+};
+
 // Convert from integration hotel format to admin hotel format
 export const convertIntegrationToAdminHotels = (integrationHotels: IntegrationHotel[]): AdminHotel[] => {
   return integrationHotels.map(hotel => ({
