@@ -126,6 +126,14 @@ const HotelMap: React.FC<HotelMapProps> = ({
     );
   }
   
+  // Convert the compareList from AdminHotel[] to Hotel[] for MapLayout
+  const adminHotelsCompareList = compareList; // This is already AdminHotel[]
+  
+  // Function to handle selecting a hotel by its Hotel object
+  const handleSelectHotelByObject = (hotel: Hotel) => {
+    handleHotelSelect(hotel.id);
+  };
+  
   return (
     <div className="container mx-auto py-6 lg:py-8 px-4">
       <MapHeader 
@@ -150,7 +158,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
         <MapSidebar 
           hotels={filteredHotels}
           selectedHotel={selectedMarker}
-          onSelectHotel={(hotel) => handleHotelSelect(hotel.id)}
+          onSelectHotel={handleSelectHotelByObject}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           selectedStars={selectedStars}
@@ -173,7 +181,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
           visibleHotels={visibleHotels}
           activeFilterCount={activeFilterCount}
           clearFilters={clearFilters}
-          compareList={compareList}
+          compareList={adminHotelsCompareList}
           addToCompare={addToCompare}
           removeFromCompare={removeFromCompare}
           isInCompare={isInCompare}
@@ -187,7 +195,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
       
       <CompareHotelsWrapped 
         hotels={convertIntegrationToAdminHotels(filteredHotels)}
-        compareList={compareList}
+        compareList={adminHotelsCompareList}
         onAddToCompare={addToCompare}
         onRemoveFromCompare={removeFromCompare}
         onClearCompare={clearCompare}

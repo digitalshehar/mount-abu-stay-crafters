@@ -21,6 +21,9 @@ import CarRentals from '@/pages/CarRentals';
 import AdminHotels from '@/pages/admin/Hotels';
 import AdminBikeRentals from '@/pages/admin/BikeRentals';
 import AdminCarRentals from '@/pages/admin/CarRentals';
+import Destinations from '@/pages/Destinations';
+import Adventures from '@/pages/Adventures';
+import Blog from '@/pages/Blog';
 
 function App() {
   return (
@@ -36,6 +39,9 @@ function App() {
             <Route path="/hotels" element={<Hotels />} />
             <Route path="/bike-rentals" element={<BikeRentals />} />
             <Route path="/car-rentals" element={<CarRentals />} />
+            <Route path="/destinations" element={<Destinations />} />
+            <Route path="/adventures" element={<Adventures />} />
+            <Route path="/blog" element={<Blog />} />
             
             {/* Protected routes for regular users */}
             <Route element={<ProtectedRoute />}>
