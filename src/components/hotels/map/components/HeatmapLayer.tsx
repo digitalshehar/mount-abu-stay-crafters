@@ -9,6 +9,7 @@ interface HeatmapLayerProps {
   radius?: number;
   opacity?: number;
   colorScheme?: string;
+  weightByPopularity?: boolean;
 }
 
 // Color gradient definitions for different schemes
@@ -58,6 +59,22 @@ const gradientSchemes = {
     'rgba(255, 0, 55, 1)',
     'rgba(255, 0, 35, 1)',
     'rgba(255, 0, 0, 1)'
+  ],
+  popularity: [
+    'rgba(0, 255, 0, 0)',
+    'rgba(0, 255, 0, 1)',
+    'rgba(63, 255, 0, 1)',
+    'rgba(127, 255, 0, 1)',
+    'rgba(191, 255, 0, 1)',
+    'rgba(255, 255, 0, 1)',
+    'rgba(255, 223, 0, 1)',
+    'rgba(255, 191, 0, 1)',
+    'rgba(255, 159, 0, 1)',
+    'rgba(255, 127, 0, 1)',
+    'rgba(255, 95, 0, 1)',
+    'rgba(255, 63, 0, 1)',
+    'rgba(255, 31, 0, 1)',
+    'rgba(255, 0, 0, 1)'
   ]
 };
 
@@ -66,26 +83,50 @@ const HeatmapLayer: React.FC<HeatmapLayerProps> = ({
   visible, 
   radius = 20, 
   opacity = 0.7,
-  colorScheme = 'default'
+  colorScheme = 'default',
+  weightByPopularity = true
 }) => {
-  const [heatmapData, setHeatmapData] = useState<google.maps.LatLng[]>([]);
+  const [heatmapData, setHeatmapData] = useState<google.maps.visualization.WeightedLocation[]>([]);
   
   useEffect(() => {
     if (hotels.length > 0) {
       const points = hotels
         .filter(hotel => hotel.latitude && hotel.longitude)
         .map(hotel => {
-          // Create weighted points based on hotel price
-          const weight = hotel.featured ? 1.5 : 1; // Featured hotels have more weight
+          // Calculate weight based on various factors
+          let weight = 1;
+          
+          if (weightByPopularity) {
+            // Featured hotels have more weight
+            if (hotel.featured) weight *= 1.5;
+            
+            // Higher rated hotels have more weight
+            if (hotel.rating) weight *= (hotel.rating / 5) * 1.2;
+            
+            // Hotels with more reviews have more weight
+            if (hotel.reviewCount) {
+              // Log scale for review count to prevent extremely popular hotels from dominating
+              const reviewFactor = Math.log10(hotel.reviewCount + 1) / 2;
+              weight *= (1 + reviewFactor);
+            }
+            
+            // Price could also be a factor (inverse relationship - lower prices more popular)
+            if (hotel.pricePerNight) {
+              const maxPrice = 1000; // Assume this as a benchmark
+              const priceFactor = 1 - (hotel.pricePerNight / maxPrice) * 0.5; // 0.5-1.0 range
+              weight *= Math.max(0.5, priceFactor); // Don't let it go below 0.5
+            }
+          }
+          
           return {
             location: new google.maps.LatLng(hotel.latitude || 0, hotel.longitude || 0),
-            weight: weight * (hotel.pricePerNight / 1000) // Normalize price weight
+            weight
           };
         });
       
-      setHeatmapData(points.map(p => p.location));
+      setHeatmapData(points);
     }
-  }, [hotels]);
+  }, [hotels, weightByPopularity]);
   
   if (!visible || heatmapData.length === 0) {
     return null;

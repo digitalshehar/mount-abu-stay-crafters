@@ -150,9 +150,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
         <MapSidebar 
           hotels={filteredHotels}
           selectedHotel={selectedMarker}
-          onSelectHotel={(hotel: Hotel) => {
-            handleHotelSelect(hotel.id);
-          }}
+          onSelectHotel={(hotel) => handleHotelSelect(hotel.id)}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           selectedStars={selectedStars}
@@ -183,6 +181,7 @@ const HotelMap: React.FC<HotelMapProps> = ({
           setMapSearchQuery={setMapSearchQuery}
           handleMapSearch={handleMapSearch}
           isSearching={isSearching}
+          heatmapSettings={heatmapSettings}
         />
       </div>
       

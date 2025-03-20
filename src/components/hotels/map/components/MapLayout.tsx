@@ -31,6 +31,17 @@ interface MapLayoutProps {
   setMapSearchQuery?: (query: string) => void;
   handleMapSearch?: (query: string, hotels: Hotel[]) => Hotel[];
   isSearching?: boolean;
+  heatmapSettings?: {
+    heatmapRadius: number;
+    setHeatmapRadius: (radius: number) => void;
+    heatmapIntensity: number;
+    setHeatmapIntensity: (intensity: number) => void;
+    heatmapColorScheme: string;
+    setHeatmapColorScheme: (scheme: string) => void;
+    weightByPopularity: boolean;
+    setWeightByPopularity: (useWeight: boolean) => void;
+    colorSchemes: { id: string; name: string }[];
+  };
 }
 
 const MapLayout: React.FC<MapLayoutProps> = ({
@@ -52,12 +63,20 @@ const MapLayout: React.FC<MapLayoutProps> = ({
   mapSearchQuery = '',
   setMapSearchQuery = () => {},
   handleMapSearch = () => [],
-  isSearching = false
+  isSearching = false,
+  heatmapSettings
 }) => {
-  // Heatmap customization state
-  const [heatmapRadius, setHeatmapRadius] = useState(20);
-  const [heatmapIntensity, setHeatmapIntensity] = useState(0.7);
-  const [heatmapColorScheme, setHeatmapColorScheme] = useState('default');
+  // Default heatmap settings if not provided
+  const defaultHeatmapRadius = 20;
+  const defaultHeatmapIntensity = 0.7;
+  const defaultHeatmapColorScheme = 'default';
+  const defaultWeightByPopularity = true;
+  
+  // Use provided settings or defaults
+  const radius = heatmapSettings?.heatmapRadius || defaultHeatmapRadius;
+  const intensity = heatmapSettings?.heatmapIntensity || defaultHeatmapIntensity;
+  const colorScheme = heatmapSettings?.heatmapColorScheme || defaultHeatmapColorScheme;
+  const weightByPopularity = heatmapSettings?.weightByPopularity || defaultWeightByPopularity;
   
   // Convert hotels to admin format for components that expect that type
   const adminFilteredHotels = convertIntegrationToAdminHotels(filteredHotels);
@@ -75,9 +94,10 @@ const MapLayout: React.FC<MapLayoutProps> = ({
             <HeatmapLayer 
               hotels={adminFilteredHotels}
               visible={showHeatmap}
-              radius={heatmapRadius}
-              opacity={heatmapIntensity}
-              colorScheme={heatmapColorScheme}
+              radius={radius}
+              opacity={intensity}
+              colorScheme={colorScheme}
+              weightByPopularity={weightByPopularity}
             />
           </MapContainer>
           
@@ -95,17 +115,34 @@ const MapLayout: React.FC<MapLayoutProps> = ({
             showHeatmap={showHeatmap}
           />
           
-          <HeatmapControls 
-            showHeatmap={showHeatmap}
-            setShowHeatmap={setShowHeatmap}
-            dataPoints={adminFilteredHotels.length}
-            heatmapRadius={heatmapRadius}
-            setHeatmapRadius={setHeatmapRadius}
-            heatmapIntensity={heatmapIntensity}
-            setHeatmapIntensity={setHeatmapIntensity}
-            heatmapColorScheme={heatmapColorScheme}
-            setHeatmapColorScheme={setHeatmapColorScheme}
-          />
+          {heatmapSettings ? (
+            <HeatmapControls 
+              showHeatmap={showHeatmap}
+              setShowHeatmap={setShowHeatmap}
+              dataPoints={adminFilteredHotels.length}
+              heatmapRadius={heatmapSettings.heatmapRadius}
+              setHeatmapRadius={heatmapSettings.setHeatmapRadius}
+              heatmapIntensity={heatmapSettings.heatmapIntensity}
+              setHeatmapIntensity={heatmapSettings.setHeatmapIntensity}
+              heatmapColorScheme={heatmapSettings.heatmapColorScheme}
+              setHeatmapColorScheme={heatmapSettings.setHeatmapColorScheme}
+              weightByPopularity={heatmapSettings.weightByPopularity}
+              setWeightByPopularity={heatmapSettings.setWeightByPopularity}
+              colorSchemes={heatmapSettings.colorSchemes}
+            />
+          ) : (
+            <HeatmapControls 
+              showHeatmap={showHeatmap}
+              setShowHeatmap={setShowHeatmap}
+              dataPoints={adminFilteredHotels.length}
+              heatmapRadius={defaultHeatmapRadius}
+              setHeatmapRadius={() => {}}
+              heatmapIntensity={defaultHeatmapIntensity}
+              setHeatmapIntensity={() => {}}
+              heatmapColorScheme={defaultHeatmapColorScheme}
+              setHeatmapColorScheme={() => {}}
+            />
+          )}
         </div>
       ) : (
         <HotelContent 
