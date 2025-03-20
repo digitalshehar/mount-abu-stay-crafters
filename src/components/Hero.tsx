@@ -10,7 +10,7 @@ const Hero = () => {
   }, []);
 
   return (
-    <section className="relative min-h-[60vh] sm:min-h-[85vh] md:min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[100vh] w-full flex items-center justify-center overflow-hidden">
       {/* Background Image with Parallax Effect */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30 z-10" />
@@ -72,7 +72,7 @@ const Hero = () => {
       </div>
       
       {/* Bottom Wave Decoration */}
-      <div className="absolute bottom-0 left-0 right-0 z-10">
+      <div className="absolute bottom-0 left-0 right-0 z-10 w-full">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="w-full">
           <path 
             fill="white" 

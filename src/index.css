@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -77,11 +78,11 @@
   
   html,
   body {
-    @apply scroll-smooth antialiased;
+    @apply scroll-smooth antialiased w-full overflow-x-hidden m-0 p-0;
   }
   
   body {
-    @apply bg-background text-foreground font-sans transition-colors duration-300;
+    @apply bg-background text-foreground font-sans transition-colors duration-300 w-full;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -91,7 +92,7 @@
 
 @layer components {
   .container-custom {
-    @apply container px-4 md:px-6 mx-auto;
+    @apply px-4 md:px-6 mx-auto w-full max-w-[1920px];
   }
   
   .title {

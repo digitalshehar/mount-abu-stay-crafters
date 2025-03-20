@@ -28,10 +28,10 @@ const HotelPageStructure = ({
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-stone-50 flex flex-col">
+      <div className="min-h-screen bg-stone-50 flex flex-col w-full">
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-pulse space-y-8 max-w-7xl w-full mx-auto p-8">
+        <div className="flex-1 flex items-center justify-center w-full">
+          <div className="animate-pulse space-y-8 w-full max-w-7xl mx-auto p-8">
             <div className="h-10 bg-gray-200 rounded-md w-3/4"></div>
             <div className="h-64 bg-gray-200 rounded-lg w-full"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -56,7 +56,7 @@ const HotelPageStructure = ({
 
   if (error) {
     return (
-      <div className="min-h-screen bg-stone-50 flex flex-col">
+      <div className="min-h-screen bg-stone-50 flex flex-col w-full">
         <Header />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center p-8 max-w-md">
@@ -78,7 +78,7 @@ const HotelPageStructure = ({
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col">
+    <div className="min-h-screen bg-stone-50 flex flex-col w-full">
       <title>{title}</title>
       <meta name="description" content={metaDescription} />
       {seoKeywords && <meta name="keywords" content={seoKeywords} />}
@@ -88,7 +88,7 @@ const HotelPageStructure = ({
       </script>
       
       <Header />
-      <main className="flex-1">
+      <main className="flex-1 w-full">
         {children}
       </main>
       <Footer />
