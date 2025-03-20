@@ -153,7 +153,7 @@ const MapLayout: React.FC<MapLayoutProps> = ({
           filteredHotels={adminFilteredHotels} 
           activeFilterCount={activeFilterCount}
           clearFilters={clearFilters}
-          compareList={compareList}
+          compareList={compareList.map(hotel => hotel.id)} // Convert Hotel[] to number[]
           onAddToCompare={addToCompare}
           onRemoveFromCompare={removeFromCompare}
           isInCompare={isInCompare}
@@ -170,3 +170,4 @@ const MapLayout: React.FC<MapLayoutProps> = ({
 };
 
 export default MapLayout;
+
