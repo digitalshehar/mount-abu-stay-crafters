@@ -1,13 +1,12 @@
-
-import React from 'react';
-import { Search, MapPin } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ActiveFilters from './ActiveFilters';
-import FilterSidebar from './FilterSidebar';
-import MobileFilter from './MobileFilter';
-import HotelContent from './HotelContent';
-import HotelZone from './HotelZone';
-import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
+import React from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Info, List, MapPin, SlidersHorizontal, X } from "lucide-react";
+import HotelListView from "@/components/hotels/HotelListView";
+import MobileFilter from "@/components/hotels/MobileFilter";
+import { Hotel } from "@/components/admin/hotels/types";
+import { sheet } from "@/data/locationsData";
+import WeatherWidgetCard from "@/components/hotels/WeatherWidgetCard";
 
 interface HotelsTabsProps {
   activeView: string;
@@ -16,17 +15,17 @@ interface HotelsTabsProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectedStars: number[];
-  setSelectedStars: (stars: number[]) => void;
+  setSelectedStars: React.Dispatch<React.SetStateAction<number[]>>;
   selectedAmenities: string[];
-  setSelectedAmenities: (amenities: string[]) => void;
+  setSelectedAmenities: React.Dispatch<React.SetStateAction<string[]>>;
   priceRange: [number, number];
-  setPriceRange: (range: [number, number]) => void;
+  setPriceRange: React.Dispatch<React.SetStateAction<[number, number]>>;
   clearFilters: () => void;
   isFilterOpen: boolean;
-  setIsFilterOpen: (open: boolean) => void;
+  setIsFilterOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isLoading: boolean;
-  filteredHotels: AdminHotel[];
-  hotels: AdminHotel[];
+  filteredHotels: Hotel[];
+  hotels: Hotel[];
   handleStarFilter: (star: number) => void;
   handleAmenityFilter: (amenity: string) => void;
   commonAmenities: string[];
@@ -52,84 +51,74 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
   hotels,
   handleStarFilter,
   handleAmenityFilter,
-  commonAmenities
+  commonAmenities,
 }) => {
   return (
-    <Tabs 
-      value={activeView} 
-      onValueChange={setActiveView}
-      className="w-full"
-    >
-      <div className="flex justify-between items-center mb-4">
-        <TabsList>
-          <TabsTrigger value="classic" className="flex items-center gap-2">
-            <Search className="h-4 w-4" />
-            <span>Classic View</span>
-          </TabsTrigger>
-          <TabsTrigger value="map" className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            <span>Hotel Zone</span>
-          </TabsTrigger>
-        </TabsList>
-      </div>
+    <Tabs defaultValue="classic" value={activeView} onValueChange={setActiveView}>
+      <TabsList className="mb-4">
+        <TabsTrigger value="classic" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <List className="w-4 h-4 mr-2" />
+          List View
+        </TabsTrigger>
+        <TabsTrigger value="map" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <MapPin className="w-4 h-4 mr-2" />
+          Map View
+        </TabsTrigger>
+      </TabsList>
       
+      {activeFilterCount > 0 && (
+        <div className="flex items-center gap-2 mb-4 mt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearFilters}
+            className="flex items-center"
+          >
+            <X className="h-4 w-4 mr-1" />
+            Clear filters ({activeFilterCount})
+          </Button>
+        </div>
+      )}
+
+      <div className="lg:hidden mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsFilterOpen(true)}
+          className="flex items-center"
+        >
+          <SlidersHorizontal className="h-4 w-4 mr-1" />
+          Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+        </Button>
+      </div>
+
+      <MobileFilter
+        isOpen={isFilterOpen}
+        setIsOpen={setIsFilterOpen}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        selectedStars={selectedStars}
+        handleStarFilter={handleStarFilter}
+        selectedAmenities={selectedAmenities}
+        handleAmenityFilter={handleAmenityFilter}
+        clearFilters={clearFilters}
+        amenities={commonAmenities}
+      />
+
       <TabsContent value="classic" className="mt-0">
-        <ActiveFilters 
-          activeFilterCount={activeFilterCount}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          selectedStars={selectedStars}
-          setSelectedStars={setSelectedStars}
-          selectedAmenities={selectedAmenities}
-          setSelectedAmenities={setSelectedAmenities}
-          priceRange={priceRange}
-          setPriceRange={setPriceRange}
-          clearFilters={clearFilters}
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <FilterSidebar 
-            priceRange={priceRange}
-            setPriceRange={setPriceRange}
-            selectedStars={selectedStars}
-            handleStarFilter={handleStarFilter}
-            selectedAmenities={selectedAmenities}
-            handleAmenityFilter={handleAmenityFilter}
-            clearFilters={clearFilters}
-            commonAmenities={commonAmenities}
-          />
-
-          <div className="lg:col-span-3">
-            <MobileFilter 
-              isFilterOpen={isFilterOpen}
-              setIsFilterOpen={setIsFilterOpen}
-              activeFilterCount={activeFilterCount}
-              priceRange={priceRange}
-              setPriceRange={setPriceRange}
-              selectedStars={selectedStars}
-              handleStarFilter={handleStarFilter}
-              selectedAmenities={selectedAmenities}
-              handleAmenityFilter={handleAmenityFilter}
-              clearFilters={clearFilters}
-              commonAmenities={commonAmenities}
-            />
-
-            <HotelContent 
-              isLoading={isLoading}
-              filteredHotels={filteredHotels}
-              activeFilterCount={activeFilterCount}
-              clearFilters={clearFilters}
-            />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="md:col-span-3">
+            <HotelListView hotels={filteredHotels} isLoading={isLoading} />
+          </div>
+          <div className="space-y-6">
+            <WeatherWidgetCard />
+            
           </div>
         </div>
       </TabsContent>
-      
+
       <TabsContent value="map" className="mt-0">
-        <HotelZone 
-          hotels={hotels}
-          isLoading={isLoading}
-          clearFilters={clearFilters}
-        />
+        
       </TabsContent>
     </Tabs>
   );

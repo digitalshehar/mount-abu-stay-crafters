@@ -8,16 +8,13 @@ import HotelSkeletonList from "./content/HotelSkeletonList";
 import FeaturedHotelsSection from "./content/FeaturedHotelsSection";
 import RegularHotelsSection from "./content/RegularHotelsSection";
 import NoHotelsFound from "./content/NoHotelsFound";
+import { useHotelComparison } from "@/hooks/useHotelComparison";
 
 interface HotelContentProps {
   isLoading: boolean;
   filteredHotels: any[];
   activeFilterCount: number;
   clearFilters: () => void;
-  compareList?: number[];
-  onAddToCompare?: (hotelId: number) => void;
-  onRemoveFromCompare?: (hotelId: number) => void;
-  isInCompare?: (hotelId: number) => boolean;
 }
 
 const HotelContent = ({
@@ -25,11 +22,10 @@ const HotelContent = ({
   filteredHotels,
   activeFilterCount,
   clearFilters,
-  compareList = [],
-  onAddToCompare = () => {},
-  onRemoveFromCompare = () => {},
-  isInCompare = () => false,
 }: HotelContentProps) => {
+  // Get hotel comparison functionality
+  const { compareList, addToCompare, removeFromCompare, isInCompare } = useHotelComparison();
+  
   // Separate featured hotels
   const featuredHotels = filteredHotels.filter(hotel => hotel.featured);
   const regularHotels = filteredHotels.filter(hotel => !hotel.featured);
@@ -51,9 +47,9 @@ const HotelContent = ({
               title="Featured Hotels" 
               subtitle="Our handpicked premium accommodations"
               hotels={featuredHotels} 
-              compareList={compareList}
-              onAddToCompare={onAddToCompare}
-              onRemoveFromCompare={onRemoveFromCompare}
+              compareList={[]}
+              onAddToCompare={addToCompare}
+              onRemoveFromCompare={removeFromCompare}
               isInCompare={isInCompare}
             />
           )}
@@ -67,9 +63,9 @@ const HotelContent = ({
               title="All Hotels"
               subtitle="Explore all accommodations in Mount Abu"
               hotels={regularHotels}
-              compareList={compareList}
-              onAddToCompare={onAddToCompare}
-              onRemoveFromCompare={onRemoveFromCompare}
+              compareList={[]}
+              onAddToCompare={addToCompare}
+              onRemoveFromCompare={removeFromCompare}
               isInCompare={isInCompare}
             />
           )}
