@@ -12,9 +12,24 @@ interface HotelMapProps {
     lng: number;
     name?: string;
   };
+  onMapMove?: (bounds: any) => void;
 }
 
-const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading, center }) => {
+const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading, center, onMapMove }) => {
+  // If onMapMove is provided, we can call it when the map bounds change
+  React.useEffect(() => {
+    if (onMapMove && !isLoading && hotels.length > 0) {
+      // This is a placeholder - in a real implementation, we'd get the actual bounds from the map
+      const mockBounds = {
+        north: center.lat + 0.1,
+        south: center.lat - 0.1,
+        east: center.lng + 0.1,
+        west: center.lng - 0.1
+      };
+      onMapMove(mockBounds);
+    }
+  }, [onMapMove, isLoading, hotels, center]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96 w-full bg-stone-100 rounded-lg">
