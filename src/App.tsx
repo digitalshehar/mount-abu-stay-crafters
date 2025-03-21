@@ -55,6 +55,8 @@ function App() {
             <Route path="/bike-rentals" element={<BikeRentals />} />
             <Route path="/bike-rental/:id" element={<BikeRentalDetail />} />
             <Route path="/car-rentals" element={<CarRentals />} />
+            <Route path="/rentals/car" element={<CarRentals />} /> 
+            <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
             <Route path="/car-rental/:id" element={<CarRentalDetail />} />
             
             {/* Destination routes */}
