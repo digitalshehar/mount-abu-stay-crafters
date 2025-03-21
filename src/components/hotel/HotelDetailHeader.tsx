@@ -6,16 +6,18 @@ interface HotelDetailHeaderProps {
   name: string;
   location: string;
   stars: number;
-  rating: number;
-  reviewCount: number;
+  featured?: boolean;
+  rating?: number;
+  reviewCount?: number;
 }
 
 const HotelDetailHeader: React.FC<HotelDetailHeaderProps> = ({
   name,
   location,
   stars,
-  rating,
-  reviewCount,
+  featured,
+  rating = 0,
+  reviewCount = 0,
 }) => {
   return (
     <div className="space-y-4">
@@ -46,6 +48,12 @@ const HotelDetailHeader: React.FC<HotelDetailHeaderProps> = ({
             <span className="text-xs text-stone-500 ml-1">
               ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
             </span>
+          </div>
+        )}
+        
+        {featured && (
+          <div className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full">
+            Featured
           </div>
         )}
       </div>

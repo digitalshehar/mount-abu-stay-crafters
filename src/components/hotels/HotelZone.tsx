@@ -2,6 +2,7 @@
 import React from 'react';
 import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
 import HotelMap from './map/HotelMap';
+import { sheet } from '@/data/locationsData';
 
 interface HotelZoneProps {
   hotels: AdminHotel[];
@@ -19,6 +20,7 @@ const HotelZone: React.FC<HotelZoneProps> = ({
       <HotelMap 
         hotels={hotels} 
         isLoading={isLoading} 
+        center={sheet.MOUNT_ABU}
         onMapMove={(bounds) => {
           console.log('Map moved to', bounds);
         }}
