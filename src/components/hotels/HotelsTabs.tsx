@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import MobileFilter from "@/components/hotels/MobileFilter";
 import { Hotel } from "@/components/admin/hotels/types";
 import { sheet } from "@/data/locationsData";
 import WeatherWidgetCard from "@/components/hotels/WeatherWidgetCard";
+import HotelMap from "@/components/hotels/map/HotelMap";
 
 interface HotelsTabsProps {
   activeView: string;
@@ -93,8 +95,8 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
       </div>
 
       <MobileFilter
-        isOpen={isFilterOpen}
-        setIsOpen={setIsFilterOpen}
+        isFilterOpen={isFilterOpen}
+        setIsFilterOpen={setIsFilterOpen}
         priceRange={priceRange}
         setPriceRange={setPriceRange}
         selectedStars={selectedStars}
@@ -102,7 +104,7 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
         selectedAmenities={selectedAmenities}
         handleAmenityFilter={handleAmenityFilter}
         clearFilters={clearFilters}
-        amenities={commonAmenities}
+        commonAmenities={commonAmenities}
       />
 
       <TabsContent value="classic" className="mt-0">
@@ -112,13 +114,16 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
           </div>
           <div className="space-y-6">
             <WeatherWidgetCard />
-            
           </div>
         </div>
       </TabsContent>
 
       <TabsContent value="map" className="mt-0">
-        
+        <HotelMap 
+          hotels={filteredHotels}
+          isLoading={isLoading}
+          center={sheet.MOUNT_ABU}
+        />
       </TabsContent>
     </Tabs>
   );
