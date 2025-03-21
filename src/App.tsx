@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { HelmetProvider } from 'react-helmet-async';
 import Auth from '@/pages/Auth';
 import ForgotPassword from '@/pages/ForgotPassword';
 import AdminForgotPassword from '@/pages/AdminForgotPassword';
@@ -37,64 +38,66 @@ import BookingNotFound from '@/pages/BookingNotFound';
 function App() {
   return (
     <BrowserRouter>
-      <ThemeProvider defaultTheme="light" storageKey="mount-abu-theme">
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
-            <Route path="/admin/register" element={<AdminRegister />} />
-            
-            {/* Hotel routes */}
-            <Route path="/hotels" element={<Hotels />} />
-            <Route path="/hotel/:hotelId" element={<HotelDetail />} />
-            <Route path="/hotel-not-found" element={<HotelNotFound />} />
-            
-            {/* Rental routes */}
-            <Route path="/bike-rentals" element={<BikeRentals />} />
-            <Route path="/bike-rental/:id" element={<BikeRentalDetail />} />
-            <Route path="/car-rentals" element={<CarRentals />} />
-            <Route path="/rentals/car" element={<CarRentals />} /> 
-            <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
-            <Route path="/car-rental/:id" element={<CarRentalDetail />} />
-            
-            {/* Destination routes */}
-            <Route path="/destinations" element={<Destinations />} />
-            <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
-            <Route path="/destination-not-found" element={<DestinationNotFound />} />
-            
-            {/* Adventure routes */}
-            <Route path="/adventures" element={<Adventures />} />
-            <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
-            <Route path="/adventure-not-found" element={<AdventureNotFound />} />
-            
-            {/* Content routes */}
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/booking-not-found" element={<BookingNotFound />} />
-            
-            {/* Protected routes for regular users */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/profile" element={<div>Profile Page</div>} />
-              <Route path="/bookings" element={<div>Bookings Page</div>} />
-            </Route>
-            
-            {/* Protected routes for admin users */}
-            <Route element={<AdminRoute />}>
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/hotels" element={<AdminHotels />} />
-              <Route path="/admin/bikes" element={<AdminBikeRentals />} />
-              <Route path="/admin/cars" element={<AdminCarRentals />} />
-              <Route path="/admin/bookings" element={<div>Booking Management</div>} />
-              <Route path="/admin/users" element={<UsersPage />} />
-            </Route>
-            
-            {/* 404 catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-        </AuthProvider>
-      </ThemeProvider>
+      <HelmetProvider>
+        <ThemeProvider defaultTheme="light" storageKey="mount-abu-theme">
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
+              <Route path="/admin/register" element={<AdminRegister />} />
+              
+              {/* Hotel routes */}
+              <Route path="/hotels" element={<Hotels />} />
+              <Route path="/hotel/:hotelId" element={<HotelDetail />} />
+              <Route path="/hotel-not-found" element={<HotelNotFound />} />
+              
+              {/* Rental routes */}
+              <Route path="/bike-rentals" element={<BikeRentals />} />
+              <Route path="/bike-rental/:id" element={<BikeRentalDetail />} />
+              <Route path="/car-rentals" element={<CarRentals />} />
+              <Route path="/rentals/car" element={<CarRentals />} /> 
+              <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
+              <Route path="/car-rental/:id" element={<CarRentalDetail />} />
+              
+              {/* Destination routes */}
+              <Route path="/destinations" element={<Destinations />} />
+              <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
+              <Route path="/destination-not-found" element={<DestinationNotFound />} />
+              
+              {/* Adventure routes */}
+              <Route path="/adventures" element={<Adventures />} />
+              <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
+              <Route path="/adventure-not-found" element={<AdventureNotFound />} />
+              
+              {/* Content routes */}
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/booking-not-found" element={<BookingNotFound />} />
+              
+              {/* Protected routes for regular users */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/profile" element={<div>Profile Page</div>} />
+                <Route path="/bookings" element={<div>Bookings Page</div>} />
+              </Route>
+              
+              {/* Protected routes for admin users */}
+              <Route element={<AdminRoute />}>
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/hotels" element={<AdminHotels />} />
+                <Route path="/admin/bikes" element={<AdminBikeRentals />} />
+                <Route path="/admin/cars" element={<AdminCarRentals />} />
+                <Route path="/admin/bookings" element={<div>Booking Management</div>} />
+                <Route path="/admin/users" element={<UsersPage />} />
+              </Route>
+              
+              {/* 404 catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
+      </HelmetProvider>
     </BrowserRouter>
   );
 }
