@@ -1,216 +1,131 @@
 
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { CarRental } from "@/integrations/supabase/custom-types";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CarHero from "@/components/car-rentals/CarHero";
 import CarList from "@/components/car-rentals/CarList";
-import EnhancedCarFilters from "@/components/car-rentals/EnhancedCarFilters";
-import WeatherWidgetExtended from "@/components/WeatherWidgetExtended";
-import SEO from "@/components/SEO";
+import CarFilters from "@/components/car-rentals/CarFilters";
+import { Helmet } from "react-helmet-async";
+import { cn } from "@/lib/utils";
 
 const CarRentals = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
-  const [cars, setCars] = useState<CarRental[]>([]);
-  const [filteredCars, setFilteredCars] = useState<CarRental[]>([]);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [activeSort, setActiveSort] = useState("recommended");
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   
-  // Search form state with enhanced filters
-  const [searchValues, setSearchValues] = useState({
-    location: "",
-    dates: "",
-    type: "",
-    priceRange: [500, 5000] as [number, number],
-    transmission: "",
-    seatingCapacity: 0
-  });
-
-  // Parse URL query params on initial load
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    setSearchValues({
-      location: params.get("location") || "",
-      dates: params.get("dates") || "",
-      type: params.get("type") || "",
-      priceRange: [
-        parseInt(params.get("minPrice") || "500"), 
-        parseInt(params.get("maxPrice") || "5000")
-      ] as [number, number],
-      transmission: params.get("transmission") || "",
-      seatingCapacity: parseInt(params.get("capacity") || "0")
-    });
-  }, [location.search]);
-
-  // Fetch cars data
-  useEffect(() => {
-    const fetchCars = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('car_rentals')
-          .select('*')
-          .eq('status', 'available');
-        
-        if (error) throw error;
-        
-        if (data) {
-          const formattedCars: CarRental[] = data.map(car => ({
-            id: car.id,
-            name: car.name,
-            type: car.type,
-            capacity: car.capacity,
-            transmission: car.transmission,
-            price: parseFloat(car.price.toString()),
-            image: car.image,
-            bookings: car.bookings || 0,
-            status: car.status as 'available' | 'booked' | 'maintenance',
-            description: car.description
-          }));
-          
-          setCars(formattedCars);
-          setFilteredCars(formattedCars);
-        }
-      } catch (error) {
-        console.error("Error fetching cars:", error);
-        toast({
-          title: "Error",
-          description: "Could not load car rentals. Please try again later.",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCars();
-  }, [toast]);
-
-  // Filter cars based on search values
-  useEffect(() => {
-    if (cars.length > 0) {
-      let filtered = [...cars];
-      
-      // Filter by car type
-      if (searchValues.type) {
-        filtered = filtered.filter(car => 
-          car.type.toLowerCase() === searchValues.type.toLowerCase()
-        );
-      }
-      
-      // Filter by transmission
-      if (searchValues.transmission) {
-        filtered = filtered.filter(car => 
-          car.transmission.toLowerCase() === searchValues.transmission.toLowerCase()
-        );
-      }
-      
-      // Filter by seating capacity
-      if (searchValues.seatingCapacity > 0) {
-        filtered = filtered.filter(car => car.capacity === searchValues.seatingCapacity);
-      }
-      
-      // Filter by price range
-      filtered = filtered.filter(car => 
-        car.price >= searchValues.priceRange[0] && car.price <= searchValues.priceRange[1]
-      );
-      
-      setFilteredCars(filtered);
+  const toggleFilter = (filter: string) => {
+    if (activeFilters.includes(filter)) {
+      setActiveFilters(activeFilters.filter(f => f !== filter));
+    } else {
+      setActiveFilters([...activeFilters, filter]);
     }
-  }, [searchValues, cars]);
-
-  // Handle form submission
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Create URL with search params
-    const params = new URLSearchParams();
-    if (searchValues.location) params.append("location", searchValues.location);
-    if (searchValues.dates) params.append("dates", searchValues.dates);
-    if (searchValues.type) params.append("type", searchValues.type);
-    if (searchValues.transmission) params.append("transmission", searchValues.transmission);
-    if (searchValues.seatingCapacity > 0) params.append("capacity", searchValues.seatingCapacity.toString());
-    params.append("minPrice", searchValues.priceRange[0].toString());
-    params.append("maxPrice", searchValues.priceRange[1].toString());
-    
-    // Navigate to same page with search params
-    navigate(`?${params.toString()}`);
-    
-    // Show toast notification
-    toast({
-      title: "Search Applied",
-      description: "Filtering car results based on your search criteria."
-    });
   };
-
-  // Reset all filters
-  const resetFilters = () => {
-    setSearchValues({
-      location: "",
-      dates: "",
-      type: "",
-      priceRange: [500, 5000] as [number, number],
-      transmission: "",
-      seatingCapacity: 0
-    });
-    navigate("/rentals/car");
-    
-    toast({
-      title: "Filters Reset",
-      description: "All search filters have been cleared."
-    });
+  
+  const clearFilters = () => {
+    setActiveFilters([]);
   };
 
   return (
     <>
-      <SEO 
-        title="Mount Abu Car Rentals | Self-Drive & Chauffeur Options" 
-        description="Rent cars in Mount Abu for comfortable travel. Choose from economy, luxury, and family vehicles with self-drive or chauffeur options."
-      />
-      <Header />
+      <Helmet>
+        <title>Car Rentals in Mount Abu | Explore in Comfort</title>
+        <meta name="description" content="Rent a car and explore Mount Abu at your own pace. Choose from a range of vehicles from economy to luxury cars at competitive prices." />
+      </Helmet>
       
-      <main className="w-full bg-stone-50">
-        <CarHero 
-          searchValues={searchValues} 
-          setSearchValues={setSearchValues} 
-          onSubmit={handleSearch} 
-        />
+      <div className="min-h-screen flex flex-col bg-stone-50">
+        <Header />
         
-        <section className="py-12">
-          <div className="container-custom">
-            <div className="mb-8">
-              <div className="flex flex-col md:flex-row justify-between gap-4">
-                <h2 className="text-xl font-bold">Current Weather in Mount Abu</h2>
-                <p className="text-stone-500">Plan your trip with the latest weather conditions</p>
+        <main className="flex-grow">
+          <CarHero />
+          
+          <div className="container-custom py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Sidebar Filter (Desktop) */}
+              <div className="hidden lg:block lg:col-span-1">
+                <CarFilters 
+                  activeFilters={activeFilters}
+                  toggleFilter={toggleFilter}
+                  clearFilters={clearFilters}
+                />
               </div>
-              <div className="mt-4">
-                <WeatherWidgetExtended />
-              </div>
-            </div>
-            
-            <div className="flex flex-col md:flex-row gap-8">
-              <EnhancedCarFilters 
-                searchValues={searchValues} 
-                setSearchValues={setSearchValues} 
-                onSubmit={handleSearch}
-                resetFilters={resetFilters}
-              />
               
-              <CarList 
-                cars={filteredCars} 
-                isLoading={isLoading} 
-                clearSearch={resetFilters} 
-              />
+              {/* Mobile Filter Backdrop */}
+              {isMobileFilterOpen && (
+                <div 
+                  className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+                  onClick={() => setIsMobileFilterOpen(false)}
+                ></div>
+              )}
+              
+              {/* Mobile Filter Sidebar */}
+              <div className={cn(
+                "fixed inset-y-0 left-0 z-50 w-full max-w-xs bg-white p-6 overflow-y-auto lg:hidden transform transition-transform",
+                isMobileFilterOpen ? "translate-x-0" : "-translate-x-full"
+              )}>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">Filters</h2>
+                  <button 
+                    onClick={() => setIsMobileFilterOpen(false)}
+                    className="text-stone-500 hover:text-stone-700"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <CarFilters 
+                  activeFilters={activeFilters}
+                  toggleFilter={toggleFilter}
+                  clearFilters={clearFilters}
+                />
+              </div>
+              
+              {/* Car List */}
+              <div className="lg:col-span-3">
+                <div className="mb-4 flex items-center justify-between">
+                  <h1 className="text-2xl font-display font-bold">Car Rentals in Mount Abu</h1>
+                  
+                  <div className="flex items-center gap-3">
+                    {/* Filter button (Mobile) */}
+                    <button 
+                      onClick={() => setIsMobileFilterOpen(true)}
+                      className="flex items-center gap-2 px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm font-medium lg:hidden"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                      </svg>
+                      Filters
+                      {activeFilters.length > 0 && (
+                        <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-xs bg-primary text-white rounded-full">
+                          {activeFilters.length}
+                        </span>
+                      )}
+                    </button>
+                    
+                    {/* Sort dropdown */}
+                    <select
+                      value={activeSort}
+                      onChange={(e) => setActiveSort(e.target.value)}
+                      className="px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm font-medium appearance-none cursor-pointer pr-8 relative"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: "right 0.5rem center", backgroundRepeat: "no-repeat", backgroundSize: "1.5em 1.5em" }}
+                    >
+                      <option value="recommended">Recommended</option>
+                      <option value="price-low">Price: Low to High</option>
+                      <option value="price-high">Price: High to Low</option>
+                      <option value="rating">Highest Rated</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <CarList activeFilters={activeFilters} activeSort={activeSort} />
+              </div>
             </div>
           </div>
-        </section>
-      </main>
-      
-      <Footer />
+        </main>
+        
+        <Footer />
+      </div>
     </>
   );
 };

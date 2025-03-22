@@ -4,10 +4,11 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import DashboardSidebar from "@/components/admin/dashboard/DashboardSidebar";
+import Sidebar from "@/components/admin/Sidebar";
 import DashboardHeader from "@/components/admin/dashboard/DashboardHeader";
 
 const AdminDashboard = () => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -21,7 +22,11 @@ const AdminDashboard = () => {
     }
   }, [location.pathname]);
 
-  const toggleSidebar = () => {
+  const toggleSidebarCollapse = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  const toggleSidebarOpen = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
@@ -32,6 +37,7 @@ const AdminDashboard = () => {
         title: "Logged out successfully",
         description: "You have been logged out of the admin dashboard",
       });
+      navigate("/auth");
     } catch (error) {
       console.error("Logout error:", error);
       toast({
@@ -42,32 +48,53 @@ const AdminDashboard = () => {
     }
   };
 
-  const isActive = (path: string) => {
-    return location.pathname === path || 
-          (path !== '/admin' && location.pathname.startsWith(path));
-  };
-
   return (
     <div className="min-h-screen bg-stone-50 flex overflow-hidden">
-      <DashboardHeader 
-        sidebarOpen={sidebarOpen} 
-        toggleSidebar={toggleSidebar} 
-      />
+      {/* Sidebar for mobile - shown conditionally */}
+      <div className="md:hidden">
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/20 z-30"
+            onClick={toggleSidebarOpen}
+          ></div>
+        )}
+        
+        <div className={cn(
+          "fixed inset-y-0 left-0 z-40 transition-transform duration-300 transform",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}>
+          <Sidebar 
+            collapsed={false} 
+            onToggleCollapse={undefined}
+          />
+        </div>
+      </div>
       
-      <DashboardSidebar
-        sidebarOpen={sidebarOpen}
-        isActive={isActive}
-        handleLogout={handleLogout}
-        toggleSidebar={toggleSidebar}
-      />
-
+      {/* Sidebar for desktop - always visible */}
+      <div className="hidden md:block">
+        <Sidebar 
+          collapsed={sidebarCollapsed} 
+          onToggleCollapse={toggleSidebarCollapse}
+        />
+      </div>
+      
       {/* Main content */}
-      <main className={cn(
-        "flex-1 p-4 sm:p-6 transition-all duration-300 pt-16 md:pt-6 overflow-y-auto",
-        "md:ml-[280px]"
-      )}>
-        <Outlet />
-      </main>
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <DashboardHeader 
+          sidebarOpen={sidebarOpen}
+          toggleSidebar={toggleSidebarOpen}
+          handleLogout={handleLogout}
+        />
+        
+        <main className={cn(
+          "flex-1 p-4 sm:p-6 overflow-y-auto",
+          "pt-16 md:pt-6",
+          "transition-all duration-300",
+          sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[250px]"
+        )}>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

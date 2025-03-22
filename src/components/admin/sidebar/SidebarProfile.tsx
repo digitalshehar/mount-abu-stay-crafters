@@ -1,15 +1,14 @@
 
 import React from "react";
-import { LogOut, UserCircle, ChevronDown } from "lucide-react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
+import { UserCircle, LogOut, ExternalLink } from "lucide-react";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface SidebarProfileProps {
   signOut: () => Promise<void>;
@@ -17,66 +16,63 @@ interface SidebarProfileProps {
 }
 
 const SidebarProfile: React.FC<SidebarProfileProps> = ({ signOut, collapsed }) => {
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
-  if (collapsed) {
-    return (
-      <div className="p-2 border-t">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="w-full flex items-center justify-center p-2 rounded-md hover:bg-gray-100">
-              <UserCircle className="h-6 w-6 text-gray-500" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Admin User</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/admin/settings">Settings</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Sign Out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+  const profileContent = (
+    <div className={cn(
+      "p-4 border-t flex items-center gap-3",
+      collapsed ? "justify-center" : "justify-between"
+    )}>
+      <div className="flex items-center gap-3 min-w-0">
+        <UserCircle className="h-8 w-8 text-gray-500 flex-shrink-0" />
+        
+        {!collapsed && (
+          <div className="flex flex-col min-w-0">
+            <span className="font-medium text-sm truncate">Admin User</span>
+            <span className="text-xs text-gray-500 truncate">admin@example.com</span>
+          </div>
+        )}
       </div>
-    );
-  }
-
-  return (
-    <div className="p-4 border-t">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="flex items-center justify-between w-full rounded-md p-2 hover:bg-gray-100 transition-colors">
-            <div className="flex items-center gap-2">
-              <UserCircle className="h-8 w-8 text-gray-400" />
-              <div>
-                <h3 className="text-sm font-medium text-left">Admin User</h3>
-                <p className="text-xs text-gray-500">Admin</p>
-              </div>
-            </div>
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+      
+      {!collapsed && (
+        <div className="flex items-center gap-2">
+          <Link 
+            to="/" 
+            className="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
+            title="View Site"
+          >
+            <ExternalLink size={18} />
+          </Link>
+          
+          <button
+            onClick={() => signOut()}
+            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+            title="Sign Out"
+          >
+            <LogOut size={18} />
           </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuItem asChild>
-            <Link to="/admin/profile">View Profile</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to="/admin/settings">Settings</Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Sign Out</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </div>
+      )}
+      
+      {collapsed && (
+        <TooltipProvider delayDuration={300}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => signOut()}
+                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+              >
+                <LogOut size={18} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Sign Out</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
     </div>
   );
+
+  return profileContent;
 };
 
 export default SidebarProfile;
