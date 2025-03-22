@@ -3,6 +3,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import SEO from "@/components/SEO";
 import NotFoundComponent from "@/components/NotFound";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const BikeRentals = () => {
   return (
@@ -11,6 +13,7 @@ const BikeRentals = () => {
         title="Mount Abu Bike Rentals | Explore on Two Wheels" 
         description="Rent bikes in Mount Abu at affordable rates. Choose from a variety of motorcycles and scooters to explore the beautiful hill station."
       />
+      <Header />
       <NotFoundComponent
         title="Coming Soon: Bike Rentals"
         message="We're working on creating a seamless bike rental service for exploring Mount Abu. Please check back soon to discover our two-wheeled options!"
@@ -19,6 +22,7 @@ const BikeRentals = () => {
         backButtonLabel="Go Back"
         homeButtonLabel="Back to Homepage"
       />
+      <Footer />
     </>
   );
 };

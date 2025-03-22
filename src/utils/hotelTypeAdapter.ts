@@ -19,8 +19,7 @@ export const adminToIntegrationHotel = (hotel: AdminHotel): Hotel => {
     latitude: hotel.latitude || 24.5927,
     longitude: hotel.longitude || 72.7156,
     featured: hotel.featured || false,
-    gallery: hotel.gallery || [],
-    // Omitting created_at and updated_at as they don't exist in the Hotel type
+    // Remove gallery as it doesn't exist in the Hotel type
   };
 };
 
@@ -45,7 +44,7 @@ export const integrationToAdminHotel = (hotel: Hotel): AdminHotel => {
     latitude: hotel.latitude || 24.5927,
     longitude: hotel.longitude || 72.7156,
     featured: hotel.featured || false,
-    gallery: hotel.gallery || [],
+    gallery: [], // Set to empty array as it's required in AdminHotel
     categories: [],
     rooms: [],
     seoTitle: '',
