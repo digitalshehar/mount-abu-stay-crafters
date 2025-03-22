@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 interface NavItemProps {
   path: string;
   label: string;
-  icon: React.ElementRef<any>;
+  icon: React.ElementType;
   isActive: boolean;
 }
 
