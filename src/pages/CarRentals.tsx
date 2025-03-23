@@ -9,20 +9,30 @@ import { Helmet } from "react-helmet-async";
 import { cn } from "@/lib/utils";
 
 const CarRentals = () => {
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [activeSort, setActiveSort] = useState("recommended");
+  // Define search state that matches the expected props in components
+  const [searchValues, setSearchValues] = useState({
+    location: "Mount Abu",
+    dates: "",
+    type: ""
+  });
+  
+  const [cars, setCars] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   
-  const toggleFilter = (filter: string) => {
-    if (activeFilters.includes(filter)) {
-      setActiveFilters(activeFilters.filter(f => f !== filter));
-    } else {
-      setActiveFilters([...activeFilters, filter]);
-    }
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here would be the actual search implementation
+    console.log("Searching with values:", searchValues);
   };
   
-  const clearFilters = () => {
-    setActiveFilters([]);
+  // Function to clear search
+  const clearSearch = () => {
+    setSearchValues({
+      location: "Mount Abu",
+      dates: "",
+      type: ""
+    });
   };
 
   return (
@@ -36,16 +46,20 @@ const CarRentals = () => {
         <Header />
         
         <main className="flex-grow">
-          <CarHero />
+          <CarHero 
+            searchValues={searchValues} 
+            setSearchValues={setSearchValues} 
+            onSubmit={handleSearchSubmit} 
+          />
           
           <div className="container-custom py-12">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {/* Sidebar Filter (Desktop) */}
               <div className="hidden lg:block lg:col-span-1">
                 <CarFilters 
-                  activeFilters={activeFilters}
-                  toggleFilter={toggleFilter}
-                  clearFilters={clearFilters}
+                  searchValues={searchValues}
+                  setSearchValues={setSearchValues}
+                  onSubmit={handleSearchSubmit}
                 />
               </div>
               
@@ -75,9 +89,9 @@ const CarRentals = () => {
                 </div>
                 
                 <CarFilters 
-                  activeFilters={activeFilters}
-                  toggleFilter={toggleFilter}
-                  clearFilters={clearFilters}
+                  searchValues={searchValues}
+                  setSearchValues={setSearchValues}
+                  onSubmit={handleSearchSubmit}
                 />
               </div>
               
@@ -96,17 +110,10 @@ const CarRentals = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                       </svg>
                       Filters
-                      {activeFilters.length > 0 && (
-                        <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-xs bg-primary text-white rounded-full">
-                          {activeFilters.length}
-                        </span>
-                      )}
                     </button>
                     
                     {/* Sort dropdown */}
                     <select
-                      value={activeSort}
-                      onChange={(e) => setActiveSort(e.target.value)}
                       className="px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm font-medium appearance-none cursor-pointer pr-8 relative"
                       style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: "right 0.5rem center", backgroundRepeat: "no-repeat", backgroundSize: "1.5em 1.5em" }}
                     >
@@ -118,7 +125,11 @@ const CarRentals = () => {
                   </div>
                 </div>
                 
-                <CarList activeFilters={activeFilters} activeSort={activeSort} />
+                <CarList 
+                  cars={[]} 
+                  isLoading={isLoading} 
+                  clearSearch={clearSearch} 
+                />
               </div>
             </div>
           </div>

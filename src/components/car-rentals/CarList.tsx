@@ -13,7 +13,7 @@ interface CarListProps {
 
 const CarList = ({ cars, isLoading, clearSearch }: CarListProps) => {
   return (
-    <div className="w-full md:w-3/4">
+    <div className="w-full">
       <div className="flex justify-between items-center mb-6">
         <p className="text-stone-500">
           {isLoading ? (
