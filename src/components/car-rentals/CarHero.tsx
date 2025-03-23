@@ -35,15 +35,10 @@ const CarHero = ({ searchValues, setSearchValues, onSubmit }: CarHeroProps) => {
 
           <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-md p-6 mt-8">
             <CarSearchForm 
-              search={searchValues}
-              setSearch={setSearchValues}
+              searchValues={searchValues}
+              setSearchValues={setSearchValues}
+              onSubmit={onSubmit}
             />
-            <button 
-              onClick={onSubmit}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg shadow-sm transition-all mt-4"
-            >
-              Search Cars
-            </button>
           </div>
         </div>
       </div>
