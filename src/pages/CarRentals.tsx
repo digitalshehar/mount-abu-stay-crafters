@@ -7,6 +7,7 @@ import CarList from "@/components/car-rentals/CarList";
 import CarFilters from "@/components/car-rentals/CarFilters";
 import { Helmet } from "react-helmet-async";
 import { cn } from "@/lib/utils";
+import SEO from "@/components/SEO";
 
 const CarRentals = () => {
   // Define search state that matches the expected props in components
@@ -24,6 +25,14 @@ const CarRentals = () => {
     e.preventDefault();
     // Here would be the actual search implementation
     console.log("Searching with values:", searchValues);
+    
+    // Simulate loading
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      // Simulate no results for now, actual implementation would set cars array
+      setCars([]);
+    }, 1500);
   };
   
   // Function to clear search
@@ -37,10 +46,10 @@ const CarRentals = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Car Rentals in Mount Abu | Explore in Comfort</title>
-        <meta name="description" content="Rent a car and explore Mount Abu at your own pace. Choose from a range of vehicles from economy to luxury cars at competitive prices." />
-      </Helmet>
+      <SEO
+        title="Car Rentals in Mount Abu | Explore in Comfort"
+        description="Rent a car and explore Mount Abu at your own pace. Choose from a range of vehicles from economy to luxury cars at competitive prices."
+      />
       
       <div className="min-h-screen flex flex-col bg-stone-50">
         <Header />
@@ -126,7 +135,7 @@ const CarRentals = () => {
                 </div>
                 
                 <CarList 
-                  cars={[]} 
+                  cars={cars} 
                   isLoading={isLoading} 
                   clearSearch={clearSearch} 
                 />

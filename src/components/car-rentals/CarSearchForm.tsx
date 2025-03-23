@@ -7,11 +7,12 @@ interface CarSearchFormProps {
     location: string;
     dates: string;
     type: string;
-    priceRange?: [number, number];
-    transmission?: string;
-    seatingCapacity?: number;
   };
-  setSearchValues: React.Dispatch<React.SetStateAction<any>>;
+  setSearchValues: React.Dispatch<React.SetStateAction<{
+    location: string;
+    dates: string;
+    type: string;
+  }>>;
   onSubmit: (e: React.FormEvent) => void;
 }
 

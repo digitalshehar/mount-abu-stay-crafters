@@ -39,6 +39,12 @@ const CarHero = ({ searchValues, setSearchValues, onSubmit }: CarHeroProps) => {
               setSearchValues={setSearchValues}
               onSubmit={onSubmit}
             />
+            <button 
+              onClick={(e) => onSubmit(e as React.FormEvent)}
+              className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg shadow-sm transition-all mt-4"
+            >
+              Search Cars
+            </button>
           </div>
         </div>
       </div>
