@@ -20,12 +20,12 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white w-full">
+    <div className="min-h-screen bg-white">
       <Header />
       <Hero />
 
       {/* Weather & Travel Guide Section */}
-      <section className="py-8 sm:py-10 bg-stone-50 w-full">
+      <section className="py-8 sm:py-10 bg-stone-50">
         <div className="container-custom">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <div>
@@ -52,7 +52,7 @@ const Index = () => {
       <DestinationSection />
 
       {/* Events & Recommendations Section */}
-      <section className="py-10 sm:py-16 bg-stone-50 w-full">
+      <section className="py-10 sm:py-16 bg-stone-50">
         <div className="container-custom">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
             <EventsCalendar />
@@ -64,7 +64,7 @@ const Index = () => {
       <TestimonialSection />
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-20 md:py-24 relative w-full">
+      <section className="py-16 sm:py-20 md:py-24 relative">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-primary/60 z-10" />
           <img

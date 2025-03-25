@@ -1,66 +1,68 @@
 
-import { useState } from 'react';
-import { Hotel } from '@/components/admin/hotels/types';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 
-export const useHotelComparison = () => {
-  const [compareList, setCompareList] = useState<Hotel[]>([]);
-  const { toast } = useToast();
-  
-  const addToCompare = (id: number) => {
-    setCompareList(prev => {
-      // Check if hotel is already in the list
-      if (prev.some(hotel => hotel.id === id)) {
-        return prev;
-      }
-      
-      // Maximum 4 hotels to compare
-      if (prev.length >= 4) {
-        toast({
-          title: "Compare limit reached",
-          description: "You can compare a maximum of 4 hotels at once. Please remove one to add another.",
-          variant: "destructive"
-        });
-        return prev;
-      }
-      
-      // Add hotel by id (the actual hotel data will be fetched from the hotels array when needed)
-      toast({
-        title: "Added to compare",
-        description: "Hotel has been added to your comparison list"
+const COMPARE_STORAGE_KEY = 'hotel_compare_list';
+
+export const useHotelComparison = (maxCompare = 3) => {
+  // Load hotels to compare from localStorage
+  const loadCompareList = (): number[] => {
+    try {
+      const savedList = localStorage.getItem(COMPARE_STORAGE_KEY);
+      return savedList ? JSON.parse(savedList) : [];
+    } catch (error) {
+      console.error('Error loading compare list from storage:', error);
+      return [];
+    }
+  };
+
+  const [compareList, setCompareList] = useState<number[]>(loadCompareList);
+
+  // Save compare list to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(compareList));
+    } catch (error) {
+      console.error('Error saving compare list to storage:', error);
+    }
+  }, [compareList]);
+
+  // Add a hotel to the compare list
+  const addToCompare = useCallback((hotelId: number) => {
+    if (compareList.includes(hotelId)) {
+      return;
+    }
+
+    if (compareList.length >= maxCompare) {
+      toast.error(`You can only compare up to ${maxCompare} hotels at a time`, {
+        description: "Remove a hotel from the comparison first."
       });
-      
-      return [...prev, { id } as Hotel];
+      return;
+    }
+
+    setCompareList(prevList => [...prevList, hotelId]);
+    toast.success("Added to comparison", {
+      description: "Go to compare to see hotel details side by side"
     });
-  };
-  
-  const removeFromCompare = (id: number) => {
-    setCompareList(prev => {
-      const newList = prev.filter(hotel => hotel.id !== id);
-      
-      if (newList.length !== prev.length) {
-        toast({
-          title: "Removed from compare",
-          description: "Hotel has been removed from your comparison list"
-        });
-      }
-      
-      return newList;
-    });
-  };
-  
-  const clearCompare = () => {
+  }, [compareList, maxCompare]);
+
+  // Remove a hotel from the compare list
+  const removeFromCompare = useCallback((hotelId: number) => {
+    setCompareList(prevList => prevList.filter(id => id !== hotelId));
+    toast.info("Removed from comparison");
+  }, []);
+
+  // Clear all hotels from the compare list
+  const clearCompare = useCallback(() => {
     setCompareList([]);
-    toast({
-      title: "Compare list cleared",
-      description: "All hotels have been removed from your comparison list"
-    });
-  };
-  
-  const isInCompare = (id: number) => {
-    return compareList.some(hotel => hotel.id === id);
-  };
-  
+    toast.info("Comparison list cleared");
+  }, []);
+
+  // Check if a hotel is in the compare list
+  const isInCompare = useCallback((hotelId: number) => {
+    return compareList.includes(hotelId);
+  }, [compareList]);
+
   return {
     compareList,
     addToCompare,

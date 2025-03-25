@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,8 +52,7 @@ const AdminRegister = () => {
     setLoading(true);
     
     try {
-      // Since we're having an issue with profile creation, let's manually handle it
-      // First create the user
+      // Create the user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -68,35 +66,36 @@ const AdminRegister = () => {
       if (authError) throw authError;
       
       if (authData.user) {
-        // Wait a moment for the auth user to be fully created
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
         try {
-          // Manually insert into profiles table
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({ 
-              id: authData.user.id,
-              username: email.split('@')[0],
-              full_name: '',
-              avatar_url: ''
-            });
-          
-          if (profileError) {
-            console.error("Profile creation error:", profileError);
+          // First check if a role already exists for this user
+          const { data: existingRole, error: checkError } = await supabase
+            .from('user_roles')
+            .select('*')
+            .eq('user_id', authData.user.id)
+            .single();
+            
+          if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+            throw checkError;
           }
           
-          // Insert admin role
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({ 
-              user_id: authData.user.id, 
-              role: 'admin' 
-            });
-          
-          if (roleError) {
-            console.error("Role assignment error:", roleError);
-            throw roleError;
+          // If role exists, update it
+          if (existingRole) {
+            const { error: updateError } = await supabase
+              .from('user_roles')
+              .update({ role: 'admin' })
+              .eq('user_id', authData.user.id);
+              
+            if (updateError) throw updateError;
+          } else {
+            // Otherwise insert new role
+            const { error: roleError } = await supabase
+              .from('user_roles')
+              .insert({ 
+                user_id: authData.user.id, 
+                role: 'admin' 
+              });
+            
+            if (roleError) throw roleError;
           }
           
           toast({
@@ -107,6 +106,7 @@ const AdminRegister = () => {
           
           // Redirect to admin login
           navigate('/auth?admin=true');
+          
         } catch (roleError: any) {
           console.error("Role assignment error:", roleError);
           setError(roleError.message || 'Failed to assign admin role');

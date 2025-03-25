@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
 
 export interface HotelListProps {
-  hotels?: any[];
+  hotels: any[];
   filteredHotels: any[];
   loading?: boolean;
   isLoading?: boolean;
@@ -33,7 +33,7 @@ export interface HotelListProps {
 }
 
 const HotelList: React.FC<HotelListProps> = ({ 
-  hotels = [],
+  hotels,
   filteredHotels = [],
   loading,
   isLoading = loading,

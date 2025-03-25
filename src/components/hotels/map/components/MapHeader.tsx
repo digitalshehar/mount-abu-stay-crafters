@@ -5,40 +5,12 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 interface MapHeaderProps {
-  selectedHotel?: any | null;
-  hotelsCount?: number;
-  onOpenFilter?: () => void;
-  viewMode?: 'map' | 'list';
-  setViewMode?: (mode: 'map' | 'list') => void;
-  activeFilterCount?: number;
-  searchQuery?: string;
-  setSearchQuery?: (query: string) => void;
-  selectedStars?: number[];
-  setSelectedStars?: (stars: number[]) => void;
-  selectedAmenities?: string[];
-  setSelectedAmenities?: (amenities: string[]) => void;
-  priceRange?: [number, number];
-  setPriceRange?: (range: [number, number]) => void;
-  clearFilters?: () => void;
+  selectedHotel: any | null;
+  hotelsCount: number;
+  onOpenFilter: () => void;
 }
 
-const MapHeader: React.FC<MapHeaderProps> = ({ 
-  selectedHotel = null, 
-  hotelsCount = 0, 
-  onOpenFilter = () => {},
-  viewMode,
-  setViewMode,
-  activeFilterCount,
-  searchQuery,
-  setSearchQuery,
-  selectedStars,
-  setSelectedStars,
-  selectedAmenities,
-  setSelectedAmenities,
-  priceRange,
-  setPriceRange,
-  clearFilters
-}) => {
+const MapHeader: React.FC<MapHeaderProps> = ({ selectedHotel, hotelsCount, onOpenFilter }) => {
   return (
     <div className="bg-white p-4 shadow-sm flex justify-between items-center">
       <div className="flex items-center gap-2">
@@ -64,29 +36,10 @@ const MapHeader: React.FC<MapHeaderProps> = ({
         )}
       </div>
       
-      {viewMode && setViewMode ? (
-        <div className="flex gap-2">
-          <Button 
-            variant={viewMode === 'map' ? 'default' : 'outline'} 
-            size="sm"
-            onClick={() => setViewMode('map')}
-          >
-            Map View
-          </Button>
-          <Button 
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            size="sm" 
-            onClick={() => setViewMode('list')}
-          >
-            List View
-          </Button>
-        </div>
-      ) : (
-        <Button variant="outline" size="sm" onClick={onOpenFilter}>
-          <List className="h-4 w-4 mr-2" />
-          Filters
-        </Button>
-      )}
+      <Button variant="outline" size="sm" onClick={onOpenFilter}>
+        <List className="h-4 w-4 mr-2" />
+        Filters
+      </Button>
     </div>
   );
 };

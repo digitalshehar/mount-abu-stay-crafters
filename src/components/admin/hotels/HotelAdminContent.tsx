@@ -6,15 +6,6 @@ import HotelManagementHeader from "@/components/admin/hotels/HotelManagementHead
 import FeaturedHotels from "@/components/admin/hotels/FeaturedHotels";
 import HotelList from "@/components/admin/hotels/HotelList";
 
-interface HotelSearchBarProps {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  handleSearch: () => void;
-  setIsFilterPanelOpen: (open: boolean) => void;
-  handleClearFilters: () => void;
-  filterCount: number;
-}
-
 interface HotelAdminContentProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
@@ -84,7 +75,7 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
       
       <HotelManagementHeader 
         onAddHotel={() => {}} // Placeholder
-        onOpenAuditLog={() => handleOpenAuditLog()} 
+        onOpenAuditLog={() => {}} // Placeholder
         onOpenUserRoles={() => {}} // Placeholder
         canManageRoles={false} // Placeholder
         viewMode={viewMode}
@@ -96,29 +87,37 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
       {viewMode === 'featured' ? (
         <FeaturedHotels 
           hotels={filteredHotels.filter(hotel => hotel.featured)}
-          isLoading={loading}
-          onDelete={handleDeleteHotel}
-          onEdit={handleOpenEditHotel}
-          onToggleStatus={handleToggleStatus}
-          onToggleFeatured={handleToggleFeatured}
-          onClone={handleCloneHotel}
-          onViewHistory={handleOpenVersionHistory}
-          onViewAuditLog={handleOpenAuditLog}
+          loading={loading}
+          handleDeleteHotel={handleDeleteHotel}
+          handleOpenEditHotel={handleOpenEditHotel}
+          handleToggleStatus={handleToggleStatus}
+          handleToggleFeatured={handleToggleFeatured}
+          handleCloneHotel={handleCloneHotel}
+          handleOpenVersionHistory={handleOpenVersionHistory}
+          handleOpenAuditLog={handleOpenAuditLog}
         />
       ) : (
         <HotelList 
           hotels={hotels}
           filteredHotels={filteredHotels}
-          isLoading={loading}
-          onDelete={handleDeleteHotel}
-          onEdit={handleOpenEditHotel}
-          onToggleStatus={handleToggleStatus}
-          onToggleFeatured={handleToggleFeatured}
-          onClone={handleCloneHotel}
-          onBulkAction={handleBulkAction}
-          onViewHistory={handleOpenVersionHistory}
-          onViewAuditLog={handleOpenAuditLog}
+          loading={loading}
+          handleDeleteHotel={handleDeleteHotel}
+          handleOpenEditHotel={handleOpenEditHotel}
+          handleToggleStatus={handleToggleStatus}
+          handleToggleFeatured={handleToggleFeatured}
+          handleCloneHotel={handleCloneHotel}
+          handleBulkAction={handleBulkAction}
+          handleOpenVersionHistory={handleOpenVersionHistory}
+          handleOpenAuditLog={handleOpenAuditLog}
           addNotification={addNotification}
+          onDelete={() => {}} // Fallback
+          onEdit={() => {}} // Fallback
+          onToggleStatus={() => {}} // Fallback
+          onToggleFeatured={() => {}} // Fallback
+          onClone={() => {}} // Fallback
+          onBulkAction={() => {}} // Fallback
+          onViewHistory={() => {}} // Fallback
+          onViewAuditLog={() => {}} // Fallback
         />
       )}
       
