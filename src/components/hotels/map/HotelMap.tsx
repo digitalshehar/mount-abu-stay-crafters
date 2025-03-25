@@ -1,86 +1,205 @@
 
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { MapPin } from 'lucide-react';
-import { Hotel } from '@/components/admin/hotels/types';
+import React, { useState } from 'react';
+import { useLoadScript } from '@react-google-maps/api';
+import { Hotel } from '@/integrations/supabase/custom-types';
+import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
+import MapHeader from './components/MapHeader';
+import MapSidebar from './components/MapSidebar';
+import MapLayout from './components/MapLayout';
+import { useMapFilters } from './hooks/useMapFilters';
+import { useHotelComparison } from '@/hooks/useHotelComparison';
+import { useMapState } from './hooks/useMapState';
+import { useSelectedHotel } from './hooks/useSelectedHotel';
+import { useHeatmapSettings } from './hooks/useHeatmapSettings';
+import { 
+  convertAdminToIntegrationHotels, 
+  convertIntegrationToAdminHotels 
+} from '@/utils/hotelTypeAdapter';
+import './HotelMapStyles.css';
+import CompareHotelsWrapped from './components/CompareHotelsWrapped';
+
+const libraries = ['places', 'visualization'] as ("places" | "drawing" | "geometry" | "visualization")[];
 
 interface HotelMapProps {
-  hotels: Hotel[];
+  hotels: AdminHotel[];
   isLoading: boolean;
-  center: {
-    lat: number;
-    lng: number;
-    name?: string;
-  };
+  selectedHotelId?: number | null;
+  setSelectedHotelId?: (id: number) => void;
   onMapMove?: (bounds: any) => void;
 }
 
-const HotelMap: React.FC<HotelMapProps> = ({ hotels, isLoading, center, onMapMove }) => {
-  // If onMapMove is provided, we can call it when the map bounds change
-  React.useEffect(() => {
-    if (onMapMove && !isLoading && hotels.length > 0) {
-      // This is a placeholder - in a real implementation, we'd get the actual bounds from the map
-      const mockBounds = {
-        north: center.lat + 0.1,
-        south: center.lat - 0.1,
-        east: center.lng + 0.1,
-        west: center.lng - 0.1
-      };
-      onMapMove(mockBounds);
+const HotelMap: React.FC<HotelMapProps> = ({ 
+  hotels, 
+  isLoading, 
+  selectedHotelId,
+  setSelectedHotelId,
+  onMapMove
+}) => {
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
+  
+  // Hotel comparison state
+  const { 
+    compareList, 
+    addToCompare, 
+    removeFromCompare, 
+    clearCompare, 
+    isInCompare 
+  } = useHotelComparison();
+
+  // Map state management
+  const {
+    mapCenter,
+    setMapCenter,
+    mapZoom,
+    setMapZoom,
+    onMapLoad,
+    handleBoundsChanged,
+  } = useMapState();
+  
+  // Heatmap settings
+  const heatmapSettings = useHeatmapSettings();
+  
+  // Selected hotel state
+  const {
+    localSelectedHotelId,
+    setLocalSelectedHotelId,
+    selectedMarker,
+    setSelectedMarker,
+    handleHotelSelect
+  } = useSelectedHotel(hotels, true, setMapCenter, setMapZoom);
+  
+  // Map filters
+  const {
+    searchQuery,
+    setSearchQuery,
+    mapSearchQuery,
+    setMapSearchQuery,
+    handleMapSearch,
+    isSearching,
+    selectedStars,
+    setSelectedStars,
+    selectedAmenities,
+    setSelectedAmenities,
+    priceRange,
+    setPriceRange,
+    setMapBounds,
+    activeFilterCount,
+    clearFilters,
+    handleStarFilter,
+    handleAmenityFilter,
+    filterHotels,
+    getVisibleHotels
+  } = useMapFilters();
+  
+  // Load Google Maps
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries: libraries,
+  });
+
+  // Handle map bounds changes
+  const handleMapBoundsChanged = () => {
+    const bounds = handleBoundsChanged();
+    if (bounds && onMapMove) {
+      onMapMove(bounds);
     }
-  }, [onMapMove, isLoading, hotels, center]);
-
-  if (isLoading) {
+  };
+  
+  // Determine the active selected hotel ID
+  const effectiveSelectedHotelId = selectedHotelId !== undefined ? selectedHotelId : localSelectedHotelId;
+  
+  // Filter and convert hotels
+  const convertedHotels: Hotel[] = convertAdminToIntegrationHotels(hotels);
+  const filteredHotels = filterHotels(convertedHotels);
+  const visibleHotels = getVisibleHotels(filteredHotels, viewMode);
+  
+  // Handle errors loading Google Maps
+  if (loadError) {
     return (
-      <div className="flex items-center justify-center h-96 w-full bg-stone-100 rounded-lg">
-        <div className="animate-pulse text-center">
-          <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading map...</p>
+      <div className="container mx-auto py-6 px-4 text-center">
+        <div className="bg-red-50 p-6 rounded-lg text-red-600">
+          <h3 className="text-lg font-semibold mb-2">Error Loading Google Maps</h3>
+          <p>There was an error loading Google Maps. Please check your API key and try again.</p>
+          <p className="mt-4 text-sm text-red-500">Error details: {loadError.message}</p>
         </div>
       </div>
     );
   }
-
-  if (!hotels || hotels.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-96 w-full bg-stone-100 rounded-lg">
-        <div className="text-center">
-          <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No hotels to display on map</p>
-        </div>
-      </div>
-    );
-  }
-
+  
+  // Convert the compareList from AdminHotel[] to Hotel[] for MapLayout
+  const adminHotelsCompareList = compareList; // This is already AdminHotel[]
+  
+  // Function to handle selecting a hotel by its Hotel object
+  const handleSelectHotelByObject = (hotel: Hotel) => {
+    handleHotelSelect(hotel.id);
+  };
+  
   return (
-    <div className="space-y-6">
-      <div className="bg-stone-100 rounded-lg p-6 h-[500px] flex items-center justify-center">
-        <div className="text-center">
-          <MapPin className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h3 className="text-xl font-medium mb-2">Map View Coming Soon</h3>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            We're working on integrating an interactive map to show all {hotels.length} hotels in Mount Abu. 
-            Check back soon for this feature!
-          </p>
-        </div>
+    <div className="container mx-auto py-6 lg:py-8 px-4">
+      <MapHeader 
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        activeFilterCount={activeFilterCount}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedStars={selectedStars}
+        setSelectedStars={setSelectedStars}
+        selectedAmenities={selectedAmenities}
+        setSelectedAmenities={setSelectedAmenities}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        clearFilters={clearFilters}
+        selectedHotel={selectedMarker}
+        hotelsCount={filteredHotels.length}
+        onOpenFilter={() => {}}
+      />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
+        <MapSidebar 
+          hotels={filteredHotels}
+          selectedHotel={selectedMarker}
+          onSelectHotel={handleSelectHotelByObject}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          selectedStars={selectedStars}
+          handleStarFilter={handleStarFilter}
+          selectedAmenities={selectedAmenities}
+          handleAmenityFilter={handleAmenityFilter}
+          clearFilters={clearFilters}
+          commonAmenities={['WiFi', 'Swimming Pool', 'Restaurant', 'Spa', 'Gym']}
+        />
+        
+        <MapLayout 
+          viewMode={viewMode}
+          isLoading={isLoading}
+          mapCenter={mapCenter}
+          mapZoom={mapZoom}
+          onMapLoad={onMapLoad}
+          showHeatmap={heatmapSettings.showHeatmap}
+          setShowHeatmap={heatmapSettings.setShowHeatmap}
+          filteredHotels={filteredHotels}
+          visibleHotels={visibleHotels}
+          activeFilterCount={activeFilterCount}
+          clearFilters={clearFilters}
+          compareList={adminHotelsCompareList}
+          addToCompare={addToCompare}
+          removeFromCompare={removeFromCompare}
+          isInCompare={isInCompare}
+          mapSearchQuery={mapSearchQuery}
+          setMapSearchQuery={setMapSearchQuery}
+          handleMapSearch={handleMapSearch}
+          isSearching={isSearching}
+          heatmapSettings={heatmapSettings}
+        />
       </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {hotels.slice(0, 6).map((hotel) => (
-          <Card key={hotel.id} className="overflow-hidden">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="font-medium">{hotel.name}</h4>
-                  <p className="text-sm text-muted-foreground">{hotel.location}</p>
-                  <p className="text-sm mt-1">₹{hotel.pricePerNight} per night</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      
+      <CompareHotelsWrapped 
+        hotels={convertIntegrationToAdminHotels(filteredHotels)}
+        compareList={adminHotelsCompareList}
+        onAddToCompare={addToCompare}
+        onRemoveFromCompare={removeFromCompare}
+        onClearCompare={clearCompare}
+      />
     </div>
   );
 };

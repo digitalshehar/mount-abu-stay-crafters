@@ -8,7 +8,6 @@ import HotelSkeletonList from "./content/HotelSkeletonList";
 import FeaturedHotelsSection from "./content/FeaturedHotelsSection";
 import RegularHotelsSection from "./content/RegularHotelsSection";
 import NoHotelsFound from "./content/NoHotelsFound";
-import { useHotelComparison } from "@/hooks/useHotelComparison";
 
 interface HotelContentProps {
   isLoading: boolean;
@@ -16,9 +15,9 @@ interface HotelContentProps {
   activeFilterCount: number;
   clearFilters: () => void;
   compareList?: number[];
-  onAddToCompare?: (id: number) => void;
-  onRemoveFromCompare?: (id: number) => void;
-  isInCompare?: (id: number) => boolean;
+  onAddToCompare?: (hotelId: number) => void;
+  onRemoveFromCompare?: (hotelId: number) => void;
+  isInCompare?: (hotelId: number) => boolean;
 }
 
 const HotelContent = ({
@@ -27,19 +26,10 @@ const HotelContent = ({
   activeFilterCount,
   clearFilters,
   compareList = [],
-  onAddToCompare,
-  onRemoveFromCompare,
-  isInCompare
+  onAddToCompare = () => {},
+  onRemoveFromCompare = () => {},
+  isInCompare = () => false,
 }: HotelContentProps) => {
-  // Get hotel comparison functionality if not provided
-  const comparison = useHotelComparison();
-  
-  // Use provided comparison functions or defaults from the hook
-  const finalCompareList = compareList.length > 0 ? compareList : comparison.compareList.map(hotel => hotel.id);
-  const finalAddToCompare = onAddToCompare || comparison.addToCompare;
-  const finalRemoveFromCompare = onRemoveFromCompare || comparison.removeFromCompare;
-  const finalIsInCompare = isInCompare || comparison.isInCompare;
-  
   // Separate featured hotels
   const featuredHotels = filteredHotels.filter(hotel => hotel.featured);
   const regularHotels = filteredHotels.filter(hotel => !hotel.featured);
@@ -61,10 +51,10 @@ const HotelContent = ({
               title="Featured Hotels" 
               subtitle="Our handpicked premium accommodations"
               hotels={featuredHotels} 
-              compareList={finalCompareList}
-              onAddToCompare={finalAddToCompare}
-              onRemoveFromCompare={finalRemoveFromCompare}
-              isInCompare={finalIsInCompare}
+              compareList={compareList}
+              onAddToCompare={onAddToCompare}
+              onRemoveFromCompare={onRemoveFromCompare}
+              isInCompare={isInCompare}
             />
           )}
           
@@ -77,10 +67,10 @@ const HotelContent = ({
               title="All Hotels"
               subtitle="Explore all accommodations in Mount Abu"
               hotels={regularHotels}
-              compareList={finalCompareList}
-              onAddToCompare={finalAddToCompare}
-              onRemoveFromCompare={finalRemoveFromCompare}
-              isInCompare={finalIsInCompare}
+              compareList={compareList}
+              onAddToCompare={onAddToCompare}
+              onRemoveFromCompare={onRemoveFromCompare}
+              isInCompare={isInCompare}
             />
           )}
         </>
