@@ -6,7 +6,6 @@ import { List, SlidersHorizontal, X } from "lucide-react";
 import HotelListView from "@/components/hotels/HotelListView";
 import MobileFilter from "@/components/hotels/MobileFilter";
 import { Hotel } from "@/components/admin/hotels/types";
-import WeatherWidgetCard from "@/components/hotels/WeatherWidgetCard";
 
 interface HotelsTabsProps {
   activeView: string;
@@ -102,13 +101,8 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
       />
 
       <TabsContent value="classic" className="mt-0">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3">
-            <HotelListView hotels={filteredHotels} isLoading={isLoading} />
-          </div>
-          <div className="hidden lg:block">
-            <WeatherWidgetCard />
-          </div>
+        <div className="w-full">
+          <HotelListView hotels={filteredHotels} isLoading={isLoading} />
         </div>
       </TabsContent>
     </Tabs>
