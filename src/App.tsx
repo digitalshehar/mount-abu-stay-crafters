@@ -28,6 +28,7 @@ import Destinations from '@/pages/Destinations';
 import Adventures from '@/pages/Adventures';
 import Blog from '@/pages/Blog';
 import HotelDetail from '@/pages/HotelDetail';
+import HotelHtmlView from '@/pages/HotelHtmlView';
 import HotelNotFound from '@/pages/HotelNotFound';
 import DestinationDetail from '@/pages/DestinationDetail';
 import DestinationNotFound from '@/pages/DestinationNotFound';
@@ -56,12 +57,13 @@ function App() {
                 
                 {/* Hotel routes */}
                 <Route path="/hotels" element={<Hotels />} />
-                <Route path="/hotel/:hotelId" element={<HotelDetail />} />
+                <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
+                <Route path="/hotels/html/:hotelSlug" element={<HotelHtmlView />} />
                 <Route path="/hotel-not-found" element={<HotelNotFound />} />
                 
                 {/* Rental routes */}
                 <Route path="/bike-rentals" element={<BikeRentals />} />
-                <Route path="/rentals/bike" element={<BikeRentals />} /> {/* Add this route */}
+                <Route path="/rentals/bike" element={<BikeRentals />} />
                 <Route path="/bike-rental/:id" element={<BikeRentalDetail />} />
                 <Route path="/car-rentals" element={<CarRentals />} />
                 <Route path="/rentals/car" element={<CarRentals />} /> 
@@ -94,7 +96,7 @@ function App() {
                   <Route path="/admin/hotels" element={<AdminHotels />} />
                   <Route path="/admin/bikes" element={<AdminBikeRentals />} />
                   <Route path="/admin/cars" element={<AdminCarRentals />} />
-                  <Route path="/admin/blog" element={<AdminBlog />} /> {/* Add this route */}
+                  <Route path="/admin/blog" element={<AdminBlog />} />
                   <Route path="/admin/bookings" element={<div>Booking Management</div>} />
                   <Route path="/admin/users" element={<UsersPage />} />
                 </Route>

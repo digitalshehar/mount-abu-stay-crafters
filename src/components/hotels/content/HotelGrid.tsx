@@ -25,7 +25,8 @@ const HotelGrid: React.FC<HotelGridProps> = ({
         // Handle both AdminHotel and Hotel types
         const hotelId = hotel.id;
         const hotelName = hotel.name;
-        const hotelSlug = hotel.slug;
+        // Ensure hotel slug is always defined
+        const hotelSlug = hotel.slug || (typeof hotel.name === 'string' ? hotel.name.toLowerCase().replace(/\s+/g, '-') : '');
         const hotelLocation = hotel.location;
         const hotelRating = 'rating' in hotel ? hotel.rating || 0 : 0;
         const hotelReviewCount = 

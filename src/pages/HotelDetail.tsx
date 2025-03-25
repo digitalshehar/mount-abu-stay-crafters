@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Dialog } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
@@ -16,6 +16,7 @@ import { BookingDialog, BookingSuccessDialog } from "@/components/hotel/detail/B
 
 const HotelDetail = () => {
   const { hotelSlug } = useParams<{ hotelSlug: string }>();
+  const navigate = useNavigate();
   const { hotel, loading, error, nearbyAttractions, mapCoordinates } = useHotelDetail(hotelSlug);
   const [activeTab, setActiveTab] = useState("rooms");
   const [showFullGallery, setShowFullGallery] = useState(false);
@@ -57,6 +58,14 @@ const HotelDetail = () => {
       setActiveTab(tabParam);
     }
   }, [window.location.search]);
+
+  // Handle error case - redirect to not found page
+  useEffect(() => {
+    if (error && !loading) {
+      console.error("Hotel not found or error:", error);
+      navigate('/hotel-not-found');
+    }
+  }, [error, loading, navigate]);
 
   const handleToggleFavorite = () => {
     if (!hotel) return;
