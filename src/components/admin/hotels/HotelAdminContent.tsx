@@ -55,11 +55,6 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<'all' | 'featured'>('all');
   
-  const getFilterCount = () => {
-    if (!filterOptions) return 0;
-    return Object.values(filterOptions).flat().length;
-  };
-
   return (
     <div className="space-y-4">
       <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -69,15 +64,11 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
           handleSearch={handleSearch}
           setIsFilterPanelOpen={setIsFilterPanelOpen}
           handleClearFilters={handleClearFilters}
-          filterCount={getFilterCount()}
+          filterCount={Object.values(filterOptions).flat().length}
         />
       </div>
       
       <HotelManagementHeader 
-        onAddHotel={() => {}} // Placeholder
-        onOpenAuditLog={() => {}} // Placeholder
-        onOpenUserRoles={() => {}} // Placeholder
-        canManageRoles={false} // Placeholder
         viewMode={viewMode}
         setViewMode={setViewMode}
         showFavoritesOnly={showFavoritesOnly}
@@ -98,8 +89,7 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
         />
       ) : (
         <HotelList 
-          hotels={hotels}
-          filteredHotels={filteredHotels}
+          hotels={filteredHotels}
           loading={loading}
           handleDeleteHotel={handleDeleteHotel}
           handleOpenEditHotel={handleOpenEditHotel}
@@ -110,14 +100,6 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
           handleOpenVersionHistory={handleOpenVersionHistory}
           handleOpenAuditLog={handleOpenAuditLog}
           addNotification={addNotification}
-          onDelete={() => {}} // Fallback
-          onEdit={() => {}} // Fallback
-          onToggleStatus={() => {}} // Fallback
-          onToggleFeatured={() => {}} // Fallback
-          onClone={() => {}} // Fallback
-          onBulkAction={() => {}} // Fallback
-          onViewHistory={() => {}} // Fallback
-          onViewAuditLog={() => {}} // Fallback
         />
       )}
       
