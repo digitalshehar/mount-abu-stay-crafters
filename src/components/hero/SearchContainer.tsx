@@ -69,7 +69,7 @@ const SearchContainer = () => {
         if (carSearch.dates) searchParams.append("dates", carSearch.dates);
         if (carSearch.type) searchParams.append("type", carSearch.type);
         
-        // Validate and navigate
+        // Validate and navigate - Fix the path to match the route definition
         if (!validateSearch(searchParams, toast)) return;
         navigate(`/rentals/car?${searchParams.toString()}`);
         break;
@@ -126,13 +126,7 @@ const SearchContainer = () => {
             )}
 
             {activeTab === "cars" && (
-              <div>
-                <CarSearchForm 
-                  searchValues={carSearch} 
-                  setSearchValues={setCarSearch} 
-                  onSubmit={() => {}}
-                />
-              </div>
+              <CarSearchForm search={carSearch} setSearch={setCarSearch} />
             )}
 
             {activeTab === "bikes" && (
@@ -173,11 +167,7 @@ const SearchContainer = () => {
           )}
 
           {activeTab === "cars" && (
-            <CarSearchForm 
-              searchValues={carSearch} 
-              setSearchValues={setCarSearch} 
-              onSubmit={() => {}}
-            />
+            <CarSearchForm search={carSearch} setSearch={setCarSearch} />
           )}
 
           {activeTab === "bikes" && (

@@ -21,7 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggleCollapse }) => {
         collapsed ? "w-[70px]" : "w-[250px]"
       )}
     >
-      <SidebarHeader collapsed={collapsed} onToggleCollapse={onToggleCollapse} />
+      <SidebarHeader collapsed={collapsed} />
       
       <div className="py-4 flex-1 overflow-y-auto">
         <SidebarNavigation collapsed={collapsed} />

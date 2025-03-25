@@ -7,12 +7,11 @@ interface CarHeroProps {
     location: string;
     dates: string;
     type: string;
+    priceRange?: [number, number];
+    transmission?: string;
+    seatingCapacity?: number;
   };
-  setSearchValues: React.Dispatch<React.SetStateAction<{
-    location: string;
-    dates: string;
-    type: string;
-  }>>;
+  setSearchValues: React.Dispatch<React.SetStateAction<any>>;
   onSubmit: (e: React.FormEvent) => void;
 }
 
@@ -35,16 +34,10 @@ const CarHero = ({ searchValues, setSearchValues, onSubmit }: CarHeroProps) => {
 
           <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-md p-6 mt-8">
             <CarSearchForm 
-              searchValues={searchValues}
-              setSearchValues={setSearchValues}
-              onSubmit={onSubmit}
+              searchValues={searchValues} 
+              setSearchValues={setSearchValues} 
+              onSubmit={onSubmit} 
             />
-            <button 
-              onClick={(e) => onSubmit(e as React.FormEvent)}
-              className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg shadow-sm transition-all mt-4"
-            >
-              Search Cars
-            </button>
           </div>
         </div>
       </div>

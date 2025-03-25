@@ -7,12 +7,11 @@ interface CarSearchFormProps {
     location: string;
     dates: string;
     type: string;
+    priceRange?: [number, number];
+    transmission?: string;
+    seatingCapacity?: number;
   };
-  setSearchValues: React.Dispatch<React.SetStateAction<{
-    location: string;
-    dates: string;
-    type: string;
-  }>>;
+  setSearchValues: React.Dispatch<React.SetStateAction<any>>;
   onSubmit: (e: React.FormEvent) => void;
 }
 
@@ -26,7 +25,7 @@ const CarSearchForm = ({ searchValues, setSearchValues, onSubmit }: CarSearchFor
   ];
 
   return (
-    <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
       <div className="relative">
         <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-stone-400" />
         <input
@@ -60,6 +59,12 @@ const CarSearchForm = ({ searchValues, setSearchValues, onSubmit }: CarSearchFor
           ))}
         </select>
       </div>
+      <button 
+        type="submit"
+        className="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg shadow transition-all flex items-center justify-center"
+      >
+        Search Cars
+      </button>
     </form>
   );
 };
