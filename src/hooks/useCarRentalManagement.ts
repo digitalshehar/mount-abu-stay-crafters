@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { CarRental } from '@/integrations/supabase/custom-types';
@@ -255,7 +254,7 @@ export const useCarRentalManagement = () => {
       setCars(prevCars =>
         prevCars.map(car =>
           car.id === id
-            ? { ...car, status: newStatus as CarRental['status'] }
+            ? { ...car, status: newStatus }
             : car
         )
       );

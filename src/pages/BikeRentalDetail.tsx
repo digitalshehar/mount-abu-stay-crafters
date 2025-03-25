@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "../components/Header";
@@ -48,14 +49,25 @@ const BikeRentalDetail = () => {
 
         if (error) throw error;
         
-        const bikeData = data as BikeRental;
+        const bikeData = data;
         const slug = bikeData.name.toLowerCase().replace(/\s+/g, '-');
         
         document.title = `${bikeData.name} - Mount Abu Bike Rental`;
         
         setBike({
-          ...bikeData,
-          slug: slug
+          id: bikeData.id,
+          name: bikeData.name,
+          slug: slug,
+          image: bikeData.image,
+          price_per_day: bikeData.price,
+          model: bikeData.type || '',
+          brand: bikeData.engine || '',
+          status: bikeData.status,
+          description: bikeData.description,
+          type: bikeData.type,
+          price: bikeData.price,
+          engine: bikeData.engine,
+          bookings: bikeData.bookings || 0
         });
       } catch (error) {
         console.error("Error fetching bike details:", error);

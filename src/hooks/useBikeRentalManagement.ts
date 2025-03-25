@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BikeRental } from '@/integrations/supabase/custom-types';
@@ -216,7 +215,7 @@ export const useBikeRentalManagement = () => {
       setBikes(prevBikes =>
         prevBikes.map(bike =>
           bike.id === id
-            ? { ...bike, status: newStatus as BikeRental['status'] }
+            ? { ...bike, status: newStatus }
             : bike
         )
       );

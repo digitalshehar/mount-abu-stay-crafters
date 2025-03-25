@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Calendar, Users, MapPin, ArrowLeft, Car, Settings, CheckCircle } from "lucide-react";
@@ -42,12 +41,6 @@ const CarRentalDetail = () => {
         if (error) throw error;
 
         if (data) {
-          let carStatus: 'available' | 'booked' | 'maintenance' = 'available';
-          
-          if (data.status === 'booked' || data.status === 'maintenance') {
-            carStatus = data.status;
-          }
-          
           const slug = data.name.toLowerCase().replace(/\s+/g, '-');
           
           document.title = `${data.name} - Mount Abu Car Rental`;
@@ -55,15 +48,18 @@ const CarRentalDetail = () => {
           setCar({
             id: data.id,
             name: data.name,
+            slug: slug,
+            image: data.image,
+            price_per_day: data.price,
+            model: data.type || '',
+            brand: data.transmission || '',
+            status: data.status,
+            description: data.description || '',
             type: data.type,
             capacity: data.capacity,
             transmission: data.transmission,
-            price: parseFloat(data.price.toString()),
-            image: data.image,
-            bookings: data.bookings || 0,
-            status: carStatus,
-            description: data.description || '',
-            slug: slug
+            price: data.price,
+            bookings: data.bookings || 0
           });
         }
       } catch (error) {
@@ -107,9 +103,9 @@ const CarRentalDetail = () => {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       
       setTotalDays(diffDays || 1);
-      setTotalPrice(car.price * (diffDays || 1));
+      setTotalPrice(car.price_per_day * (diffDays || 1));
     } else if (car) {
-      setTotalPrice(car.price);
+      setTotalPrice(car.price_per_day);
     }
   }, [selectedDates, car]);
 
@@ -258,7 +254,7 @@ const CarRentalDetail = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-md p-6 border border-stone-100 sticky top-24">
             <h2 className="text-2xl font-display font-semibold mb-2">Book This Car</h2>
-            <p className="text-2xl font-bold text-primary mb-6">₹{car.price}<span className="text-sm font-normal text-stone-500">/day</span></p>
+            <p className="text-2xl font-bold text-primary mb-6">₹{car.price_per_day}<span className="text-sm font-normal text-stone-500">/day</span></p>
             
             <div className="space-y-4 mb-6">
               <div>
@@ -307,7 +303,7 @@ const CarRentalDetail = () => {
             <div className="space-y-2 mb-6">
               <div className="flex justify-between">
                 <span className="text-stone-600">Car rental fee</span>
-                <span>₹{car.price} × {totalDays} {totalDays === 1 ? 'day' : 'days'}</span>
+                <span>₹{car.price_per_day} × {totalDays} {totalDays === 1 ? 'day' : 'days'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-stone-600">Taxes & fees</span>

@@ -29,7 +29,7 @@ export interface BikeRental {
   brand: string;
   engine?: string;
   mileage?: string;
-  status: 'active' | 'inactive' | 'available' | 'booked' | 'maintenance';
+  status: string; // Changed from enum to string to match database
   description?: string;
   category?: string;
   features?: string[];
@@ -53,7 +53,7 @@ export interface CarRental {
   seats?: number;
   transmission?: string;
   fuel_type?: string;
-  status: 'active' | 'inactive' | 'available' | 'booked' | 'maintenance';
+  status: string; // Changed from enum to string to match database
   description?: string;
   category?: string;
   features?: string[];
@@ -78,12 +78,12 @@ export interface Adventure {
   description?: string;
   inclusions?: string[];
   requirements?: string[];
-  status: 'active' | 'inactive';
+  status: string; // Changed from enum to string to match database
   rating?: number;
   review_count?: number;
   reviewCount?: number; // Alternative property used in components
   featured?: boolean;
-  difficulty?: 'easy' | 'moderate' | 'challenging' | 'difficult' | string;
+  difficulty?: string; // Changed from enum to string to match database
   categories?: string[];
   max_people?: number;
   itinerary?: any[];
@@ -105,7 +105,7 @@ export interface Destination {
   image: string;
   description?: string;
   location?: string;
-  status: 'active' | 'inactive';
+  status: string;
   featured?: boolean;
   highlights?: string[];
   activities?: string[];
@@ -126,7 +126,7 @@ export interface BlogPost {
   author_name?: string;
   author?: string;
   published_at?: string;
-  status: 'draft' | 'published';
+  status: string;
   categories?: string[];
   tags?: string[];
   meta_title?: string;

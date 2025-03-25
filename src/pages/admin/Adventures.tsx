@@ -1,486 +1,636 @@
-
-import React, { useState, useEffect } from "react";
-import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash, 
-  Map,
-  Eye,
-  Filter,
-  Star,
-  Check,
-  X
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import React, { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Adventure } from "@/integrations/supabase/custom-types";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
-import { Adventure } from "@/integrations/supabase/custom-types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Search, Edit, Trash2, Eye } from "lucide-react";
 
-const AdminAdventures = () => {
-  const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  
+const AdventuresPage = () => {
   const [adventures, setAdventures] = useState<Adventure[]>([]);
+  const [filteredAdventures, setFilteredAdventures] = useState<Adventure[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [editingAdventure, setEditingAdventure] = useState<Adventure | null>(null);
+  const [deletingAdventureId, setDeletingAdventureId] = useState<number | null>(null);
 
-  // Form state for new adventure
-  const [newAdventure, setNewAdventure] = useState({
+  // New adventure template
+  const emptyAdventure: Adventure = {
+    id: 0,
     name: "",
-    type: "Trekking",
-    duration: "",
-    difficulty: "Easy",
+    type: "hiking",
+    duration: "2 hours",
+    difficulty: "easy",
     price: 0,
-    image: "",
-    description: ""
-  });
+    image: "https://images.unsplash.com/photo-1682686580003-82234af9e63c?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxlZGl0b3JpYWwtZmVlZHwxfHx8ZW58MHx8fHx8",
+    bookings: 0,
+    rating: 4.5,
+    status: "active",
+    description: "",
+    slug: "",
+    location: "Mount Abu",
+    requirements: []
+  };
+
+  // Form state for new/edit adventure
+  const [adventureData, setAdventureData] = useState(emptyAdventure);
 
   useEffect(() => {
     fetchAdventures();
   }, []);
 
+  useEffect(() => {
+    filterAdventures();
+  }, [searchQuery, adventures]);
+
   const fetchAdventures = async () => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
-        .from('adventures')
-        .select('*');
-      
-      if (error) throw error;
-      
-      if (data) {
-        const formattedAdventures: Adventure[] = data.map(adv => ({
-          id: adv.id,
-          name: adv.name,
-          type: adv.type,
-          duration: adv.duration,
-          difficulty: adv.difficulty,
-          price: parseFloat(adv.price.toString()),
-          image: adv.image,
-          bookings: adv.bookings || 0,
-          rating: parseFloat(adv.rating?.toString() || "0"),
-          status: adv.status as 'active' | 'inactive',
-          description: adv.description
-        }));
-        setAdventures(formattedAdventures);
+        .from("adventures")
+        .select("*")
+        .order("id", { ascending: false });
+
+      if (error) {
+        throw error;
       }
-    } catch (error) {
-      console.error("Error fetching adventures:", error);
-      toast({
-        title: "Error fetching adventures",
-        description: "There was a problem loading the adventure data.",
-        variant: "destructive"
-      });
+
+      const formattedAdventures: Adventure[] = data.map(adventure => ({
+        id: adventure.id,
+        name: adventure.name,
+        type: adventure.type,
+        duration: adventure.duration,
+        difficulty: adventure.difficulty,
+        price: adventure.price,
+        image: adventure.image,
+        bookings: adventure.bookings || 0,
+        rating: adventure.rating || 4.5,
+        status: adventure.status || "active",
+        description: adventure.description || "",
+        slug: adventure.slug || adventure.name.toLowerCase().replace(/\s+/g, '-'),
+        location: adventure.location || "Mount Abu",
+        requirements: adventure.requirements || [],
+        review_count: adventure.review_count || 10,
+        reviewCount: adventure.review_count || 10,
+        includes: adventure.includes || [],
+        timeline: adventure.timeline || []
+      }));
+
+      setAdventures(formattedAdventures);
+      setFilteredAdventures(formattedAdventures);
+    } catch (error: any) {
+      console.error("Error fetching adventures:", error.message);
+      toast.error("Failed to load adventures");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewAdventure({
-      ...newAdventure,
-      [name]: name === "price" ? Number(value) : value
-    });
-  };
-
-  // Handle adding a new adventure
-  const handleAddAdventure = async () => {
-    // Validation
-    if (!newAdventure.name || !newAdventure.type || !newAdventure.duration || !newAdventure.difficulty || newAdventure.price <= 0 || !newAdventure.image) {
-      toast({
-        title: "Missing required fields",
-        description: "Please fill in all required fields marked with *",
-        variant: "destructive"
-      });
+  const filterAdventures = () => {
+    if (!searchQuery.trim()) {
+      setFilteredAdventures(adventures);
       return;
     }
-    
+
+    const query = searchQuery.toLowerCase();
+    const filtered = adventures.filter(
+      adventure =>
+        adventure.name.toLowerCase().includes(query) ||
+        adventure.type.toLowerCase().includes(query) ||
+        adventure.location.toLowerCase().includes(query) ||
+        adventure.description?.toLowerCase().includes(query)
+    );
+    setFilteredAdventures(filtered);
+  };
+
+  const handleAddAdventure = async () => {
     try {
+      const newAdventureData = {
+        name: adventureData.name,
+        type: adventureData.type,
+        duration: adventureData.duration,
+        difficulty: adventureData.difficulty,
+        price: adventureData.price,
+        image: adventureData.image,
+        location: adventureData.location,
+        description: adventureData.description,
+        status: "active"
+      };
+
       const { data, error } = await supabase
-        .from('adventures')
-        .insert({
-          name: newAdventure.name,
-          type: newAdventure.type,
-          duration: newAdventure.duration,
-          difficulty: newAdventure.difficulty,
-          price: newAdventure.price,
-          image: newAdventure.image,
-          description: newAdventure.description,
-          status: 'active'
-        })
-        .select()
-        .single();
-      
+        .from("adventures")
+        .insert([newAdventureData])
+        .select();
+
       if (error) throw error;
-      
-      if (data) {
-        const newAdventureData: Adventure = {
-          id: data.id,
-          name: data.name,
-          type: data.type,
-          duration: data.duration,
-          difficulty: data.difficulty,
-          price: parseFloat(data.price.toString()),
-          image: data.image,
+
+      if (data && data[0]) {
+        const addedAdventure: Adventure = {
+          id: data[0].id,
+          name: data[0].name,
+          type: data[0].type,
+          duration: data[0].duration,
+          difficulty: data[0].difficulty,
+          price: data[0].price,
+          image: data[0].image,
           bookings: 0,
-          rating: 0,
-          status: 'active',
-          description: data.description
+          rating: 4.5,
+          status: data[0].status,
+          description: data[0].description || "",
+          slug: data[0].name.toLowerCase().replace(/\s+/g, '-'),
+          location: data[0].location || "Mount Abu",
+          requirements: [],
+          review_count: 0,
+          reviewCount: 0
         };
-        
-        setAdventures([...adventures, newAdventureData]);
-        
-        // Reset form
-        setNewAdventure({
-          name: "",
-          type: "Trekking",
-          duration: "",
-          difficulty: "Easy",
-          price: 0,
-          image: "",
-          description: ""
-        });
-        
-        toast({
-          title: "Adventure added",
-          description: `${newAdventure.name} has been added successfully.`,
-        });
-        
-        setIsDialogOpen(false);
+
+        setAdventures(prevAdventures => [addedAdventure, ...prevAdventures]);
+        toast.success("Adventure created successfully");
+        setIsAddDialogOpen(false);
+        setAdventureData(emptyAdventure);
       }
-    } catch (error) {
-      console.error("Error adding adventure:", error);
-      toast({
-        title: "Error adding adventure",
-        description: "There was a problem adding the adventure. Please try again.",
-        variant: "destructive"
-      });
+    } catch (error: any) {
+      console.error("Error adding adventure:", error.message);
+      toast.error("Failed to create adventure");
     }
   };
 
-  // Handle deleting an adventure
+  const handleUpdateAdventure = async () => {
+    if (!editingAdventure) return;
+
+    try {
+      const updatedAdventureData = {
+        name: adventureData.name,
+        type: adventureData.type,
+        duration: adventureData.duration,
+        difficulty: adventureData.difficulty,
+        price: adventureData.price,
+        image: adventureData.image,
+        location: adventureData.location,
+        description: adventureData.description,
+        status: adventureData.status
+      };
+
+      const { error } = await supabase
+        .from("adventures")
+        .update(updatedAdventureData)
+        .eq("id", editingAdventure.id);
+
+      if (error) throw error;
+
+      const updatedAdventure: Adventure = {
+        ...editingAdventure,
+        ...adventureData,
+        slug: adventureData.name.toLowerCase().replace(/\s+/g, '-')
+      };
+
+      setAdventures(prevAdventures =>
+        prevAdventures.map(adv => (adv.id === editingAdventure.id ? updatedAdventure : adv))
+      );
+      setFilteredAdventures(prevFilteredAdventures =>
+        prevFilteredAdventures.map(adv => (adv.id === editingAdventure.id ? updatedAdventure : adv))
+      );
+
+      toast.success("Adventure updated successfully");
+      setIsEditDialogOpen(false);
+      setEditingAdventure(null);
+      setAdventureData(emptyAdventure);
+    } catch (error: any) {
+      console.error("Error updating adventure:", error.message);
+      toast.error("Failed to update adventure");
+    }
+  };
+
   const handleDeleteAdventure = async (id: number) => {
     try {
       const { error } = await supabase
-        .from('adventures')
+        .from("adventures")
         .delete()
-        .eq('id', id);
-      
+        .eq("id", id);
+
       if (error) throw error;
-      
-      setAdventures(adventures.filter(adv => adv.id !== id));
-      
-      toast({
-        title: "Adventure deleted",
-        description: "The adventure has been deleted successfully.",
-        variant: "destructive"
-      });
-    } catch (error) {
-      console.error("Error deleting adventure:", error);
-      toast({
-        title: "Error deleting adventure",
-        description: "There was a problem deleting the adventure. Please try again.",
-        variant: "destructive"
-      });
+
+      setAdventures(prevAdventures => prevAdventures.filter(adv => adv.id !== id));
+      setFilteredAdventures(prevFilteredAdventures => prevFilteredAdventures.filter(adv => adv.id !== id));
+
+      toast.success("Adventure deleted successfully");
+      setIsDeleteDialogOpen(false);
+      setDeletingAdventureId(null);
+    } catch (error: any) {
+      console.error("Error deleting adventure:", error.message);
+      toast.error("Failed to delete adventure");
     }
   };
 
-  // Handle toggling adventure status
-  const handleToggleStatus = async (id: number) => {
-    try {
-      const adventure = adventures.find(adv => adv.id === id);
-      if (!adventure) return;
-      
-      const newStatus = adventure.status === 'active' ? 'inactive' : 'active';
-      
-      const { error } = await supabase
-        .from('adventures')
-        .update({ status: newStatus })
-        .eq('id', id);
-      
-      if (error) throw error;
-      
-      setAdventures(adventures.map(adv => 
-        adv.id === id ? { ...adv, status: newStatus as 'active' | 'inactive' } : adv
-      ));
-      
-      toast({
-        title: "Status updated",
-        description: `Adventure status has been updated to ${newStatus}.`,
-      });
-    } catch (error) {
-      console.error("Error updating adventure status:", error);
-      toast({
-        title: "Error updating status",
-        description: "There was a problem updating the adventure status. Please try again.",
-        variant: "destructive"
-      });
-    }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setAdventureData(prevData => ({
+      ...prevData,
+      [name]: value
+    }));
   };
 
-  // Filter adventures based on search query
-  const filteredAdventures = adventures.filter(adv => 
-    adv.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    adv.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    adv.difficulty.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Manage Adventures</h1>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <div className="animate-pulse flex flex-col items-center">
-            <div className="h-6 bg-stone-200 rounded w-48 mb-4"></div>
-            <div className="h-4 bg-stone-200 rounded w-64"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleEditClick = (adventure: Adventure) => {
+    setEditingAdventure(adventure);
+    setAdventureData(adventure);
+    setIsEditDialogOpen(true);
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div>
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Manage Adventures</h1>
-        
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus size={16} />
-              Add New Adventure
+              Add Adventure
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Adventure</DialogTitle>
+              <DialogTitle>Create Adventure</DialogTitle>
+              <DialogDescription>
+                Add a new adventure to the platform.
+              </DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 py-4">
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="name">Adventure Name*</Label>
-                <Input 
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  type="text"
                   id="name"
                   name="name"
-                  value={newAdventure.name}
+                  value={adventureData.name}
                   onChange={handleInputChange}
-                  placeholder="Enter adventure name"
+                  className="col-span-3"
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="type">Activity Type*</Label>
-                <select
-                  id="type"
-                  name="type"
-                  value={newAdventure.type}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-stone-200 px-3 py-2"
-                >
-                  <option value="Trekking">Trekking</option>
-                  <option value="Sightseeing">Sightseeing</option>
-                  <option value="Camping">Camping</option>
-                  <option value="Water Activity">Water Activity</option>
-                  <option value="Yoga">Yoga</option>
-                </select>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">
+                  Type
+                </Label>
+                <Select onValueChange={(value) => setAdventureData(prev => ({ ...prev, type: value }))} defaultValue={adventureData.type}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hiking">Hiking</SelectItem>
+                    <SelectItem value="biking">Biking</SelectItem>
+                    <SelectItem value="kayaking">Kayaking</SelectItem>
+                    <SelectItem value="climbing">Climbing</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="difficulty">Difficulty Level*</Label>
-                <select
-                  id="difficulty"
-                  name="difficulty"
-                  value={newAdventure.difficulty}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-stone-200 px-3 py-2"
-                >
-                  <option value="Easy">Easy</option>
-                  <option value="Moderate">Moderate</option>
-                  <option value="Challenging">Challenging</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duration*</Label>
-                <Input 
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="duration" className="text-right">
+                  Duration
+                </Label>
+                <Input
+                  type="text"
                   id="duration"
                   name="duration"
-                  value={newAdventure.duration}
+                  value={adventureData.duration}
                   onChange={handleInputChange}
-                  placeholder="e.g. 3 hours"
+                  className="col-span-3"
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="price">Price Per Person (₹)*</Label>
-                <Input 
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="difficulty" className="text-right">
+                  Difficulty
+                </Label>
+                <Select onValueChange={(value) => setAdventureData(prev => ({ ...prev, difficulty: value }))} defaultValue={adventureData.difficulty}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select difficulty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="easy">Easy</SelectItem>
+                    <SelectItem value="moderate">Moderate</SelectItem>
+                    <SelectItem value="challenging">Challenging</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="price" className="text-right">
+                  Price
+                </Label>
+                <Input
+                  type="number"
                   id="price"
                   name="price"
-                  type="number"
-                  value={newAdventure.price}
+                  value={adventureData.price}
                   onChange={handleInputChange}
-                  placeholder="Enter price"
+                  className="col-span-3"
                 />
               </div>
-              
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="image">Image URL*</Label>
-                <Input 
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="image" className="text-right">
+                  Image URL
+                </Label>
+                <Input
+                  type="text"
                   id="image"
                   name="image"
-                  value={newAdventure.image}
+                  value={adventureData.image}
                   onChange={handleInputChange}
-                  placeholder="Enter image URL"
+                  className="col-span-3"
                 />
               </div>
-              
-              <div className="space-y-2 col-span-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea 
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="location" className="text-right">
+                  Location
+                </Label>
+                <Input
+                  type="text"
+                  id="location"
+                  name="location"
+                  value={adventureData.location}
+                  onChange={handleInputChange}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">
+                  Description
+                </Label>
+                <Textarea
                   id="description"
                   name="description"
-                  value={newAdventure.description}
+                  value={adventureData.description}
                   onChange={handleInputChange}
-                  placeholder="Enter adventure description"
-                  rows={4}
+                  className="col-span-3"
                 />
               </div>
-              
-              <div className="col-span-2 flex justify-end gap-2 mt-4">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleAddAdventure}>Add Adventure</Button>
-              </div>
             </div>
+            <DialogFooter>
+              <Button type="button" variant="secondary" onClick={() => setIsAddDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" onClick={handleAddAdventure}>Create</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="p-4 border-b flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400" size={18} />
-            <Input
-              placeholder="Search adventures by name, type, or difficulty..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <Button variant="outline" className="gap-2">
-            <Filter size={16} />
-            Filters
-          </Button>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="text-left text-xs text-stone-500 border-b">
-                <th className="px-6 py-3 font-medium">Image</th>
-                <th className="px-6 py-3 font-medium">Name</th>
-                <th className="px-6 py-3 font-medium">Type</th>
-                <th className="px-6 py-3 font-medium">Duration</th>
-                <th className="px-6 py-3 font-medium">Price</th>
-                <th className="px-6 py-3 font-medium">Difficulty</th>
-                <th className="px-6 py-3 font-medium">Rating</th>
-                <th className="px-6 py-3 font-medium">Status</th>
-                <th className="px-6 py-3 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAdventures.map((adventure) => (
-                <tr key={adventure.id} className="border-b border-stone-100 hover:bg-stone-50">
-                  <td className="px-6 py-4">
-                    <img 
-                      src={adventure.image} 
-                      alt={adventure.name} 
-                      className="w-16 h-12 object-cover rounded"
-                    />
-                  </td>
-                  <td className="px-6 py-4 font-medium">{adventure.name}</td>
-                  <td className="px-6 py-4 text-stone-600">{adventure.type}</td>
-                  <td className="px-6 py-4 text-stone-600">{adventure.duration}</td>
-                  <td className="px-6 py-4">₹{adventure.price.toLocaleString()}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      adventure.difficulty === 'Easy' ? 'bg-green-100 text-green-800' : 
-                      adventure.difficulty === 'Moderate' ? 'bg-amber-100 text-amber-800' : 
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {adventure.difficulty}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <Star size={14} className="text-yellow-500 fill-yellow-500 mr-1" />
-                      <span>{adventure.rating}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      adventure.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-stone-100 text-stone-800'
-                    }`}>
-                      {adventure.status === 'active' ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        title={adventure.status === 'active' ? 'Deactivate' : 'Activate'}
-                        onClick={() => handleToggleStatus(adventure.id)}
-                      >
-                        {adventure.status === 'active' ? 
-                          <X size={16} className="text-amber-500" /> : 
-                          <Check size={16} className="text-green-500" />
-                        }
-                      </Button>
-                      <Button variant="ghost" size="icon" title="View">
-                        <Eye size={16} className="text-blue-500" />
-                      </Button>
-                      <Button variant="ghost" size="icon" title="Edit">
-                        <Edit size={16} className="text-amber-500" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        title="Delete"
-                        onClick={() => handleDeleteAdventure(adventure.id)}
-                      >
-                        <Trash size={16} className="text-red-500" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filteredAdventures.length === 0 && !isLoading && (
-                <tr>
-                  <td colSpan={9} className="px-6 py-8 text-center text-stone-500">
-                    No adventures found. Try a different search or add a new adventure.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="mb-4">
+        <Input
+          type="text"
+          placeholder="Search adventures..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full max-w-md"
+        />
       </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Duration</TableHead>
+            <TableHead>Difficulty</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center py-4">Loading adventures...</TableCell>
+            </TableRow>
+          ) : filteredAdventures.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center py-4">No adventures found.</TableCell>
+            </TableRow>
+          ) : (
+            filteredAdventures.map((adventure) => (
+              <TableRow key={adventure.id}>
+                <TableCell>{adventure.name}</TableCell>
+                <TableCell>{adventure.type}</TableCell>
+                <TableCell>{adventure.duration}</TableCell>
+                <TableCell>{adventure.difficulty}</TableCell>
+                <TableCell>₹{adventure.price}</TableCell>
+                <TableCell>
+                  <Badge variant={adventure.status === "active" ? "success" : "secondary"}>
+                    {adventure.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" size="icon">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Dialog open={isEditDialogOpen && editingAdventure?.id === adventure.id} onOpenChange={setIsEditDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="icon" onClick={() => handleEditClick(adventure)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Edit Adventure</DialogTitle>
+                          <DialogDescription>
+                            Edit the details of the adventure.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">
+                              Name
+                            </Label>
+                            <Input
+                              type="text"
+                              id="name"
+                              name="name"
+                              value={adventureData.name}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="type" className="text-right">
+                              Type
+                            </Label>
+                            <Select onValueChange={(value) => setAdventureData(prev => ({ ...prev, type: value }))} defaultValue={adventureData.type}>
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="hiking">Hiking</SelectItem>
+                                <SelectItem value="biking">Biking</SelectItem>
+                                <SelectItem value="kayaking">Kayaking</SelectItem>
+                                <SelectItem value="climbing">Climbing</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="duration" className="text-right">
+                              Duration
+                            </Label>
+                            <Input
+                              type="text"
+                              id="duration"
+                              name="duration"
+                              value={adventureData.duration}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="difficulty" className="text-right">
+                              Difficulty
+                            </Label>
+                            <Select onValueChange={(value) => setAdventureData(prev => ({ ...prev, difficulty: value }))} defaultValue={adventureData.difficulty}>
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select difficulty" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="easy">Easy</SelectItem>
+                                <SelectItem value="moderate">Moderate</SelectItem>
+                                <SelectItem value="challenging">Challenging</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="price" className="text-right">
+                              Price
+                            </Label>
+                            <Input
+                              type="number"
+                              id="price"
+                              name="price"
+                              value={adventureData.price}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="image" className="text-right">
+                              Image URL
+                            </Label>
+                            <Input
+                              type="text"
+                              id="image"
+                              name="image"
+                              value={adventureData.image}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                           <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="location" className="text-right">
+                              Location
+                            </Label>
+                            <Input
+                              type="text"
+                              id="location"
+                              name="location"
+                              value={adventureData.location}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="description" className="text-right">
+                              Description
+                            </Label>
+                            <Textarea
+                              id="description"
+                              name="description"
+                              value={adventureData.description}
+                              onChange={handleInputChange}
+                              className="col-span-3"
+                            />
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="status" className="text-right">
+                              Status
+                            </Label>
+                            <Select onValueChange={(value) => setAdventureData(prev => ({ ...prev, status: value }))} defaultValue={adventureData.status}>
+                              <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button type="button" variant="secondary" onClick={() => setIsEditDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button type="submit" onClick={handleUpdateAdventure}>Update</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    <Dialog open={isDeleteDialogOpen && deletingAdventureId === adventure.id} onOpenChange={setIsDeleteDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="destructive" size="icon" onClick={() => {
+                          setIsDeleteDialogOpen(true);
+                          setDeletingAdventureId(adventure.id);
+                        }}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Are you absolutely sure?</DialogTitle>
+                          <DialogDescription>
+                            This action cannot be undone. This will permanently delete the adventure from our servers.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button type="button" variant="secondary" onClick={() => setIsDeleteDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button type="submit" variant="destructive" onClick={() => handleDeleteAdventure(adventure.id)}>Delete</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 };
 
-export default AdminAdventures;
+export default AdventuresPage;

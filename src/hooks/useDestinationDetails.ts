@@ -77,10 +77,16 @@ export const useDestinationDetails = (destinationSlug: string | undefined) => {
             price: adventure.price,
             image: adventure.image,
             location: adventure.location,
-            status: adventure.status as 'active' | 'inactive',
+            status: adventure.status,
             bookings: adventure.bookings || 0,
             slug: adventure.slug || adventure.name.toLowerCase().replace(/\s+/g, '-'),
-            description: adventure.description || ''
+            description: adventure.description || '',
+            includes: adventure.includes || [],
+            timeline: adventure.timeline || [],
+            meetingPoint: adventure.meeting_point || '',
+            maxGroupSize: adventure.max_group_size || 12,
+            minAge: adventure.min_age || 10,
+            requirements: adventure.requirements || []
           }));
           
           setAdventures(formattedAdventures);
