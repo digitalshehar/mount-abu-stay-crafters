@@ -13,17 +13,12 @@ import HotelsHeader from "@/components/hotels/HotelsHeader";
 import HotelsTabs from "@/components/hotels/HotelsTabs";
 import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
 import { useHotelFilters } from "@/hooks/useHotelFilters";
-import { useHotelComparison } from "@/hooks/useHotelComparison";
-import CompareHotelsFeature from "@/components/hotels/comparison/CompareHotelsFeature";
 
 const Hotels = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeView, setActiveView] = useState<string>("classic");
-  
-  // Initialize the hotel comparison functionality
-  const { compareList, addToCompare, removeFromCompare, clearCompare, isInCompare } = useHotelComparison();
 
   const { data: hotels, isLoading, error } = useQuery({
     queryKey: ["hotels"],
@@ -104,9 +99,6 @@ const Hotels = () => {
     });
   };
 
-  // Get the compare list ids only
-  const compareListIds = compareList.map(hotel => hotel.id);
-
   return (
     <>
       <div className="min-h-screen flex flex-col">
@@ -154,17 +146,6 @@ const Hotels = () => {
         </main>
 
         <Footer />
-
-        {/* Add hotel comparison feature */}
-        {hotels && (
-          <CompareHotelsFeature
-            hotels={hotels}
-            compareList={compareListIds}
-            onAddToCompare={addToCompare}
-            onRemoveFromCompare={removeFromCompare}
-            onClearCompare={clearCompare}
-          />
-        )}
       </div>
     </>
   );

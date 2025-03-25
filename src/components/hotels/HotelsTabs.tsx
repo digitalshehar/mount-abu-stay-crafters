@@ -2,13 +2,11 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Info, List, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { List, SlidersHorizontal, X } from "lucide-react";
 import HotelListView from "@/components/hotels/HotelListView";
 import MobileFilter from "@/components/hotels/MobileFilter";
 import { Hotel } from "@/components/admin/hotels/types";
-import { sheet } from "@/data/locationsData";
 import WeatherWidgetCard from "@/components/hotels/WeatherWidgetCard";
-import HotelMap from "@/components/hotels/map/HotelMap";
 
 interface HotelsTabsProps {
   activeView: string;
@@ -62,10 +60,6 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
           <List className="w-4 h-4 mr-2" />
           List View
         </TabsTrigger>
-        <TabsTrigger value="map" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <MapPin className="w-4 h-4 mr-2" />
-          Map View
-        </TabsTrigger>
       </TabsList>
       
       {activeFilterCount > 0 && (
@@ -116,14 +110,6 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
             <WeatherWidgetCard />
           </div>
         </div>
-      </TabsContent>
-
-      <TabsContent value="map" className="mt-0">
-        <HotelMap 
-          hotels={filteredHotels}
-          isLoading={isLoading}
-          center={sheet.MOUNT_ABU}
-        />
       </TabsContent>
     </Tabs>
   );

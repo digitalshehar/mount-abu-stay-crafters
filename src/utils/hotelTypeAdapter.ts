@@ -1,60 +1,58 @@
 
 import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
-import { Hotel } from '@/integrations/supabase/custom-types';
+import { Hotel as IntegrationHotel } from '@/integrations/supabase/custom-types';
 
-export const adminToIntegrationHotel = (hotel: AdminHotel): Hotel => {
-  return {
+/**
+ * Converts admin hotel type to integration hotel type
+ */
+export const convertAdminToIntegrationHotels = (
+  adminHotels: AdminHotel[]
+): IntegrationHotel[] => {
+  return adminHotels.map((hotel) => ({
     id: hotel.id,
     name: hotel.name,
-    slug: hotel.slug || '',
-    description: hotel.description || '',
+    slug: hotel.slug,
     location: hotel.location,
+    stars: hotel.stars,
     price_per_night: hotel.pricePerNight,
-    stars: hotel.stars,
-    rating: hotel.rating || 4.0,
-    review_count: hotel.reviewCount || 0,
     image: hotel.image,
-    status: 'active', // Default status
-    amenities: hotel.amenities || [],
-    latitude: hotel.latitude || 24.5927,
-    longitude: hotel.longitude || 72.7156,
-    featured: hotel.featured || false,
-    // Remove gallery as it doesn't exist in the Hotel type
-  };
+    status: hotel.status,
+    description: hotel.description,
+    amenities: hotel.amenities,
+    review_count: hotel.reviewCount,
+    rating: hotel.rating,
+    featured: hotel.featured,
+    latitude: hotel.latitude,
+    longitude: hotel.longitude,
+    gallery: hotel.gallery,
+    categories: hotel.categories
+  }));
 };
 
-export const convertAdminToIntegrationHotels = (hotels: AdminHotel[]): Hotel[] => {
-  return hotels.map(adminToIntegrationHotel);
-};
-
-export const integrationToAdminHotel = (hotel: Hotel): AdminHotel => {
-  return {
+/**
+ * Converts integration hotel type to admin hotel type
+ */
+export const convertIntegrationToAdminHotels = (
+  integrationHotels: IntegrationHotel[]
+): AdminHotel[] => {
+  return integrationHotels.map((hotel) => ({
     id: hotel.id,
     name: hotel.name,
-    slug: hotel.slug || '',
-    description: hotel.description || '',
+    slug: hotel.slug,
     location: hotel.location,
-    pricePerNight: hotel.price_per_night,
     stars: hotel.stars,
-    rating: hotel.rating || 4.0,
-    reviewCount: hotel.review_count || 0,
+    pricePerNight: hotel.price_per_night,
     image: hotel.image,
-    status: hotel.status || 'active',
+    status: hotel.status === 'active' ? 'active' : 'inactive',
+    description: hotel.description || '',
     amenities: hotel.amenities || [],
-    latitude: hotel.latitude || 24.5927,
-    longitude: hotel.longitude || 72.7156,
+    reviewCount: hotel.review_count || 0,
+    rating: hotel.rating || 0,
     featured: hotel.featured || false,
-    gallery: [], // Set to empty array as it's required in AdminHotel
-    categories: [],
     rooms: [],
-    seoTitle: '',
-    seoDescription: '',
-    seoKeywords: '',
-    lastModifiedBy: '',
-    lastModifiedAt: '',
-  };
-};
-
-export const convertIntegrationToAdminHotels = (hotels: Hotel[]): AdminHotel[] => {
-  return hotels.map(integrationToAdminHotel);
+    gallery: hotel.gallery || [],
+    categories: hotel.categories || [],
+    latitude: hotel.latitude,
+    longitude: hotel.longitude
+  }));
 };

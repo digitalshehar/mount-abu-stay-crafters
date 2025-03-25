@@ -1,7 +1,7 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BadgeCheck, Star } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { FavoriteButton } from '@/components/FavoriteButton';
 
@@ -16,10 +16,6 @@ export interface HotelCardProps {
   pricePerNight: number;
   featured?: boolean;
   amenities?: string[];
-  compareList?: number[];
-  onAddToCompare?: (hotelId: number) => void;
-  onRemoveFromCompare?: (hotelId: number) => void;
-  isInCompare?: (hotelId: number) => boolean;
 }
 
 const HotelCard: React.FC<HotelCardProps> = ({
@@ -33,17 +29,7 @@ const HotelCard: React.FC<HotelCardProps> = ({
   pricePerNight,
   featured = false,
   amenities = [],
-  compareList = [],
-  onAddToCompare,
-  onRemoveFromCompare,
-  isInCompare,
 }) => {
-  const isCompareEnabled = typeof onAddToCompare === 'function' && 
-                           typeof onRemoveFromCompare === 'function' &&
-                           typeof isInCompare === 'function';
-  
-  const inCompareList = isCompareEnabled ? isInCompare(id) : false;
-
   return (
     <div className="relative rounded-lg shadow-md overflow-hidden bg-white">
       <Link to={`/hotel/${slug}`}>
@@ -75,23 +61,6 @@ const HotelCard: React.FC<HotelCardProps> = ({
         </div>
       </Link>
       
-      {isCompareEnabled && (
-        <div className="absolute top-2 right-2 z-10">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              inCompareList ? onRemoveFromCompare(id) : onAddToCompare(id);
-            }}
-            className={cn(
-              "p-2 rounded-full transition-colors",
-              inCompareList ? "bg-red-500 text-white hover:bg-red-700" : "bg-stone-100 text-stone-500 hover:bg-stone-200"
-            )}
-          >
-            {inCompareList ? 'Remove' : 'Compare'}
-          </button>
-        </div>
-      )}
-
       <FavoriteButton 
         itemId={id}
         itemType="hotel"
