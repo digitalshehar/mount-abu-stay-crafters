@@ -55,15 +55,15 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
 }) => {
   return (
     <Tabs defaultValue="classic" value={activeView} onValueChange={setActiveView}>
-      <TabsList className="mb-4">
-        <TabsTrigger value="classic" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-          <List className="w-4 h-4 mr-2" />
-          List View
-        </TabsTrigger>
-      </TabsList>
-      
-      {activeFilterCount > 0 && (
-        <div className="flex items-center gap-2 mb-4 mt-2">
+      <div className="flex items-center justify-between mb-4">
+        <TabsList>
+          <TabsTrigger value="classic" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <List className="w-4 h-4 mr-2" />
+            List View
+          </TabsTrigger>
+        </TabsList>
+        
+        {activeFilterCount > 0 && (
           <Button
             variant="outline"
             size="sm"
@@ -73,15 +73,15 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
             <X className="h-4 w-4 mr-1" />
             Clear filters ({activeFilterCount})
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="lg:hidden mb-4">
         <Button
           variant="outline"
           size="sm"
           onClick={() => setIsFilterOpen(true)}
-          className="flex items-center"
+          className="flex items-center w-full justify-center"
         >
           <SlidersHorizontal className="h-4 w-4 mr-1" />
           Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
@@ -102,11 +102,11 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
       />
 
       <TabsContent value="classic" className="mt-0">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-3">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3">
             <HotelListView hotels={filteredHotels} isLoading={isLoading} />
           </div>
-          <div className="space-y-6">
+          <div className="hidden lg:block">
             <WeatherWidgetCard />
           </div>
         </div>

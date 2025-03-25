@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -13,8 +13,10 @@ import HotelsHeader from "@/components/hotels/HotelsHeader";
 import HotelsTabs from "@/components/hotels/HotelsTabs";
 import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
 import { useHotelFilters } from "@/hooks/useHotelFilters";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const Hotels = () => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -78,7 +80,7 @@ const Hotels = () => {
     commonAmenities
   } = useHotelFilters(hotels || [], searchQuery);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       console.error("Error details:", error);
       toast.error("Failed to load hotels", {
@@ -86,6 +88,17 @@ const Hotels = () => {
       });
     }
   }, [error]);
+
+  // Close filter drawer when orientation changes on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768 && isFilterOpen) {
+        setIsFilterOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isFilterOpen]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +117,7 @@ const Hotels = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
 
-        <main className="flex-grow pt-28 pb-16 bg-stone-50">
+        <main className="flex-grow pt-20 md:pt-28 pb-16 bg-stone-50">
           <div className="container-custom mb-8">
             <HotelsHeader hotelsCount={hotels?.length || 0} />
 

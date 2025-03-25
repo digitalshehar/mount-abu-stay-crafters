@@ -1,11 +1,11 @@
 
 import React from "react";
-import { Star, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check, Star } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
-import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface FilterSidebarProps {
   priceRange: [number, number];
@@ -18,7 +18,7 @@ interface FilterSidebarProps {
   commonAmenities: string[];
 }
 
-const FilterSidebar = ({
+const FilterSidebar: React.FC<FilterSidebarProps> = ({
   priceRange,
   setPriceRange,
   selectedStars,
@@ -27,36 +27,22 @@ const FilterSidebar = ({
   handleAmenityFilter,
   clearFilters,
   commonAmenities
-}: FilterSidebarProps) => {
-  // Handle checkbox change without causing refreshes
-  const handleStarClick = (e: React.MouseEvent, star: number) => {
-    e.preventDefault();
-    handleStarFilter(star);
-  };
-
-  const handleAmenityClick = (e: React.MouseEvent, amenity: string) => {
-    e.preventDefault();
-    handleAmenityFilter(amenity);
-  };
-
+}) => {
   return (
-    <div className="hidden lg:block bg-white p-5 rounded-lg shadow-sm space-y-6 h-fit sticky top-24">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-lg">Filters</h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            clearFilters();
-          }}
-          className="text-blue-600 h-8 px-2 hover:bg-blue-50"
-        >
-          Clear All
-        </Button>
+    <div className="space-y-6 sticky top-28">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-semibold text-stone-800">Filters</h3>
+        {(selectedStars.length > 0 || selectedAmenities.length > 0 || priceRange[0] !== 1000 || priceRange[1] !== 15000) && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={clearFilters}
+            className="text-xs text-stone-500 hover:text-primary"
+          >
+            Clear all
+          </Button>
+        )}
       </div>
-
-      <Separator />
 
       <div className="space-y-4">
         <h4 className="font-medium text-sm">Price Range (₹)</h4>
@@ -69,35 +55,32 @@ const FilterSidebar = ({
           className="my-6"
         />
         <div className="flex items-center justify-between">
-          <Badge variant="outline" className="px-3 py-1 border-blue-200 text-blue-600">
+          <Badge variant="outline" className="px-3 py-1">
             ₹{priceRange[0]}
           </Badge>
           <span className="text-xs text-stone-400">to</span>
-          <Badge variant="outline" className="px-3 py-1 border-blue-200 text-blue-600">
+          <Badge variant="outline" className="px-3 py-1">
             ₹{priceRange[1]}
           </Badge>
         </div>
       </div>
 
-      <Separator />
-
       <div className="space-y-4">
         <h4 className="font-medium text-sm">Star Rating</h4>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {[5, 4, 3, 2, 1].map((star) => (
             <div 
               key={star} 
               className={cn(
                 "flex items-center space-x-2 p-2 rounded cursor-pointer",
-                selectedStars.includes(star) ? "bg-blue-50" : "hover:bg-stone-50"
+                selectedStars.includes(star) ? "bg-stone-100" : "hover:bg-stone-50"
               )}
-              onClick={(e) => handleStarClick(e, star)}
+              onClick={() => handleStarFilter(star)}
             >
               <Checkbox
                 id={`star-${star}`}
                 checked={selectedStars.includes(star)}
                 onCheckedChange={() => handleStarFilter(star)}
-                className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
               <label
                 htmlFor={`star-${star}`}
@@ -114,60 +97,43 @@ const FilterSidebar = ({
                 </div>
                 <span className="ml-2 text-sm">{star} Star</span>
               </label>
-              <span className="text-xs text-stone-400">
-                {selectedStars.includes(star) && "(Selected)"}
-              </span>
             </div>
           ))}
         </div>
       </div>
 
-      <Separator />
-
       <div className="space-y-4">
         <h4 className="font-medium text-sm">Amenities</h4>
-        <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+        <div className="space-y-2">
           {commonAmenities.map((amenity) => (
             <div 
               key={amenity} 
               className={cn(
                 "flex items-center space-x-2 p-2 rounded cursor-pointer",
-                selectedAmenities.includes(amenity) ? "bg-blue-50" : "hover:bg-stone-50"
+                selectedAmenities.includes(amenity) ? "bg-stone-100" : "hover:bg-stone-50"
               )}
-              onClick={(e) => handleAmenityClick(e, amenity)}
+              onClick={() => handleAmenityFilter(amenity)}
             >
               <Checkbox
                 id={`amenity-${amenity}`}
                 checked={selectedAmenities.includes(amenity)}
                 onCheckedChange={() => handleAmenityFilter(amenity)}
-                className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
               <label
                 htmlFor={`amenity-${amenity}`}
-                className="cursor-pointer flex items-center flex-1"
+                className="flex items-center cursor-pointer flex-1"
               >
                 <span className="text-sm">{amenity}</span>
               </label>
               {selectedAmenities.includes(amenity) && (
-                <Check className="h-4 w-4 text-blue-600" />
+                <Check className="h-4 w-4 text-primary" />
               )}
             </div>
           ))}
         </div>
-      </div>
-      
-      <Separator />
-      
-      <div className="pt-2">
-        <Button className="w-full bg-blue-600 hover:bg-blue-700">
-          Apply Filters
-        </Button>
       </div>
     </div>
   );
 };
 
 export default FilterSidebar;
-
-// Need to import cn
-import { cn } from "@/lib/utils";

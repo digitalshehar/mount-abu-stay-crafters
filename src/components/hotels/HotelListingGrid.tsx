@@ -10,10 +10,6 @@ interface HotelListingGridProps {
   hasMore?: boolean;
   onLoadMore?: () => void;
   loadingMore?: boolean;
-  compareList?: number[];
-  onAddToCompare?: (hotelId: number) => void;
-  onRemoveFromCompare?: (hotelId: number) => void;
-  isInCompare?: (hotelId: number) => boolean;
 }
 
 const HotelListingGrid: React.FC<HotelListingGridProps> = ({
@@ -22,10 +18,6 @@ const HotelListingGrid: React.FC<HotelListingGridProps> = ({
   hasMore = false,
   onLoadMore,
   loadingMore = false,
-  compareList = [],
-  onAddToCompare,
-  onRemoveFromCompare,
-  isInCompare,
 }) => {
   if (loading) {
     return (
@@ -53,16 +45,12 @@ const HotelListingGrid: React.FC<HotelListingGridProps> = ({
             name={hotel.name}
             location={hotel.location}
             image={hotel.image}
-            pricePerNight={hotel.price}
+            pricePerNight={hotel.price || hotel.pricePerNight || hotel.price_per_night}
             rating={hotel.rating}
-            reviewCount={hotel.reviewCount}
+            reviewCount={hotel.reviewCount || hotel.review_count}
             amenities={hotel.amenities}
             featured={hotel.featured}
             slug={hotel.slug}
-            compareList={compareList}
-            onAddToCompare={onAddToCompare}
-            onRemoveFromCompare={onRemoveFromCompare}
-            isInCompare={isInCompare}
           />
         ))}
       </div>
