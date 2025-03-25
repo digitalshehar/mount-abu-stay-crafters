@@ -22,7 +22,6 @@ import CarRentals from '@/pages/CarRentals';
 import AdminHotels from '@/pages/admin/Hotels';
 import AdminBikeRentals from '@/pages/admin/BikeRentals';
 import AdminCarRentals from '@/pages/admin/CarRentals';
-import AdminBlog from '@/pages/admin/Blog';
 import Destinations from '@/pages/Destinations';
 import Adventures from '@/pages/Adventures';
 import Blog from '@/pages/Blog';
@@ -56,7 +55,6 @@ function App() {
               
               {/* Rental routes */}
               <Route path="/bike-rentals" element={<BikeRentals />} />
-              <Route path="/rentals/bike" element={<BikeRentals />} /> {/* Add this route */}
               <Route path="/bike-rental/:id" element={<BikeRentalDetail />} />
               <Route path="/car-rentals" element={<CarRentals />} />
               <Route path="/rentals/car" element={<CarRentals />} /> 
@@ -89,7 +87,6 @@ function App() {
                 <Route path="/admin/hotels" element={<AdminHotels />} />
                 <Route path="/admin/bikes" element={<AdminBikeRentals />} />
                 <Route path="/admin/cars" element={<AdminCarRentals />} />
-                <Route path="/admin/blog" element={<AdminBlog />} /> {/* Add this route */}
                 <Route path="/admin/bookings" element={<div>Booking Management</div>} />
                 <Route path="/admin/users" element={<UsersPage />} />
               </Route>
