@@ -126,13 +126,10 @@ const SearchContainer = () => {
             )}
 
             {activeTab === "cars" && (
-              <div>
-                <CarSearchForm 
-                  searchValues={carSearch} 
-                  setSearchValues={setCarSearch} 
-                  onSubmit={() => {}}
-                />
-              </div>
+              <CarSearchForm 
+                search={carSearch} 
+                setSearch={setCarSearch} 
+              />
             )}
 
             {activeTab === "bikes" && (
@@ -174,9 +171,8 @@ const SearchContainer = () => {
 
           {activeTab === "cars" && (
             <CarSearchForm 
-              searchValues={carSearch} 
-              setSearchValues={setCarSearch} 
-              onSubmit={() => {}}
+              search={carSearch} 
+              setSearch={setCarSearch} 
             />
           )}
 

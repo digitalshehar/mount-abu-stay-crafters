@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery, QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
@@ -15,8 +15,6 @@ import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
 import { useHotelFilters } from "@/hooks/useHotelFilters";
 import { useHotelComparison } from "@/hooks/useHotelComparison";
 import CompareHotelsFeature from "@/components/hotels/comparison/CompareHotelsFeature";
-
-const queryClient = new QueryClient();
 
 const Hotels = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -172,12 +170,4 @@ const Hotels = () => {
   );
 };
 
-const HotelsWithQueryClient = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Hotels />
-    </QueryClientProvider>
-  );
-};
-
-export default HotelsWithQueryClient;
+export default Hotels;
