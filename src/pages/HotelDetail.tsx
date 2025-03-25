@@ -79,6 +79,7 @@ const HotelDetail = () => {
     }
   };
 
+  // Fix: This early return should only happen when both loading and error are false
   if (!hotel && !loading && !error) {
     return null;
   }

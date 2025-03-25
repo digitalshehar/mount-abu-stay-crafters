@@ -37,9 +37,12 @@ const HotelCard: React.FC<HotelCardProps> = ({
   onAddToCompare = () => {},
   onRemoveFromCompare = () => {},
 }) => {
+  // Ensure we always have a valid slug for navigation
+  const validSlug = slug || name.toLowerCase().replace(/\s+/g, '-');
+
   return (
     <div className="relative rounded-lg shadow-md overflow-hidden bg-white h-full flex flex-col">
-      <Link to={`/hotel/${slug}`} className="flex flex-col h-full">
+      <Link to={`/hotel/${validSlug}`} className="flex flex-col h-full">
         <div className="relative">
           <img
             src={image}
