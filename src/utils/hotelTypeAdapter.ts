@@ -8,25 +8,7 @@ import { Hotel as IntegrationHotel } from '@/integrations/supabase/custom-types'
 export const convertAdminToIntegrationHotels = (
   adminHotels: AdminHotel[]
 ): IntegrationHotel[] => {
-  return adminHotels.map((hotel) => ({
-    id: hotel.id,
-    name: hotel.name,
-    slug: hotel.slug,
-    location: hotel.location,
-    stars: hotel.stars,
-    price_per_night: hotel.pricePerNight,
-    image: hotel.image,
-    status: hotel.status,
-    description: hotel.description,
-    amenities: hotel.amenities,
-    review_count: hotel.reviewCount,
-    rating: hotel.rating,
-    featured: hotel.featured,
-    latitude: hotel.latitude,
-    longitude: hotel.longitude,
-    gallery: hotel.gallery,
-    categories: hotel.categories
-  }));
+  return adminHotels.map((hotel) => adminToIntegrationHotel(hotel));
 };
 
 /**

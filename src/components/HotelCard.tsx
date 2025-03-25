@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BadgeCheck, Star } from 'lucide-react';
+import { BadgeCheck, Star, Plus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FavoriteButton } from '@/components/FavoriteButton';
 
 export interface HotelCardProps {
@@ -16,6 +17,9 @@ export interface HotelCardProps {
   pricePerNight: number;
   featured?: boolean;
   amenities?: string[];
+  isInCompare?: boolean;
+  onAddToCompare?: () => void;
+  onRemoveFromCompare?: () => void;
 }
 
 const HotelCard: React.FC<HotelCardProps> = ({
@@ -29,6 +33,9 @@ const HotelCard: React.FC<HotelCardProps> = ({
   pricePerNight,
   featured = false,
   amenities = [],
+  isInCompare = false,
+  onAddToCompare = () => {},
+  onRemoveFromCompare = () => {},
 }) => {
   return (
     <div className="relative rounded-lg shadow-md overflow-hidden bg-white h-full flex flex-col">
@@ -80,11 +87,39 @@ const HotelCard: React.FC<HotelCardProps> = ({
         </div>
       </Link>
       
-      <FavoriteButton 
-        itemId={id}
-        itemType="hotel"
-        className="absolute top-2 right-2 z-10"
-      />
+      <div className="absolute top-2 right-2 z-10 flex gap-1">
+        <FavoriteButton 
+          itemId={id}
+          itemType="hotel"
+          className=""
+        />
+        
+        {isInCompare ? (
+          <Button 
+            size="icon" 
+            variant="destructive" 
+            className="h-7 w-7 rounded-full" 
+            onClick={(e) => {
+              e.preventDefault();
+              onRemoveFromCompare();
+            }}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button 
+            size="icon" 
+            variant="secondary" 
+            className="h-7 w-7 rounded-full" 
+            onClick={(e) => {
+              e.preventDefault();
+              onAddToCompare();
+            }}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

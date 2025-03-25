@@ -1,234 +1,241 @@
 
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { BikeRental } from "@/integrations/supabase/custom-types";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { BikeRental } from '@/integrations/supabase/custom-types';
+import { toast } from 'sonner';
 
 export const useBikeRentalManagement = () => {
-  const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [bikes, setBikes] = useState<BikeRental[]>([]);
+  const [filteredBikes, setFilteredBikes] = useState<BikeRental[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [bikes, setBikes] = useState<BikeRental[]>([]);
   const [editingBike, setEditingBike] = useState<BikeRental | null>(null);
 
-  // Form state for new bike
-  const [newBike, setNewBike] = useState({
-    name: "",
-    type: "Scooter",
-    engine: "",
+  // New bike template
+  const newBike: Partial<BikeRental> = {
+    name: '',
+    type: '',
+    engine: '',
     price: 0,
-    image: "",
-    description: ""
-  });
+    image: 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3',
+    bookings: 0,
+    status: 'available',
+    description: '',
+    slug: '',
+    price_per_day: 0,
+    model: '',
+    brand: ''
+  };
 
   useEffect(() => {
     fetchBikes();
   }, []);
 
+  useEffect(() => {
+    filterBikes();
+  }, [searchQuery, bikes]);
+
   const fetchBikes = async () => {
-    setIsLoading(true);
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('bike_rentals')
         .select('*');
-      
-      if (error) throw error;
-      
-      if (data) {
-        const formattedBikes: BikeRental[] = data.map(bike => ({
-          id: bike.id,
-          name: bike.name,
-          type: bike.type,
-          engine: bike.engine,
-          price: parseFloat(bike.price.toString()),
-          image: bike.image,
-          bookings: bike.bookings || 0,
-          status: bike.status as 'available' | 'booked' | 'maintenance',
-          description: bike.description
-        }));
-        setBikes(formattedBikes);
+
+      if (error) {
+        throw error;
       }
-    } catch (error) {
-      console.error("Error fetching bikes:", error);
-      toast({
-        title: "Error fetching bikes",
-        description: "There was a problem loading the bike data.",
-        variant: "destructive"
-      });
+
+      // Map database fields to our interface
+      const formattedBikes: BikeRental[] = data.map(bike => ({
+        id: bike.id,
+        name: bike.name,
+        slug: bike.slug || bike.name.toLowerCase().replace(/\s+/g, '-'),
+        image: bike.image,
+        price_per_day: bike.price,
+        model: bike.type || '',
+        brand: bike.engine || '',
+        engine: bike.engine,
+        status: bike.status,
+        description: bike.description,
+        type: bike.type,
+        price: bike.price,
+        bookings: bike.bookings || 0
+      }));
+
+      setBikes(formattedBikes);
+      setFilteredBikes(formattedBikes);
+    } catch (error: any) {
+      console.error('Error fetching bikes:', error.message);
+      toast.error('Failed to load bikes');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle adding a new bike
-  const handleAddBike = async (bikeData: any) => {
+  const filterBikes = () => {
+    if (!searchQuery.trim()) {
+      setFilteredBikes(bikes);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = bikes.filter(
+      bike =>
+        bike.name.toLowerCase().includes(query) ||
+        bike.type?.toLowerCase().includes(query) ||
+        bike.engine?.toLowerCase().includes(query) ||
+        bike.description?.toLowerCase().includes(query)
+    );
+    setFilteredBikes(filtered);
+  };
+
+  const handleAddBike = async (formData: Partial<BikeRental>) => {
     try {
+      const newBikeData = {
+        name: formData.name,
+        type: formData.type,
+        engine: formData.engine,
+        price: formData.price,
+        image: formData.image,
+        description: formData.description,
+        status: 'available',
+        bookings: 0
+      };
+
       const { data, error } = await supabase
         .from('bike_rentals')
-        .insert({
-          name: bikeData.name,
-          type: bikeData.type,
-          engine: bikeData.engine,
-          price: bikeData.price,
-          image: bikeData.image,
-          description: bikeData.description,
-          status: 'available'
-        })
-        .select()
-        .single();
-      
+        .insert([newBikeData])
+        .select();
+
       if (error) throw error;
-      
-      if (data) {
-        const newBikeData: BikeRental = {
-          id: data.id,
-          name: data.name,
-          type: data.type,
-          engine: data.engine,
-          price: parseFloat(data.price.toString()),
-          image: data.image,
-          bookings: 0,
-          status: 'available',
-          description: data.description
+
+      if (data && data[0]) {
+        const addedBike: BikeRental = {
+          id: data[0].id,
+          name: data[0].name,
+          slug: data[0].name.toLowerCase().replace(/\s+/g, '-'),
+          image: data[0].image,
+          price_per_day: data[0].price,
+          model: data[0].type || '',
+          brand: data[0].engine || '',
+          engine: data[0].engine,
+          status: data[0].status,
+          description: data[0].description,
+          type: data[0].type,
+          price: data[0].price,
+          bookings: data[0].bookings || 0
         };
-        
-        setBikes([...bikes, newBikeData]);
-        
-        // Reset form
-        setNewBike({
-          name: "",
-          type: "Scooter",
-          engine: "",
-          price: 0,
-          image: "",
-          description: ""
-        });
-        
-        toast({
-          title: "Bike added",
-          description: `${bikeData.name} has been added successfully.`,
-        });
-        
+
+        setBikes(prevBikes => [...prevBikes, addedBike]);
+        toast.success('Bike added successfully');
         setIsDialogOpen(false);
       }
-    } catch (error) {
-      console.error("Error adding bike:", error);
-      toast({
-        title: "Error adding bike",
-        description: "There was a problem adding the bike. Please try again.",
-        variant: "destructive"
-      });
+    } catch (error: any) {
+      console.error('Error adding bike:', error.message);
+      toast.error('Failed to add bike');
     }
   };
 
-  // Handle updating a bike
-  const handleUpdateBike = async (bikeData: BikeRental) => {
+  const handleUpdateBike = async (formData: Partial<BikeRental>) => {
     try {
+      if (!editingBike) return;
+
+      const updateData = {
+        name: formData.name,
+        type: formData.type,
+        engine: formData.engine,
+        price: formData.price,
+        image: formData.image,
+        description: formData.description
+      };
+
       const { error } = await supabase
         .from('bike_rentals')
-        .update({
-          name: bikeData.name,
-          type: bikeData.type,
-          engine: bikeData.engine,
-          price: bikeData.price,
-          image: bikeData.image,
-          description: bikeData.description
-        })
-        .eq('id', bikeData.id);
-      
+        .update(updateData)
+        .eq('id', editingBike.id);
+
       if (error) throw error;
-      
-      setBikes(bikes.map(b => b.id === bikeData.id ? bikeData : b));
-      
-      toast({
-        title: "Bike updated",
-        description: `${bikeData.name} has been updated successfully.`,
-      });
-      
-      setEditingBike(null);
+
+      setBikes(prevBikes =>
+        prevBikes.map(bike =>
+          bike.id === editingBike.id
+            ? {
+                ...bike,
+                ...formData,
+                status: bike.status,
+                price_per_day: formData.price || bike.price_per_day,
+                model: formData.type || bike.model,
+                brand: formData.engine || bike.brand
+              }
+            : bike
+        )
+      );
+
+      toast.success('Bike updated successfully');
       setIsDialogOpen(false);
-    } catch (error) {
-      console.error("Error updating bike:", error);
-      toast({
-        title: "Error updating bike",
-        description: "There was a problem updating the bike. Please try again.",
-        variant: "destructive"
-      });
+      setEditingBike(null);
+    } catch (error: any) {
+      console.error('Error updating bike:', error.message);
+      toast.error('Failed to update bike');
     }
   };
 
-  // Handle deleting a bike
   const handleDeleteBike = async (id: number) => {
     try {
       const { error } = await supabase
         .from('bike_rentals')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
-      
-      setBikes(bikes.filter(bike => bike.id !== id));
-      
-      toast({
-        title: "Bike deleted",
-        description: "The bike has been deleted successfully.",
-        variant: "destructive"
-      });
-    } catch (error) {
-      console.error("Error deleting bike:", error);
-      toast({
-        title: "Error deleting bike",
-        description: "There was a problem deleting the bike. Please try again.",
-        variant: "destructive"
-      });
+
+      setBikes(prevBikes => prevBikes.filter(bike => bike.id !== id));
+      toast.success('Bike deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting bike:', error.message);
+      toast.error('Failed to delete bike');
     }
   };
 
-  // Handle toggling bike status
   const handleToggleStatus = async (id: number) => {
     try {
-      const bike = bikes.find(b => b.id === id);
-      if (!bike) return;
-      
-      const newStatus = bike.status === 'available' ? 'maintenance' : 'available';
-      
+      const bikeToUpdate = bikes.find(bike => bike.id === id);
+      if (!bikeToUpdate) return;
+
+      const newStatus = bikeToUpdate.status === 'available' ? 'maintenance' : 'available';
+
       const { error } = await supabase
         .from('bike_rentals')
         .update({ status: newStatus })
         .eq('id', id);
-      
+
       if (error) throw error;
-      
-      setBikes(bikes.map(b => 
-        b.id === id ? { ...b, status: newStatus as 'available' | 'booked' | 'maintenance' } : b
-      ));
-      
-      toast({
-        title: "Status updated",
-        description: `Bike status has been updated to ${newStatus}.`,
-      });
-    } catch (error) {
-      console.error("Error updating bike status:", error);
-      toast({
-        title: "Error updating status",
-        description: "There was a problem updating the bike status. Please try again.",
-        variant: "destructive"
-      });
+
+      setBikes(prevBikes =>
+        prevBikes.map(bike =>
+          bike.id === id
+            ? { ...bike, status: newStatus as BikeRental['status'] }
+            : bike
+        )
+      );
+
+      toast.success(`Bike ${newStatus === 'available' ? 'activated' : 'deactivated'}`);
+    } catch (error: any) {
+      console.error('Error toggling bike status:', error.message);
+      toast.error('Failed to update bike status');
     }
   };
 
   const handleEditBike = (bike: BikeRental) => {
-    setEditingBike(bike);
+    setEditingBike({
+      ...bike,
+      type: bike.type || bike.model,
+      price: bike.price || bike.price_per_day
+    });
     setIsDialogOpen(true);
   };
-
-  // Filter bikes based on search query
-  const filteredBikes = bikes.filter(bike => 
-    bike.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    bike.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    bike.engine.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return {
     bikes,
@@ -241,7 +248,6 @@ export const useBikeRentalManagement = () => {
     editingBike,
     setEditingBike,
     newBike,
-    setNewBike,
     handleAddBike,
     handleUpdateBike,
     handleDeleteBike,
