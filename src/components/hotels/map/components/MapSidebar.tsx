@@ -1,15 +1,26 @@
 
 import React from 'react';
-import { HotelCard } from '@/components/hotels/HotelCard';
+import HotelCard from '@/components/HotelCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-interface MapSidebarProps {
-  hotels: any[];
-  selectedHotel: any | null;
-  onSelectHotel: (hotel: any) => void;
+interface Hotel {
+  id: number;
+  name: string;
+  location: string;
+  image: string;
+  price_per_night: number;
+  rating?: number;
+  stars: number;
+  [key: string]: any;
 }
 
-const MapSidebar: React.FC<MapSidebarProps> = ({ hotels, selectedHotel, onSelectHotel }) => {
+interface MapSidebarProps {
+  hotels: Hotel[];
+  selectedHotel: Hotel | null;
+  onSelectHotel: (hotel: Hotel) => void;
+}
+
+const MapSidebar = ({ hotels, selectedHotel, onSelectHotel }: MapSidebarProps) => {
   return (
     <div className="w-full lg:w-96 bg-white border-l border-gray-200 h-full">
       <div className="p-4 border-b">
@@ -20,15 +31,18 @@ const MapSidebar: React.FC<MapSidebarProps> = ({ hotels, selectedHotel, onSelect
       
       <ScrollArea className="h-[calc(100vh-200px)]">
         <div className="p-4 space-y-4">
-          {hotels.map(hotel => (
-            <div 
+          {hotels.map((hotel) => (
+            <div
               key={hotel.id}
               className={`cursor-pointer transition-all ${
                 selectedHotel?.id === hotel.id ? 'ring-2 ring-primary rounded-lg' : ''
               }`}
               onClick={() => onSelectHotel(hotel)}
             >
-              <HotelCard hotel={hotel} variant="compact" />
+              <HotelCard
+                hotel={hotel}
+                variant="compact"
+              />
             </div>
           ))}
         </div>

@@ -53,17 +53,40 @@ const AdminRegister = () => {
     setLoading(true);
     
     try {
-      // Create the user account
+      // Since we're having an issue with profile creation, let's manually handle it
+      // First create the user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: {
+            username: email.split('@')[0],
+          },
+        },
       });
       
       if (authError) throw authError;
       
       if (authData.user) {
+        // Wait a moment for the auth user to be fully created
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         try {
-          // Assign admin role in user_roles table
+          // Manually insert into profiles table
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({ 
+              id: authData.user.id,
+              username: email.split('@')[0],
+              full_name: '',
+              avatar_url: ''
+            });
+          
+          if (profileError) {
+            console.error("Profile creation error:", profileError);
+          }
+          
+          // Insert admin role
           const { error: roleError } = await supabase
             .from('user_roles')
             .insert({ 
@@ -71,7 +94,10 @@ const AdminRegister = () => {
               role: 'admin' 
             });
           
-          if (roleError) throw roleError;
+          if (roleError) {
+            console.error("Role assignment error:", roleError);
+            throw roleError;
+          }
           
           toast({
             title: "Admin registration successful",
@@ -81,7 +107,6 @@ const AdminRegister = () => {
           
           // Redirect to admin login
           navigate('/auth?admin=true');
-          
         } catch (roleError: any) {
           console.error("Role assignment error:", roleError);
           setError(roleError.message || 'Failed to assign admin role');

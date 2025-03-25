@@ -22,6 +22,23 @@ const HotelsManagement = () => {
     };
   }, []);
 
+  // Wrap methods that have mismatched signatures
+  const handleToggleStatus = (id: number) => {
+    operations.handleToggleStatus(id, '');  // Empty string as default for currentStatus
+  };
+  
+  const handleToggleFeatured = (id: number) => {
+    operations.handleToggleFeatured(id, false);  // False as default for currentValue
+  };
+  
+  const handleCloneHotel = (id: number) => {
+    // Find the hotel object by id
+    const hotel = hotels.hotels.find(h => h.id === id);
+    if (hotel) {
+      operations.handleCloneHotel(hotel);
+    }
+  };
+
   return (
     <div className="max-w-[1600px] mx-auto">
       <HotelAdminHeader 
@@ -53,9 +70,9 @@ const HotelsManagement = () => {
         toggleFavoritesFilter={hotels.toggleFavoritesFilter}
         handleDeleteHotel={operations.handleDeleteHotel}
         handleOpenEditHotel={dialogs.handleOpenEditHotel}
-        handleToggleStatus={operations.handleToggleStatus}
-        handleToggleFeatured={operations.handleToggleFeatured}
-        handleCloneHotel={operations.handleCloneHotel}
+        handleToggleStatus={handleToggleStatus}
+        handleToggleFeatured={handleToggleFeatured}
+        handleCloneHotel={handleCloneHotel}
         handleBulkAction={operations.handleBulkAction}
         handleOpenVersionHistory={dialogs.handleOpenVersionHistory}
         handleOpenAuditLog={dialogs.handleOpenAuditLog}

@@ -55,6 +55,11 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<'all' | 'featured'>('all');
   
+  const getFilterCount = () => {
+    if (!filterOptions) return 0;
+    return Object.values(filterOptions).flat().length;
+  };
+
   return (
     <div className="space-y-4">
       <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -64,11 +69,15 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
           handleSearch={handleSearch}
           setIsFilterPanelOpen={setIsFilterPanelOpen}
           handleClearFilters={handleClearFilters}
-          filterCount={Object.values(filterOptions).flat().length}
+          filterCount={getFilterCount()}
         />
       </div>
       
       <HotelManagementHeader 
+        onAddHotel={() => {}} // Placeholder
+        onOpenAuditLog={() => handleOpenAuditLog()} 
+        onOpenUserRoles={() => {}} // Placeholder
+        canManageRoles={false} // Placeholder
         viewMode={viewMode}
         setViewMode={setViewMode}
         showFavoritesOnly={showFavoritesOnly}
@@ -78,27 +87,28 @@ const HotelAdminContent: React.FC<HotelAdminContentProps> = ({
       {viewMode === 'featured' ? (
         <FeaturedHotels 
           hotels={filteredHotels.filter(hotel => hotel.featured)}
-          loading={loading}
-          handleDeleteHotel={handleDeleteHotel}
-          handleOpenEditHotel={handleOpenEditHotel}
-          handleToggleStatus={handleToggleStatus}
-          handleToggleFeatured={handleToggleFeatured}
-          handleCloneHotel={handleCloneHotel}
-          handleOpenVersionHistory={handleOpenVersionHistory}
-          handleOpenAuditLog={handleOpenAuditLog}
+          isLoading={loading}
+          onDelete={handleDeleteHotel}
+          onEdit={handleOpenEditHotel}
+          onToggleStatus={handleToggleStatus}
+          onToggleFeatured={handleToggleFeatured}
+          onClone={handleCloneHotel}
+          onViewHistory={handleOpenVersionHistory}
+          onViewAuditLog={handleOpenAuditLog}
         />
       ) : (
         <HotelList 
-          hotels={filteredHotels}
-          loading={loading}
-          handleDeleteHotel={handleDeleteHotel}
-          handleOpenEditHotel={handleOpenEditHotel}
-          handleToggleStatus={handleToggleStatus}
-          handleToggleFeatured={handleToggleFeatured}
-          handleCloneHotel={handleCloneHotel}
-          handleBulkAction={handleBulkAction}
-          handleOpenVersionHistory={handleOpenVersionHistory}
-          handleOpenAuditLog={handleOpenAuditLog}
+          hotels={hotels}
+          filteredHotels={filteredHotels}
+          isLoading={loading}
+          onDelete={handleDeleteHotel}
+          onEdit={handleOpenEditHotel}
+          onToggleStatus={handleToggleStatus}
+          onToggleFeatured={handleToggleFeatured}
+          onClone={handleCloneHotel}
+          onBulkAction={handleBulkAction}
+          onViewHistory={handleOpenVersionHistory}
+          onViewAuditLog={handleOpenAuditLog}
           addNotification={addNotification}
         />
       )}

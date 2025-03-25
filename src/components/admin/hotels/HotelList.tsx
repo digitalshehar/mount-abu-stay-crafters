@@ -10,22 +10,33 @@ import { useAuth } from "@/context/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
 
 export interface HotelListProps {
-  hotels: Hotel[];
-  filteredHotels: Hotel[];
+  hotels?: any[];
+  filteredHotels: any[];
+  loading?: boolean;
+  isLoading?: boolean;
   onDelete: (id: number) => void;
   onEdit: (id: number) => void;
   onToggleStatus: (id: number) => void;
-  onToggleFeatured: (id: number, currentValue: boolean) => void;
-  onClone: (hotel: Hotel) => void;
+  onToggleFeatured: (id: number, currentValue?: boolean) => void;
+  onClone: (hotel: any) => void;
   onBulkAction: (actionType: string, hotelIds: number[]) => void;
   onViewHistory: (id: number) => void;
   onViewAuditLog: (id: number) => void;
-  isLoading: boolean;
+  addNotification?: (notification: any) => void;
+  handleDeleteHotel?: (id: number) => void;
+  handleOpenEditHotel?: (id: number) => void;
+  handleToggleStatus?: (id: number) => void;
+  handleToggleFeatured?: (id: number) => void;
+  handleCloneHotel?: (hotel: any) => void;
+  handleOpenVersionHistory?: (id: number) => void;
+  handleOpenAuditLog?: (id?: number) => void;
 }
 
 const HotelList: React.FC<HotelListProps> = ({ 
-  hotels,
-  filteredHotels,
+  hotels = [],
+  filteredHotels = [],
+  loading,
+  isLoading = loading,
   onDelete,
   onEdit,
   onToggleStatus,
@@ -34,7 +45,14 @@ const HotelList: React.FC<HotelListProps> = ({
   onBulkAction,
   onViewHistory,
   onViewAuditLog,
-  isLoading
+  addNotification,
+  handleDeleteHotel,
+  handleOpenEditHotel,
+  handleToggleStatus,
+  handleToggleFeatured,
+  handleCloneHotel,
+  handleOpenVersionHistory,
+  handleOpenAuditLog
 }) => {
   const [selectedHotels, setSelectedHotels] = useState<number[]>([]);
   const { user } = useAuth();
@@ -61,6 +79,27 @@ const HotelList: React.FC<HotelListProps> = ({
     
     onBulkAction(actionType, selectedHotels);
     setSelectedHotels([]);
+  };
+
+  // Use the directly provided handlers or fall back to the generic ones
+  const deleteHandler = handleDeleteHotel || onDelete;
+  const editHandler = handleOpenEditHotel || onEdit;
+  const toggleStatusHandler = handleToggleStatus || onToggleStatus;
+  const toggleFeaturedHandler = handleToggleFeatured || onToggleFeatured;
+  const cloneHandler = (hotel: any) => {
+    if (handleCloneHotel) {
+      handleCloneHotel(hotel);
+    } else if (onClone) {
+      onClone(hotel);
+    }
+  };
+  const viewHistoryHandler = handleOpenVersionHistory || onViewHistory;
+  const viewAuditLogHandler = (id: number) => {
+    if (handleOpenAuditLog) {
+      handleOpenAuditLog(id);
+    } else if (onViewAuditLog) {
+      onViewAuditLog(id);
+    }
   };
 
   return (
@@ -100,13 +139,13 @@ const HotelList: React.FC<HotelListProps> = ({
                   <HotelTableRow
                     key={hotel.id}
                     hotel={hotel}
-                    onDeleteHotel={() => onDelete(hotel.id)}
-                    onEditHotel={() => onEdit(hotel.id)}
-                    onToggleStatus={() => onToggleStatus(hotel.id)}
-                    onToggleFeatured={() => onToggleFeatured(hotel.id, hotel.featured)}
-                    onClone={() => onClone(hotel)}
-                    onViewHistory={() => onViewHistory(hotel.id)}
-                    onViewAuditLog={() => onViewAuditLog(hotel.id)}
+                    onDeleteHotel={() => deleteHandler(hotel.id)}
+                    onEditHotel={() => editHandler(hotel.id)}
+                    onToggleStatus={() => toggleStatusHandler(hotel.id)}
+                    onToggleFeatured={() => toggleFeaturedHandler(hotel.id, hotel.featured)}
+                    onClone={() => cloneHandler(hotel)}
+                    onViewHistory={() => viewHistoryHandler(hotel.id)}
+                    onViewAuditLog={() => viewAuditLogHandler(hotel.id)}
                     isSelected={selectedHotels.includes(hotel.id)}
                     onSelectHotel={(checked) => handleSelectHotel(hotel.id, checked)}
                   />
