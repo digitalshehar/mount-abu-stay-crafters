@@ -27,6 +27,13 @@ const HotelContent: React.FC<HotelContentProps> = ({
   onRemoveFromCompare = () => {},
   isInCompare = () => false
 }) => {
+  // Add a state or function for openFilters
+  const openFilters = () => {
+    // This is a placeholder function that would typically 
+    // set some state or trigger a modal/drawer to open
+    document.dispatchEvent(new CustomEvent('open-hotel-filters'));
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -37,6 +44,7 @@ const HotelContent: React.FC<HotelContentProps> = ({
         <HotelFiltersMobile 
           activeFilterCount={activeFilterCount}
           clearFilters={clearFilters}
+          openFilters={openFilters}
         />
       </div>
 

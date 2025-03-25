@@ -44,7 +44,6 @@ const AdventuresPage = () => {
   const [editingAdventure, setEditingAdventure] = useState<Adventure | null>(null);
   const [deletingAdventureId, setDeletingAdventureId] = useState<number | null>(null);
 
-  // New adventure template
   const emptyAdventure: Adventure = {
     id: 0,
     name: "",
@@ -62,7 +61,6 @@ const AdventuresPage = () => {
     requirements: []
   };
 
-  // Form state for new/edit adventure
   const [adventureData, setAdventureData] = useState(emptyAdventure);
 
   useEffect(() => {
@@ -444,7 +442,7 @@ const AdventuresPage = () => {
                 <TableCell>{adventure.difficulty}</TableCell>
                 <TableCell>₹{adventure.price}</TableCell>
                 <TableCell>
-                  <Badge variant={adventure.status === "active" ? "success" : "secondary"}>
+                  <Badge variant={adventure.status === "active" ? "default" : "secondary"}>
                     {adventure.status}
                   </Badge>
                 </TableCell>
@@ -550,7 +548,7 @@ const AdventuresPage = () => {
                               className="col-span-3"
                             />
                           </div>
-                           <div className="grid grid-cols-4 items-center gap-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="location" className="text-right">
                               Location
                             </Label>

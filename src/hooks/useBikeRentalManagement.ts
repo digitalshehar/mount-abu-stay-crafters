@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { BikeRental } from '@/integrations/supabase/custom-types';
@@ -47,21 +48,26 @@ export const useBikeRentalManagement = () => {
       }
 
       // Map database fields to our interface
-      const formattedBikes: BikeRental[] = data.map(bike => ({
-        id: bike.id,
-        name: bike.name,
-        slug: bike.slug || bike.name.toLowerCase().replace(/\s+/g, '-'),
-        image: bike.image,
-        price_per_day: bike.price,
-        model: bike.type || '',
-        brand: bike.engine || '',
-        engine: bike.engine,
-        status: bike.status,
-        description: bike.description,
-        type: bike.type,
-        price: bike.price,
-        bookings: bike.bookings || 0
-      }));
+      const formattedBikes: BikeRental[] = data.map(bike => {
+        // Generate a slug from the name if it doesn't exist
+        const generatedSlug = bike.name.toLowerCase().replace(/\s+/g, '-');
+        
+        return {
+          id: bike.id,
+          name: bike.name,
+          slug: generatedSlug,
+          image: bike.image,
+          price_per_day: bike.price,
+          model: bike.type || '',
+          brand: bike.engine || '',
+          engine: bike.engine,
+          status: bike.status,
+          description: bike.description,
+          type: bike.type,
+          price: bike.price,
+          bookings: bike.bookings || 0
+        };
+      });
 
       setBikes(formattedBikes);
       setFilteredBikes(formattedBikes);
