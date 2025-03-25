@@ -39,7 +39,9 @@ const HotelMainContent = ({
       <HotelDetailHeader 
         name={hotel.name}
         location={hotel.location}
-        stars={hotel.stars}
+        stars={hotel.stars || 3}
+        rating={hotel.rating}
+        reviewCount={hotel.reviewCount}
         featured={hotel.featured}
       />
       

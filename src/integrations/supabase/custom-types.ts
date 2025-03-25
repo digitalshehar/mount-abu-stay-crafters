@@ -1,4 +1,3 @@
-
 // Custom type definitions for our database
 export interface CarRental {
   id: number;
@@ -83,6 +82,8 @@ export interface Hotel {
   rating?: number;
   featured?: boolean;
   rooms?: Room[];
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface Room {

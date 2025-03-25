@@ -8,6 +8,9 @@ import { useMapFunctions } from '@/components/hotels/map/hooks/useMapFunctions';
 import { useMapFilters } from '@/components/hotels/map/hooks/useMapFilters';
 import MapLoading from '@/components/hotels/map/MapLoading';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Hotel } from '@/integrations/supabase/custom-types';
+import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
+import { convertAdminToIntegrationHotels } from '@/utils/hotelTypeAdapter';
 
 const HotelMap = () => {
   const { hotels, loading } = useHotels();
@@ -15,7 +18,11 @@ const HotelMap = () => {
   
   // Create simplified versions of these objects for the page
   const mapFilters = useMapFilters();
-  const filteredHotels = mapFilters.filterHotels(hotels);
+  
+  // Convert admin hotel type to the integration hotel type
+  const adaptedHotels: Hotel[] = convertAdminToIntegrationHotels(hotels);
+  
+  const filteredHotels = mapFilters.filterHotels(adaptedHotels);
   
   const {
     mapCenter,
@@ -35,6 +42,18 @@ const HotelMap = () => {
         selectedHotel={selectedHotel}
         hotelsCount={filteredHotels.length}
         onOpenFilter={() => setIsFilterOpen(true)}
+        viewMode="map"
+        setViewMode={() => {}} // Placeholder
+        activeFilterCount={mapFilters.activeFilterCount}
+        searchQuery={mapFilters.searchQuery}
+        setSearchQuery={mapFilters.setSearchQuery}
+        selectedStars={mapFilters.selectedStars}
+        setSelectedStars={mapFilters.setSelectedStars}
+        selectedAmenities={mapFilters.selectedAmenities}
+        setSelectedAmenities={mapFilters.setSelectedAmenities}
+        priceRange={mapFilters.priceRange}
+        setPriceRange={mapFilters.setPriceRange}
+        clearFilters={mapFilters.clearFilters}
       />
       
       <div className="flex flex-1 overflow-hidden">
@@ -51,6 +70,13 @@ const HotelMap = () => {
             hotels={filteredHotels}
             selectedHotel={selectedHotel}
             onSelectHotel={setSelectedHotel}
+            priceRange={mapFilters.priceRange}
+            setPriceRange={mapFilters.setPriceRange}
+            selectedStars={mapFilters.selectedStars}
+            handleStarFilter={mapFilters.handleStarFilter}
+            selectedAmenities={mapFilters.selectedAmenities}
+            handleAmenityFilter={mapFilters.handleAmenityFilter}
+            clearFilters={mapFilters.clearFilters}
           />
         </div>
       </div>

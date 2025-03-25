@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 interface MobileFilterProps {
   isFilterOpen: boolean;
   setIsFilterOpen: (open: boolean) => void;
-  activeFilterCount: number;
   priceRange: [number, number];
   setPriceRange: (range: [number, number]) => void;
   selectedStars: number[];

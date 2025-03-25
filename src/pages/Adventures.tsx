@@ -1,306 +1,166 @@
-import React, { useState, useEffect } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import { Calendar, MapPin, ChevronDown, Filter, Star } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import SEO from "@/components/SEO";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+
+const AdventureCard = ({ title, description, image, difficulty, duration, price }) => (
+  <div className="bg-white rounded-lg shadow-sm overflow-hidden transition-all hover:shadow-md group">
+    <div className="relative">
+      <img 
+        src={image} 
+        alt={title} 
+        className="w-full h-56 object-cover transition-transform group-hover:scale-105"
+      />
+      <div className="absolute top-3 right-3">
+        <span className={`text-xs font-medium px-2 py-1 rounded-full 
+          ${difficulty === 'Easy' ? 'bg-green-100 text-green-700' : 
+            difficulty === 'Moderate' ? 'bg-yellow-100 text-yellow-700' : 
+            'bg-red-100 text-red-700'}`}
+        >
+          {difficulty}
+        </span>
+      </div>
+    </div>
+    <div className="p-6">
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-stone-600 text-sm mb-4">{description}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-xs text-stone-500 mb-1">{duration}</div>
+          <div className="text-lg font-semibold">₹{price}</div>
+        </div>
+        <Button variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-white">
+          Explore <ArrowRight className="ml-1 h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  </div>
+);
 
 const Adventures = () => {
-  const location = useLocation();
-  const { toast } = useToast();
-  const searchParams = new URLSearchParams(location.search);
-
-  const [searchValues, setSearchValues] = useState({
-    location: searchParams.get("location") || "",
-    date: searchParams.get("date") || "",
-    type: searchParams.get("type") || ""
-  });
-
-  useEffect(() => {
-    if (searchParams.toString()) {
-      toast({
-        title: "Search Applied",
-        description: "Showing search results based on your criteria",
-      });
-    }
-  }, []);
-
-  const activities = [
+  const adventures = [
     {
-      id: 1,
-      name: "Sunset Point Trekking",
-      type: "Trekking",
-      duration: "3 hours",
-      difficulty: "Easy",
-      rating: 4.8,
-      reviewCount: 124,
-      price: 800,
-      image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&q=80&w=1574&ixlib=rb-4.0.3"
-    },
-    {
-      id: 2,
-      name: "Wildlife Safari",
-      type: "Sightseeing",
-      duration: "5 hours",
-      difficulty: "Easy",
-      rating: 4.5,
-      reviewCount: 98,
-      price: 1200,
-      image: "https://images.unsplash.com/photo-1561040594-a1b8785b8d1e?auto=format&fit=crop&q=80&w=1548&ixlib=rb-4.0.3"
-    },
-    {
-      id: 3,
-      name: "Nakki Lake Boating",
-      type: "Water Activity",
-      duration: "1 hour",
-      difficulty: "Easy",
-      rating: 4.3,
-      reviewCount: 210,
-      price: 500,
-      image: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3"
-    },
-    {
-      id: 4,
-      name: "Overnight Camping Experience",
-      type: "Camping",
-      duration: "24 hours",
+      title: "Sunset Trekking at Guru Shikhar",
+      description: "Experience breathtaking views from the highest peak in the Aravalli Range with our guided sunset trek.",
+      image: "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
       difficulty: "Moderate",
-      rating: 4.9,
-      reviewCount: 76,
-      price: 2500,
-      image: "https://images.unsplash.com/photo-1517823382935-51bfcb0ec6bc?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3"
+      duration: "4-5 hours",
+      price: "1,200"
     },
+    {
+      title: "Wildlife Safari in Mount Abu",
+      description: "Explore the diverse wildlife of Mount Abu Wildlife Sanctuary with expert guides and spotting opportunities.",
+      image: "https://images.unsplash.com/photo-1535941339077-2dd1c7963098?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      difficulty: "Easy",
+      duration: "3 hours",
+      price: "950"
+    },
+    {
+      title: "Rock Climbing Adventure",
+      description: "Challenge yourself with rock climbing experiences suitable for beginners and experienced climbers alike.",
+      image: "https://images.unsplash.com/photo-1522163182402-834f871fd851?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      difficulty: "Difficult",
+      duration: "6 hours",
+      price: "1,800"
+    },
+    {
+      title: "Nakki Lake Boating",
+      description: "Enjoy a serene boating experience on the historic Nakki Lake with stunning surroundings.",
+      image: "https://images.unsplash.com/photo-1472457974886-0ebcd59440cc?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      difficulty: "Easy",
+      duration: "1-2 hours",
+      price: "600"
+    },
+    {
+      title: "Mountain Biking Trails",
+      description: "Discover Mount Abu's beautiful terrain on exciting mountain biking trails with varying difficulty levels.",
+      image: "https://images.unsplash.com/photo-1486349311681-8ded3b07dbf0?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      difficulty: "Moderate",
+      duration: "3-4 hours",
+      price: "1,500"
+    },
+    {
+      title: "Sunrise Yoga Retreat",
+      description: "Rejuvenate with peaceful sunrise yoga sessions amidst the serene natural beauty of Mount Abu.",
+      image: "https://images.unsplash.com/photo-1545389336-cf090694435e?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3",
+      difficulty: "Easy",
+      duration: "2 hours",
+      price: "800"
+    }
   ];
 
-  const filteredActivities = activities.filter(activity => {
-    if (!searchValues.location && !searchValues.date && !searchValues.type) {
-      return true;
-    }
-
-    let matches = true;
-    
-    if (searchValues.type && searchValues.type !== "") {
-      matches = matches && activity.type.toLowerCase() === searchValues.type.toLowerCase();
-    }
-    
-    return matches;
-  });
-
-  const handleSearchFormSubmit = (e) => {
-    e.preventDefault();
-    const params = new URLSearchParams();
-    if (searchValues.location) params.append("location", searchValues.location);
-    if (searchValues.date) params.append("date", searchValues.date);
-    if (searchValues.type) params.append("type", searchValues.type);
-    
-    window.history.pushState({}, "", `${location.pathname}?${params.toString()}`);
-    
-    toast({
-      title: "Search Updated",
-      description: "Showing updated search results",
-    });
-  };
-
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
+      <SEO 
+        title="Mount Abu Adventures | Thrilling Activities" 
+        description="Discover exciting adventure activities in Mount Abu. Book trekking, hiking, watersports, and other thrilling experiences."
+      />
       <Header />
-      <main>
-        <section className="relative py-20 bg-stone-100">
-          <div className="container-custom">
-            <div className="max-w-3xl mx-auto text-center">
-              <h1 className="title-medium mb-4">Adventures in Mount Abu</h1>
-              <p className="subtitle mb-8">
-                Discover thrilling activities and unforgettable experiences in the heart of Mount Abu
+      
+      <main className="flex-1 bg-stone-50">
+        {/* Hero section */}
+        <div className="relative h-96">
+          <img 
+            src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3" 
+            alt="Mount Abu Adventures" 
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 flex items-center justify-center text-center p-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl text-white font-display font-bold mb-4">
+                Adventures in Mount Abu
+              </h1>
+              <p className="text-white/90 text-lg max-w-2xl mx-auto mb-8">
+                Discover thrilling adventures and activities in the beautiful landscapes of Mount Abu.
               </p>
-
-              <div className="bg-white rounded-xl shadow-md p-6 mt-8">
-                <form onSubmit={handleSearchFormSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="relative">
-                    <MapPin className="absolute left-4 top-3.5 h-5 w-5 text-stone-400" />
-                    <input
-                      type="text"
-                      placeholder="Activity location"
-                      className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                      value={searchValues.location}
-                      onChange={(e) => setSearchValues({...searchValues, location: e.target.value})}
-                    />
-                  </div>
-                  <div className="relative">
-                    <Calendar className="absolute left-4 top-3.5 h-5 w-5 text-stone-400" />
-                    <input
-                      type="text"
-                      placeholder="Date"
-                      className="w-full pl-12 pr-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                      value={searchValues.date}
-                      onChange={(e) => setSearchValues({...searchValues, date: e.target.value})}
-                    />
-                  </div>
-                  <button 
-                    type="submit"
-                    className="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg shadow transition-all flex items-center justify-center"
-                  >
-                    Search Activities
-                  </button>
-                </form>
-              </div>
+              <Button size="lg" className="bg-primary hover:bg-primary/90">
+                Explore All Adventures
+              </Button>
             </div>
           </div>
-        </section>
-
-        <section className="py-16">
-          <div className="container-custom">
-            <div className="flex flex-col md:flex-row gap-8">
-              <div className="w-full md:w-1/4 bg-white rounded-xl shadow-sm p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium">Filters</h3>
-                  <Filter size={20} />
-                </div>
-                
-                <div className="mb-6">
-                  <h4 className="text-sm font-medium mb-3">Activity Type</h4>
-                  <div className="space-y-2">
-                    {['Trekking', 'Sightseeing', 'Camping', 'Water Activity', 'Yoga'].map((type) => (
-                      <label key={type} className="flex items-center">
-                        <input 
-                          type="checkbox" 
-                          className="mr-2" 
-                          checked={searchValues.type.toLowerCase() === type.toLowerCase()}
-                          onChange={() => {
-                            setSearchValues({
-                              ...searchValues, 
-                              type: searchValues.type.toLowerCase() === type.toLowerCase() ? "" : type.toLowerCase()
-                            });
-                          }}
-                        />
-                        <span>{type}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h4 className="text-sm font-medium mb-3">Difficulty Level</h4>
-                  <div className="space-y-2">
-                    {['Easy', 'Moderate', 'Challenging'].map((level) => (
-                      <label key={level} className="flex items-center">
-                        <input type="checkbox" className="mr-2" />
-                        <span>{level}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h4 className="text-sm font-medium mb-3">Duration</h4>
-                  <div className="space-y-2">
-                    {['1-3 hours', '3-6 hours', 'Half day', 'Full day', 'Multi-day'].map((duration) => (
-                      <label key={duration} className="flex items-center">
-                        <input type="checkbox" className="mr-2" />
-                        <span>{duration}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <h4 className="text-sm font-medium mb-3">Price Range</h4>
-                  <input
-                    type="range"
-                    min="200"
-                    max="3000"
-                    step="200"
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm text-stone-500 mt-2">
-                    <span>₹200</span>
-                    <span>₹3000</span>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={handleSearchFormSubmit}
-                  className="w-full bg-secondary hover:bg-secondary/80 text-primary font-medium py-2 px-4 rounded-lg transition-all"
-                >
-                  Apply Filters
-                </button>
-              </div>
-
-              <div className="w-full md:w-3/4">
-                <div className="flex justify-between items-center mb-6">
-                  <p className="text-stone-500">Showing {filteredActivities.length} activities</p>
-                  <div className="flex items-center">
-                    <span className="mr-2">Sort by:</span>
-                    <button className="flex items-center text-stone-700 hover:text-primary transition-colors">
-                      Popularity
-                      <ChevronDown size={16} className="ml-1" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {filteredActivities.length > 0 ? (
-                    filteredActivities.map((activity) => (
-                      <div key={activity.id} className="bg-white rounded-xl shadow-sm overflow-hidden card-hover">
-                        <div className="relative h-48">
-                          <img
-                            src={activity.image}
-                            alt={activity.name}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-medium flex items-center">
-                            {activity.difficulty}
-                          </div>
-                        </div>
-                        <div className="p-6">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="text-sm text-primary font-medium">{activity.type}</p>
-                              <h3 className="font-display font-bold text-xl mb-1">{activity.name}</h3>
-                              <p className="text-sm text-stone-500 mb-2">{activity.duration}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-primary font-bold text-xl">₹{activity.price}</p>
-                              <p className="text-xs text-stone-500">per person</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center text-sm text-stone-500 mt-4 mb-6">
-                            <Star size={16} className="text-yellow-500 fill-yellow-500 mr-1" />
-                            <span className="mr-1">{activity.rating}</span>
-                            <span className="mr-3">({activity.reviewCount} reviews)</span>
-                          </div>
-                          
-                          <Link
-                            to={`/adventures/${activity.id}`}
-                            className="block w-full bg-primary hover:bg-primary/90 text-white text-center font-medium py-2 px-4 rounded-lg shadow-sm transition-all"
-                          >
-                            Book Now
-                          </Link>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="col-span-2 text-center py-10">
-                      <p className="text-lg text-stone-500">No activities found matching your search criteria.</p>
-                      <button 
-                        onClick={() => {
-                          setSearchValues({ location: "", date: "", type: "" });
-                          window.history.pushState({}, "", location.pathname);
-                        }}
-                        className="mt-4 bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-all"
-                      >
-                        Clear Search
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+        </div>
+        
+        <div className="container-custom py-12 md:py-16">
+          {/* Adventure categories */}
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {['All Adventures', 'Trekking', 'Water Activities', 'Wildlife', 'Camping', 'Yoga & Wellness'].map((category) => (
+              <Button 
+                key={category} 
+                variant={category === 'All Adventures' ? "default" : "outline"}
+                className="rounded-full"
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
+          
+          {/* Adventure listings */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {adventures.map((adventure, index) => (
+              <AdventureCard key={index} {...adventure} />
+            ))}
+          </div>
+          
+          {/* Call to action */}
+          <div className="mt-16 bg-primary/5 rounded-xl p-8 text-center">
+            <h2 className="text-2xl font-semibold mb-3">Looking for Custom Adventures?</h2>
+            <p className="text-stone-600 mb-6 max-w-2xl mx-auto">
+              We can create personalized adventure packages tailored to your preferences and group size.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button variant="outline">Contact Us</Button>
+              <Button>Create Custom Package</Button>
             </div>
           </div>
-        </section>
+        </div>
       </main>
+      
       <Footer />
-    </>
+    </div>
   );
 };
 

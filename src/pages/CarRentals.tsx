@@ -1,158 +1,151 @@
 
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { CarRental } from "@/integrations/supabase/custom-types";
-import CarHero from "../components/car-rentals/CarHero";
-import CarFilters from "../components/car-rentals/CarFilters";
-import CarList from "../components/car-rentals/CarList";
+import React, { useState } from "react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import CarHero from "@/components/car-rentals/CarHero";
+import CarList from "@/components/car-rentals/CarList";
+import CarFilters from "@/components/car-rentals/CarFilters";
+import { Helmet } from "react-helmet-async";
+import { cn } from "@/lib/utils";
+import SEO from "@/components/SEO";
 
 const CarRentals = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const searchParams = new URLSearchParams(location.search);
-
+  // Define search state that matches the expected props in components
   const [searchValues, setSearchValues] = useState({
-    location: searchParams.get("location") || "",
-    dates: searchParams.get("dates") || "",
-    type: searchParams.get("type") || ""
+    location: "Mount Abu",
+    dates: "",
+    type: ""
   });
   
-  const [cars, setCars] = useState<CarRental[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Update search values when URL changes
-    const params = new URLSearchParams(location.search);
-    setSearchValues({
-      location: params.get("location") || "",
-      dates: params.get("dates") || "",
-      type: params.get("type") || ""
-    });
-    
-    // Show toast for search results if parameters exist
-    if (params.toString()) {
-      toast({
-        title: "Search Applied",
-        description: "Showing search results based on your criteria",
-      });
-    }
-  }, [location.search, toast]);
-
-  useEffect(() => {
-    fetchCars();
-  }, []);
-
-  const fetchCars = async () => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('car_rentals')
-        .select('*')
-        .eq('status', 'available');
-      
-      if (error) throw error;
-      
-      if (data) {
-        setCars(data as CarRental[]);
-      }
-    } catch (error) {
-      console.error("Error fetching cars:", error);
-      toast({
-        title: "Error fetching cars",
-        description: "There was a problem loading the car data.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const filteredCars = cars.filter(car => {
-    // If no search parameters, show all cars
-    if (!searchValues.location && !searchValues.dates && !searchValues.type) {
-      return true;
-    }
-
-    // Initialize as true and then apply filters
-    let matches = true;
-    
-    // Filter by location if provided (case insensitive partial match)
-    if (searchValues.location && searchValues.location.trim() !== "") {
-      // Since we don't have actual location data for each car in this demo, 
-      // we'll just check if any car is available in the searched location
-      // In a real app, you would check car.location against searchValues.location
-      matches = true; // Simplified for demo
-    }
-    
-    // Filter by type if provided (exact match, case insensitive)
-    if (searchValues.type && searchValues.type.trim() !== "") {
-      matches = matches && car.type.toLowerCase() === searchValues.type.toLowerCase();
-    }
-    
-    return matches;
-  });
-
-  const handleSearchFormSubmit = (e) => {
+  const [cars, setCars] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  
+  const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const params = new URLSearchParams();
-    if (searchValues.location) params.append("location", searchValues.location);
-    if (searchValues.dates) params.append("dates", searchValues.dates);
-    if (searchValues.type) params.append("type", searchValues.type);
+    // Here would be the actual search implementation
+    console.log("Searching with values:", searchValues);
     
-    // Navigate with new search params
-    navigate(`${location.pathname}?${params.toString()}`);
-    
-    // Show success toast
-    toast({
-      title: "Search Updated",
-      description: "Showing updated search results",
-    });
+    // Simulate loading
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      // Simulate no results for now, actual implementation would set cars array
+      setCars([]);
+    }, 1500);
   };
-
-  const handleClearSearch = () => {
-    setSearchValues({ location: "", dates: "", type: "" });
-    navigate(location.pathname);
-    
-    toast({
-      title: "Search Cleared",
-      description: "Showing all available cars",
+  
+  // Function to clear search
+  const clearSearch = () => {
+    setSearchValues({
+      location: "Mount Abu",
+      dates: "",
+      type: ""
     });
   };
 
   return (
     <>
-      <Header />
-      <main>
-        <CarHero 
-          searchValues={searchValues} 
-          setSearchValues={setSearchValues} 
-          onSubmit={handleSearchFormSubmit} 
-        />
-
-        <section className="py-16">
-          <div className="container-custom">
-            <div className="flex flex-col md:flex-row gap-8">
-              <CarFilters 
-                searchValues={searchValues} 
-                setSearchValues={setSearchValues} 
-                onSubmit={handleSearchFormSubmit} 
-              />
-
-              <CarList 
-                cars={filteredCars} 
-                isLoading={isLoading} 
-                clearSearch={handleClearSearch} 
-              />
+      <SEO
+        title="Car Rentals in Mount Abu | Explore in Comfort"
+        description="Rent a car and explore Mount Abu at your own pace. Choose from a range of vehicles from economy to luxury cars at competitive prices."
+      />
+      
+      <div className="min-h-screen flex flex-col bg-stone-50">
+        <Header />
+        
+        <main className="flex-grow">
+          <CarHero 
+            searchValues={searchValues} 
+            setSearchValues={setSearchValues} 
+            onSubmit={handleSearchSubmit} 
+          />
+          
+          <div className="container-custom py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Sidebar Filter (Desktop) */}
+              <div className="hidden lg:block lg:col-span-1">
+                <CarFilters 
+                  searchValues={searchValues}
+                  setSearchValues={setSearchValues}
+                  onSubmit={handleSearchSubmit}
+                />
+              </div>
+              
+              {/* Mobile Filter Backdrop */}
+              {isMobileFilterOpen && (
+                <div 
+                  className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+                  onClick={() => setIsMobileFilterOpen(false)}
+                ></div>
+              )}
+              
+              {/* Mobile Filter Sidebar */}
+              <div className={cn(
+                "fixed inset-y-0 left-0 z-50 w-full max-w-xs bg-white p-6 overflow-y-auto lg:hidden transform transition-transform",
+                isMobileFilterOpen ? "translate-x-0" : "-translate-x-full"
+              )}>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">Filters</h2>
+                  <button 
+                    onClick={() => setIsMobileFilterOpen(false)}
+                    className="text-stone-500 hover:text-stone-700"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <CarFilters 
+                  searchValues={searchValues}
+                  setSearchValues={setSearchValues}
+                  onSubmit={handleSearchSubmit}
+                />
+              </div>
+              
+              {/* Car List */}
+              <div className="lg:col-span-3">
+                <div className="mb-4 flex items-center justify-between">
+                  <h1 className="text-2xl font-display font-bold">Car Rentals in Mount Abu</h1>
+                  
+                  <div className="flex items-center gap-3">
+                    {/* Filter button (Mobile) */}
+                    <button 
+                      onClick={() => setIsMobileFilterOpen(true)}
+                      className="flex items-center gap-2 px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm font-medium lg:hidden"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                      </svg>
+                      Filters
+                    </button>
+                    
+                    {/* Sort dropdown */}
+                    <select
+                      className="px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm font-medium appearance-none cursor-pointer pr-8 relative"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: "right 0.5rem center", backgroundRepeat: "no-repeat", backgroundSize: "1.5em 1.5em" }}
+                    >
+                      <option value="recommended">Recommended</option>
+                      <option value="price-low">Price: Low to High</option>
+                      <option value="price-high">Price: High to Low</option>
+                      <option value="rating">Highest Rated</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <CarList 
+                  cars={cars} 
+                  isLoading={isLoading} 
+                  clearSearch={clearSearch} 
+                />
+              </div>
             </div>
           </div>
-        </section>
-      </main>
-      <Footer />
+        </main>
+        
+        <Footer />
+      </div>
     </>
   );
 };

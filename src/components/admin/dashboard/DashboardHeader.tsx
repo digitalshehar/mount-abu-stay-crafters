@@ -1,85 +1,84 @@
 
-import React from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Download, Filter, Plus, RefreshCw } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Menu, Bell, Search, User } from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface DashboardHeaderProps {
-  title: string;
-  onRefresh: () => void;
-  onExport?: () => void;
-  onAdd?: () => void;
-  onTabChange?: (value: string) => void;
-  tabs?: Array<{ value: string; label: string }>;
-  activeTab?: string;
-  loading?: boolean;
-  filterComponent?: React.ReactNode;
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
+  handleLogout: () => Promise<void>;
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
-  title,
-  onRefresh,
-  onExport,
-  onAdd,
-  onTabChange,
-  tabs,
-  activeTab,
-  loading = false,
-  filterComponent
+  sidebarOpen,
+  toggleSidebar,
+  handleLogout
 }) => {
   return (
-    <div className="flex flex-col space-y-4">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onRefresh}
-            disabled={loading}
+    <header className="bg-white border-b border-gray-200 py-2 px-4 fixed top-0 right-0 left-0 md:static z-20">
+      <div className="flex items-center justify-between h-14">
+        <div className="flex items-center">
+          <button
+            onClick={toggleSidebar}
+            className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:bg-gray-100 md:hidden"
           >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+            <Menu className="h-6 w-6" />
+          </button>
+          <div className="md:hidden ml-2 font-semibold">Admin Dashboard</div>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {/* Global search */}
+          <div className="relative max-w-xs hidden sm:block">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full py-2 pl-10 pr-4 text-sm text-gray-700 bg-gray-100 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
           
-          {onExport && (
-            <Button variant="outline" size="sm" onClick={onExport}>
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-          )}
+          {/* Notifications */}
+          <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full relative">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
+          </button>
           
-          {onAdd && (
-            <Button size="sm" onClick={onAdd}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add New
-            </Button>
-          )}
+          {/* User menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full">
+                <User className="h-5 w-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Admin User</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/admin/settings">Settings</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/">View Website</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleLogout()} className="text-red-600">
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-      
-      {tabs && tabs.length > 0 && (
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <Tabs defaultValue={activeTab} onValueChange={onTabChange}>
-            <TabsList>
-              {tabs.map((tab) => (
-                <TabsTrigger key={tab.value} value={tab.value}>
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-          
-          {filterComponent && (
-            <div className="flex items-center">
-              <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
-              {filterComponent}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    </header>
   );
 };
 

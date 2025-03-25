@@ -8,9 +8,18 @@ interface HotelDetailHeaderProps {
   location: string;
   stars: number;
   featured: boolean;
+  rating?: number;
+  reviewCount?: number;
 }
 
-const HotelDetailHeader = ({ name, location, stars, featured }: HotelDetailHeaderProps) => {
+const HotelDetailHeader = ({ 
+  name, 
+  location, 
+  stars, 
+  featured, 
+  rating, 
+  reviewCount 
+}: HotelDetailHeaderProps) => {
   return (
     <>
       <div className="bg-white border-b border-stone-200">
@@ -40,6 +49,13 @@ const HotelDetailHeader = ({ name, location, stars, featured }: HotelDetailHeade
                 </div>
                 <span className="mx-2">•</span>
                 <span>{location}</span>
+                {rating && reviewCount && (
+                  <>
+                    <span className="mx-2">•</span>
+                    <span className="text-yellow-500">{rating.toFixed(1)}</span>
+                    <span className="ml-1 text-stone-500">({reviewCount} reviews)</span>
+                  </>
+                )}
                 {featured && (
                   <>
                     <span className="mx-2">•</span>

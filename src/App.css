@@ -1,8 +1,23 @@
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
   text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 .logo {
@@ -39,4 +54,9 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.full-width-container {
+  width: 100%;
+  max-width: none;
 }

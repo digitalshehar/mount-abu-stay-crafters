@@ -8,6 +8,21 @@ interface MapContainerProps {
   zoom: number;
   onLoad: (map: google.maps.Map) => void;
   children?: React.ReactNode;
+  isLoading?: boolean;
+  isLoaded?: boolean;
+  mapContainerStyle?: { width: string; height: string };
+  mountAbuCenter?: { lat: number; lng: number };
+  mapOptions?: any;
+  filteredHotels?: any[];
+  selectedHotelId?: number | null;
+  selectedMarker?: any;
+  setSelectedMarker?: (hotel: any) => void;
+  handleHotelSelect?: (id: number) => void;
+  handleBoundsChanged?: () => void;
+  showHeatmap?: boolean;
+  compareList?: number[];
+  onAddToCompare?: (id: number) => void;
+  isInCompare?: (id: number) => boolean;
 }
 
 // Map styles for a cleaner look
@@ -24,19 +39,30 @@ const mapStyles = [
   }
 ];
 
-const mapContainerStyle = {
+const defaultMapContainerStyle = {
   width: '100%',
   height: 'calc(100vh - 160px)',
   minHeight: '600px'
 };
 
-const MapContainer: React.FC<MapContainerProps> = ({ center, zoom, onLoad, children }) => {
+const MapContainer: React.FC<MapContainerProps> = ({ 
+  center, 
+  zoom, 
+  onLoad, 
+  children,
+  mapContainerStyle = defaultMapContainerStyle,
+  isLoading,
+  isLoaded: explicitIsLoaded,
+}) => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
   });
 
-  if (!isLoaded) {
+  // Use explicit isLoaded prop if provided, otherwise use the hook's isLoaded
+  const mapIsLoaded = explicitIsLoaded !== undefined ? explicitIsLoaded : isLoaded;
+
+  if (!mapIsLoaded || isLoading) {
     return <MapLoading />;
   }
 
