@@ -1,67 +1,73 @@
 
 import React from "react";
-import { Info } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import HotelInfoBanner from "./content/HotelInfoBanner";
-import HotelSkeletonList from "./content/HotelSkeletonList";
-import FeaturedHotelsSection from "./content/FeaturedHotelsSection";
-import RegularHotelsSection from "./content/RegularHotelsSection";
+import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
+import { Hotel } from "@/integrations/supabase/custom-types";
 import NoHotelsFound from "./content/NoHotelsFound";
+import HotelGrid from "./content/HotelGrid";
+import HotelFiltersMobile from "./content/HotelFiltersMobile";
 
-interface HotelContentProps {
+export interface HotelContentProps {
   isLoading: boolean;
-  filteredHotels: any[];
+  filteredHotels: AdminHotel[] | Hotel[];
   activeFilterCount: number;
   clearFilters: () => void;
+  compareList?: number[];
+  onAddToCompare?: (id: number) => void;
+  onRemoveFromCompare?: (id: number) => void;
+  isInCompare?: (id: number) => boolean;
 }
 
-const HotelContent = ({
+const HotelContent: React.FC<HotelContentProps> = ({
   isLoading,
   filteredHotels,
   activeFilterCount,
-  clearFilters
-}: HotelContentProps) => {
-  // Separate featured hotels
-  const featuredHotels = filteredHotels.filter(hotel => hotel.featured);
-  const regularHotels = filteredHotels.filter(hotel => !hotel.featured);
-
+  clearFilters,
+  compareList = [],
+  onAddToCompare = () => {},
+  onRemoveFromCompare = () => {},
+  isInCompare = () => false
+}) => {
   return (
-    <>
-      <HotelInfoBanner />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-xl sm:text-2xl font-bold">
+          Hotels in Mount Abu {!isLoading && `(${filteredHotels.length})`}
+        </h1>
+        
+        <HotelFiltersMobile 
+          activeFilterCount={activeFilterCount}
+          clearFilters={clearFilters}
+        />
+      </div>
 
       {isLoading ? (
-        <HotelSkeletonList />
-      ) : filteredHotels && filteredHotels.length > 0 ? (
-        <>
-          <p className="text-stone-600 mb-6">
-            Showing {filteredHotels.length} {filteredHotels.length === 1 ? 'hotel' : 'hotels'} {activeFilterCount > 0 ? 'matching your filters' : 'in Mount Abu'}
-          </p>
-          
-          {featuredHotels.length > 0 && (
-            <FeaturedHotelsSection 
-              title="Featured Hotels" 
-              subtitle="Our handpicked premium accommodations"
-              hotels={featuredHotels}
-            />
-          )}
-          
-          {featuredHotels.length > 0 && regularHotels.length > 0 && 
-            <Separator className="my-6" />
-          }
-          
-          {regularHotels.length > 0 && (
-            <RegularHotelsSection 
-              title="All Hotels"
-              subtitle="Explore all accommodations in Mount Abu"
-              hotels={regularHotels}
-            />
-          )}
-        </>
-      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {[...Array(6)].map((_, index) => (
+            <div 
+              key={index} 
+              className="animate-pulse bg-white rounded-xl shadow-sm overflow-hidden h-[280px]"
+            >
+              <div className="h-40 bg-stone-200"></div>
+              <div className="p-4 space-y-2">
+                <div className="h-4 bg-stone-200 rounded w-3/4"></div>
+                <div className="h-4 bg-stone-200 rounded w-1/2"></div>
+                <div className="h-8 bg-stone-200 rounded w-full mt-2"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredHotels.length === 0 ? (
         <NoHotelsFound clearFilters={clearFilters} />
+      ) : (
+        <HotelGrid 
+          hotels={filteredHotels} 
+          compareList={compareList}
+          onAddToCompare={onAddToCompare}
+          onRemoveFromCompare={onRemoveFromCompare}
+          isInCompare={isInCompare}
+        />
       )}
-    </>
+    </div>
   );
 };
 

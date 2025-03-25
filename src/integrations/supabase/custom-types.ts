@@ -29,13 +29,17 @@ export interface BikeRental {
   brand: string;
   engine?: string;
   mileage?: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'available' | 'booked' | 'maintenance';
   description?: string;
   category?: string;
   features?: string[];
   rating?: number;
   review_count?: number;
   location?: string;
+  // Additional properties used in UI components
+  type?: string;
+  price?: number;
+  bookings?: number;
 }
 
 export interface CarRental {
@@ -49,13 +53,18 @@ export interface CarRental {
   seats?: number;
   transmission?: string;
   fuel_type?: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'available' | 'booked' | 'maintenance';
   description?: string;
   category?: string;
   features?: string[];
   rating?: number;
   review_count?: number;
   location?: string;
+  // Additional properties used in UI components
+  type?: string;
+  capacity?: number;
+  price?: number;
+  bookings?: number;
 }
 
 export interface Adventure {
@@ -72,11 +81,21 @@ export interface Adventure {
   status: 'active' | 'inactive';
   rating?: number;
   review_count?: number;
+  reviewCount?: number; // Alternative property used in components
   featured?: boolean;
-  difficulty?: 'easy' | 'moderate' | 'challenging' | 'difficult';
+  difficulty?: 'easy' | 'moderate' | 'challenging' | 'difficult' | string;
   categories?: string[];
   max_people?: number;
   itinerary?: any[];
+  type?: string;
+  bookings?: number;
+  // Additional properties used in components
+  includes?: string[];
+  timeline?: string[];
+  meetingPoint?: string;
+  maxGroupSize?: number;
+  minAge?: number;
+  cancellationPolicy?: string;
 }
 
 export interface Destination {
@@ -93,6 +112,7 @@ export interface Destination {
   gallery?: string[];
   meta_title?: string;
   meta_description?: string;
+  bestTimeToVisit?: string;
 }
 
 export interface BlogPost {
@@ -104,10 +124,14 @@ export interface BlogPost {
   featured_image?: string;
   author_id?: number;
   author_name?: string;
+  author?: string;
   published_at?: string;
   status: 'draft' | 'published';
   categories?: string[];
   tags?: string[];
   meta_title?: string;
   meta_description?: string;
+  category?: string;
+  date?: string;
+  image?: string;
 }

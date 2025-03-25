@@ -1,46 +1,43 @@
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import React from 'react';
 import HotelCard from '@/components/HotelCard';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
+import { Hotel } from '@/integrations/supabase/custom-types';
 
 interface RegularHotelsSectionProps {
   title: string;
   subtitle: string;
-  hotels: any[];
+  hotels: Hotel[];
+  limit?: number;
 }
 
 const RegularHotelsSection: React.FC<RegularHotelsSectionProps> = ({
   title,
   subtitle,
-  hotels
+  hotels,
+  limit = 6
 }) => {
-  const [visibleCount, setVisibleCount] = useState(6);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const displayHotels = limit ? hotels.slice(0, limit) : hotels;
 
   if (!hotels || hotels.length === 0) return null;
 
-  const visibleHotels = hotels.slice(0, visibleCount);
-  const hasMore = visibleCount < hotels.length;
-
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    // Simulate loading delay
-    setTimeout(() => {
-      setVisibleCount(prev => Math.min(prev + 6, hotels.length));
-      setIsLoadingMore(false);
-    }, 500);
-  };
-
   return (
     <div className="space-y-4">
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-stone-800">{title}</h2>
-        <p className="text-stone-500">{subtitle}</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-stone-800">{title}</h2>
+          <p className="text-stone-500">{subtitle}</p>
+        </div>
+        {hotels.length > limit && (
+          <Button variant="ghost" className="gap-2">
+            View All <ArrowRight className="h-4 w-4" />
+          </Button>
+        )}
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {visibleHotels.map(hotel => (
+        {displayHotels.map(hotel => (
           <HotelCard
             key={hotel.id}
             id={hotel.id}
@@ -48,31 +45,14 @@ const RegularHotelsSection: React.FC<RegularHotelsSectionProps> = ({
             slug={hotel.slug}
             location={hotel.location}
             rating={hotel.rating || 0}
-            reviewCount={hotel.reviewCount || hotel.review_count || 0}
+            reviewCount={hotel.review_count || 0}
             image={hotel.image}
             featured={hotel.featured}
             amenities={hotel.amenities || []}
-            pricePerNight={hotel.pricePerNight || hotel.price_per_night || 0}
+            pricePerNight={hotel.price_per_night || 0}
           />
         ))}
       </div>
-
-      {hasMore && (
-        <div className="flex justify-center mt-8">
-          <Button 
-            onClick={handleLoadMore} 
-            disabled={isLoadingMore}
-            className="min-w-[150px]"
-          >
-            {isLoadingMore ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading
-              </>
-            ) : 'Load More'}
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
