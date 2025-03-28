@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -38,7 +37,6 @@ import BikeRentalDetail from '@/pages/BikeRentalDetail';
 import CarRentalDetail from '@/pages/CarRentalDetail';
 import BookingNotFound from '@/pages/BookingNotFound';
 
-// Create a query client
 const queryClient = new QueryClient();
 
 function App() {
@@ -55,13 +53,11 @@ function App() {
                 <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
                 <Route path="/admin/register" element={<AdminRegister />} />
                 
-                {/* Hotel routes */}
                 <Route path="/hotels" element={<Hotels />} />
                 <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
                 <Route path="/hotels/html/:hotelSlug" element={<HotelHtmlView />} />
                 <Route path="/hotel-not-found" element={<HotelNotFound />} />
                 
-                {/* Rental routes */}
                 <Route path="/bike-rentals" element={<BikeRentals />} />
                 <Route path="/rentals/bike" element={<BikeRentals />} />
                 <Route path="/bike-rental/:id" element={<BikeRentalDetail />} />
@@ -70,27 +66,22 @@ function App() {
                 <Route path="/rentals/car/:id" element={<CarRentalDetail />} />
                 <Route path="/car-rental/:id" element={<CarRentalDetail />} />
                 
-                {/* Destination routes */}
                 <Route path="/destinations" element={<Destinations />} />
                 <Route path="/destination/:destinationSlug" element={<DestinationDetail />} />
                 <Route path="/destination-not-found" element={<DestinationNotFound />} />
                 
-                {/* Adventure routes */}
                 <Route path="/adventures" element={<Adventures />} />
                 <Route path="/adventure/:adventureSlug" element={<AdventureDetail />} />
                 <Route path="/adventure-not-found" element={<AdventureNotFound />} />
                 
-                {/* Content routes */}
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/booking-not-found" element={<BookingNotFound />} />
                 
-                {/* Protected routes for regular users */}
                 <Route element={<ProtectedRoute />}>
                   <Route path="/profile" element={<div>Profile Page</div>} />
                   <Route path="/bookings" element={<div>Bookings Page</div>} />
                 </Route>
                 
-                {/* Protected routes for admin users */}
                 <Route element={<AdminRoute />}>
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
                   <Route path="/admin/hotels" element={<AdminHotels />} />
@@ -101,7 +92,6 @@ function App() {
                   <Route path="/admin/users" element={<UsersPage />} />
                 </Route>
                 
-                {/* 404 catch-all route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <Toaster />
