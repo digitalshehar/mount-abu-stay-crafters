@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -82,15 +83,41 @@ function App() {
                   <Route path="/bookings" element={<div>Bookings Page</div>} />
                 </Route>
                 
-                <Route element={<AdminRoute />}>
-                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                  <Route path="/admin/hotels" element={<AdminHotels />} />
-                  <Route path="/admin/bikes" element={<AdminBikeRentals />} />
-                  <Route path="/admin/cars" element={<AdminCarRentals />} />
-                  <Route path="/admin/blog" element={<AdminBlog />} />
-                  <Route path="/admin/bookings" element={<div>Booking Management</div>} />
-                  <Route path="/admin/users" element={<UsersPage />} />
-                </Route>
+                <Route path="/admin/dashboard" element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/hotels" element={
+                  <AdminRoute>
+                    <AdminHotels />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/bikes" element={
+                  <AdminRoute>
+                    <AdminBikeRentals />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/cars" element={
+                  <AdminRoute>
+                    <AdminCarRentals />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/blog" element={
+                  <AdminRoute>
+                    <AdminBlog />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/bookings" element={
+                  <AdminRoute>
+                    <div>Booking Management</div>
+                  </AdminRoute>
+                } />
+                <Route path="/admin/users" element={
+                  <AdminRoute>
+                    <UsersPage />
+                  </AdminRoute>
+                } />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>

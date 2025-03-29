@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -16,13 +17,12 @@ const Auth = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      if (isAdminLogin) {
-        // If admin login is requested, check if user has admin role
-        if (isAdmin) {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/');
-        }
+      if (isAdminLogin && isAdmin) {
+        // If admin login is requested and user has admin role, redirect to admin dashboard
+        navigate('/admin/dashboard');
+      } else if (isAdminLogin && !isAdmin) {
+        // If admin login is requested but user doesn't have admin role
+        navigate('/');
       } else {
         // Regular user flow
         navigate('/');
