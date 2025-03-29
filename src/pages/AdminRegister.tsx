@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,15 +19,12 @@ const AdminRegister = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // The admin code is fixed for demonstration purposes
-  // In a production environment, you would use a more secure approach
   const ADMIN_CODE = 'mountabu2024';
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    // Form validation
     if (!email || !password || !confirmPassword || !adminCode) {
       setError('Please fill in all fields');
       return;
@@ -44,7 +40,6 @@ const AdminRegister = () => {
       return;
     }
     
-    // Verify admin code
     if (adminCode !== ADMIN_CODE) {
       setError('Invalid admin registration code');
       return;
@@ -53,7 +48,6 @@ const AdminRegister = () => {
     setLoading(true);
     
     try {
-      // First create the user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -67,38 +61,25 @@ const AdminRegister = () => {
       if (authError) throw authError;
       
       if (authData.user) {
-        // Wait a moment for the auth user to be fully created
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        try {
-          // Insert admin role immediately after signup
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({ 
-              user_id: authData.user.id, 
-              role: 'admin' 
-            });
-          
-          if (roleError) {
-            console.error("Role assignment error:", roleError);
-            throw roleError;
-          }
-          
-          // Note: Don't manually insert into profiles table - let the trigger handle it
-          // The trigger created by Supabase will automatically create the profile
-          
-          toast({
-            title: "Admin registration successful",
-            description: "You can now login with your admin credentials.",
-            variant: "default",
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ 
+            user_id: authData.user.id, 
+            role: 'admin' 
           });
-          
-          // Redirect to admin login
-          navigate('/auth?admin=true');
-        } catch (roleError: any) {
+        
+        if (roleError) {
           console.error("Role assignment error:", roleError);
-          setError(roleError.message || 'Failed to assign admin role');
+          throw roleError;
         }
+        
+        toast({
+          title: "Admin registration successful",
+          description: "You can now login with your admin credentials.",
+          variant: "default",
+        });
+        
+        navigate('/auth?admin=true');
       }
     } catch (error: any) {
       console.error("Signup error:", error);
