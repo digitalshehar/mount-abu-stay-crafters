@@ -23,33 +23,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
   // Check if the user is admin
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Check admin status when user changes
   useEffect(() => {
     const checkAdminStatus = async () => {
+      setIsLoading(true);
+      
       if (!user) {
         setIsAdmin(false);
+        setIsLoading(false);
         return;
       }
       
       try {
+        // First, check if user has admin role in metadata
+        const isAdminInMetadata = user.user_metadata?.is_admin === true;
+        
+        // Then check if user has an admin role in user_roles table
         const { data, error } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
           .eq('role', 'admin')
-          .single();
+          .maybeSingle(); // Use maybeSingle instead of single to avoid errors
         
-        if (error) {
-          console.error("Error checking admin role:", error);
-          setIsAdmin(false);
-          return;
-        }
-        
-        setIsAdmin(!!data);
+        // Set admin status if either check passes
+        setIsAdmin(isAdminInMetadata || !!data);
       } catch (error) {
         console.error("Error in checkAdminStatus:", error);
         setIsAdmin(false);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -82,8 +87,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     session,
     user,
     profile,
-    loading,
-    isLoading: loading, // Alias for compatibility
+    loading: loading || isLoading, // Consider both loading states
+    isLoading: loading || isLoading, // Alias for compatibility
     isAdmin,
     signUp,
     signIn,

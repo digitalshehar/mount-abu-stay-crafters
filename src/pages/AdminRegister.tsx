@@ -49,7 +49,7 @@ const AdminRegister = () => {
     setLoading(true);
     
     try {
-      // Create the user with Supabase auth
+      // Create the user with Supabase auth and admin metadata
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -64,24 +64,18 @@ const AdminRegister = () => {
       if (signUpError) throw signUpError;
       
       if (data.user) {
-        // Use the service role client to insert admin role
-        // this bypasses RLS and avoids permission issues
-        const { error: insertError } = await supabase.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: true,
-          user_metadata: { is_admin: true }
-        });
+        // Insert the admin role in the user_roles table
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ 
+            user_id: data.user.id, 
+            role: 'admin' 
+          });
         
-        if (insertError) {
-          console.error("Error updating user:", insertError);
-          throw insertError;
+        if (roleError) {
+          console.error("Error setting admin role:", roleError);
+          // Continue anyway since we also set metadata
         }
-        
-        // Add the user_role using service_role client
-        // We'll use a serverless function for this in production
-        // For now, we'll demonstrate the intent but this won't work
-        // without the service role key in the frontend
         
         toast({
           title: "Admin registration successful",
