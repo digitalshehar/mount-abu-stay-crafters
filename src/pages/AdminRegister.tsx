@@ -53,8 +53,7 @@ const AdminRegister = () => {
     setLoading(true);
     
     try {
-      // Since we're having an issue with profile creation, let's manually handle it
-      // First create the user
+      // First create the user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -72,21 +71,7 @@ const AdminRegister = () => {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         try {
-          // Manually insert into profiles table
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({ 
-              id: authData.user.id,
-              username: email.split('@')[0],
-              full_name: '',
-              avatar_url: ''
-            });
-          
-          if (profileError) {
-            console.error("Profile creation error:", profileError);
-          }
-          
-          // Insert admin role
+          // Insert admin role immediately after signup
           const { error: roleError } = await supabase
             .from('user_roles')
             .insert({ 
@@ -98,6 +83,9 @@ const AdminRegister = () => {
             console.error("Role assignment error:", roleError);
             throw roleError;
           }
+          
+          // Note: Don't manually insert into profiles table - let the trigger handle it
+          // The trigger created by Supabase will automatically create the profile
           
           toast({
             title: "Admin registration successful",
