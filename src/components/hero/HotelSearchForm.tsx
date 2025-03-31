@@ -18,6 +18,10 @@ interface HotelSearchProps {
 }
 
 const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
+  const handleInputChange = (field: string, value: string) => {
+    setSearch(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
       <div className="space-y-2">
@@ -29,7 +33,8 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
             placeholder="Where are you going?" 
             className="pl-10"
             value={search.location}
-            onChange={(e) => setSearch(prev => ({ ...prev, location: e.target.value }))}
+            onChange={(e) => handleInputChange("location", e.target.value)}
+            type="text"
           />
         </div>
       </div>
@@ -43,7 +48,8 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
             placeholder="Check-in — Check-out" 
             className="pl-10"
             value={search.dates}
-            onChange={(e) => setSearch(prev => ({ ...prev, dates: e.target.value }))}
+            onChange={(e) => handleInputChange("dates", e.target.value)}
+            type="text"
           />
         </div>
       </div>
@@ -57,7 +63,8 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
             placeholder="Guests & Rooms" 
             className="pl-10"
             value={search.guests}
-            onChange={(e) => setSearch(prev => ({ ...prev, guests: e.target.value }))}
+            onChange={(e) => handleInputChange("guests", e.target.value)}
+            type="text"
           />
         </div>
       </div>

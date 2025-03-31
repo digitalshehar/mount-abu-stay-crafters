@@ -28,7 +28,10 @@ const SearchButton = ({ activeTab, handleSearch }: SearchButtonProps) => {
     <div className="flex justify-end mt-4">
       <Button 
         type="submit" 
-        onClick={handleSearch}
+        onClick={handleSearch ? (e) => {
+          e.preventDefault();
+          handleSearch();
+        } : undefined}
         className="px-6 py-6 text-base" 
         size="lg"
       >

@@ -108,6 +108,23 @@ const SearchContainer = () => {
     }
   };
 
+  // Update form state functions to prevent default form submission
+  const updateHotelSearch = (field: string, value: string) => {
+    setHotelSearch(prev => ({ ...prev, [field]: value }));
+  };
+
+  const updateCarSearch = (field: string, value: string) => {
+    setCarSearch(prev => ({ ...prev, [field]: value }));
+  };
+
+  const updateBikeSearch = (field: string, value: string) => {
+    setBikeSearch(prev => ({ ...prev, [field]: value }));
+  };
+
+  const updateActivitySearch = (field: string, value: string) => {
+    setActivitySearch(prev => ({ ...prev, [field]: value }));
+  };
+
   // Simple search component displayed on the hero section for mobile
   const MobileSearchTrigger = () => (
     <div className="w-full px-4 md:hidden">
@@ -116,6 +133,7 @@ const SearchContainer = () => {
           <button 
             className="w-full bg-white rounded-lg px-4 py-3.5 text-left flex items-center shadow-lg"
             aria-label="Open search"
+            type="button"
           >
             <Search className="h-5 w-5 text-primary mr-3" />
             <span className="text-stone-500">Where are you going?</span>
@@ -125,36 +143,52 @@ const SearchContainer = () => {
           <div className="h-full overflow-y-auto">
             <SearchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
             
-            <form onSubmit={handleSearch}>
-              {activeTab === "hotels" && (
-                <HotelSearchForm search={hotelSearch} setSearch={setHotelSearch} />
-              )}
+            {activeTab === "hotels" && (
+              <div className="mt-4">
+                <HotelSearchForm 
+                  search={hotelSearch} 
+                  setSearch={(newState) => setHotelSearch(newState)}
+                />
+              </div>
+            )}
 
-              {activeTab === "cars" && (
+            {activeTab === "cars" && (
+              <div className="mt-4">
                 <CarSearchForm 
                   search={carSearch} 
-                  setSearch={setCarSearch} 
+                  setSearch={(newState) => setCarSearch(newState)}
                 />
-              )}
-
-              {activeTab === "bikes" && (
-                <BikeSearchForm search={bikeSearch} setSearch={setBikeSearch} />
-              )}
-
-              {activeTab === "activities" && (
-                <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
-              )}
-
-              <div className="mt-6">
-                <button
-                  type="submit"
-                  className="flex items-center justify-center w-full py-6 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow transition-all text-base"
-                >
-                  <Search className="h-5 w-5 mr-2" />
-                  Search {activeTab === "hotels" ? "Hotels" : activeTab === "cars" ? "Cars" : activeTab === "bikes" ? "Bikes" : "Activities"}
-                </button>
               </div>
-            </form>
+            )}
+
+            {activeTab === "bikes" && (
+              <div className="mt-4">
+                <BikeSearchForm 
+                  search={bikeSearch} 
+                  setSearch={(newState) => setBikeSearch(newState)}
+                />
+              </div>
+            )}
+
+            {activeTab === "activities" && (
+              <div className="mt-4">
+                <ActivitySearchForm 
+                  search={activitySearch} 
+                  setSearch={(newState) => setActivitySearch(newState)}
+                />
+              </div>
+            )}
+
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => handleSearch()}
+                className="flex items-center justify-center w-full py-6 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow transition-all text-base"
+              >
+                <Search className="h-5 w-5 mr-2" />
+                Search {activeTab === "hotels" ? "Hotels" : activeTab === "cars" ? "Cars" : activeTab === "bikes" ? "Bikes" : "Activities"}
+              </button>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
