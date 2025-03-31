@@ -1,7 +1,8 @@
 
-import { ToastType } from '@/hooks/use-toast';
+// Import the toast type correctly
+import { type Toast } from "@/hooks/use-toast";
 
-export const validateSearch = (searchParams: URLSearchParams, toast: ToastType) => {
+export const validateSearch = (searchParams: URLSearchParams, toast: Toast) => {
   // Basic validation - require at least one parameter
   if (searchParams.toString() === '') {
     toast({

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import SearchTabs from "./SearchTabs";
 import HotelSearchForm from "./HotelSearchForm";
 import CarSearchForm from "./CarSearchForm";
@@ -125,36 +124,37 @@ const SearchContainer = () => {
         <SheetContent side="bottom" className="h-[90vh] rounded-t-xl px-4 pt-6 pb-8">
           <div className="h-full overflow-y-auto">
             <SearchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+            
+            <form onSubmit={handleSearch}>
+              {activeTab === "hotels" && (
+                <HotelSearchForm search={hotelSearch} setSearch={setHotelSearch} />
+              )}
 
-            {activeTab === "hotels" && (
-              <HotelSearchForm search={hotelSearch} setSearch={setHotelSearch} />
-            )}
+              {activeTab === "cars" && (
+                <CarSearchForm 
+                  search={carSearch} 
+                  setSearch={setCarSearch} 
+                />
+              )}
 
-            {activeTab === "cars" && (
-              <CarSearchForm 
-                search={carSearch} 
-                setSearch={setCarSearch} 
-              />
-            )}
+              {activeTab === "bikes" && (
+                <BikeSearchForm search={bikeSearch} setSearch={setBikeSearch} />
+              )}
 
-            {activeTab === "bikes" && (
-              <BikeSearchForm search={bikeSearch} setSearch={setBikeSearch} />
-            )}
+              {activeTab === "activities" && (
+                <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
+              )}
 
-            {activeTab === "activities" && (
-              <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
-            )}
-
-            <div className="mt-6">
-              <Button 
-                onClick={() => handleSearch()} 
-                className="w-full py-6 text-base"
-                size="lg"
-              >
-                <Search className="h-5 w-5 mr-2" />
-                Search {activeTab === "hotels" ? "Hotels" : activeTab === "cars" ? "Cars" : activeTab === "bikes" ? "Bikes" : "Activities"}
-              </Button>
-            </div>
+              <div className="mt-6">
+                <button
+                  type="submit"
+                  className="flex items-center justify-center w-full py-6 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow transition-all text-base"
+                >
+                  <Search className="h-5 w-5 mr-2" />
+                  Search {activeTab === "hotels" ? "Hotels" : activeTab === "cars" ? "Cars" : activeTab === "bikes" ? "Bikes" : "Activities"}
+                </button>
+              </div>
+            </form>
           </div>
         </SheetContent>
       </Sheet>

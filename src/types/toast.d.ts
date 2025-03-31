@@ -8,7 +8,7 @@ type ToastProps = {
   action?: ToastActionElement;
 };
 
-export type ToastType = {
+export type Toast = {
   (props: ToastProps): void;
   dismiss: (toastId?: string) => void;
 };
