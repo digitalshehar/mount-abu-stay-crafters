@@ -1,34 +1,41 @@
 
-import { useState } from "react";
+import React from 'react';
+import { Bed, Car, Bike, Compass } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SearchTabsProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
 
-const SearchTabs = ({ activeTab, setActiveTab }: SearchTabsProps) => {
+const SearchTabs: React.FC<SearchTabsProps> = ({ activeTab, setActiveTab }) => {
   const tabs = [
-    { id: "hotels", label: "Hotels" },
-    { id: "cars", label: "Car Rentals" },
-    { id: "bikes", label: "Bike Rentals" },
-    { id: "activities", label: "Activities" },
+    { id: 'hotels', label: 'Hotels', icon: Bed },
+    { id: 'cars', label: 'Cars', icon: Car },
+    { id: 'bikes', label: 'Bikes', icon: Bike },
+    { id: 'activities', label: 'Activities', icon: Compass },
   ];
 
   return (
-    <div className="flex overflow-x-auto scrollbar-hide border-b space-x-1 md:space-x-4 mb-4 md:mb-6 pb-1">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
-          className={`pb-2 px-3 md:px-4 whitespace-nowrap font-medium transition-colors ${
-            activeTab === tab.id
-              ? "text-primary border-b-2 border-primary"
-              : "text-stone-500 hover:text-stone-700"
-          }`}
-        >
-          {tab.label}
-        </button>
-      ))}
+    <div className="flex overflow-x-auto space-x-1 pb-2 -mx-1 px-1">
+      {tabs.map((tab) => {
+        const Icon = tab.icon;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "flex items-center justify-center whitespace-nowrap px-4 py-2 text-sm font-medium rounded-lg flex-1 transition-colors",
+              activeTab === tab.id
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Icon className="h-4 w-4 mr-2" />
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 };

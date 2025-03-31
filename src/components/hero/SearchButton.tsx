@@ -1,25 +1,40 @@
 
-import { Search } from "lucide-react";
+import React from 'react';
+import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface SearchButtonProps {
   activeTab: string;
-  handleSearch: () => void;
+  handleSearch?: () => void;
 }
 
 const SearchButton = ({ activeTab, handleSearch }: SearchButtonProps) => {
+  const getSearchLabel = () => {
+    switch (activeTab) {
+      case 'hotels':
+        return 'Search Hotels';
+      case 'cars':
+        return 'Search Cars';
+      case 'bikes':
+        return 'Search Bikes';
+      case 'activities':
+        return 'Search Activities';
+      default:
+        return 'Search';
+    }
+  };
+
   return (
-    <div className="flex justify-center mt-4">
-      <button
+    <div className="flex justify-end mt-4">
+      <Button 
+        type="submit" 
         onClick={handleSearch}
-        className="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg shadow transition-all flex items-center"
-        type="button"
+        className="px-6 py-6 text-base" 
+        size="lg"
       >
-        <Search className="h-4 w-4 mr-2" />
-        {activeTab === "hotels" && "Search Hotels"}
-        {activeTab === "cars" && "Search Cars"}
-        {activeTab === "bikes" && "Search Bikes"}
-        {activeTab === "activities" && "Search Activities"}
-      </button>
+        <Search className="h-5 w-5 mr-2" />
+        {getSearchLabel()}
+      </Button>
     </div>
   );
 };

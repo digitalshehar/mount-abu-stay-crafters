@@ -12,12 +12,14 @@ import BikeSearchForm from "./BikeSearchForm";
 import ActivitySearchForm from "./ActivitySearchForm";
 import SearchButton from "./SearchButton";
 import { validateSearch } from "./HeroUtils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const SearchContainer = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("hotels");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   
   // Search form state
   const [hotelSearch, setHotelSearch] = useState({
@@ -112,7 +114,10 @@ const SearchContainer = () => {
     <div className="w-full px-4 md:hidden">
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetTrigger asChild>
-          <button className="w-full bg-white rounded-lg px-4 py-3.5 text-left flex items-center shadow-lg">
+          <button 
+            className="w-full bg-white rounded-lg px-4 py-3.5 text-left flex items-center shadow-lg"
+            aria-label="Open search"
+          >
             <Search className="h-5 w-5 text-primary mr-3" />
             <span className="text-stone-500">Where are you going?</span>
           </button>
@@ -143,9 +148,10 @@ const SearchContainer = () => {
             <div className="mt-6">
               <Button 
                 onClick={() => handleSearch()} 
-                className="w-full py-4 text-base"
+                className="w-full py-6 text-base"
+                size="lg"
               >
-                <Search className="h-4 w-4 mr-2" />
+                <Search className="h-5 w-5 mr-2" />
                 Search {activeTab === "hotels" ? "Hotels" : activeTab === "cars" ? "Cars" : activeTab === "bikes" ? "Bikes" : "Activities"}
               </Button>
             </div>
@@ -184,7 +190,7 @@ const SearchContainer = () => {
             <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
           )}
 
-          <SearchButton activeTab={activeTab} handleSearch={() => handleSearch()} />
+          <SearchButton activeTab={activeTab} />
         </form>
       </div>
     </div>
