@@ -1,8 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin, Calendar, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { DateRange } from 'react-day-picker';
+import { format, addDays } from 'date-fns';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 
 interface HotelSearchProps {
   search: {
@@ -18,8 +23,44 @@ interface HotelSearchProps {
 }
 
 const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: undefined,
+    to: undefined,
+  });
+  
+  const [guestData, setGuestData] = useState({
+    adults: 2,
+    children: 0,
+    rooms: 1,
+  });
+  
   const handleInputChange = (field: string, value: string) => {
     setSearch(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Update the dates string whenever the date range changes
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    if (range?.from) {
+      let dateString = format(range.from, "MMM d");
+      if (range.to) {
+        dateString += " - " + format(range.to, "MMM d, yyyy");
+      } else {
+        dateString += ", " + format(range.from, "yyyy");
+      }
+      handleInputChange("dates", dateString);
+    } else {
+      handleInputChange("dates", "");
+    }
+  };
+
+  // Update guests string when guest data changes
+  const handleGuestChange = (type: 'adults' | 'children' | 'rooms', value: number) => {
+    const newGuestData = { ...guestData, [type]: value };
+    setGuestData(newGuestData);
+    
+    const guestString = `${newGuestData.adults + newGuestData.children} guests, ${newGuestData.rooms} ${newGuestData.rooms === 1 ? 'room' : 'rooms'}`;
+    handleInputChange("guests", guestString);
   };
 
   return (
@@ -42,30 +83,115 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
       <div className="space-y-2">
         <Label htmlFor="hotel-dates" className="text-sm font-medium">Dates</Label>
         <div className="relative">
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input 
-            id="hotel-dates"
-            placeholder="Check-in — Check-out" 
-            className="pl-10"
-            value={search.dates}
-            onChange={(e) => handleInputChange("dates", e.target.value)}
-            type="text"
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                role="combobox" 
+                className="w-full justify-start text-left font-normal relative"
+              >
+                <Calendar className="absolute left-3 h-4 w-4 text-gray-500" />
+                <span className="ml-10">
+                  {search.dates || "Check-in — Check-out"}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="range"
+                defaultMonth={new Date()}
+                selected={dateRange}
+                onSelect={handleDateRangeChange}
+                numberOfMonths={2}
+                disabled={(date) => date < new Date()}
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
       
       <div className="space-y-2">
         <Label htmlFor="hotel-guests" className="text-sm font-medium">Guests</Label>
         <div className="relative">
-          <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-          <Input 
-            id="hotel-guests"
-            placeholder="Guests & Rooms" 
-            className="pl-10"
-            value={search.guests}
-            onChange={(e) => handleInputChange("guests", e.target.value)}
-            type="text"
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                role="combobox" 
+                className="w-full justify-start text-left font-normal relative"
+              >
+                <Users className="absolute left-3 h-4 w-4 text-gray-500" />
+                <span className="ml-10">
+                  {search.guests || "Guests & Rooms"}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-4" align="start">
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Adults</span>
+                  <div className="flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleGuestChange('adults', Math.max(1, guestData.adults - 1))}
+                      type="button"
+                    >-</Button>
+                    <span className="w-6 text-center">{guestData.adults}</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleGuestChange('adults', Math.min(10, guestData.adults + 1))}
+                      type="button"
+                    >+</Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Children</span>
+                  <div className="flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleGuestChange('children', Math.max(0, guestData.children - 1))}
+                      type="button"
+                    >-</Button>
+                    <span className="w-6 text-center">{guestData.children}</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleGuestChange('children', Math.min(6, guestData.children + 1))}
+                      type="button"
+                    >+</Button>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Rooms</span>
+                  <div className="flex items-center space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleGuestChange('rooms', Math.max(1, guestData.rooms - 1))}
+                      type="button"
+                    >-</Button>
+                    <span className="w-6 text-center">{guestData.rooms}</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 w-7 p-0"
+                      onClick={() => handleGuestChange('rooms', Math.min(5, guestData.rooms + 1))}
+                      type="button"
+                    >+</Button>
+                  </div>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </div>
