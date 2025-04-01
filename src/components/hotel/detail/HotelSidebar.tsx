@@ -1,5 +1,7 @@
 
 import React from "react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Zap } from "lucide-react";
 import PriceOverview from "./sidebar/PriceOverview";
 import ContactLocation from "./sidebar/ContactLocation";
 import PriceMatchGuarantee from "./sidebar/PriceMatchGuarantee";
@@ -15,6 +17,7 @@ interface HotelSidebarProps {
 }
 
 const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
+  // Display a loading skeleton when hotel data is not available
   if (!hotel) {
     return <div className="space-y-6 animate-pulse">
       <div className="h-64 bg-stone-100 rounded-lg"></div>
@@ -22,6 +25,14 @@ const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
       <div className="h-32 bg-stone-100 rounded-lg"></div>
     </div>;
   }
+
+  // Handler for one-click booking
+  const handleOneClickBooking = () => {
+    // Use the best available room for one-click booking
+    const rooms = hotel.rooms || [];
+    const bestRoom = rooms.length > 0 ? rooms[0].type : null;
+    onSelectRooms(bestRoom);
+  };
 
   return (
     <div className="space-y-6">
@@ -31,6 +42,16 @@ const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
         reviewCount={hotel.reviewCount}
         onSelectRooms={onSelectRooms}
       />
+      
+      {/* One-click booking button */}
+      <Button 
+        variant="default"
+        className="w-full bg-orange-500 hover:bg-orange-600 gap-2" 
+        onClick={handleOneClickBooking}
+      >
+        <Zap className="h-4 w-4" />
+        Book Now with 1-Click
+      </Button>
       
       <WeatherWidget 
         location={hotel.location} 

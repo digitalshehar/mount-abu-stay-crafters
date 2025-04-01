@@ -5,18 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Check } from "lucide-react";
 
 interface PriceOverviewProps {
-  price: number;
-  rating: number;
-  reviewCount: number;
+  price?: number;
+  rating?: number;
+  reviewCount?: number;
   onSelectRooms: () => void;
 }
 
 const PriceOverview: React.FC<PriceOverviewProps> = ({ 
-  price, 
-  rating, 
-  reviewCount, 
+  price = 0, 
+  rating = 0, 
+  reviewCount = 0, 
   onSelectRooms 
 }) => {
+  // Default price if not provided
+  const displayPrice = price || 0;
+  const taxAmount = Math.round(displayPrice * 0.18);
+  
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
       <div className="flex justify-between items-center mb-4">
@@ -27,11 +31,11 @@ const PriceOverview: React.FC<PriceOverviewProps> = ({
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <span className="text-stone-600">Room rates from</span>
-          <span className="font-semibold text-xl">₹{price}</span>
+          <span className="font-semibold text-xl">₹{displayPrice}</span>
         </div>
         
         <div className="flex justify-between items-center text-sm">
-          <span className="text-stone-500">+ ₹{Math.round(price * 0.18)} taxes & fees</span>
+          <span className="text-stone-500">+ ₹{taxAmount} taxes & fees</span>
           <span className="text-stone-500">per night</span>
         </div>
         

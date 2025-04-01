@@ -1,108 +1,96 @@
 
-import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudRain, CloudSnow, Wind } from 'lucide-react';
+import React from 'react';
+import { SunMedium, CloudSun, Umbrella, Thermometer } from 'lucide-react';
+import { useWeather } from '@/hooks/useWeather';
 
 interface WeatherWidgetProps {
-  location: string;
-  longitude: number;
-  latitude: number;
-}
-
-interface WeatherData {
-  temp: number;
-  condition: 'sunny' | 'cloudy' | 'rainy' | 'snowy' | 'windy';
-  humidity: number;
-  wind: number;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 const WeatherWidget: React.FC<WeatherWidgetProps> = ({ 
-  location,
-  longitude,
-  latitude
+  location = 'Mount Abu', 
+  latitude = 24.5927, 
+  longitude = 72.7156 
 }) => {
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    // In a real app, we would fetch actual weather data using the coordinates
-    // For now, we'll simulate a weather API call with mock data
-    const fetchWeatherData = async () => {
-      setLoading(true);
-      
-      // Simulate API delay
-      setTimeout(() => {
-        // Mock weather data
-        const mockWeather: WeatherData = {
-          temp: Math.floor(Math.random() * 15) + 20, // Random temp between 20-35°C
-          condition: ['sunny', 'cloudy', 'rainy', 'snowy', 'windy'][Math.floor(Math.random() * 5)] as any,
-          humidity: Math.floor(Math.random() * 40) + 40, // Random humidity between 40-80%
-          wind: Math.floor(Math.random() * 20) + 5 // Random wind between 5-25 km/h
-        };
-        
-        setWeather(mockWeather);
-        setLoading(false);
-      }, 1000);
-    };
-    
-    if (location) {
-      fetchWeatherData();
-    }
-  }, [location, latitude, longitude]);
-  
-  const getWeatherIcon = (condition: string) => {
-    switch (condition) {
-      case 'sunny':
-        return <Sun className="h-8 w-8 text-yellow-500" />;
-      case 'cloudy':
-        return <Cloud className="h-8 w-8 text-gray-500" />;
-      case 'rainy':
-        return <CloudRain className="h-8 w-8 text-blue-500" />;
-      case 'snowy':
-        return <CloudSnow className="h-8 w-8 text-blue-200" />;
-      case 'windy':
-        return <Wind className="h-8 w-8 text-blue-300" />;
-      default:
-        return <Sun className="h-8 w-8 text-yellow-500" />;
-    }
-  };
-  
-  if (loading) {
+  const { data, isLoading, error } = useWeather({
+    location,
+    latitude,
+    longitude
+  });
+
+  if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-stone-200 p-4">
-        <h3 className="font-semibold mb-3">Weather</h3>
-        <div className="animate-pulse flex items-center justify-between">
-          <div className="h-10 w-10 bg-stone-200 rounded-full"></div>
-          <div className="h-6 w-16 bg-stone-200 rounded"></div>
+      <div className="bg-white rounded-lg border border-stone-200 p-4 animate-pulse">
+        <div className="h-4 bg-stone-100 rounded w-1/3 mb-4"></div>
+        <div className="flex justify-between items-center">
+          <div className="h-8 bg-stone-100 rounded w-1/4"></div>
+          <div className="h-8 bg-stone-100 rounded-full w-8"></div>
         </div>
-        <div className="animate-pulse mt-4">
-          <div className="h-3 w-full bg-stone-200 rounded mb-2"></div>
-          <div className="h-3 w-3/4 bg-stone-200 rounded"></div>
-        </div>
+        <div className="h-4 bg-stone-100 rounded w-1/2 mt-4"></div>
       </div>
     );
   }
-  
+
+  if (error || !data) {
+    return (
+      <div className="bg-white rounded-lg border border-stone-200 p-4">
+        <h3 className="font-semibold mb-3">Weather</h3>
+        <p className="text-sm text-stone-500">Weather information unavailable</p>
+      </div>
+    );
+  }
+
+  // Safely access weather data with fallbacks
+  const weather = data?.current || {};
+  const temp = weather.temp_c || 25;
+  const condition = weather.condition?.text || 'Sunny';
+  const iconUrl = weather.condition?.icon || '';
+  const humidity = weather.humidity || 50;
+  const windSpeed = weather.wind_kph || 5;
+
+  // Helper function to choose weather icon
+  const getWeatherIcon = () => {
+    if (condition.toLowerCase().includes('rain')) {
+      return <Umbrella className="h-6 w-6 text-blue-500" />;
+    } else if (condition.toLowerCase().includes('cloud')) {
+      return <CloudSun className="h-6 w-6 text-stone-500" />;
+    }
+    return <SunMedium className="h-6 w-6 text-yellow-500" />;
+  };
+
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-4">
-      <h3 className="font-semibold mb-3">Current Weather</h3>
-      {weather && (
-        <div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              {getWeatherIcon(weather.condition)}
-              <div className="ml-3">
-                <span className="text-2xl font-bold">{weather.temp}°C</span>
-                <p className="text-sm capitalize text-stone-500">{weather.condition}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-stone-500">Humidity: {weather.humidity}%</p>
-              <p className="text-xs text-stone-500">Wind: {weather.wind} km/h</p>
-            </div>
+      <h3 className="font-semibold mb-3">Weather in {location}</h3>
+      
+      <div className="flex justify-between items-center">
+        <div className="flex items-center">
+          {getWeatherIcon()}
+          <div className="ml-3">
+            <p className="font-semibold text-lg">{Math.round(temp)}°C</p>
+            <p className="text-xs text-stone-500">{condition}</p>
           </div>
-          <p className="text-xs mt-3 text-stone-500">*Data for {location}</p>
         </div>
-      )}
+        {iconUrl && (
+          <img 
+            src={`https:${iconUrl}`} 
+            alt={condition}
+            className="h-10 w-10"
+          />
+        )}
+      </div>
+      
+      <div className="grid grid-cols-2 gap-2 mt-4 text-xs text-stone-600">
+        <div className="flex items-center">
+          <Umbrella className="h-3 w-3 mr-1 text-blue-500" />
+          <span>Humidity: {humidity}%</span>
+        </div>
+        <div className="flex items-center">
+          <Thermometer className="h-3 w-3 mr-1 text-red-500" />
+          <span>Wind: {windSpeed} km/h</span>
+        </div>
+      </div>
     </div>
   );
 };

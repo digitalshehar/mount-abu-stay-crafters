@@ -9,10 +9,14 @@ interface QuickActionsProps {
   onSelectRooms: () => void;
 }
 
-const QuickActions: React.FC<QuickActionsProps> = ({ hotel, onSelectRooms }) => {
+const QuickActions: React.FC<QuickActionsProps> = ({ hotel = {}, onSelectRooms }) => {
   const handleMapView = () => {
     toast.info("Opening map view");
     // Scroll to map section or open map modal
+    const mapElement = document.getElementById('hotel-map');
+    if (mapElement) {
+      mapElement.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const handleShareHotel = () => {
@@ -24,15 +28,12 @@ const QuickActions: React.FC<QuickActionsProps> = ({ hotel, onSelectRooms }) => 
   };
 
   const handleCallHotel = () => {
-    if (hotel?.contactInfo?.phone) {
-      window.location.href = `tel:${hotel.contactInfo.phone}`;
+    const phone = hotel?.contactInfo?.phone;
+    if (phone) {
+      window.location.href = `tel:${phone}`;
     } else {
       toast.info("Contact number not available");
     }
-  };
-
-  const handlePayment = () => {
-    toast.info("Payment options will be available after booking");
   };
 
   return (

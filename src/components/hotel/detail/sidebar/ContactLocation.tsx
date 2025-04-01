@@ -1,101 +1,120 @@
 
 import React from 'react';
-import { Phone, Mail, Globe, MapPin, ExternalLink } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe, ExternalLink, Navigation } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface ContactLocationProps {
-  contactInfo: {
-    phone: string;
-    email: string;
-    website: string;
+  address?: string;
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+    website?: string;
   };
-  address: string;
-  landmarks: {
-    airport: string;
-    busStation: string;
-    cityCenter: string;
+  landmarks?: {
+    airport?: string;
+    busStation?: string;
+    cityCenter?: string;
   };
 }
 
-const ContactLocation: React.FC<ContactLocationProps> = ({
-  contactInfo,
-  address,
-  landmarks
+const ContactLocation: React.FC<ContactLocationProps> = ({ 
+  address = '', 
+  contactInfo = {}, 
+  landmarks = {} 
 }) => {
+  // Safely access nested properties
+  const { phone = '', email = '', website = '' } = contactInfo;
+  const { airport = '', busStation = '', cityCenter = '' } = landmarks;
+  
+  // Generate Google Maps URL for the address
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+  
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-4">
       <h3 className="font-semibold mb-3">Contact & Location</h3>
       
-      {/* Contact Info */}
-      <div className="space-y-2 mb-4">
-        {contactInfo?.phone && (
-          <div className="flex items-center text-sm">
-            <Phone className="h-4 w-4 mr-2 text-blue-500" />
-            <a href={`tel:${contactInfo.phone}`} className="hover:text-blue-600">
-              {contactInfo.phone}
-            </a>
-          </div>
-        )}
-        
-        {contactInfo?.email && (
-          <div className="flex items-center text-sm">
-            <Mail className="h-4 w-4 mr-2 text-blue-500" />
-            <a href={`mailto:${contactInfo.email}`} className="hover:text-blue-600">
-              {contactInfo.email}
-            </a>
-          </div>
-        )}
-        
-        {contactInfo?.website && (
-          <div className="flex items-center text-sm">
-            <Globe className="h-4 w-4 mr-2 text-blue-500" />
-            <a 
-              href={`https://${contactInfo.website}`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-blue-600 flex items-center"
+      {/* Address */}
+      <div className="mb-4">
+        <div className="flex items-start">
+          <MapPin className="h-4 w-4 text-primary mt-1 mr-2 flex-shrink-0" />
+          <div>
+            <p className="text-sm text-stone-600">{address}</p>
+            <Button
+              variant="link"
+              size="sm"
+              className="p-0 h-auto text-blue-600 text-xs flex items-center mt-1"
+              asChild
             >
-              {contactInfo.website}
-              <ExternalLink className="h-3 w-3 ml-1" />
+              <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3 w-3 mr-1" />
+                View on map
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+      
+      {/* Contact info */}
+      <div className="space-y-2 mb-4">
+        {phone && (
+          <div className="flex items-center">
+            <Phone className="h-4 w-4 text-primary mr-2" />
+            <a href={`tel:${phone}`} className="text-sm text-stone-600 hover:text-stone-900">
+              {phone}
+            </a>
+          </div>
+        )}
+        
+        {email && (
+          <div className="flex items-center">
+            <Mail className="h-4 w-4 text-primary mr-2" />
+            <a href={`mailto:${email}`} className="text-sm text-stone-600 hover:text-stone-900">
+              {email}
+            </a>
+          </div>
+        )}
+        
+        {website && (
+          <div className="flex items-center">
+            <Globe className="h-4 w-4 text-primary mr-2" />
+            <a 
+              href={website.startsWith('http') ? website : `https://${website}`} 
+              className="text-sm text-stone-600 hover:text-stone-900"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {website}
             </a>
           </div>
         )}
       </div>
       
-      {/* Address */}
-      {address && (
-        <div className="mb-4">
-          <h4 className="text-sm font-medium mb-1">Address</h4>
-          <div className="flex text-sm">
-            <MapPin className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0 mt-0.5" />
-            <p>{address}</p>
-          </div>
-        </div>
-      )}
-      
-      {/* Landmarks */}
-      {landmarks && (
+      {/* Nearby landmarks */}
+      {(airport || busStation || cityCenter) && (
         <div>
-          <h4 className="text-sm font-medium mb-1">Nearby Landmarks</h4>
-          <ul className="space-y-1 text-sm">
-            {landmarks.airport && (
-              <li className="flex items-center">
-                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                <span>Airport: {landmarks.airport}</span>
-              </li>
+          <h4 className="text-sm font-medium mb-2">Nearby</h4>
+          <div className="space-y-2">
+            {airport && (
+              <div className="flex items-start">
+                <Navigation className="h-3 w-3 text-stone-500 mt-1 mr-2 flex-shrink-0" />
+                <span className="text-xs text-stone-600">{airport}</span>
+              </div>
             )}
-            {landmarks.busStation && (
-              <li className="flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                <span>Bus Station: {landmarks.busStation}</span>
-              </li>
+            
+            {busStation && (
+              <div className="flex items-start">
+                <Navigation className="h-3 w-3 text-stone-500 mt-1 mr-2 flex-shrink-0" />
+                <span className="text-xs text-stone-600">{busStation}</span>
+              </div>
             )}
-            {landmarks.cityCenter && (
-              <li className="flex items-center">
-                <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                <span>City Center: {landmarks.cityCenter}</span>
-              </li>
+            
+            {cityCenter && (
+              <div className="flex items-start">
+                <Navigation className="h-3 w-3 text-stone-500 mt-1 mr-2 flex-shrink-0" />
+                <span className="text-xs text-stone-600">{cityCenter}</span>
+              </div>
             )}
-          </ul>
+          </div>
         </div>
       )}
     </div>

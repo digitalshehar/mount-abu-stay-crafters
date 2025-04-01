@@ -1,69 +1,66 @@
 
 import React from 'react';
-import { Calendar, ArrowRight } from 'lucide-react';
+import { Calendar, ExternalLink } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 interface UpcomingEventsProps {
-  location: string;
+  location?: string;
 }
 
-const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ location }) => {
-  // Mock upcoming events data
+const UpcomingEvents: React.FC<UpcomingEventsProps> = ({ location = 'Mount Abu' }) => {
+  // Mock data for upcoming events
   const events = [
     {
-      id: 1,
       name: "Mount Abu Summer Festival",
-      date: "May 15 - May 17, 2025",
-      distance: "1.5 km"
+      date: "May 15-17, 2025",
+      distance: "1.5 km",
+      url: "https://www.rajasthantourism.gov.in/mount-abu-summer-festival.html"
     },
     {
-      id: 2,
-      name: "Winter Music Carnival",
-      date: "December 21, 2025",
-      distance: "0.8 km"
-    },
-    {
-      id: 3,
       name: "Adhar Devi Fair",
-      date: "August 9, 2025",
-      distance: "3.2 km"
+      date: "June 5-7, 2025",
+      distance: "3 km",
+      url: "#"
     }
   ];
   
-  if (!location) return null;
-  
   return (
     <div className="bg-white rounded-lg border border-stone-200 p-4">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="font-semibold">Upcoming Events</h3>
-        <button className="text-blue-600 text-xs flex items-center">
-          View all
-          <ArrowRight className="h-3 w-3 ml-1" />
-        </button>
-      </div>
+      <h3 className="font-semibold mb-3">Upcoming Events in {location}</h3>
       
-      <div className="space-y-3">
-        {events.map(event => (
-          <div key={event.id} className="border-b border-stone-100 pb-2 last:border-0 last:pb-0">
-            <div className="flex items-start">
-              <Calendar className="h-4 w-4 mt-0.5 text-blue-500 mr-2 flex-shrink-0" />
-              <div>
-                <h4 className="text-sm font-medium">{event.name}</h4>
-                <p className="text-xs text-stone-500 mt-0.5">{event.date}</p>
-                <div className="flex items-center mt-1">
-                  <span className="text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
-                    {event.distance} from hotel
-                  </span>
+      {events.length > 0 ? (
+        <div className="space-y-3">
+          {events.map((event, index) => (
+            <div key={index} className="border-b border-stone-100 last:border-0 pb-2 last:pb-0">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="text-sm font-medium">{event.name}</h4>
+                  <div className="flex items-center text-xs text-stone-500 mt-0.5">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    <span>{event.date}</span>
+                  </div>
                 </div>
+                <span className="text-xs text-stone-500">{event.distance}</span>
               </div>
+              {event.url !== "#" && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="p-0 h-auto text-blue-600 text-xs flex items-center mt-1"
+                  asChild
+                >
+                  <a href={event.url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    More info
+                  </a>
+                </Button>
+              )}
             </div>
-          </div>
-        ))}
-      </div>
-      
-      <Button variant="outline" size="sm" className="w-full mt-3 text-sm">
-        Explore Local Events
-      </Button>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-stone-500">No upcoming events at this time.</p>
+      )}
     </div>
   );
 };
