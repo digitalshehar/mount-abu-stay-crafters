@@ -45,12 +45,7 @@ const SearchContainer = () => {
     type: ""
   });
 
-  const handleSearch = (e?: React.FormEvent) => {
-    // If event exists, prevent default form submission
-    if (e) {
-      e.preventDefault();
-    }
-    
+  const handleSearch = () => {
     // Prepare search parameters based on active tab
     let searchParams = new URLSearchParams();
     
@@ -108,24 +103,7 @@ const SearchContainer = () => {
     }
   };
 
-  // Update form state functions to prevent default form submission
-  const updateHotelSearch = (field: string, value: string) => {
-    setHotelSearch(prev => ({ ...prev, [field]: value }));
-  };
-
-  const updateCarSearch = (field: string, value: string) => {
-    setCarSearch(prev => ({ ...prev, [field]: value }));
-  };
-
-  const updateBikeSearch = (field: string, value: string) => {
-    setBikeSearch(prev => ({ ...prev, [field]: value }));
-  };
-
-  const updateActivitySearch = (field: string, value: string) => {
-    setActivitySearch(prev => ({ ...prev, [field]: value }));
-  };
-
-  // Simple search component displayed on the hero section for mobile
+  // Mobile search trigger component
   const MobileSearchTrigger = () => (
     <div className="w-full px-4 md:hidden">
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -182,7 +160,7 @@ const SearchContainer = () => {
             <div className="mt-6">
               <button
                 type="button"
-                onClick={() => handleSearch()}
+                onClick={handleSearch}
                 className="flex items-center justify-center w-full py-6 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow transition-all text-base"
               >
                 <Search className="h-5 w-5 mr-2" />
@@ -195,6 +173,12 @@ const SearchContainer = () => {
     </div>
   );
 
+  // Handle desktop form submission with prevent default
+  const handleSubmitForm = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch();
+  };
+
   return (
     <div className="max-w-5xl mx-auto animate-fade-in-up animation-delay-400">
       {/* Mobile search trigger */}
@@ -204,7 +188,7 @@ const SearchContainer = () => {
       <div className="hidden md:block bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg">
         <SearchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        <form onSubmit={handleSearch}>
+        <form onSubmit={handleSubmitForm}>
           {activeTab === "hotels" && (
             <HotelSearchForm search={hotelSearch} setSearch={setHotelSearch} />
           )}
@@ -224,7 +208,7 @@ const SearchContainer = () => {
             <ActivitySearchForm search={activitySearch} setSearch={setActivitySearch} />
           )}
 
-          <SearchButton activeTab={activeTab} />
+          <SearchButton activeTab={activeTab} handleSearch={handleSearch} />
         </form>
       </div>
     </div>
