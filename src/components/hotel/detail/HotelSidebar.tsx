@@ -15,6 +15,14 @@ interface HotelSidebarProps {
 }
 
 const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
+  if (!hotel) {
+    return <div className="space-y-6 animate-pulse">
+      <div className="h-64 bg-stone-100 rounded-lg"></div>
+      <div className="h-48 bg-stone-100 rounded-lg"></div>
+      <div className="h-32 bg-stone-100 rounded-lg"></div>
+    </div>;
+  }
+
   return (
     <div className="space-y-6">
       <PriceOverview 
@@ -35,11 +43,11 @@ const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
         hotelName={hotel.name} 
       />
       
-      <QuickActions hotel={hotel} />
+      <QuickActions hotel={hotel} onSelectRooms={onSelectRooms} />
       
       <ContactLocation 
-        contactInfo={hotel.contactInfo} 
         address={hotel.address}
+        contactInfo={hotel.contactInfo}
         landmarks={hotel.landmarks}
       />
       

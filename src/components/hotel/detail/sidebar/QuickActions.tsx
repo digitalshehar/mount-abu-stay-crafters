@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { MapPin, Heart, Share, Phone, Calendar, CreditCard } from 'lucide-react';
 import { toast } from "sonner";
 
 interface QuickActionsProps {
@@ -11,61 +10,73 @@ interface QuickActionsProps {
 }
 
 const QuickActions: React.FC<QuickActionsProps> = ({ hotel, onSelectRooms }) => {
-  const navigate = useNavigate();
-  
-  const handleAskQuestion = () => {
-    toast.info("Question form", {
-      description: "Please navigate to the rooms tab to ask your questions."
-    });
-    onSelectRooms();
+  const handleMapView = () => {
+    toast.info("Opening map view");
+    // Scroll to map section or open map modal
   };
-  
-  const handleBookTransportation = () => {
-    navigate(`/hotel/${hotel.slug}?tab=transport`);
+
+  const handleShareHotel = () => {
+    // Copy URL to clipboard
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Hotel link copied to clipboard");
+    }
   };
-  
-  const handleViewLocalEvents = () => {
-    navigate(`/hotel/${hotel.slug}?tab=events`);
+
+  const handleCallHotel = () => {
+    if (hotel?.contactInfo?.phone) {
+      window.location.href = `tel:${hotel.contactInfo.phone}`;
+    } else {
+      toast.info("Contact number not available");
+    }
   };
-  
-  const handleViewAccessibility = () => {
-    navigate(`/hotel/${hotel.slug}?tab=accessibility`);
+
+  const handlePayment = () => {
+    toast.info("Payment options will be available after booking");
   };
 
   return (
-    <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
-      <div className="flex items-center mb-4">
-        <MessageCircle className="h-5 w-5 text-primary mr-2" />
-        <h3 className="font-semibold text-lg">Quick Actions</h3>
-      </div>
-      <div className="space-y-3">
+    <div className="bg-white rounded-lg border border-stone-200 p-4">
+      <h3 className="font-semibold mb-3 text-sm">Quick Actions</h3>
+      <div className="grid grid-cols-2 gap-2">
         <Button 
           variant="outline" 
-          className="w-full justify-start text-left"
-          onClick={handleAskQuestion}
+          size="sm" 
+          className="flex items-center justify-start gap-2"
+          onClick={handleMapView}
         >
-          Ask a Question
+          <MapPin className="h-4 w-4 text-blue-500" />
+          <span>View on Map</span>
         </Button>
+        
         <Button 
           variant="outline" 
-          className="w-full justify-start text-left"
-          onClick={handleBookTransportation}
+          size="sm" 
+          className="flex items-center justify-start gap-2"
+          onClick={handleShareHotel}
         >
-          Book Transportation
+          <Share className="h-4 w-4 text-green-500" />
+          <span>Share Hotel</span>
         </Button>
+        
         <Button 
           variant="outline" 
-          className="w-full justify-start text-left"
-          onClick={handleViewLocalEvents}
+          size="sm" 
+          className="flex items-center justify-start gap-2"
+          onClick={onSelectRooms}
         >
-          Explore Local Events
+          <Calendar className="h-4 w-4 text-purple-500" />
+          <span>Check Rooms</span>
         </Button>
+        
         <Button 
           variant="outline" 
-          className="w-full justify-start text-left"
-          onClick={handleViewAccessibility}
+          size="sm" 
+          className="flex items-center justify-start gap-2"
+          onClick={handleCallHotel}
         >
-          View Accessibility Features
+          <Phone className="h-4 w-4 text-red-500" />
+          <span>Call Hotel</span>
         </Button>
       </div>
     </div>

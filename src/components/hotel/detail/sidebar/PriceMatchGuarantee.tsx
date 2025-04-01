@@ -1,29 +1,50 @@
 
 import React from 'react';
+import { Shield, Info } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
-const PriceMatchGuarantee: React.FC = () => {
-  const handlePriceMatch = () => {
-    toast.success("Price match request submitted", {
-      description: "We'll review your request and get back to you shortly."
-    });
+interface PriceMatchGuaranteeProps {
+  priceMatch: {
+    available: boolean;
+    description: string;
+    termsUrl: string;
   };
+}
 
+const PriceMatchGuarantee: React.FC<PriceMatchGuaranteeProps> = ({ priceMatch }) => {
+  if (!priceMatch || !priceMatch.available) return null;
+  
   return (
-    <div className="bg-white rounded-lg border border-stone-200 p-6 shadow-sm">
-      <h3 className="font-semibold text-lg mb-3">Price Match Guarantee</h3>
-      <p className="text-sm text-stone-600 mb-2">
-        Found this hotel cheaper elsewhere? We'll match the price and give you an additional 10% off.
+    <div className="bg-white rounded-lg border border-stone-200 p-4">
+      <div className="flex items-center mb-3">
+        <Shield className="h-5 w-5 text-green-600 mr-2" />
+        <h3 className="font-semibold">Price Match Guarantee</h3>
+      </div>
+      
+      <p className="text-sm text-stone-600 mb-3">
+        {priceMatch.description}
       </p>
-      <Button 
-        variant="outline" 
-        size="sm" 
-        className="w-full"
-        onClick={handlePriceMatch}
-      >
-        Claim Price Match
-      </Button>
+      
+      <div className="flex justify-between items-center">
+        <Button
+          variant="link"
+          size="sm"
+          className="p-0 h-auto text-blue-600 text-xs flex items-center"
+          asChild
+        >
+          <a href={priceMatch.termsUrl}>
+            <Info className="h-3 w-3 mr-1" />
+            View terms
+          </a>
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+        >
+          Submit Claim
+        </Button>
+      </div>
     </div>
   );
 };
