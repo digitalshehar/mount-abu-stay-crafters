@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { DateRange } from 'react-day-picker';
 import { format, addDays } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 interface HotelSearchProps {
   search: {
@@ -34,6 +35,7 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
     rooms: 1,
   });
   
+  // Enhanced to handle input validation
   const handleInputChange = (field: string, value: string) => {
     setSearch(prev => ({ ...prev, [field]: value }));
   };
@@ -56,10 +58,33 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
 
   // Update guests string when guest data changes
   const handleGuestChange = (type: 'adults' | 'children' | 'rooms', value: number) => {
-    const newGuestData = { ...guestData, [type]: value };
+    if (value < 0) return;
+    
+    // Add maximum limits
+    const maxValues = {
+      adults: 10,
+      children: 6,
+      rooms: 5
+    };
+    
+    // Apply minimum limits
+    const minValues = {
+      adults: 1,
+      children: 0,
+      rooms: 1
+    };
+    
+    // Ensure the value is within limits
+    const validatedValue = Math.max(
+      minValues[type], 
+      Math.min(maxValues[type], value)
+    );
+    
+    const newGuestData = { ...guestData, [type]: validatedValue };
     setGuestData(newGuestData);
     
-    const guestString = `${newGuestData.adults + newGuestData.children} guests, ${newGuestData.rooms} ${newGuestData.rooms === 1 ? 'room' : 'rooms'}`;
+    const totalGuests = newGuestData.adults + newGuestData.children;
+    const guestString = `${totalGuests} ${totalGuests === 1 ? 'guest' : 'guests'}, ${newGuestData.rooms} ${newGuestData.rooms === 1 ? 'room' : 'rooms'}`;
     handleInputChange("guests", guestString);
   };
 
@@ -86,9 +111,13 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
           <Popover>
             <PopoverTrigger asChild>
               <Button 
+                id="hotel-dates"
                 variant="outline" 
                 role="combobox" 
-                className="w-full justify-start text-left font-normal relative"
+                className={cn(
+                  "w-full justify-start text-left font-normal relative",
+                  !search.dates && "text-muted-foreground"
+                )}
               >
                 <Calendar className="absolute left-3 h-4 w-4 text-gray-500" />
                 <span className="ml-10">
@@ -106,6 +135,18 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
                 disabled={(date) => date < new Date()}
                 className="pointer-events-auto"
               />
+              <div className="border-t p-3 flex justify-end">
+                <Button 
+                  variant="default" 
+                  size="sm"
+                  onClick={() => {
+                    setDateRange(undefined);
+                    handleInputChange("dates", "");
+                  }}
+                >
+                  Clear
+                </Button>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
@@ -117,9 +158,13 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
           <Popover>
             <PopoverTrigger asChild>
               <Button 
+                id="hotel-guests"
                 variant="outline" 
                 role="combobox" 
-                className="w-full justify-start text-left font-normal relative"
+                className={cn(
+                  "w-full justify-start text-left font-normal relative",
+                  !search.guests && "text-muted-foreground"
+                )}
               >
                 <Users className="absolute left-3 h-4 w-4 text-gray-500" />
                 <span className="ml-10">
@@ -136,16 +181,18 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
                       variant="outline" 
                       size="sm" 
                       className="h-7 w-7 p-0"
-                      onClick={() => handleGuestChange('adults', Math.max(1, guestData.adults - 1))}
+                      onClick={() => handleGuestChange('adults', guestData.adults - 1)}
                       type="button"
+                      disabled={guestData.adults <= 1}
                     >-</Button>
                     <span className="w-6 text-center">{guestData.adults}</span>
                     <Button 
                       variant="outline" 
                       size="sm" 
                       className="h-7 w-7 p-0"
-                      onClick={() => handleGuestChange('adults', Math.min(10, guestData.adults + 1))}
+                      onClick={() => handleGuestChange('adults', guestData.adults + 1)}
                       type="button"
+                      disabled={guestData.adults >= 10}
                     >+</Button>
                   </div>
                 </div>
@@ -156,16 +203,18 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
                       variant="outline" 
                       size="sm" 
                       className="h-7 w-7 p-0"
-                      onClick={() => handleGuestChange('children', Math.max(0, guestData.children - 1))}
+                      onClick={() => handleGuestChange('children', guestData.children - 1)}
                       type="button"
+                      disabled={guestData.children <= 0}
                     >-</Button>
                     <span className="w-6 text-center">{guestData.children}</span>
                     <Button 
                       variant="outline" 
                       size="sm" 
                       className="h-7 w-7 p-0"
-                      onClick={() => handleGuestChange('children', Math.min(6, guestData.children + 1))}
+                      onClick={() => handleGuestChange('children', guestData.children + 1)}
                       type="button"
+                      disabled={guestData.children >= 6}
                     >+</Button>
                   </div>
                 </div>
@@ -176,18 +225,32 @@ const HotelSearchForm: React.FC<HotelSearchProps> = ({ search, setSearch }) => {
                       variant="outline" 
                       size="sm" 
                       className="h-7 w-7 p-0"
-                      onClick={() => handleGuestChange('rooms', Math.max(1, guestData.rooms - 1))}
+                      onClick={() => handleGuestChange('rooms', guestData.rooms - 1)}
                       type="button"
+                      disabled={guestData.rooms <= 1}
                     >-</Button>
                     <span className="w-6 text-center">{guestData.rooms}</span>
                     <Button 
                       variant="outline" 
                       size="sm" 
                       className="h-7 w-7 p-0"
-                      onClick={() => handleGuestChange('rooms', Math.min(5, guestData.rooms + 1))}
+                      onClick={() => handleGuestChange('rooms', guestData.rooms + 1)}
                       type="button"
+                      disabled={guestData.rooms >= 5}
                     >+</Button>
                   </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Button 
+                    className="w-full"
+                    variant="default"
+                    onClick={() => {
+                      document.dispatchEvent(new Event('click')); // Close popover
+                    }}
+                  >
+                    Apply
+                  </Button>
                 </div>
               </div>
             </PopoverContent>

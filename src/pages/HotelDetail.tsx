@@ -23,7 +23,7 @@ const HotelDetail = () => {
   const { user } = useAuth();
   const { favorites, removeFromFavorites, addToFavorites } = useFavorites(user);
   
-  // Use our new custom booking hook
+  // Use our custom booking hook
   const {
     showBookingForm,
     setShowBookingForm,
@@ -58,6 +58,19 @@ const HotelDetail = () => {
       setActiveTab(tabParam);
     }
   }, [window.location.search]);
+
+  // Update URL when tab changes without full page refresh
+  const handleTabChange = (tabValue: string) => {
+    setActiveTab(tabValue);
+    
+    // Update URL query parameter
+    const queryParams = new URLSearchParams(window.location.search);
+    queryParams.set('tab', tabValue);
+    
+    // Use history API to update URL without reload
+    const newUrl = `${window.location.pathname}?${queryParams.toString()}`;
+    window.history.pushState({ path: newUrl }, '', newUrl);
+  };
 
   // Handle error case - redirect to not found page
   useEffect(() => {
@@ -109,7 +122,7 @@ const HotelDetail = () => {
         <HotelMainContent
           hotel={hotelWithCoordinates}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
           isFavorite={isFavorite}
           onToggleFavorite={handleToggleFavorite}
           showFullGallery={showFullGallery}

@@ -4,8 +4,6 @@ import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Filter, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,15 +15,13 @@ import { useEnhancedFilters } from "@/hooks/useEnhancedFilters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import EnhancedFilters from "@/components/hotels/EnhancedFilters";
 import { HotelCompareDrawer } from "@/components/hotels/comparison/HotelCompareDrawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import HotelGrid from "@/components/hotels/content/HotelGrid";
 import HotelSkeletonList from "@/components/hotels/content/HotelSkeletonList";
 import NoHotelsFound from "@/components/hotels/content/NoHotelsFound";
+import HotelListHeader from "@/components/hotels/content/HotelListHeader";
+import FilterTags from "@/components/hotels/content/FilterTags";
+
+const defaultPriceRange = [1000, 15000];
 
 const EnhancedHotels = () => {
   const isMobile = useIsMobile();
@@ -136,13 +132,6 @@ const EnhancedHotels = () => {
 
   const isInCompare = (id: number) => compareList.includes(id);
 
-  const sortOptions = [
-    { label: "Recommended", value: "recommended" },
-    { label: "Price: Low to High", value: "price-low" },
-    { label: "Price: High to Low", value: "price-high" },
-    { label: "Rating", value: "rating" }
-  ];
-
   return (
     <>
       <div className="min-h-screen flex flex-col">
@@ -181,85 +170,25 @@ const EnhancedHotels = () => {
 
                 {/* Hotels content section */}
                 <div className="space-y-4">
-                  <div className="flex flex-wrap justify-between items-center gap-3">
-                    <div className="flex items-center">
-                      <h1 className="text-xl sm:text-2xl font-bold">
-                        Hotels in Mount Abu {!isLoading && `(${filteredHotels.length})`}
-                      </h1>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      {isMobile && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setIsFilterOpen(true)}
-                          className="flex items-center gap-1"
-                        >
-                          <Filter className="h-4 w-4" />
-                          Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
-                        </Button>
-                      )}
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" size="sm" className="flex items-center gap-1">
-                            <ArrowUpDown className="h-4 w-4" />
-                            Sort
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {sortOptions.map(option => (
-                            <DropdownMenuItem
-                              key={option.value}
-                              onClick={() => setSortOption(option.value)}
-                              className={sortOption === option.value ? "bg-stone-100" : ""}
-                            >
-                              {option.label}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      
-                      {compareList.length > 0 && (
-                        <Button
-                          size="sm"
-                          onClick={() => setIsCompareDrawerOpen(true)}
-                        >
-                          Compare ({compareList.length})
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                  <HotelListHeader
+                    filteredHotelCount={filteredHotels.length}
+                    isLoading={isLoading}
+                    activeFilterCount={activeFilterCount}
+                    compareCount={compareList.length}
+                    sortOption={sortOption}
+                    onToggleFilter={() => setIsFilterOpen(true)}
+                    onToggleCompare={() => setIsCompareDrawerOpen(true)}
+                    setSortOption={setSortOption}
+                  />
 
                   {/* Active filters display */}
-                  {activeFilterCount > 0 && (
-                    <div className="flex flex-wrap items-center gap-2 py-2">
-                      {selectedStars.length > 0 && (
-                        <div className="text-sm bg-stone-100 px-3 py-1 rounded-full">
-                          Stars: {selectedStars.join(', ')}
-                        </div>
-                      )}
-                      {selectedAmenities.length > 0 && (
-                        <div className="text-sm bg-stone-100 px-3 py-1 rounded-full">
-                          Amenities: {selectedAmenities.length}
-                        </div>
-                      )}
-                      {(priceRange[0] !== 1000 || priceRange[1] !== 15000) && (
-                        <div className="text-sm bg-stone-100 px-3 py-1 rounded-full">
-                          Price: ₹{priceRange[0]} - ₹{priceRange[1]}
-                        </div>
-                      )}
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={clearFilters}
-                        className="text-xs text-stone-500 hover:text-primary"
-                      >
-                        Clear all
-                      </Button>
-                    </div>
-                  )}
+                  <FilterTags
+                    selectedStars={selectedStars}
+                    selectedAmenities={selectedAmenities}
+                    priceRange={priceRange}
+                    defaultPriceRange={defaultPriceRange}
+                    onClearFilters={clearFilters}
+                  />
 
                   {isLoading ? (
                     <HotelSkeletonList count={6} />

@@ -1,43 +1,153 @@
 
-import React from "react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Clock, Tag, Gift, Calendar, ChevronRight, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
-interface OfferProps {
-  label: string;
+interface SpecialOffer {
+  id: string;
   title: string;
   description: string;
+  discount: number;
+  expiresAt: string;
+  code?: string;
+  type: 'flash' | 'seasonal' | 'loyalty' | 'package';
 }
 
-const Offer = ({ label, title, description }: OfferProps) => (
-  <div className="bg-white p-4 rounded-md border border-blue-100 flex flex-col sm:flex-row items-start gap-4">
-    <div className="bg-blue-100 text-blue-700 p-2 rounded-md font-semibold">
-      {label}
-    </div>
-    <div>
-      <h4 className="font-medium">{title}</h4>
-      <p className="text-sm text-stone-600">{description}</p>
-    </div>
-    <Button size="sm" className="ml-auto mt-2 sm:mt-0">Apply</Button>
-  </div>
-);
-
-const SpecialOffers = () => {
+const SpecialOffers: React.FC = () => {
+  // Mock data for special offers
+  const offers: SpecialOffer[] = [
+    {
+      id: "1",
+      title: "Flash Deal - 48 Hours Only!",
+      description: "Book now and save 25% on your stay. Limited time offer!",
+      discount: 25,
+      expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+      code: "FLASH25",
+      type: "flash"
+    },
+    {
+      id: "2",
+      title: "Summer Special",
+      description: "Get 15% off on all bookings for summer months",
+      discount: 15,
+      expiresAt: "2023-09-30T00:00:00Z",
+      type: "seasonal"
+    },
+    {
+      id: "3",
+      title: "Loyalty Member Discount",
+      description: "Exclusive 10% discount for our loyalty program members",
+      discount: 10,
+      expiresAt: "2023-12-31T00:00:00Z",
+      code: "LOYAL10",
+      type: "loyalty"
+    },
+    {
+      id: "4",
+      title: "Spa & Dining Package",
+      description: "Book a room and get a complimentary spa session & dinner",
+      discount: 20,
+      expiresAt: "2023-11-30T00:00:00Z",
+      type: "package"
+    }
+  ];
+  
+  // Calculate time remaining for flash deals
+  const getTimeRemaining = (expiresAt: string) => {
+    const now = new Date();
+    const expiry = new Date(expiresAt);
+    const diff = expiry.getTime() - now.getTime();
+    
+    if (diff <= 0) return 'Expired';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${hours}h ${minutes}m`;
+  };
+  
+  // Get icon based on offer type
+  const getOfferIcon = (type: string) => {
+    switch (type) {
+      case 'flash':
+        return <Clock className="h-5 w-5 mr-2 text-red-500" />;
+      case 'seasonal':
+        return <Calendar className="h-5 w-5 mr-2 text-green-500" />;
+      case 'loyalty':
+        return <Shield className="h-5 w-5 mr-2 text-blue-500" />;
+      case 'package':
+        return <Gift className="h-5 w-5 mr-2 text-purple-500" />;
+      default:
+        return <Tag className="h-5 w-5 mr-2 text-blue-500" />;
+    }
+  };
+  
+  // Get badge color based on offer type
+  const getBadgeStyle = (type: string) => {
+    switch (type) {
+      case 'flash':
+        return "bg-red-100 text-red-800 border-red-200";
+      case 'seasonal':
+        return "bg-green-100 text-green-800 border-green-200";
+      case 'loyalty':
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case 'package':
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      default:
+        return "bg-blue-100 text-blue-800 border-blue-200";
+    }
+  };
+  
   return (
-    <div className="mt-8 bg-blue-50 p-6 rounded-lg border border-blue-100">
-      <h3 className="text-lg font-semibold text-blue-800 mb-4">Special Offers</h3>
-      <div className="space-y-4">
-        <Offer 
-          label="Save 15%" 
-          title="Early Bird Special" 
-          description="Book 30 days in advance and save 15% on your stay."
-        />
-        
-        <Offer 
-          label="Free Night" 
-          title="Stay 4, Pay 3" 
-          description="Book 4 nights and get 1 night completely free."
-        />
+    <div className="bg-white rounded-lg border border-stone-200 overflow-hidden shadow-sm mb-6">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-3 text-white flex justify-between items-center">
+        <h3 className="font-semibold text-sm">Special Offers & Deals</h3>
+        <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30 border-none">
+          {offers.length} Available
+        </Badge>
       </div>
+      
+      <div>
+        {offers.map((offer) => (
+          <div key={offer.id} className="border-b last:border-b-0 border-stone-100 p-3.5">
+            <div className="flex">
+              {getOfferIcon(offer.type)}
+              <div className="flex-1">
+                <div className="flex justify-between items-start">
+                  <h4 className="font-medium text-sm">{offer.title}</h4>
+                  <Badge variant="outline" className={getBadgeStyle(offer.type)}>
+                    {offer.type === 'flash' ? (
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {getTimeRemaining(offer.expiresAt)}
+                      </span>
+                    ) : (
+                      offer.discount + '% OFF'
+                    )}
+                  </Badge>
+                </div>
+                
+                <p className="text-xs text-stone-500 mt-1">{offer.description}</p>
+                
+                {offer.code && (
+                  <div className="mt-2 bg-stone-50 p-1.5 rounded flex justify-between items-center">
+                    <div className="text-xs text-stone-500">Use code:</div>
+                    <div className="font-mono text-xs font-bold bg-stone-100 px-2 py-0.5 rounded">
+                      {offer.code}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <Button variant="ghost" size="sm" className="w-full flex items-center justify-center py-2 text-blue-600">
+        See all offers
+        <ChevronRight className="h-4 w-4 ml-1" />
+      </Button>
     </div>
   );
 };

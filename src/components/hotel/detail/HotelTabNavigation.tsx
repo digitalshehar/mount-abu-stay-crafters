@@ -1,45 +1,39 @@
 
 import React from 'react';
-import { cn } from "@/lib/utils";
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Bed, Coffee, AlertCircle, Star, MapPin, Bus, Shield, ChartLine } from 'lucide-react';
 
-export interface HotelTabNavigationProps {
+interface HotelTabNavigationProps {
   activeTab: string;
   onChange: (value: string) => void;
 }
 
-const HotelTabNavigation: React.FC<HotelTabNavigationProps> = ({ 
-  activeTab,
-  onChange
-}) => {
+const HotelTabNavigation: React.FC<HotelTabNavigationProps> = ({ activeTab, onChange }) => {
   const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'rooms', label: 'Rooms' },
-    { id: 'amenities', label: 'Amenities' },
-    { id: 'policies', label: 'Policies' },
-    { id: 'reviews', label: 'Reviews' },
-    { id: 'location', label: 'Location' },
-    { id: 'attractions', label: 'Attractions' },
+    { id: 'rooms', label: 'Rooms', icon: <Bed className="h-4 w-4 mr-2" /> },
+    { id: 'amenities', label: 'Amenities', icon: <Coffee className="h-4 w-4 mr-2" /> },
+    { id: 'policies', label: 'Policies', icon: <AlertCircle className="h-4 w-4 mr-2" /> },
+    { id: 'reviews', label: 'Reviews', icon: <Star className="h-4 w-4 mr-2" /> },
+    { id: 'attractions', label: 'Attractions', icon: <MapPin className="h-4 w-4 mr-2" /> },
+    { id: 'transport', label: 'Transport', icon: <Bus className="h-4 w-4 mr-2" /> },
+    { id: 'safety', label: 'Safety', icon: <Shield className="h-4 w-4 mr-2" /> },
+    { id: 'price-history', label: 'Price History', icon: <ChartLine className="h-4 w-4 mr-2" /> },
   ];
 
   return (
-    <div className="border-b border-stone-200 mb-8">
-      <div className="flex gap-2 md:gap-6 overflow-x-auto no-scrollbar">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => onChange(tab.id)}
-            className={cn(
-              "px-4 py-3 text-sm md:text-base whitespace-nowrap transition-colors",
-              activeTab === tab.id
-                ? "text-primary font-medium border-b-2 border-primary"
-                : "text-stone-500 hover:text-stone-800"
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-    </div>
+    <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 w-full bg-muted mb-6">
+      {tabs.map((tab) => (
+        <TabsTrigger 
+          key={tab.id} 
+          value={tab.id}
+          className={`flex items-center`}
+          onClick={() => onChange(tab.id)}
+        >
+          {tab.icon}
+          <span>{tab.label}</span>
+        </TabsTrigger>
+      ))}
+    </TabsList>
   );
 };
 
