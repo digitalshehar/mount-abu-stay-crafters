@@ -1,112 +1,109 @@
 
-import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
-  Home, Hotel, Bike, Car, BookOpen, Users, 
-  Calendar, Settings, ChevronLeft, LogOut 
-} from "lucide-react";
-import Logo from "@/components/Logo";
+  LayoutDashboard, 
+  Hotel, 
+  CalendarRange, 
+  Users, 
+  Settings, 
+  FileText, 
+  Car, 
+  Bike, 
+  Mountains 
+} from 'lucide-react';
 
-interface SidebarProps {
-  collapsed: boolean;
-  onToggleCollapse?: () => void;
-}
-
-const Sidebar = ({ collapsed, onToggleCollapse }: SidebarProps) => {
+const Sidebar: React.FC = () => {
   const location = useLocation();
-  
-  // Navigation items with their respective paths and icons
-  const navItems = [
-    { name: 'Dashboard', path: '/admin/dashboard', icon: Home },
-    { name: 'Hotels', path: '/admin/hotels', icon: Hotel },
-    { name: 'Bike Rentals', path: '/admin/bikes', icon: Bike },
-    { name: 'Car Rentals', path: '/admin/cars', icon: Car },
-    { name: 'Blog', path: '/admin/blog', icon: BookOpen },
-    { name: 'Bookings', path: '/admin/bookings', icon: Calendar },
-    { name: 'Users', path: '/admin/users', icon: Users },
-    { name: 'Settings', path: '/admin/settings', icon: Settings },
-  ];
-  
-  // Helper function to check if a path is active
-  const isActive = (path: string) => {
-    if (path === '/admin/dashboard') {
-      return location.pathname === path;
-    }
-    return location.pathname.startsWith(path);
-  };
-  
-  return (
-    <div
-      className={cn(
-        "flex flex-col h-screen bg-white border-r border-gray-200 dark:bg-stone-900 dark:border-stone-800 transition-all duration-300",
-        collapsed ? "w-[70px]" : "w-64"
-      )}
-    >
-      {/* Sidebar Header with Logo */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-stone-800">
-        <div className="flex items-center">
-          <Logo className="h-8 w-8" />
-          {!collapsed && (
-            <span className="ml-2 text-xl font-semibold">Admin</span>
-          )}
-        </div>
-        {onToggleCollapse && (
-          <button
-            onClick={onToggleCollapse}
-            className="p-1 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800"
-          >
-            <ChevronLeft
-              className={cn(
-                "h-5 w-5 transition-transform",
-                collapsed ? "rotate-180" : ""
-              )}
-            />
-          </button>
-        )}
-      </div>
+  const currentPath = location.pathname;
 
-      {/* Navigation Links */}
-      <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-2 px-2">
-          {navItems.map((item) => (
+  const isActive = (path: string) => {
+    return currentPath.startsWith(path);
+  };
+
+  const menuItems = [
+    { 
+      name: 'Dashboard', 
+      path: '/admin/dashboard', 
+      icon: <LayoutDashboard className="h-5 w-5" /> 
+    },
+    { 
+      name: 'Hotels', 
+      path: '/admin/hotels', 
+      icon: <Hotel className="h-5 w-5" /> 
+    },
+    { 
+      name: 'Bookings', 
+      path: '/admin/bookings', 
+      icon: <CalendarRange className="h-5 w-5" /> 
+    },
+    { 
+      name: 'Car Rentals', 
+      path: '/admin/car-rentals', 
+      icon: <Car className="h-5 w-5" /> 
+    },
+    { 
+      name: 'Bike Rentals', 
+      path: '/admin/bike-rentals', 
+      icon: <Bike className="h-5 w-5" /> 
+    },
+    { 
+      name: 'Adventures', 
+      path: '/admin/adventures', 
+      icon: <Mountains className="h-5 w-5" /> 
+    },
+    { 
+      name: 'Users', 
+      path: '/admin/users', 
+      icon: <Users className="h-5 w-5" /> 
+    },
+    { 
+      name: 'Content', 
+      path: '/admin/blog', 
+      icon: <FileText className="h-5 w-5" /> 
+    },
+    { 
+      name: 'Settings', 
+      path: '/admin/settings', 
+      icon: <Settings className="h-5 w-5" /> 
+    },
+  ];
+
+  return (
+    <div className="h-screen w-64 bg-white border-r border-stone-200 flex flex-col py-5">
+      <div className="px-6 mb-8">
+        <h1 className="text-xl font-bold">Admin Panel</h1>
+      </div>
+      
+      <nav className="flex-1 px-3">
+        <ul className="space-y-1">
+          {menuItems.map((item) => (
             <li key={item.path}>
-              <NavLink
+              <Link
                 to={item.path}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center py-2 px-3 rounded-md transition-colors",
-                    isActive
-                      ? "bg-primary/10 text-primary dark:bg-primary/20"
-                      : "text-gray-700 hover:bg-gray-100 dark:text-stone-300 dark:hover:bg-stone-800",
-                    collapsed ? "justify-center" : ""
-                  )
-                }
+                className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive(item.path)
+                    ? "bg-primary text-primary-foreground"
+                    : "text-stone-700 hover:bg-stone-100"
+                }`}
               >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!collapsed && (
-                  <span className="ml-3 text-sm font-medium">{item.name}</span>
-                )}
-              </NavLink>
+                <span className="mr-3">{item.icon}</span>
+                {item.name}
+              </Link>
             </li>
           ))}
         </ul>
       </nav>
-
-      {/* Bottom section */}
-      <div className="p-4 border-t border-gray-200 dark:border-stone-800">
-        <div
-          className={cn(
-            "flex items-center",
-            collapsed ? "justify-center" : ""
-          )}
-        >
-          <LogOut className="h-5 w-5 text-gray-500 dark:text-stone-400" />
-          {!collapsed && (
-            <span className="ml-3 text-sm font-medium text-gray-700 dark:text-stone-300">
-              Logout
-            </span>
-          )}
+      
+      <div className="px-6 mt-auto pt-6 border-t border-stone-200">
+        <div className="flex items-center">
+          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+            A
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium">Admin User</p>
+            <p className="text-xs text-stone-500">admin@example.com</p>
+          </div>
         </div>
       </div>
     </div>

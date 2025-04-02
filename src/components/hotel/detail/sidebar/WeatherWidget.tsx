@@ -2,19 +2,15 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Cloud, Droplets, Wind, Thermometer } from 'lucide-react';
-import { useWeather } from '@/hooks/useWeather';
+import { useWeather, LocationParam } from '@/hooks/useWeather';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface WeatherWidgetProps {
-  location?: {
-    location: string;
-    latitude: number;
-    longitude: number;
-  };
+  location?: LocationParam;
 }
 
 const WeatherWidget: React.FC<WeatherWidgetProps> = ({ location }) => {
-  // Fix: Pass location object directly instead of trying to access data.location
+  // Pass location object directly to useWeather hook
   const { weather, isLoading, error } = useWeather(location || "Mount Abu");
 
   if (isLoading) {

@@ -9,9 +9,10 @@ import { Hotel } from '@/types';
 
 interface HotelSidebarProps {
   hotel: Hotel;
+  onSelectRooms?: () => void;
 }
 
-const HotelSidebar: React.FC<HotelSidebarProps> = ({ hotel }) => {
+const HotelSidebar: React.FC<HotelSidebarProps> = ({ hotel, onSelectRooms }) => {
   // Prepare location object for weather widget
   const locationObj = {
     location: hotel?.location || 'Mount Abu',
@@ -21,8 +22,8 @@ const HotelSidebar: React.FC<HotelSidebarProps> = ({ hotel }) => {
 
   return (
     <div className="space-y-6">
-      {/* Booking form */}
       <div className="sticky top-6">
+        {/* Booking form */}
         <BookingForm hotel={hotel} />
         
         {/* Weather widget */}
@@ -46,7 +47,13 @@ const HotelSidebar: React.FC<HotelSidebarProps> = ({ hotel }) => {
         
         {/* Contact info */}
         <div className="mt-6">
-          <HotelContact />
+          <HotelContact
+            phone={hotel?.contactInfo?.phone}
+            email={hotel?.contactInfo?.email}
+            website={hotel?.contactInfo?.website}
+            checkInTime={hotel?.checkInTime}
+            checkOutTime={hotel?.checkOutTime}
+          />
         </div>
       </div>
     </div>
