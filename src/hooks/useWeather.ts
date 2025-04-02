@@ -15,8 +15,12 @@ export interface WeatherData {
   lastUpdated: string;
 }
 
-// Update to only accept a string parameter
-export const useWeather = (location: string = "Mount Abu") => {
+// Update to use a string parameter or a location object
+export const useWeather = (locationParam: string | {
+  location: string;
+  latitude?: number;
+  longitude?: number;
+} = "Mount Abu") => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,9 +32,14 @@ export const useWeather = (location: string = "Mount Abu") => {
       setError(null);
       
       try {
+        // Get the location string regardless of parameter type
+        const locationName = typeof locationParam === 'string' 
+          ? locationParam 
+          : locationParam.location;
+
         // Demo data for location - In a real app, you would fetch from a weather API
         const mockData: WeatherData = {
-          location: location,
+          location: locationName,
           temperature: 24,
           description: "Sunny with some clouds",
           icon: "cloud-sun",
@@ -62,7 +71,7 @@ export const useWeather = (location: string = "Mount Abu") => {
     const intervalId = setInterval(fetchWeather, 30 * 60 * 1000);
     
     return () => clearInterval(intervalId);
-  }, [location, toast]);
+  }, [typeof locationParam === 'string' ? locationParam : locationParam.location, toast]);
 
   return { weather, isLoading, error };
 };

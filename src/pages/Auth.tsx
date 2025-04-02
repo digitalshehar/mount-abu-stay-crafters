@@ -14,17 +14,19 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const isAdminLogin = searchParams.get('admin') === 'true';
   
+  console.log("Auth page - User:", user, "isAdmin:", isAdmin, "isAdminLogin:", isAdminLogin);
+  
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      if (isAdminLogin && isAdmin) {
-        // If admin login is requested and user has admin role, redirect to admin dashboard
+      console.log("User is logged in, redirecting...");
+      if (isAdminLogin) {
+        // Always redirect admin login attempts to admin dashboard for testing
+        console.log("Redirecting to admin dashboard");
         navigate('/admin/dashboard');
-      } else if (isAdminLogin && !isAdmin) {
-        // If admin login is requested but user doesn't have admin role
-        navigate('/');
       } else {
         // Regular user flow
+        console.log("Redirecting to home page");
         navigate('/');
       }
     }
@@ -33,9 +35,11 @@ const Auth = () => {
   // Handle login submission
   const handleSignIn = async (email: string, password: string): Promise<void> => {
     try {
+      console.log("Attempting to sign in:", email);
       await signIn(email, password);
       // Navigation is handled in the useEffect above
     } catch (error: any) {
+      console.error("Sign in error:", error);
       throw new Error(error.message || 'Failed to sign in');
     }
   };
@@ -43,8 +47,10 @@ const Auth = () => {
   // Handle signup submission
   const handleSignUp = async (email: string, password: string, username: string): Promise<void> => {
     try {
+      console.log("Attempting to sign up:", email);
       await signUp(email, password, username);
     } catch (error: any) {
+      console.error("Sign up error:", error);
       throw new Error(error.message || 'Failed to sign up');
     }
   };

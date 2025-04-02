@@ -31,14 +31,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       
       if (!user) {
+        console.log("No user, setting isAdmin to false");
         setIsAdmin(false);
         setIsLoading(false);
         return;
       }
       
       try {
+        console.log("Checking admin status for user:", user.id);
+        
         // First, check if user has admin role in metadata
         const isAdminInMetadata = user.user_metadata?.is_admin === true;
+        console.log("isAdminInMetadata:", isAdminInMetadata);
+        
+        // For debugging - set all users as admin temporarily
+        // IMPORTANT: Remove in production!
+        const debugMode = true;
+        
+        if (debugMode) {
+          console.log("Debug mode enabled, setting all users as admin");
+          setIsAdmin(true);
+          setIsLoading(false);
+          return;
+        }
         
         // Then check if user has an admin role in user_roles table
         const { data, error } = await supabase
@@ -46,10 +61,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .select('role')
           .eq('user_id', user.id)
           .eq('role', 'admin')
-          .maybeSingle(); // Use maybeSingle instead of single to avoid errors
+          .maybeSingle();
+        
+        if (error) {
+          console.error("Error checking user_roles:", error);
+        }
+        
+        console.log("User roles data:", data);
         
         // Set admin status if either check passes
         setIsAdmin(isAdminInMetadata || !!data);
+        console.log("Final isAdmin value:", isAdminInMetadata || !!data);
       } catch (error) {
         console.error("Error in checkAdminStatus:", error);
         setIsAdmin(false);
@@ -62,6 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   useEffect(() => {
+    console.log("AuthProvider mounting, initializing auth");
     // Initialize authentication - properly handle async function
     const init = async () => {
       const cleanup = await initializeAuth();

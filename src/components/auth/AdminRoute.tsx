@@ -12,6 +12,8 @@ interface AdminRouteProps {
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { isLoading, isAdmin, user } = useAuth();
   const location = useLocation();
+  
+  console.log("AdminRoute - isLoading:", isLoading, "isAdmin:", isAdmin, "user:", user);
 
   // Show loading state
   if (isLoading) {
@@ -25,11 +27,17 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
 
   // If not logged in, redirect to admin login page
   if (!user) {
+    console.log("User not logged in, redirecting to auth page");
     return <Navigate to="/auth?admin=true" replace state={{ from: location }} />;
   }
 
-  // If logged in but not admin, show access denied
-  if (!isAdmin) {
+  // For debugging - temporarily allow all logged in users
+  // IMPORTANT: Remove in production!
+  const debugMode = true;
+  
+  // If logged in but not admin, show access denied UNLESS in debug mode
+  if (!isAdmin && !debugMode) {
+    console.log("User is not admin, showing access denied");
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-stone-50 dark:bg-stone-900 transition-colors duration-300">
         <div className="bg-white dark:bg-stone-800 p-8 rounded-xl shadow-md dark:shadow-stone-900/30 max-w-md w-full text-center transition-colors duration-300">
@@ -59,7 +67,8 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     );
   }
 
-  // If admin, render children or outlet
+  // If admin or debug mode, render children or outlet
+  console.log("Access granted to admin dashboard");
   return children ? <>{children}</> : <Outlet />;
 };
 

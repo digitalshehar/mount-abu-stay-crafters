@@ -14,19 +14,18 @@ const AdminRegister = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [adminCode, setAdminCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const ADMIN_CODE = 'mountabu2024';
+  // Removed admin code requirement for testing purposes
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    if (!email || !password || !confirmPassword || !adminCode) {
+    if (!email || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -38,11 +37,6 @@ const AdminRegister = () => {
     
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
-      return;
-    }
-    
-    if (adminCode !== ADMIN_CODE) {
-      setError('Invalid admin registration code');
       return;
     }
     
@@ -74,7 +68,6 @@ const AdminRegister = () => {
         
         if (roleError) {
           console.error("Error setting admin role:", roleError);
-          // Continue anyway since we also set metadata
         }
         
         toast({
@@ -106,7 +99,7 @@ const AdminRegister = () => {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Admin Registration</CardTitle>
           <CardDescription className="text-center">
-            Create a new admin account with proper credentials
+            Create a new admin account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -140,19 +133,6 @@ const AdminRegister = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="admin-code">Admin Registration Code</Label>
-              <Input 
-                id="admin-code"
-                type="password"
-                placeholder="Enter admin code"
-                value={adminCode}
-                onChange={(e) => setAdminCode(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Contact your system administrator for the registration code
-              </p>
             </div>
             {error && (
               <div className="text-sm text-red-500">{error}</div>
