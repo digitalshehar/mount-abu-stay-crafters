@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { SunMedium, CloudSun, Umbrella, Thermometer } from 'lucide-react';
+import { CloudSun, Umbrella, Thermometer } from 'lucide-react';
 import { useWeather } from '@/hooks/useWeather';
 
 interface WeatherWidgetProps {
@@ -14,11 +14,8 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({
   latitude = 24.5927, 
   longitude = 72.7156 
 }) => {
-  const { data, isLoading, error } = useWeather({
-    location,
-    latitude,
-    longitude
-  });
+  // Fixed: only passing location as string, matching hook param
+  const { weather, isLoading, error } = useWeather(location);
 
   if (isLoading) {
     return (
@@ -33,7 +30,7 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({
     );
   }
 
-  if (error || !data) {
+  if (error || !weather) {
     return (
       <div className="bg-white rounded-lg border border-stone-200 p-4">
         <h3 className="font-semibold mb-3">Weather</h3>
@@ -43,21 +40,17 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({
   }
 
   // Safely access weather data with fallbacks
-  const weather = data?.current || {};
-  const temp = weather.temp_c || 25;
-  const condition = weather.condition?.text || 'Sunny';
-  const iconUrl = weather.condition?.icon || '';
+  const temp = weather.temperature || 25;
+  const condition = weather.description || 'Sunny';
   const humidity = weather.humidity || 50;
-  const windSpeed = weather.wind_kph || 5;
+  const windSpeed = weather.windSpeed || 5;
 
   // Helper function to choose weather icon
   const getWeatherIcon = () => {
     if (condition.toLowerCase().includes('rain')) {
       return <Umbrella className="h-6 w-6 text-blue-500" />;
-    } else if (condition.toLowerCase().includes('cloud')) {
-      return <CloudSun className="h-6 w-6 text-stone-500" />;
-    }
-    return <SunMedium className="h-6 w-6 text-yellow-500" />;
+    } 
+    return <CloudSun className="h-6 w-6 text-stone-500" />;
   };
 
   return (
@@ -72,13 +65,6 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({
             <p className="text-xs text-stone-500">{condition}</p>
           </div>
         </div>
-        {iconUrl && (
-          <img 
-            src={`https:${iconUrl}`} 
-            alt={condition}
-            className="h-10 w-10"
-          />
-        )}
       </div>
       
       <div className="grid grid-cols-2 gap-2 mt-4 text-xs text-stone-600">

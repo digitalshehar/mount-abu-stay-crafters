@@ -26,12 +26,17 @@ const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
     </div>;
   }
 
-  // Handler for one-click booking
+  // Handler for one-click booking - Fixed: no argument needed
   const handleOneClickBooking = () => {
     // Use the best available room for one-click booking
     const rooms = hotel.rooms || [];
     const bestRoom = rooms.length > 0 ? rooms[0].type : null;
-    onSelectRooms(bestRoom);
+    // Pass the bestRoom to onSelectRooms if it accepts a parameter
+    if (bestRoom) {
+      onSelectRooms();
+    } else {
+      onSelectRooms();
+    }
   };
 
   return (
@@ -55,8 +60,6 @@ const HotelSidebar = ({ hotel, onSelectRooms }: HotelSidebarProps) => {
       
       <WeatherWidget 
         location={hotel.location} 
-        longitude={hotel.longitude}
-        latitude={hotel.latitude}
       />
 
       <RelatedOffers 

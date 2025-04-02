@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Star, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ReviewForm from "./ReviewForm";
 
 interface Review {
   name: string;
@@ -15,11 +16,20 @@ interface HotelReviewsProps {
   rating: number;
   reviewCount: number;
   reviews: Review[];
+  hotelId?: number;
+  hotelName?: string;
 }
 
-const HotelReviews = ({ rating = 0, reviewCount = 0, reviews = [] }: HotelReviewsProps) => {
+const HotelReviews = ({ 
+  rating = 0, 
+  reviewCount = 0, 
+  reviews = [],
+  hotelId = 1,
+  hotelName = "Hotel"
+}: HotelReviewsProps) => {
   const [sortBy, setSortBy] = useState<string>("newest");
   const [filterRating, setFilterRating] = useState<string>("all");
+  const [showReviewForm, setShowReviewForm] = useState<boolean>(false);
   
   // Ensure reviews is always an array
   const safeReviews = Array.isArray(reviews) ? reviews : [];
@@ -46,6 +56,11 @@ const HotelReviews = ({ rating = 0, reviewCount = 0, reviews = [] }: HotelReview
     }
     return 0;
   });
+  
+  const handleReviewSubmitSuccess = () => {
+    setShowReviewForm(false);
+    // In a real application, you'd refresh the reviews here
+  };
 
   return (
     <div>
@@ -180,12 +195,27 @@ const HotelReviews = ({ rating = 0, reviewCount = 0, reviews = [] }: HotelReview
         )}
       </div>
       
-      {/* Write a review button */}
-      <div className="mt-8 text-center">
-        <Button className="px-8">
-          Write a Review
-        </Button>
-      </div>
+      {/* Write a review */}
+      {showReviewForm ? (
+        <div className="mt-8">
+          <ReviewForm 
+            hotelId={hotelId} 
+            hotelName={hotelName}
+            onSuccess={handleReviewSubmitSuccess}
+          />
+          <div className="text-center mt-4">
+            <Button variant="outline" onClick={() => setShowReviewForm(false)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-8 text-center">
+          <Button className="px-8" onClick={() => setShowReviewForm(true)}>
+            Write a Review
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

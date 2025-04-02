@@ -44,6 +44,8 @@ const HotelTabContent: React.FC<HotelTabContentProps> = ({
           reviews={hotel.reviews || []}
           rating={hotel.rating || 0}
           reviewCount={hotel.reviewCount || 0}
+          hotelId={hotel.id}
+          hotelName={hotel.name}
         />
       );
     case 'attractions':

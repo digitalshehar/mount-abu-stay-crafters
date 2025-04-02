@@ -15,7 +15,8 @@ export interface WeatherData {
   lastUpdated: string;
 }
 
-export const useWeather = (city: string = "Mount Abu") => {
+// Update to only accept a string parameter
+export const useWeather = (location: string = "Mount Abu") => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,9 +28,9 @@ export const useWeather = (city: string = "Mount Abu") => {
       setError(null);
       
       try {
-        // Demo data for Mount Abu - In a real app, you would fetch from a weather API
+        // Demo data for location - In a real app, you would fetch from a weather API
         const mockData: WeatherData = {
-          location: city,
+          location: location,
           temperature: 24,
           description: "Sunny with some clouds",
           icon: "cloud-sun",
@@ -61,7 +62,7 @@ export const useWeather = (city: string = "Mount Abu") => {
     const intervalId = setInterval(fetchWeather, 30 * 60 * 1000);
     
     return () => clearInterval(intervalId);
-  }, [city, toast]);
+  }, [location, toast]);
 
   return { weather, isLoading, error };
 };
