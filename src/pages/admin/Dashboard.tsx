@@ -69,19 +69,13 @@ const AdminDashboard = () => {
           "fixed inset-y-0 left-0 z-40 transition-transform duration-300 transform",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}>
-          <Sidebar 
-            collapsed={false} 
-            onToggleCollapse={undefined}
-          />
+          <Sidebar />
         </div>
       </div>
       
       {/* Sidebar for desktop - always visible */}
       <div className="hidden md:block">
-        <Sidebar 
-          collapsed={sidebarCollapsed} 
-          onToggleCollapse={toggleSidebarCollapse}
-        />
+        <Sidebar />
       </div>
       
       {/* Main content */}

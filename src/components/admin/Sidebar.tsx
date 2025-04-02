@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -10,7 +9,7 @@ import {
   FileText, 
   Car, 
   Bike, 
-  Mountains 
+  Mountain 
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -50,7 +49,7 @@ const Sidebar: React.FC = () => {
     { 
       name: 'Adventures', 
       path: '/admin/adventures', 
-      icon: <Mountains className="h-5 w-5" /> 
+      icon: <Mountain className="h-5 w-5" /> 
     },
     { 
       name: 'Users', 

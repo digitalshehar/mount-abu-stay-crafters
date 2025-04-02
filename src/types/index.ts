@@ -1,4 +1,3 @@
-
 // Hotel Types
 export interface Hotel {
   id: string | number;
@@ -17,6 +16,13 @@ export interface Hotel {
   latitude?: number;
   longitude?: number;
   featured?: boolean;
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
+  checkInTime?: string;
+  checkOutTime?: string;
 }
 
 // Review Types
