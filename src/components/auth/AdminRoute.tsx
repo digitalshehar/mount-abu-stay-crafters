@@ -13,8 +13,6 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
   const { isLoading, isAdmin, user } = useAuth();
   const location = useLocation();
   
-  console.log("AdminRoute - isLoading:", isLoading, "isAdmin:", isAdmin, "user:", user);
-
   // Show loading state
   if (isLoading) {
     return (

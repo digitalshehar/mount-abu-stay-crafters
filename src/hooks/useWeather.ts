@@ -15,12 +15,14 @@ export interface WeatherData {
   lastUpdated: string;
 }
 
-// Update to use a string parameter or a location object
-export const useWeather = (locationParam: string | {
+export type LocationParam = string | {
   location: string;
   latitude?: number;
   longitude?: number;
-} = "Mount Abu") => {
+};
+
+// Update to use a string parameter or a location object
+export const useWeather = (locationParam: LocationParam = "Mount Abu") => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

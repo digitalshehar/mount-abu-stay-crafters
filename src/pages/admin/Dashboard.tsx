@@ -6,6 +6,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import Sidebar from "@/components/admin/Sidebar";
 import DashboardHeader from "@/components/admin/dashboard/DashboardHeader";
+import DashboardStats from "@/components/admin/DashboardStats";
+import DashboardCharts from "@/components/admin/DashboardCharts";
+import RecentRecords from "@/components/admin/RecentRecords";
 
 const AdminDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -47,6 +50,9 @@ const AdminDashboard = () => {
       });
     }
   };
+
+  // Determine if we're on the main dashboard route or a sub-route
+  const isMainDashboard = location.pathname === "/admin/dashboard";
 
   return (
     <div className="min-h-screen bg-stone-50 flex overflow-hidden">
@@ -92,7 +98,16 @@ const AdminDashboard = () => {
           "transition-all duration-300",
           sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[250px]"
         )}>
-          <Outlet />
+          {isMainDashboard ? (
+            <div className="space-y-6">
+              <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+              <DashboardStats />
+              <DashboardCharts />
+              <RecentRecords />
+            </div>
+          ) : (
+            <Outlet />
+          )}
         </main>
       </div>
     </div>

@@ -14,6 +14,7 @@ interface WeatherWidgetProps {
 }
 
 const WeatherWidget: React.FC<WeatherWidgetProps> = ({ location }) => {
+  // Fix: Pass location object directly instead of trying to access data.location
   const { weather, isLoading, error } = useWeather(location || "Mount Abu");
 
   if (isLoading) {
