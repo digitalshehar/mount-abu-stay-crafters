@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -38,12 +39,12 @@ const Sidebar: React.FC = () => {
     },
     { 
       name: 'Car Rentals', 
-      path: '/admin/car-rentals', 
+      path: '/admin/cars', 
       icon: <Car className="h-5 w-5" /> 
     },
     { 
       name: 'Bike Rentals', 
-      path: '/admin/bike-rentals', 
+      path: '/admin/bikes', 
       icon: <Bike className="h-5 w-5" /> 
     },
     { 

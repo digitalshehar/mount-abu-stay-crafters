@@ -25,10 +25,6 @@ const AdminDashboard = () => {
     }
   }, [location.pathname]);
 
-  const toggleSidebarCollapse = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-  };
-
   const toggleSidebarOpen = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -86,12 +82,7 @@ const AdminDashboard = () => {
           handleLogout={handleLogout}
         />
         
-        <main className={cn(
-          "flex-1 p-4 sm:p-6 overflow-y-auto",
-          "pt-16 md:pt-6",
-          "transition-all duration-300",
-          sidebarCollapsed ? "md:ml-[70px]" : "md:ml-[250px]"
-        )}>
+        <main className="flex-1 p-4 sm:p-6 overflow-y-auto pt-16 md:pt-6 ml-0 md:ml-64">
           {isMainDashboard ? (
             <div className="space-y-6">
               <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>

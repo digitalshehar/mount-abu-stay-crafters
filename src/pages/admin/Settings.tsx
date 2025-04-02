@@ -1,402 +1,178 @@
+
 import React, { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { 
-  Lock, 
-  Mail, 
-  Bell, 
-  User, 
-  Globe, 
-  Smartphone,
-  ImagePlus
-} from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
 
 const AdminSettings = () => {
   const { toast } = useToast();
-  
-  // Profile settings
-  const [profileSettings, setProfileSettings] = useState({
-    name: "Admin User",
-    email: "admin@mountabu.com",
-    phone: "+91 9876543210",
-    avatar: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=1740&ixlib=rb-4.0.3"
-  });
-
-  // Website settings
-  const [websiteSettings, setWebsiteSettings] = useState({
-    siteName: "Hotel in Mount Abu",
+  const [generalSettings, setGeneralSettings] = useState({
+    siteName: "Mount Abu Tourism",
+    siteDescription: "Discover the beauty of Mount Abu",
     contactEmail: "contact@mountabu.com",
-    contactPhone: "+91 9876543210",
-    currency: "INR",
-    maintenanceMode: false,
-    allowBookings: true,
-    showPromotions: true
-  });
-  
-  // Notification settings
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    bookingAlerts: true,
-    marketingEmails: false,
-    smsAlerts: true
+    contactPhone: "+91 1234567890",
+    enableNotifications: true,
+    enableBookingConfirmations: true,
+    enableReviewModeration: false,
+    maintenanceMode: false
   });
 
-  const handleProfileUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Profile updated",
-      description: "Your profile settings have been updated successfully.",
-    });
-  };
-
-  const handleWebsiteSettingsUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Website settings updated",
-      description: "Your website settings have been updated successfully.",
-    });
-  };
-
-  const handleNotificationSettingsUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Notification settings updated",
-      description: "Your notification preferences have been updated successfully.",
-    });
-  };
-
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGeneralSettingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setProfileSettings({ ...profileSettings, [name]: value });
+    setGeneralSettings(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleWebsiteSettingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setWebsiteSettings({ 
-      ...websiteSettings, 
-      [name]: type === 'checkbox' ? checked : value 
+  const handleToggleChange = (name: string, checked: boolean) => {
+    setGeneralSettings(prev => ({ ...prev, [name]: checked }));
+  };
+
+  const handleSaveSettings = () => {
+    console.log("Saving settings:", generalSettings);
+    toast({
+      title: "Settings Saved",
+      description: "Your settings have been updated successfully.",
     });
-  };
-  
-  const handleSwitchChange = (name: string, checked: boolean) => {
-    setWebsiteSettings({ ...websiteSettings, [name]: checked });
-  };
-  
-  const handleNotificationChange = (name: string, checked: boolean) => {
-    setNotificationSettings({ ...notificationSettings, [name]: checked });
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <h1 className="text-2xl font-bold">Admin Settings</h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Profile Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User size={18} />
-              Profile Settings
-            </CardTitle>
-            <CardDescription>
-              Manage your personal information and account settings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleProfileUpdate} className="space-y-4">
-              <div className="flex flex-col items-center mb-6">
-                <div className="w-24 h-24 rounded-full overflow-hidden bg-stone-200 mb-4">
-                  <img 
-                    src={profileSettings.avatar} 
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <ImagePlus size={14} />
-                  Change Avatar
-                </Button>
-              </div>
-            
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={profileSettings.name}
-                  onChange={handleProfileChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400" size={16} />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={profileSettings.email}
-                    onChange={handleProfileChange}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <div className="relative">
-                  <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-stone-400" size={16} />
-                  <Input
-                    id="phone"
-                    name="phone"
-                    value={profileSettings.phone}
-                    onChange={handleProfileChange}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              
-              <div className="pt-4">
-                <Button type="submit">Update Profile</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="general" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="advanced">Advanced</TabsTrigger>
+        </TabsList>
 
-        {/* Website Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe size={18} />
-              Website Settings
-            </CardTitle>
-            <CardDescription>
-              Configure general settings for your website
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleWebsiteSettingsUpdate} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="siteName">Website Name</Label>
-                <Input
-                  id="siteName"
-                  name="siteName"
-                  value={websiteSettings.siteName}
-                  onChange={handleWebsiteSettingChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="contactEmail">Contact Email</Label>
-                <Input
-                  id="contactEmail"
-                  name="contactEmail"
-                  type="email"
-                  value={websiteSettings.contactEmail}
-                  onChange={handleWebsiteSettingChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="contactPhone">Contact Phone</Label>
-                <Input
-                  id="contactPhone"
-                  name="contactPhone"
-                  value={websiteSettings.contactPhone}
-                  onChange={handleWebsiteSettingChange}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="currency">Default Currency</Label>
-                <select
-                  id="currency"
-                  name="currency"
-                  value={websiteSettings.currency}
-                  onChange={(e) => setWebsiteSettings({ ...websiteSettings, currency: e.target.value })}
-                  className="w-full rounded-md border border-stone-200 px-3 py-2"
-                >
-                  <option value="INR">Indian Rupee (₹)</option>
-                  <option value="USD">US Dollar ($)</option>
-                  <option value="EUR">Euro (€)</option>
-                  <option value="GBP">British Pound (£)</option>
-                </select>
-              </div>
-              
-              <div className="space-y-4 pt-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="maintenanceMode">Maintenance Mode</Label>
-                    <p className="text-sm text-stone-500">Temporarily disable public access to the website</p>
-                  </div>
-                  <Switch
-                    id="maintenanceMode"
-                    checked={websiteSettings.maintenanceMode}
-                    onCheckedChange={(checked) => handleSwitchChange('maintenanceMode', checked)}
+        <TabsContent value="general" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>General Settings</CardTitle>
+              <CardDescription>Manage your website's general settings</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="siteName">Site Name</Label>
+                  <Input 
+                    id="siteName" 
+                    name="siteName" 
+                    value={generalSettings.siteName} 
+                    onChange={handleGeneralSettingChange} 
                   />
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="allowBookings">Allow Bookings</Label>
-                    <p className="text-sm text-stone-500">Enable users to make bookings on the website</p>
-                  </div>
-                  <Switch
-                    id="allowBookings"
-                    checked={websiteSettings.allowBookings}
-                    onCheckedChange={(checked) => handleSwitchChange('allowBookings', checked)}
+                <div className="grid gap-2">
+                  <Label htmlFor="siteDescription">Site Description</Label>
+                  <Input 
+                    id="siteDescription" 
+                    name="siteDescription" 
+                    value={generalSettings.siteDescription} 
+                    onChange={handleGeneralSettingChange} 
                   />
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="showPromotions">Show Promotions</Label>
-                    <p className="text-sm text-stone-500">Display promotional banners and special offers</p>
-                  </div>
-                  <Switch
-                    id="showPromotions"
-                    checked={websiteSettings.showPromotions}
-                    onCheckedChange={(checked) => handleSwitchChange('showPromotions', checked)}
+                <div className="grid gap-2">
+                  <Label htmlFor="contactEmail">Contact Email</Label>
+                  <Input 
+                    id="contactEmail" 
+                    name="contactEmail" 
+                    type="email" 
+                    value={generalSettings.contactEmail} 
+                    onChange={handleGeneralSettingChange} 
+                  />
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="contactPhone">Contact Phone</Label>
+                  <Input 
+                    id="contactPhone" 
+                    name="contactPhone" 
+                    value={generalSettings.contactPhone} 
+                    onChange={handleGeneralSettingChange} 
                   />
                 </div>
               </div>
-              
-              <div className="pt-4">
-                <Button type="submit">Save Changes</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        {/* Notification Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell size={18} />
-              Notification Settings
-            </CardTitle>
-            <CardDescription>
-              Configure how and when you receive notifications
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleNotificationSettingsUpdate} className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="emailNotifications">Email Notifications</Label>
-                    <p className="text-sm text-stone-500">Receive notifications via email</p>
-                  </div>
-                  <Switch
-                    id="emailNotifications"
-                    checked={notificationSettings.emailNotifications}
-                    onCheckedChange={(checked) => handleNotificationChange('emailNotifications', checked)}
-                  />
+        <TabsContent value="notifications" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Notification Settings</CardTitle>
+              <CardDescription>Configure notification preferences</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Enable Notifications</p>
+                  <p className="text-sm text-stone-500">Receive notifications about bookings and inquiries</p>
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="bookingAlerts">Booking Alerts</Label>
-                    <p className="text-sm text-stone-500">Get notified for new bookings</p>
-                  </div>
-                  <Switch
-                    id="bookingAlerts"
-                    checked={notificationSettings.bookingAlerts}
-                    onCheckedChange={(checked) => handleNotificationChange('bookingAlerts', checked)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="smsAlerts">SMS Alerts</Label>
-                    <p className="text-sm text-stone-500">Receive SMS alerts for critical updates</p>
-                  </div>
-                  <Switch
-                    id="smsAlerts"
-                    checked={notificationSettings.smsAlerts}
-                    onCheckedChange={(checked) => handleNotificationChange('smsAlerts', checked)}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="marketingEmails">Marketing Emails</Label>
-                    <p className="text-sm text-stone-500">Receive marketing and promotional emails</p>
-                  </div>
-                  <Switch
-                    id="marketingEmails"
-                    checked={notificationSettings.marketingEmails}
-                    onCheckedChange={(checked) => handleNotificationChange('marketingEmails', checked)}
-                  />
-                </div>
+                <Switch 
+                  checked={generalSettings.enableNotifications} 
+                  onCheckedChange={(checked) => handleToggleChange('enableNotifications', checked)} 
+                />
               </div>
               
-              <div className="pt-4">
-                <Button type="submit">Update Preferences</Button>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Booking Confirmations</p>
+                  <p className="text-sm text-stone-500">Automatically send booking confirmation emails</p>
+                </div>
+                <Switch 
+                  checked={generalSettings.enableBookingConfirmations} 
+                  onCheckedChange={(checked) => handleToggleChange('enableBookingConfirmations', checked)} 
+                />
               </div>
-            </form>
-          </CardContent>
-        </Card>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Review Moderation</p>
+                  <p className="text-sm text-stone-500">Require approval before reviews are published</p>
+                </div>
+                <Switch 
+                  checked={generalSettings.enableReviewModeration} 
+                  onCheckedChange={(checked) => handleToggleChange('enableReviewModeration', checked)} 
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        {/* Security Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock size={18} />
-              Security Settings
-            </CardTitle>
-            <CardDescription>
-              Manage your account security and password
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  placeholder="Enter your current password"
+        <TabsContent value="advanced" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Advanced Settings</CardTitle>
+              <CardDescription>System settings and maintenance options</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Maintenance Mode</p>
+                  <p className="text-sm text-stone-500">Put site in maintenance mode</p>
+                </div>
+                <Switch 
+                  checked={generalSettings.maintenanceMode} 
+                  onCheckedChange={(checked) => handleToggleChange('maintenanceMode', checked)} 
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  placeholder="Enter new password"
-                />
+              <div className="mt-6">
+                <Button variant="destructive">Clear Cache</Button>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm new password"
-                />
-              </div>
-              
-              <div className="pt-4">
-                <Button type="submit" onClick={(e) => {
-                  e.preventDefault();
-                  toast({
-                    title: "Password updated",
-                    description: "Your password has been changed successfully.",
-                  });
-                }}>
-                  Change Password
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSaveSettings}>Save Settings</Button>
       </div>
     </div>
   );

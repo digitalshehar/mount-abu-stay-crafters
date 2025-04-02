@@ -23,7 +23,10 @@ import CarRentals from '@/pages/CarRentals';
 import AdminHotels from '@/pages/admin/Hotels';
 import AdminBikeRentals from '@/pages/admin/BikeRentals';
 import AdminCarRentals from '@/pages/admin/CarRentals';
+import AdminAdventures from '@/pages/admin/Adventures';
 import AdminBlog from '@/pages/admin/Blog';
+import AdminSettings from '@/pages/admin/Settings';
+import AdminBookings from '@/pages/admin/Bookings';
 import Destinations from '@/pages/Destinations';
 import Adventures from '@/pages/Adventures';
 import Blog from '@/pages/Blog';
@@ -103,6 +106,11 @@ function App() {
                     <AdminCarRentals />
                   </AdminRoute>
                 } />
+                <Route path="/admin/adventures" element={
+                  <AdminRoute>
+                    <AdminAdventures />
+                  </AdminRoute>
+                } />
                 <Route path="/admin/blog" element={
                   <AdminRoute>
                     <AdminBlog />
@@ -110,12 +118,17 @@ function App() {
                 } />
                 <Route path="/admin/bookings" element={
                   <AdminRoute>
-                    <div>Booking Management</div>
+                    <AdminBookings />
                   </AdminRoute>
                 } />
                 <Route path="/admin/users" element={
                   <AdminRoute>
                     <UsersPage />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/settings" element={
+                  <AdminRoute>
+                    <AdminSettings />
                   </AdminRoute>
                 } />
                 
