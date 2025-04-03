@@ -2,7 +2,8 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import SearchTabs from "./SearchTabs";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import HotelSearchForm from "./HotelSearchForm";
 import CarSearchForm from "./CarSearchForm";
 import BikeSearchForm from "./BikeSearchForm";
@@ -13,6 +14,9 @@ interface MobileSearchTriggerProps {
   setIsSheetOpen: (open: boolean) => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  bookingTypes: Array<{id: string, label: string, badge?: string}>;
+  stayType: string;
+  setStayType: (type: string) => void;
   hotelSearch: { location: string; dates: string; guests: string };
   setHotelSearch: React.Dispatch<React.SetStateAction<{ location: string; dates: string; guests: string }>>;
   carSearch: { location: string; dates: string; type: string };
@@ -29,6 +33,9 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
   setIsSheetOpen,
   activeTab,
   setActiveTab,
+  bookingTypes,
+  stayType,
+  setStayType,
   hotelSearch,
   setHotelSearch,
   carSearch,
@@ -54,13 +61,104 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
         </SheetTrigger>
         <SheetContent side="bottom" className="h-[90vh] rounded-t-xl px-4 pt-6 pb-8">
           <div className="h-full overflow-y-auto">
-            <SearchTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+            {/* Booking type selector */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {bookingTypes.slice(0, 4).map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => setActiveTab(type.id)}
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium rounded-lg border relative",
+                    activeTab === type.id
+                      ? "bg-primary/10 border-primary/30 text-primary"
+                      : "border-stone-200 text-stone-600"
+                  )}
+                >
+                  {type.label}
+                  {type.badge && (
+                    <span className={cn(
+                      "absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded",
+                      type.badge === "New!" ? "bg-red-500 text-white" : "bg-amber-100 text-amber-800"
+                    )}>
+                      {type.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-6">
+              {bookingTypes.slice(4).map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => setActiveTab(type.id)}
+                  className={cn(
+                    "px-3 py-2 text-sm font-medium rounded-lg border relative",
+                    activeTab === type.id
+                      ? "bg-primary/10 border-primary/30 text-primary"
+                      : "border-stone-200 text-stone-600"
+                  )}
+                >
+                  {type.label}
+                  {type.badge && (
+                    <span className={cn(
+                      "absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded",
+                      type.badge === "New!" ? "bg-red-500 text-white" : "bg-amber-100 text-amber-800"
+                    )}>
+                      {type.badge}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
             
-            {activeTab === "hotels" && (
+            {/* Stay type toggle - Only show for Hotels, Homes */}
+            {(activeTab === "hotels" || activeTab === "homes") && (
+              <>
+                <div className="flex space-x-2 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setStayType("overnight")}
+                    className={cn(
+                      "flex-1 px-4 py-2 text-sm rounded-lg border",
+                      stayType === "overnight"
+                        ? "bg-primary/10 border-primary/30 text-primary font-medium"
+                        : "border-stone-200 text-stone-600"
+                    )}
+                  >
+                    Overnight Stays
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStayType("dayUse")}
+                    className={cn(
+                      "flex-1 px-4 py-2 text-sm rounded-lg border",
+                      stayType === "dayUse"
+                        ? "bg-primary/10 border-primary/30 text-primary font-medium"
+                        : "border-stone-200 text-stone-600"
+                    )}
+                  >
+                    Day Use Stays
+                  </button>
+                </div>
+                
+                {stayType === "dayUse" && (
+                  <div className="flex items-center text-sm text-rose-600 mb-4">
+                    <div className="w-5 h-5 mr-2 flex-shrink-0 flex items-center justify-center bg-rose-100 text-rose-600 rounded">
+                      <span className="font-bold">ⓘ</span>
+                    </div>
+                    <p>Day Use Stays are inexpensive, 4-12 hour room rentals that are not overnight. Your check-in and check-out will be on the same date.</p>
+                  </div>
+                )}
+              </>
+            )}
+            
+            {/* Search forms based on active tab */}
+            {(activeTab === "hotels" || activeTab === "homes" || activeTab === "flightHotel") && (
               <div className="mt-4">
                 <HotelSearchForm 
                   search={hotelSearch} 
                   setSearch={setHotelSearch}
+                  stayType={stayType}
                 />
               </div>
             )}
@@ -93,14 +191,14 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
             )}
 
             <div className="mt-6">
-              <button
+              <Button
                 type="button"
                 onClick={handleSearch}
-                className="flex items-center justify-center w-full py-6 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow transition-all text-base"
+                className="w-full py-6 text-base font-medium"
               >
                 <Search className="h-5 w-5 mr-2" />
-                Search {activeTab === "hotels" ? "Hotels" : activeTab === "cars" ? "Cars" : activeTab === "bikes" ? "Bikes" : "Activities"}
-              </button>
+                SEARCH
+              </Button>
             </div>
           </div>
         </SheetContent>

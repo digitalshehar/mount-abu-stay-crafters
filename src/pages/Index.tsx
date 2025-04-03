@@ -1,82 +1,38 @@
 
-import React, { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import Hero from "@/components/Hero";
-import DestinationSection from "@/components/DestinationSection";
-import FeatureSection from "@/components/FeatureSection";
-import TestimonialSection from "@/components/TestimonialSection";
-import PersonalizedRecommendations from "@/components/PersonalizedRecommendations";
-import FeaturedHotelsSection from "@/components/hotels/content/FeaturedHotelsSection";
-import RegularHotelsSection from "@/components/hotels/content/RegularHotelsSection";
-import { supabase } from "@/integrations/supabase/client";
-import { Hotel } from "@/integrations/supabase/custom-types";
+import React from "react";
+import { Helmet } from "react-helmet-async";
+import Layout from "@/components/layout";
+import Hero from "@/components/hero/Hero";
+import FeaturedDestinations from "@/components/home/FeaturedDestinations";
+import PopularHotels from "@/components/home/PopularHotels";
+import HarleyHotels from "@/components/home/HarleyHotels";
+import FeaturedAdventures from "@/components/home/FeaturedAdventures";
+import CarouselSection from "@/components/home/CarouselSection";
+import TestimonialsSection from "@/components/home/TestimonialsSection";
+import Newsletter from "@/components/home/Newsletter";
 
-const Index = () => {
-  const [featuredHotels, setFeaturedHotels] = useState<Hotel[]>([]);
-  const [regularHotels, setRegularHotels] = useState<Hotel[]>([]);
-
-  const { isLoading } = useQuery({
-    queryKey: ["hotels-homepage"],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("hotels")
-          .select("*")
-          .eq("status", "active");
-        
-        if (error) throw error;
-        
-        // Process the data
-        if (data) {
-          const featured = data.filter(hotel => hotel.featured);
-          const regular = data.filter(hotel => !hotel.featured);
-          
-          setFeaturedHotels(featured);
-          setRegularHotels(regular);
-        }
-        
-        return data;
-      } catch (error: any) {
-        console.error("Error fetching hotels:", error.message);
-        toast.error("Failed to load hotels");
-        return [];
-      }
-    },
-  });
-
+const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow">
+    <>
+      <Helmet>
+        <title>Mount Abu Travel Guide - Find Best Hotels, Activities & Rentals</title>
+        <meta
+          name="description"
+          content="Discover the best of Mount Abu with our comprehensive travel guide. Find hotels, adventures, car rentals, and more for your perfect getaway."
+        />
+      </Helmet>
+
+      <Layout>
         <Hero />
-        
-        <div className="container mx-auto px-4 py-12">
-          <FeaturedHotelsSection 
-            title="Featured Hotels"
-            subtitle="Handpicked accommodations for your perfect stay"
-            hotels={featuredHotels}
-          />
-          
-          <div className="mt-12">
-            <RegularHotelsSection 
-              title="Popular Hotels"
-              subtitle="Loved by travelers across the country"
-              hotels={regularHotels}
-              limit={6}
-            />
-          </div>
-        </div>
-        
-        <DestinationSection />
-        <FeatureSection />
-        <TestimonialSection />
-        <PersonalizedRecommendations />
-      </main>
-      <Footer />
-    </div>
+        <FeaturedDestinations />
+        <HarleyHotels />
+        <PopularHotels />
+        <CarouselSection />
+        <FeaturedAdventures />
+        <TestimonialsSection />
+        <Newsletter />
+      </Layout>
+    </>
   );
 };
 

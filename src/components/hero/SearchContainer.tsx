@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { toast } from "sonner";
 import { validateSearch } from "./HeroUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -14,6 +14,19 @@ const SearchContainer = () => {
   const [activeTab, setActiveTab] = useState("hotels");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const isMobile = useIsMobile();
+  
+  // New booking type tabs
+  const bookingTypes = [
+    { id: "hotels", label: "Hotels" },
+    { id: "homes", label: "Homes & Apts" },
+    { id: "flightHotel", label: "Flight + Hotel", badge: "Bundle & Save" },
+    { id: "flights", label: "Flights" },
+    { id: "activities", label: "Activities", badge: "New!" },
+    { id: "transfer", label: "Airport transfer" }
+  ];
+  
+  // Stay types
+  const [stayType, setStayType] = useState("overnight");
   
   // Search form state
   const [hotelSearch, setHotelSearch] = useState({
@@ -49,10 +62,40 @@ const SearchContainer = () => {
         if (hotelSearch.location) searchParams.append("location", hotelSearch.location);
         if (hotelSearch.dates) searchParams.append("dates", hotelSearch.dates);
         if (hotelSearch.guests) searchParams.append("guests", hotelSearch.guests);
+        if (stayType) searchParams.append("stayType", stayType);
         
         // Validate and navigate
         if (!validateSearch(searchParams, uiToast)) return;
         navigate(`/hotels?${searchParams.toString()}`);
+        break;
+        
+      case "homes":
+        if (hotelSearch.location) searchParams.append("location", hotelSearch.location);
+        if (hotelSearch.dates) searchParams.append("dates", hotelSearch.dates);
+        if (hotelSearch.guests) searchParams.append("guests", hotelSearch.guests);
+        
+        // Validate and navigate
+        if (!validateSearch(searchParams, uiToast)) return;
+        navigate(`/hotels?type=apartment&${searchParams.toString()}`);
+        break;
+        
+      case "flightHotel":
+        if (hotelSearch.location) searchParams.append("location", hotelSearch.location);
+        if (hotelSearch.dates) searchParams.append("dates", hotelSearch.dates);
+        if (hotelSearch.guests) searchParams.append("guests", hotelSearch.guests);
+        
+        // Validate and navigate
+        if (!validateSearch(searchParams, uiToast)) return;
+        navigate(`/flight-hotel?${searchParams.toString()}`);
+        break;
+        
+      case "flights":
+        if (hotelSearch.location) searchParams.append("destination", hotelSearch.location);
+        if (hotelSearch.dates) searchParams.append("dates", hotelSearch.dates);
+        
+        // Validate and navigate
+        if (!validateSearch(searchParams, uiToast)) return;
+        navigate(`/flights?${searchParams.toString()}`);
         break;
         
       case "cars":
@@ -84,6 +127,15 @@ const SearchContainer = () => {
         if (!validateSearch(searchParams, uiToast)) return;
         navigate(`/adventures?${searchParams.toString()}`);
         break;
+        
+      case "transfer":
+        if (hotelSearch.location) searchParams.append("location", hotelSearch.location);
+        if (hotelSearch.dates) searchParams.append("date", hotelSearch.dates);
+        
+        // Validate and navigate
+        if (!validateSearch(searchParams, uiToast)) return;
+        navigate(`/transfers?${searchParams.toString()}`);
+        break;
     }
     
     // Close the sheet on mobile after search
@@ -103,6 +155,9 @@ const SearchContainer = () => {
         setIsSheetOpen={setIsSheetOpen}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        bookingTypes={bookingTypes}
+        stayType={stayType}
+        setStayType={setStayType}
         hotelSearch={hotelSearch}
         setHotelSearch={setHotelSearch}
         carSearch={carSearch}
@@ -118,6 +173,9 @@ const SearchContainer = () => {
       <DesktopSearchForm
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        bookingTypes={bookingTypes}
+        stayType={stayType}
+        setStayType={setStayType}
         hotelSearch={hotelSearch}
         setHotelSearch={setHotelSearch}
         carSearch={carSearch}
