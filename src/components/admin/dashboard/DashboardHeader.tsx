@@ -59,12 +59,26 @@ const DashboardHeader = ({ sidebarOpen, toggleSidebar, handleLogout }: Dashboard
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">3</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
             <div className="p-4">
               <p className="text-sm font-medium mb-1">Notifications</p>
-              <p className="text-sm text-muted-foreground">No new notifications</p>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                <div className="p-2 hover:bg-stone-100 rounded-md">
+                  <p className="text-sm font-medium">New booking received</p>
+                  <p className="text-xs text-muted-foreground">5 minutes ago</p>
+                </div>
+                <div className="p-2 hover:bg-stone-100 rounded-md">
+                  <p className="text-sm font-medium">User request pending</p>
+                  <p className="text-xs text-muted-foreground">1 hour ago</p>
+                </div>
+                <div className="p-2 hover:bg-stone-100 rounded-md">
+                  <p className="text-sm font-medium">System update available</p>
+                  <p className="text-xs text-muted-foreground">2 hours ago</p>
+                </div>
+              </div>
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -72,8 +86,10 @@ const DashboardHeader = ({ sidebarOpen, toggleSidebar, handleLogout }: Dashboard
         {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <User className="h-5 w-5" />
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="h-4 w-4" />
+              </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -88,7 +104,7 @@ const DashboardHeader = ({ sidebarOpen, toggleSidebar, handleLogout }: Dashboard
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleLogout()}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

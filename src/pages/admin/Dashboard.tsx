@@ -4,11 +4,11 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import Sidebar from "@/components/admin/Sidebar";
+import DashboardSidebar from "@/components/admin/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/admin/dashboard/DashboardHeader";
 
 const AdminDashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,48 +48,27 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 flex">
-      {/* Sidebar for mobile - shown conditionally */}
-      <div className="md:hidden">
-        {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-black/20 z-30"
-            onClick={toggleSidebarOpen}
-          ></div>
-        )}
-        
-        <div className={cn(
-          "fixed inset-y-0 left-0 z-40 transition-transform duration-300 transform",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}>
-          <Sidebar 
-            isActive={isActive}
-            handleLogout={handleLogout}
-            toggleSidebar={toggleSidebarOpen}
-            sidebarOpen={sidebarOpen}
-          />
-        </div>
-      </div>
-      
-      {/* Sidebar for desktop - always visible */}
-      <div className="hidden md:block">
-        <Sidebar 
-          isActive={isActive}
-          handleLogout={handleLogout}
-          toggleSidebar={toggleSidebarOpen}
-          sidebarOpen={true}
-        />
-      </div>
+    <div className="flex h-screen bg-stone-50 overflow-hidden">
+      {/* Dashboard Sidebar */}
+      <DashboardSidebar 
+        sidebarOpen={sidebarOpen}
+        isActive={isActive}
+        handleLogout={handleLogout}
+        toggleSidebar={toggleSidebarOpen}
+      />
       
       {/* Main content */}
-      <div className="flex flex-col flex-grow overflow-hidden">
+      <div className={cn(
+        "flex flex-col flex-1 transition-all duration-300",
+        sidebarOpen ? "md:ml-[280px]" : "md:ml-0"
+      )}>
         <DashboardHeader 
           sidebarOpen={sidebarOpen}
           toggleSidebar={toggleSidebarOpen}
           handleLogout={handleLogout}
         />
         
-        <main className="flex-grow p-4 sm:p-6 overflow-y-auto pt-16 md:pt-6 ml-0 md:ml-64">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-stone-50">
           <Outlet />
         </main>
       </div>
