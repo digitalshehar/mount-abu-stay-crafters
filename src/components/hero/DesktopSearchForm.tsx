@@ -28,7 +28,7 @@ interface DesktopSearchFormProps {
 const DesktopSearchForm: React.FC<DesktopSearchFormProps> = ({
   activeTab,
   setActiveTab,
-  bookingTypes,
+  bookingTypes = [], // Provide default empty array to prevent undefined error
   stayType,
   setStayType,
   hotelSearch,

@@ -33,7 +33,7 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
   setIsSheetOpen,
   activeTab,
   setActiveTab,
-  bookingTypes,
+  bookingTypes = [], // Provide default empty array to prevent undefined error
   stayType,
   setStayType,
   hotelSearch,
@@ -46,6 +46,10 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
   setActivitySearch,
   handleSearch
 }) => {
+  // Safely slice the bookingTypes array
+  const firstRowTypes = bookingTypes && bookingTypes.length > 0 ? bookingTypes.slice(0, 4) : [];
+  const secondRowTypes = bookingTypes && bookingTypes.length > 4 ? bookingTypes.slice(4) : [];
+
   return (
     <div className="w-full px-4 md:hidden">
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -63,7 +67,7 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
           <div className="h-full overflow-y-auto">
             {/* Booking type selector */}
             <div className="grid grid-cols-2 gap-2 mb-4">
-              {bookingTypes.slice(0, 4).map((type) => (
+              {firstRowTypes.map((type) => (
                 <button
                   key={type.id}
                   onClick={() => setActiveTab(type.id)}
@@ -86,30 +90,33 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-2 mb-6">
-              {bookingTypes.slice(4).map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => setActiveTab(type.id)}
-                  className={cn(
-                    "px-3 py-2 text-sm font-medium rounded-lg border relative",
-                    activeTab === type.id
-                      ? "bg-primary/10 border-primary/30 text-primary"
-                      : "border-stone-200 text-stone-600"
-                  )}
-                >
-                  {type.label}
-                  {type.badge && (
-                    <span className={cn(
-                      "absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded",
-                      type.badge === "New!" ? "bg-red-500 text-white" : "bg-amber-100 text-amber-800"
-                    )}>
-                      {type.badge}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+            
+            {secondRowTypes.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 mb-6">
+                {secondRowTypes.map((type) => (
+                  <button
+                    key={type.id}
+                    onClick={() => setActiveTab(type.id)}
+                    className={cn(
+                      "px-3 py-2 text-sm font-medium rounded-lg border relative",
+                      activeTab === type.id
+                        ? "bg-primary/10 border-primary/30 text-primary"
+                        : "border-stone-200 text-stone-600"
+                    )}
+                  >
+                    {type.label}
+                    {type.badge && (
+                      <span className={cn(
+                        "absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded",
+                        type.badge === "New!" ? "bg-red-500 text-white" : "bg-amber-100 text-amber-800"
+                      )}>
+                        {type.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
             
             {/* Stay type toggle - Only show for Hotels, Homes */}
             {(activeTab === "hotels" || activeTab === "homes") && (
