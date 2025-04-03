@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import DashboardStats from "@/components/admin/DashboardStats";
 import ActivityLog from "@/components/admin/ActivityLog";
 import DashboardCharts from "@/components/admin/DashboardCharts";
@@ -10,34 +10,32 @@ import SeoAnalytics from "@/components/admin/SeoAnalytics";
 
 const Overview = () => {
   return (
-    <div className="container mx-auto p-4 max-w-[1600px]">
-      <div className="flex flex-col gap-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <DashboardStats />
+    <div className="space-y-6">
+      <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+      
+      <DashboardStats />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <DashboardCharts />
         </div>
+        <div>
+          <ActivityLog />
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <DashboardCharts />
-          </div>
-          <div>
-            <ActivityLog />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <RecentRecords />
         </div>
+        <div>
+          <QuickActions />
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <RecentRecords />
-          </div>
-          <div>
-            <QuickActions />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SiteMonitoring />
-          <SeoAnalytics />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SiteMonitoring />
+        <SeoAnalytics />
       </div>
     </div>
   );

@@ -40,6 +40,8 @@ import AdventureNotFound from '@/pages/AdventureNotFound';
 import BikeRentalDetail from '@/pages/BikeRentalDetail';
 import CarRentalDetail from '@/pages/CarRentalDetail';
 import BookingNotFound from '@/pages/BookingNotFound';
+import AdminOverview from '@/pages/admin/Overview';
+import AdminPageBuilder from '@/pages/admin/PageBuilder';
 
 const queryClient = new QueryClient();
 
@@ -86,51 +88,24 @@ function App() {
                   <Route path="/bookings" element={<div>Bookings Page</div>} />
                 </Route>
                 
-                <Route path="/admin/dashboard" element={
+                {/* Admin Routes - All under a shared layout */}
+                <Route path="/admin" element={
                   <AdminRoute>
                     <AdminDashboard />
                   </AdminRoute>
-                } />
-                <Route path="/admin/hotels" element={
-                  <AdminRoute>
-                    <AdminHotels />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/bikes" element={
-                  <AdminRoute>
-                    <AdminBikeRentals />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/cars" element={
-                  <AdminRoute>
-                    <AdminCarRentals />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/adventures" element={
-                  <AdminRoute>
-                    <AdminAdventures />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/blog" element={
-                  <AdminRoute>
-                    <AdminBlog />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/bookings" element={
-                  <AdminRoute>
-                    <AdminBookings />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/users" element={
-                  <AdminRoute>
-                    <UsersPage />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/settings" element={
-                  <AdminRoute>
-                    <AdminSettings />
-                  </AdminRoute>
-                } />
+                }>
+                  <Route index element={<AdminOverview />} />
+                  <Route path="dashboard" element={<AdminOverview />} />
+                  <Route path="hotels" element={<AdminHotels />} />
+                  <Route path="bikes" element={<AdminBikeRentals />} />
+                  <Route path="cars" element={<AdminCarRentals />} />
+                  <Route path="adventures" element={<AdminAdventures />} />
+                  <Route path="blog" element={<AdminBlog />} />
+                  <Route path="bookings" element={<AdminBookings />} />
+                  <Route path="users" element={<UsersPage />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                  <Route path="page-builder" element={<AdminPageBuilder />} />
+                </Route>
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>

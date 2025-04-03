@@ -6,11 +6,12 @@ import HotelContact from './sidebar/HotelContact';
 import HotelMap from './sidebar/HotelMap';
 import HotelAmenities from './sidebar/HotelAmenities';
 
-interface HotelSidebarProps {
+export interface HotelSidebarProps {
   hotel?: Hotel;
+  onSelectRooms?: () => void;
 }
 
-const HotelSidebar: React.FC<HotelSidebarProps> = ({ hotel }) => {
+const HotelSidebar: React.FC<HotelSidebarProps> = ({ hotel, onSelectRooms }) => {
   // Prepare location object for weather widget
   const locationObj = {
     location: hotel?.location || 'Mount Abu',
@@ -22,6 +23,14 @@ const HotelSidebar: React.FC<HotelSidebarProps> = ({ hotel }) => {
     <div className="space-y-6">
       <div className="sticky top-6">
         {/* BookingForm will be implemented in a later update */}
+        {onSelectRooms && (
+          <button 
+            onClick={onSelectRooms}
+            className="w-full bg-primary text-primary-foreground py-2 px-4 rounded font-medium text-sm mb-4"
+          >
+            Select Rooms
+          </button>
+        )}
         
         <div className="mt-6">
           <WeatherWidget location={locationObj} />
