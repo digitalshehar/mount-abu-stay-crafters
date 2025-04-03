@@ -28,7 +28,7 @@ interface DesktopSearchFormProps {
 const DesktopSearchForm: React.FC<DesktopSearchFormProps> = ({
   activeTab,
   setActiveTab,
-  bookingTypes = [], // Provide default empty array to prevent undefined error
+  bookingTypes = [], // Provide default empty array
   stayType,
   setStayType,
   hotelSearch,
@@ -49,31 +49,33 @@ const DesktopSearchForm: React.FC<DesktopSearchFormProps> = ({
 
   return (
     <div className="hidden md:block bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg">
-      {/* Booking type tabs (Hotels, Homes, Flights, etc.) */}
-      <div className="flex overflow-x-auto space-x-1 pb-4 -mx-1 px-1 border-b border-stone-100">
-        {bookingTypes.map((type) => (
-          <button
-            key={type.id}
-            onClick={() => setActiveTab(type.id)}
-            className={cn(
-              "flex items-center justify-center whitespace-nowrap px-4 py-2 text-sm font-medium rounded-lg flex-1 transition-colors relative",
-              activeTab === type.id
-                ? "text-primary border-b-2 border-primary"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            )}
-          >
-            {type.label}
-            {type.badge && (
-              <span className={cn(
-                "absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded",
-                type.badge === "New!" ? "bg-red-500 text-white" : "bg-amber-100 text-amber-800"
-              )}>
-                {type.badge}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* Booking type tabs */}
+      {bookingTypes && bookingTypes.length > 0 && (
+        <div className="flex overflow-x-auto space-x-1 pb-4 -mx-1 px-1 border-b border-stone-100">
+          {bookingTypes.map((type) => (
+            <button
+              key={type.id}
+              onClick={() => setActiveTab(type.id)}
+              className={cn(
+                "flex items-center justify-center whitespace-nowrap px-4 py-2 text-sm font-medium rounded-lg flex-1 transition-colors relative",
+                activeTab === type.id
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              {type.label}
+              {type.badge && (
+                <span className={cn(
+                  "absolute -top-2 -right-2 text-[10px] font-bold px-1.5 py-0.5 rounded",
+                  type.badge === "New!" ? "bg-red-500 text-white" : "bg-amber-100 text-amber-800"
+                )}>
+                  {type.badge}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
       
       {/* Stay type toggle (Overnight/Day Use) - Only show for Hotels, Homes */}
       {(activeTab === "hotels" || activeTab === "homes") && (
@@ -116,7 +118,8 @@ const DesktopSearchForm: React.FC<DesktopSearchFormProps> = ({
       )}
 
       <form onSubmit={handleSubmitForm} className="mt-3">
-        {(activeTab === "hotels" || activeTab === "homes" || activeTab === "flightHotel") && (
+        {/* Only show hotel form for hotels and homes */}
+        {(activeTab === "hotels" || activeTab === "homes") && (
           <HotelSearchForm 
             search={hotelSearch} 
             setSearch={setHotelSearch}

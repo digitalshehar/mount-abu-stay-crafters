@@ -33,7 +33,7 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
   setIsSheetOpen,
   activeTab,
   setActiveTab,
-  bookingTypes = [], // Provide default empty array to prevent undefined error
+  bookingTypes = [], // Default empty array
   stayType,
   setStayType,
   hotelSearch,
@@ -46,9 +46,14 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
   setActivitySearch,
   handleSearch
 }) => {
-  // Safely slice the bookingTypes array
-  const firstRowTypes = bookingTypes && bookingTypes.length > 0 ? bookingTypes.slice(0, 4) : [];
-  const secondRowTypes = bookingTypes && bookingTypes.length > 4 ? bookingTypes.slice(4) : [];
+  // Safe array splitting with null checks and default values
+  const firstRowTypes = bookingTypes && bookingTypes.length > 0 
+    ? bookingTypes.slice(0, Math.min(4, bookingTypes.length)) 
+    : [];
+    
+  const secondRowTypes = bookingTypes && bookingTypes.length > 4 
+    ? bookingTypes.slice(4) 
+    : [];
 
   return (
     <div className="w-full px-4 md:hidden">
@@ -160,7 +165,7 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
             )}
             
             {/* Search forms based on active tab */}
-            {(activeTab === "hotels" || activeTab === "homes" || activeTab === "flightHotel") && (
+            {(activeTab === "hotels" || activeTab === "homes") && (
               <div className="mt-4">
                 <HotelSearchForm 
                   search={hotelSearch} 

@@ -15,14 +15,14 @@ const SearchContainer = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const isMobile = useIsMobile();
   
-  // New booking type tabs
+  // Updated booking types - removed Flight + Hotel and Airport transfer
   const bookingTypes = [
     { id: "hotels", label: "Hotels" },
     { id: "homes", label: "Homes & Apts" },
-    { id: "flightHotel", label: "Flight + Hotel", badge: "Bundle & Save" },
     { id: "flights", label: "Flights" },
     { id: "activities", label: "Activities", badge: "New!" },
-    { id: "transfer", label: "Airport transfer" }
+    { id: "cars", label: "Cars" },
+    { id: "bikes", label: "Bikes" }
   ];
   
   // Stay types
@@ -79,16 +79,6 @@ const SearchContainer = () => {
         navigate(`/hotels?type=apartment&${searchParams.toString()}`);
         break;
         
-      case "flightHotel":
-        if (hotelSearch.location) searchParams.append("location", hotelSearch.location);
-        if (hotelSearch.dates) searchParams.append("dates", hotelSearch.dates);
-        if (hotelSearch.guests) searchParams.append("guests", hotelSearch.guests);
-        
-        // Validate and navigate
-        if (!validateSearch(searchParams, uiToast)) return;
-        navigate(`/flight-hotel?${searchParams.toString()}`);
-        break;
-        
       case "flights":
         if (hotelSearch.location) searchParams.append("destination", hotelSearch.location);
         if (hotelSearch.dates) searchParams.append("dates", hotelSearch.dates);
@@ -126,15 +116,6 @@ const SearchContainer = () => {
         // Validate and navigate
         if (!validateSearch(searchParams, uiToast)) return;
         navigate(`/adventures?${searchParams.toString()}`);
-        break;
-        
-      case "transfer":
-        if (hotelSearch.location) searchParams.append("location", hotelSearch.location);
-        if (hotelSearch.dates) searchParams.append("date", hotelSearch.dates);
-        
-        // Validate and navigate
-        if (!validateSearch(searchParams, uiToast)) return;
-        navigate(`/transfers?${searchParams.toString()}`);
         break;
     }
     

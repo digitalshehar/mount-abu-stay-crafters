@@ -1,14 +1,17 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useHotelManagement } from "@/hooks/useHotelManagement";
 import HotelAdminHeader from "@/components/admin/hotels/HotelAdminHeader";
 import HotelAdminContent from "@/components/admin/hotels/HotelAdminContent";
 import HotelDialogs from "@/components/admin/hotels/HotelDialogs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Hotel } from "@/components/admin/hotels/types";
+import EarlyHotelManagement from "@/components/admin/hotels/early/EarlyHotelManagement";
 
 const HotelsManagement = () => {
   const hotelManagement = useHotelManagement();
   const { hotels, operations, newHotel, dialogs, users, notifications, favorites } = hotelManagement;
+  const [activeTab, setActiveTab] = useState<string>("regular");
 
   useEffect(() => {
     const checkMobileView = () => {
@@ -56,29 +59,42 @@ const HotelsManagement = () => {
         favorites={favorites}
       />
 
-      <HotelAdminContent 
-        searchTerm={hotels.searchTerm}
-        setSearchTerm={hotels.setSearchTerm}
-        handleSearch={hotels.handleSearch}
-        handleFilterChange={hotels.handleFilterChange}
-        handleClearFilters={hotels.handleClearFilters}
-        setIsFilterPanelOpen={dialogs.setIsFilterPanelOpen}
-        filterOptions={hotels.filterOptions}
-        hotels={hotels.hotels}
-        filteredHotels={hotels.filteredHotels}
-        loading={hotels.loading}
-        showFavoritesOnly={hotels.showFavoritesOnly}
-        toggleFavoritesFilter={hotels.toggleFavoritesFilter}
-        handleDeleteHotel={operations.handleDeleteHotel}
-        handleOpenEditHotel={dialogs.handleOpenEditHotel}
-        handleToggleStatus={handleToggleStatus}
-        handleToggleFeatured={handleToggleFeatured}
-        handleCloneHotel={handleCloneHotel}
-        handleBulkAction={operations.handleBulkAction}
-        handleOpenVersionHistory={dialogs.handleOpenVersionHistory}
-        handleOpenAuditLog={dialogs.handleOpenAuditLog}
-        addNotification={notifications.addNotification}
-      />
+      <Tabs defaultValue="regular" value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
+        <TabsList className="w-full max-w-md mx-auto mb-6">
+          <TabsTrigger value="regular" className="flex-1">Regular Hotels</TabsTrigger>
+          <TabsTrigger value="early" className="flex-1">Early Hotels (Hourly)</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="regular">
+          <HotelAdminContent 
+            searchTerm={hotels.searchTerm}
+            setSearchTerm={hotels.setSearchTerm}
+            handleSearch={hotels.handleSearch}
+            handleFilterChange={hotels.handleFilterChange}
+            handleClearFilters={hotels.handleClearFilters}
+            setIsFilterPanelOpen={dialogs.setIsFilterPanelOpen}
+            filterOptions={hotels.filterOptions}
+            hotels={hotels.hotels}
+            filteredHotels={hotels.filteredHotels}
+            loading={hotels.loading}
+            showFavoritesOnly={hotels.showFavoritesOnly}
+            toggleFavoritesFilter={hotels.toggleFavoritesFilter}
+            handleDeleteHotel={operations.handleDeleteHotel}
+            handleOpenEditHotel={dialogs.handleOpenEditHotel}
+            handleToggleStatus={handleToggleStatus}
+            handleToggleFeatured={handleToggleFeatured}
+            handleCloneHotel={handleCloneHotel}
+            handleBulkAction={operations.handleBulkAction}
+            handleOpenVersionHistory={dialogs.handleOpenVersionHistory}
+            handleOpenAuditLog={dialogs.handleOpenAuditLog}
+            addNotification={notifications.addNotification}
+          />
+        </TabsContent>
+        
+        <TabsContent value="early">
+          <EarlyHotelManagement />
+        </TabsContent>
+      </Tabs>
 
       <HotelDialogs 
         dialogs={dialogs}
