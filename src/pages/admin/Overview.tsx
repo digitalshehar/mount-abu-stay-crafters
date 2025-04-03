@@ -10,8 +10,24 @@ import SeoAnalytics from "@/components/admin/SeoAnalytics";
 
 const Overview = () => {
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+    <div className="space-y-6 max-w-[1400px] mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Dashboard Overview</h2>
+          <p className="text-muted-foreground">Welcome to your admin dashboard</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <select className="bg-white border border-stone-200 rounded-md px-3 py-1.5 text-sm">
+            <option>Last 7 days</option>
+            <option>Last 30 days</option>
+            <option>Last 90 days</option>
+            <option>All time</option>
+          </select>
+          <button className="bg-primary text-white px-4 py-1.5 rounded-md text-sm hover:bg-primary/90 transition-colors">
+            Download Report
+          </button>
+        </div>
+      </div>
       
       <DashboardStats />
       

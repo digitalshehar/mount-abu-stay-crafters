@@ -43,8 +43,12 @@ const AdminDashboard = () => {
     }
   };
 
+  const isActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(path);
+  };
+
   return (
-    <div className="min-h-screen bg-stone-50 flex overflow-hidden">
+    <div className="min-h-screen bg-stone-50 flex">
       {/* Sidebar for mobile - shown conditionally */}
       <div className="md:hidden">
         {sidebarOpen && (
@@ -58,24 +62,34 @@ const AdminDashboard = () => {
           "fixed inset-y-0 left-0 z-40 transition-transform duration-300 transform",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}>
-          <Sidebar />
+          <Sidebar 
+            isActive={isActive}
+            handleLogout={handleLogout}
+            toggleSidebar={toggleSidebarOpen}
+            sidebarOpen={sidebarOpen}
+          />
         </div>
       </div>
       
       {/* Sidebar for desktop - always visible */}
       <div className="hidden md:block">
-        <Sidebar />
+        <Sidebar 
+          isActive={isActive}
+          handleLogout={handleLogout}
+          toggleSidebar={toggleSidebarOpen}
+          sidebarOpen={true}
+        />
       </div>
       
       {/* Main content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-grow overflow-hidden">
         <DashboardHeader 
           sidebarOpen={sidebarOpen}
           toggleSidebar={toggleSidebarOpen}
           handleLogout={handleLogout}
         />
         
-        <main className="flex-1 p-4 sm:p-6 overflow-y-auto pt-16 md:pt-6 ml-0 md:ml-64">
+        <main className="flex-grow p-4 sm:p-6 overflow-y-auto pt-16 md:pt-6 ml-0 md:ml-64">
           <Outlet />
         </main>
       </div>

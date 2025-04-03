@@ -50,11 +50,11 @@ const HotelSidebar: React.FC<HotelSidebarProps> = ({ hotel, onSelectRooms }) => 
 
         <div className="mt-6">
           <HotelContact 
-            phone={hotel?.contactInfo?.phone}
-            email={hotel?.contactInfo?.email}
-            website={hotel?.contactInfo?.website}
-            checkInTime={hotel?.checkInTime}
-            checkOutTime={hotel?.checkOutTime}
+            phone={hotel?.contactInfo?.phone || ''}
+            email={hotel?.contactInfo?.email || ''}
+            website={hotel?.contactInfo?.website || ''}
+            checkInTime={hotel?.checkInTime || '14:00'}
+            checkOutTime={hotel?.checkOutTime || '11:00'}
           />
         </div>
       </div>

@@ -13,22 +13,29 @@ import {
   Mountain,
   ChevronDown,
   ChevronRight,
-  LogOut
+  LogOut,
+  Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
-const Sidebar: React.FC = () => {
-  const location = useLocation();
-  const { user, signOut } = useAuth();
-  const currentPath = location.pathname;
+interface SidebarProps {
+  isActive: (path: string) => boolean;
+  handleLogout: () => Promise<void>;
+  toggleSidebar: () => void;
+  sidebarOpen: boolean;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ 
+  isActive, 
+  handleLogout,
+  toggleSidebar,
+  sidebarOpen 
+}) => {
+  const { user } = useAuth();
 
   const [contentExpanded, setContentExpanded] = React.useState(true);
   const [controlExpanded, setControlExpanded] = React.useState(true);
-
-  const isActive = (path: string) => {
-    return currentPath === path || currentPath.startsWith(path);
-  };
 
   const contentMenuItems = [
     { 
@@ -73,7 +80,7 @@ const Sidebar: React.FC = () => {
     { 
       name: 'Page Builder', 
       path: '/admin/page-builder', 
-      icon: <FileText className="h-5 w-5" /> 
+      icon: <Globe className="h-5 w-5" /> 
     },
     { 
       name: 'Users', 
@@ -114,11 +121,12 @@ const Sidebar: React.FC = () => {
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className={`flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={cn(
+                      "flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors",
                       isActive(item.path)
                         ? "bg-primary text-primary-foreground"
                         : "text-stone-700 hover:bg-stone-100"
-                    }`}
+                    )}
                   >
                     <span className="flex items-center">
                       <span className="mr-3">{item.icon}</span>
@@ -156,11 +164,12 @@ const Sidebar: React.FC = () => {
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={cn(
+                      "flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
                       isActive(item.path)
                         ? "bg-primary text-primary-foreground"
                         : "text-stone-700 hover:bg-stone-100"
-                    }`}
+                    )}
                   >
                     <span className="mr-3">{item.icon}</span>
                     {item.name}
@@ -184,7 +193,7 @@ const Sidebar: React.FC = () => {
             </div>
           </div>
           <button 
-            onClick={() => signOut()}
+            onClick={() => handleLogout()}
             className="text-stone-500 hover:text-red-500"
             title="Logout"
           >

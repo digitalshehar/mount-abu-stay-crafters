@@ -15,7 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 interface DashboardHeaderProps {
   sidebarOpen: boolean;
   toggleSidebar: () => void;
-  handleLogout: () => void;
+  handleLogout: () => Promise<void>;
 }
 
 const DashboardHeader = ({ sidebarOpen, toggleSidebar, handleLogout }: DashboardHeaderProps) => {
@@ -23,7 +23,7 @@ const DashboardHeader = ({ sidebarOpen, toggleSidebar, handleLogout }: Dashboard
   const { user } = useAuth();
   
   return (
-    <header className="fixed top-0 right-0 left-0 md:left-auto h-16 z-20 flex items-center justify-between bg-white dark:bg-stone-900 border-b border-gray-200 dark:border-stone-800 px-4 transition-all duration-300 md:ml-[250px]">
+    <header className="sticky top-0 z-20 flex items-center justify-between bg-white dark:bg-stone-900 border-b border-gray-200 dark:border-stone-800 px-4 h-16 shadow-sm">
       <div className="flex items-center">
         {/* Mobile sidebar toggle */}
         <Button
@@ -62,7 +62,8 @@ const DashboardHeader = ({ sidebarOpen, toggleSidebar, handleLogout }: Dashboard
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80">
-            <div className="p-4 text-center">
+            <div className="p-4">
+              <p className="text-sm font-medium mb-1">Notifications</p>
               <p className="text-sm text-muted-foreground">No new notifications</p>
             </div>
           </DropdownMenuContent>
@@ -75,8 +76,8 @@ const DashboardHeader = ({ sidebarOpen, toggleSidebar, handleLogout }: Dashboard
               <User className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <div className="p-2 text-xs font-medium">
+          <DropdownMenuContent align="end" className="w-56">
+            <div className="p-2 text-sm font-medium">
               {user?.email || "Admin User"}
             </div>
             <DropdownMenuSeparator />
@@ -87,7 +88,7 @@ const DashboardHeader = ({ sidebarOpen, toggleSidebar, handleLogout }: Dashboard
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleLogout()}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
