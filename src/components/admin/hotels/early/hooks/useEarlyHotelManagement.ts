@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { EarlyHotel, EarlyHotelFormData } from '../../types/earlyHotel';
 import { toast } from 'sonner';
 
-// Mock data
+// Mock data with correctly typed status
 const mockEarlyHotels: EarlyHotel[] = [
   {
     id: 1,
@@ -36,13 +36,24 @@ const mockEarlyHotels: EarlyHotel[] = [
 ];
 
 export const useEarlyHotelManagement = () => {
-  const [earlyHotels, setEarlyHotels] = useState<EarlyHotel[]>(mockEarlyHotels);
-  const [filteredHotels, setFilteredHotels] = useState<EarlyHotel[]>(mockEarlyHotels);
+  // Use localStorage to persist early hotels data between page refreshes
+  const getInitialHotels = (): EarlyHotel[] => {
+    const savedHotels = localStorage.getItem('earlyHotels');
+    return savedHotels ? JSON.parse(savedHotels) : mockEarlyHotels;
+  };
+
+  const [earlyHotels, setEarlyHotels] = useState<EarlyHotel[]>(getInitialHotels);
+  const [filteredHotels, setFilteredHotels] = useState<EarlyHotel[]>(earlyHotels);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState<EarlyHotel | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Save to localStorage whenever earlyHotels changes
+  useEffect(() => {
+    localStorage.setItem('earlyHotels', JSON.stringify(earlyHotels));
+  }, [earlyHotels]);
 
   useEffect(() => {
     // Filter hotels based on search term
@@ -59,20 +70,20 @@ export const useEarlyHotelManagement = () => {
   };
 
   const handleAddHotel = (hotel: EarlyHotelFormData) => {
-    // In a real app, this would be an API call to Supabase
+    // Ensure status is set with the correct type
     const newHotel: EarlyHotel = {
       ...hotel,
-      id: earlyHotels.length + 1, // Mock ID generation
+      id: earlyHotels.length > 0 ? Math.max(...earlyHotels.map(h => h.id)) + 1 : 1, // Generate unique ID
       status: hotel.status || 'active'
     };
     
-    setEarlyHotels([...earlyHotels, newHotel]);
+    const updatedHotels = [...earlyHotels, newHotel];
+    setEarlyHotels(updatedHotels);
     setIsAddDialogOpen(false);
     toast.success("Early hotel added successfully!");
   };
 
   const handleEditHotel = (hotel: EarlyHotel) => {
-    // In a real app, this would be an API call to Supabase
     const updatedHotels = earlyHotels.map(h => 
       h.id === hotel.id ? hotel : h
     );
@@ -83,14 +94,12 @@ export const useEarlyHotelManagement = () => {
   };
 
   const handleDeleteHotel = (id: number) => {
-    // In a real app, this would be an API call to Supabase
     const updatedHotels = earlyHotels.filter(hotel => hotel.id !== id);
     setEarlyHotels(updatedHotels);
     toast.success("Early hotel deleted successfully!");
   };
 
   const handleToggleStatus = (id: number) => {
-    // In a real app, this would be an API call to Supabase
     const updatedHotels = earlyHotels.map(hotel => {
       if (hotel.id === id) {
         return {
@@ -106,7 +115,6 @@ export const useEarlyHotelManagement = () => {
   };
 
   const handleToggleFeatured = (id: number) => {
-    // In a real app, this would be an API call to Supabase
     const updatedHotels = earlyHotels.map(hotel => {
       if (hotel.id === id) {
         return {

@@ -22,7 +22,8 @@ const EarlyHotelManagement: React.FC = () => {
     handleAddHotel,
     handleEditHotel,
     handleDeleteHotel,
-    handleToggleStatus
+    handleToggleStatus,
+    handleToggleFeatured
   } = useEarlyHotelManagement();
 
   return (

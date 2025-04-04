@@ -38,7 +38,7 @@ const EarlyHotelDialog: React.FC<EarlyHotelDialogProps> = ({
     description: '',
     amenities: [],
     featured: false,
-    status: 'active'
+    status: 'active' as const // Using 'as const' to ensure correct type
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -61,7 +61,7 @@ const EarlyHotelDialog: React.FC<EarlyHotelDialogProps> = ({
         description: '',
         amenities: [],
         featured: false,
-        status: 'active'
+        status: 'active' as const
       });
     }
   }, [initialData, isOpen]);
@@ -127,7 +127,14 @@ const EarlyHotelDialog: React.FC<EarlyHotelDialogProps> = ({
 
   const handleSubmit = () => {
     if (!validateForm()) return;
-    onSubmit(formData as EarlyHotelFormData);
+    
+    // Ensure the status is correctly typed
+    const dataToSubmit: EarlyHotelFormData = {
+      ...formData as EarlyHotelFormData,
+      status: (formData.status as 'active' | 'inactive') || 'active'
+    };
+    
+    onSubmit(initialData ? { ...initialData, ...dataToSubmit } : dataToSubmit);
   };
 
   return (
