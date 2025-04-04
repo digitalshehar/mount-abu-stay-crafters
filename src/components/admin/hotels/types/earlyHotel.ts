@@ -25,4 +25,5 @@ export interface EarlyHotelFormData {
   description: string;
   amenities: string[];
   featured: boolean;
+  status?: 'active' | 'inactive';
 }
