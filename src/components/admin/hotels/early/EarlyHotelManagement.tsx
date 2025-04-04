@@ -48,6 +48,7 @@ const EarlyHotelManagement: React.FC = () => {
         }}
         onDelete={handleDeleteHotel}
         onToggleStatus={handleToggleStatus}
+        onToggleFeatured={handleToggleFeatured}
       />
 
       {/* Add Dialog */}

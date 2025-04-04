@@ -16,6 +16,7 @@ import {
   MapPin,
   ToggleLeft,
   ToggleRight,
+  Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ interface EarlyHotelListProps {
   onEdit: (hotel: EarlyHotel) => void;
   onDelete: (id: number) => void;
   onToggleStatus: (id: number) => void;
+  onToggleFeatured?: (id: number) => void;
 }
 
 const EarlyHotelList: React.FC<EarlyHotelListProps> = ({
@@ -34,7 +36,8 @@ const EarlyHotelList: React.FC<EarlyHotelListProps> = ({
   loading,
   onEdit,
   onDelete,
-  onToggleStatus
+  onToggleStatus,
+  onToggleFeatured
 }) => {
   return (
     <div className="border rounded-md">
@@ -132,6 +135,17 @@ const EarlyHotelList: React.FC<EarlyHotelListProps> = ({
                         <ToggleLeft className="h-4 w-4 text-gray-500" />
                       )}
                     </Button>
+                    
+                    {onToggleFeatured && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onToggleFeatured(hotel.id)}
+                        title={hotel.featured ? 'Remove from Featured' : 'Make Featured'}
+                      >
+                        <Award className={`h-4 w-4 ${hotel.featured ? 'text-amber-500 fill-amber-500' : 'text-gray-500'}`} />
+                      </Button>
+                    )}
                     
                     <Button
                       variant="ghost" 

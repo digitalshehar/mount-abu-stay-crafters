@@ -102,9 +102,11 @@ export const useEarlyHotelManagement = () => {
   const handleToggleStatus = (id: number) => {
     const updatedHotels = earlyHotels.map(hotel => {
       if (hotel.id === id) {
+        // Explicitly set the status to either 'active' or 'inactive' to satisfy TypeScript
+        const newStatus = hotel.status === 'active' ? 'inactive' as const : 'active' as const;
         return {
           ...hotel,
-          status: hotel.status === 'active' ? 'inactive' : 'active'
+          status: newStatus
         };
       }
       return hotel;
