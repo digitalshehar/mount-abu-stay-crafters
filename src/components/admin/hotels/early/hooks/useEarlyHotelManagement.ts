@@ -1,59 +1,51 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { EarlyHotel, EarlyHotelFormData } from '../../types/earlyHotel';
 import { toast } from 'sonner';
 
-// Mock data with correctly typed status
-const mockEarlyHotels: EarlyHotel[] = [
-  {
-    id: 1,
-    name: "Hilton Express (Hourly)",
-    location: "Mount Abu Central",
-    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1000",
-    stars: 4,
-    hourly_rate: 500,
-    min_hours: 4,
-    max_hours: 12,
-    description: "Perfect for business travelers requiring short stays",
-    amenities: ["Free Wi-Fi", "Air conditioning", "TV"],
-    status: "active",
-    featured: true
-  },
-  {
-    id: 2,
-    name: "Rest & Go Inn",
-    location: "Mount Abu Station Road",
-    image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=1000",
-    stars: 3,
-    hourly_rate: 350,
-    min_hours: 2,
-    max_hours: 8,
-    description: "Budget-friendly hourly stays near the railway station",
-    amenities: ["Free Wi-Fi", "Toiletries"],
-    status: "active",
-    featured: false
-  }
-];
-
 export const useEarlyHotelManagement = () => {
-  // Use localStorage to persist early hotels data between page refreshes
-  const getInitialHotels = (): EarlyHotel[] => {
-    const savedHotels = localStorage.getItem('earlyHotels');
-    return savedHotels ? JSON.parse(savedHotels) : mockEarlyHotels;
-  };
-
-  const [earlyHotels, setEarlyHotels] = useState<EarlyHotel[]>(getInitialHotels);
-  const [filteredHotels, setFilteredHotels] = useState<EarlyHotel[]>(earlyHotels);
+  const [earlyHotels, setEarlyHotels] = useState<EarlyHotel[]>([]);
+  const [filteredHotels, setFilteredHotels] = useState<EarlyHotel[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState<EarlyHotel | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Save to localStorage whenever earlyHotels changes
+  // Fetch early hotels from Supabase
+  const fetchEarlyHotels = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('early_hotels')
+        .select('*');
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        // Convert database records to match the EarlyHotel type
+        const typedHotels: EarlyHotel[] = data.map(hotel => ({
+          ...hotel,
+          status: hotel.status as 'active' | 'inactive'
+        }));
+        setEarlyHotels(typedHotels);
+        setFilteredHotels(typedHotels);
+      }
+    } catch (error) {
+      console.error('Error fetching early hotels:', error);
+      toast.error('Failed to load early hotels');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch hotels on component mount
   useEffect(() => {
-    localStorage.setItem('earlyHotels', JSON.stringify(earlyHotels));
-  }, [earlyHotels]);
+    fetchEarlyHotels();
+  }, []);
 
   useEffect(() => {
     // Filter hotels based on search term
@@ -69,66 +61,180 @@ export const useEarlyHotelManagement = () => {
     // Already handled by the useEffect
   };
 
-  const handleAddHotel = (hotel: EarlyHotelFormData) => {
-    // Ensure status is set with the correct type
-    const newHotel: EarlyHotel = {
-      ...hotel,
-      id: earlyHotels.length > 0 ? Math.max(...earlyHotels.map(h => h.id)) + 1 : 1, // Generate unique ID
-      status: hotel.status || 'active'
-    };
-    
-    const updatedHotels = [...earlyHotels, newHotel];
-    setEarlyHotels(updatedHotels);
-    setIsAddDialogOpen(false);
-    toast.success("Early hotel added successfully!");
-  };
+  const handleAddHotel = async (hotel: EarlyHotelFormData) => {
+    try {
+      setLoading(true);
+      
+      // Insert new hotel into Supabase
+      const { data, error } = await supabase
+        .from('early_hotels')
+        .insert([
+          {
+            ...hotel,
+            status: hotel.status || 'active'
+          }
+        ])
+        .select();
 
-  const handleEditHotel = (hotel: EarlyHotel) => {
-    const updatedHotels = earlyHotels.map(h => 
-      h.id === hotel.id ? hotel : h
-    );
-    
-    setEarlyHotels(updatedHotels);
-    setIsEditDialogOpen(false);
-    toast.success("Early hotel updated successfully!");
-  };
-
-  const handleDeleteHotel = (id: number) => {
-    const updatedHotels = earlyHotels.filter(hotel => hotel.id !== id);
-    setEarlyHotels(updatedHotels);
-    toast.success("Early hotel deleted successfully!");
-  };
-
-  const handleToggleStatus = (id: number) => {
-    const updatedHotels = earlyHotels.map(hotel => {
-      if (hotel.id === id) {
-        // Explicitly set the status to either 'active' or 'inactive' to satisfy TypeScript
-        const newStatus = hotel.status === 'active' ? 'inactive' as const : 'active' as const;
-        return {
-          ...hotel,
-          status: newStatus
-        };
+      if (error) {
+        throw error;
       }
-      return hotel;
-    });
-    
-    setEarlyHotels(updatedHotels);
-    toast.success("Hotel status updated!");
+
+      if (data && data.length > 0) {
+        // Convert the returned data to match EarlyHotel type
+        const newHotel: EarlyHotel = {
+          ...data[0],
+          status: data[0].status as 'active' | 'inactive'
+        };
+        
+        setEarlyHotels(prevHotels => [...prevHotels, newHotel]);
+        setIsAddDialogOpen(false);
+        toast.success("Early hotel added successfully!");
+      }
+    } catch (error) {
+      console.error('Error adding early hotel:', error);
+      toast.error('Failed to add early hotel');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleToggleFeatured = (id: number) => {
-    const updatedHotels = earlyHotels.map(hotel => {
-      if (hotel.id === id) {
-        return {
+  const handleEditHotel = async (hotel: EarlyHotel) => {
+    try {
+      setLoading(true);
+
+      // Update hotel in Supabase
+      const { error } = await supabase
+        .from('early_hotels')
+        .update({
           ...hotel,
-          featured: !hotel.featured
-        };
+          status: hotel.status
+        })
+        .eq('id', hotel.id);
+
+      if (error) {
+        throw error;
       }
-      return hotel;
-    });
-    
-    setEarlyHotels(updatedHotels);
-    toast.success("Featured status updated!");
+
+      // Update local state
+      setEarlyHotels(prevHotels => 
+        prevHotels.map(h => h.id === hotel.id ? hotel : h)
+      );
+      
+      setIsEditDialogOpen(false);
+      toast.success("Early hotel updated successfully!");
+    } catch (error) {
+      console.error('Error updating early hotel:', error);
+      toast.error('Failed to update early hotel');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteHotel = async (id: number) => {
+    try {
+      setLoading(true);
+
+      // Delete hotel from Supabase
+      const { error } = await supabase
+        .from('early_hotels')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setEarlyHotels(prevHotels => 
+        prevHotels.filter(hotel => hotel.id !== id)
+      );
+      
+      toast.success("Early hotel deleted successfully!");
+    } catch (error) {
+      console.error('Error deleting early hotel:', error);
+      toast.error('Failed to delete early hotel');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (id: number) => {
+    try {
+      // Find the current hotel
+      const hotel = earlyHotels.find(h => h.id === id);
+      if (!hotel) return;
+      
+      // Determine the new status
+      const newStatus = hotel.status === 'active' ? 'inactive' as const : 'active' as const;
+      
+      // Update in Supabase
+      const { error } = await supabase
+        .from('early_hotels')
+        .update({ status: newStatus })
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setEarlyHotels(prevHotels => 
+        prevHotels.map(h => {
+          if (h.id === id) {
+            return {
+              ...h,
+              status: newStatus
+            };
+          }
+          return h;
+        })
+      );
+      
+      toast.success("Hotel status updated!");
+    } catch (error) {
+      console.error('Error updating hotel status:', error);
+      toast.error('Failed to update hotel status');
+    }
+  };
+
+  const handleToggleFeatured = async (id: number) => {
+    try {
+      // Find the current hotel
+      const hotel = earlyHotels.find(h => h.id === id);
+      if (!hotel) return;
+      
+      // Determine the new featured status
+      const newFeaturedStatus = !hotel.featured;
+      
+      // Update in Supabase
+      const { error } = await supabase
+        .from('early_hotels')
+        .update({ featured: newFeaturedStatus })
+        .eq('id', id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      setEarlyHotels(prevHotels => 
+        prevHotels.map(h => {
+          if (h.id === id) {
+            return {
+              ...h,
+              featured: newFeaturedStatus
+            };
+          }
+          return h;
+        })
+      );
+      
+      toast.success("Featured status updated!");
+    } catch (error) {
+      console.error('Error updating featured status:', error);
+      toast.error('Failed to update featured status');
+    }
   };
 
   return {

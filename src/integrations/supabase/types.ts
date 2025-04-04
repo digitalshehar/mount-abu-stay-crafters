@@ -344,6 +344,54 @@ export type Database = {
         }
         Relationships: []
       }
+      early_hotels: {
+        Row: {
+          amenities: string[] | null
+          created_at: string | null
+          description: string
+          featured: boolean | null
+          hourly_rate: number
+          id: number
+          image: string
+          location: string
+          max_hours: number
+          min_hours: number
+          name: string
+          stars: number
+          status: string
+        }
+        Insert: {
+          amenities?: string[] | null
+          created_at?: string | null
+          description: string
+          featured?: boolean | null
+          hourly_rate: number
+          id?: number
+          image: string
+          location: string
+          max_hours: number
+          min_hours: number
+          name: string
+          stars: number
+          status?: string
+        }
+        Update: {
+          amenities?: string[] | null
+          created_at?: string | null
+          description?: string
+          featured?: boolean | null
+          hourly_rate?: number
+          id?: number
+          image?: string
+          location?: string
+          max_hours?: number
+          min_hours?: number
+          name?: string
+          stars?: number
+          status?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string | null
