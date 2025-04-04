@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bed, Car, Bike, Compass, Home, PlaneTakeoff, Briefcase, Bus } from 'lucide-react';
+import { Bed, Car, Bike, Compass, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SearchTabsProps {
@@ -19,12 +19,9 @@ const SearchTabs: React.FC<SearchTabsProps> = ({ activeTab, setActiveTab, bookin
           const iconMap: Record<string, React.ReactNode> = {
             hotels: <Bed className="h-4 w-4 mr-2" />,
             homes: <Home className="h-4 w-4 mr-2" />,
-            flightHotel: <Briefcase className="h-4 w-4 mr-2" />,
-            flights: <PlaneTakeoff className="h-4 w-4 mr-2" />,
             activities: <Compass className="h-4 w-4 mr-2" />,
             cars: <Car className="h-4 w-4 mr-2" />,
-            bikes: <Bike className="h-4 w-4 mr-2" />,
-            transfer: <Bus className="h-4 w-4 mr-2" />
+            bikes: <Bike className="h-4 w-4 mr-2" />
           };
           
           return (

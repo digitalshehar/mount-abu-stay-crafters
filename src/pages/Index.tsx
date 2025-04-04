@@ -10,6 +10,7 @@ import FeaturedAdventures from "@/components/home/FeaturedAdventures";
 import CarouselSection from "@/components/home/CarouselSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import Newsletter from "@/components/home/Newsletter";
+import EarlyHotels from "@/components/home/EarlyHotels";
 
 const Index: React.FC = () => {
   return (
@@ -26,6 +27,7 @@ const Index: React.FC = () => {
         <Hero />
         <FeaturedDestinations />
         <HarleyHotels />
+        <EarlyHotels />
         <PopularHotels />
         <CarouselSection />
         <FeaturedAdventures />

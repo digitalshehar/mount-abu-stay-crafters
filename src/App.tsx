@@ -42,6 +42,8 @@ import CarRentalDetail from '@/pages/CarRentalDetail';
 import BookingNotFound from '@/pages/BookingNotFound';
 import AdminOverview from '@/pages/admin/Overview';
 import AdminPageBuilder from '@/pages/admin/PageBuilder';
+import EarlyHotels from '@/pages/EarlyHotels';
+import EarlyHotelDetail from '@/pages/EarlyHotelDetail';
 
 const queryClient = new QueryClient();
 
@@ -63,6 +65,9 @@ function App() {
                 <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
                 <Route path="/hotels/html/:hotelSlug" element={<HotelHtmlView />} />
                 <Route path="/hotel-not-found" element={<HotelNotFound />} />
+                
+                <Route path="/early-hotels" element={<EarlyHotels />} />
+                <Route path="/early-hotel/:hotelId" element={<EarlyHotelDetail />} />
                 
                 <Route path="/bike-rentals" element={<BikeRentals />} />
                 <Route path="/rentals/bike" element={<BikeRentals />} />

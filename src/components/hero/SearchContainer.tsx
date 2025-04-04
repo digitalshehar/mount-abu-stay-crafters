@@ -15,11 +15,10 @@ const SearchContainer = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const isMobile = useIsMobile();
   
-  // Updated booking types - removed Flight + Hotel and Airport transfer
+  // Updated booking types - removed Flight option
   const bookingTypes = [
     { id: "hotels", label: "Hotels" },
     { id: "homes", label: "Homes & Apts" },
-    { id: "flights", label: "Flights" },
     { id: "activities", label: "Activities", badge: "New!" },
     { id: "cars", label: "Cars" },
     { id: "bikes", label: "Bikes" }
@@ -79,13 +78,14 @@ const SearchContainer = () => {
         navigate(`/hotels?type=apartment&${searchParams.toString()}`);
         break;
         
-      case "flights":
-        if (hotelSearch.location) searchParams.append("destination", hotelSearch.location);
-        if (hotelSearch.dates) searchParams.append("dates", hotelSearch.dates);
+      case "activities":
+        if (activitySearch.location) searchParams.append("location", activitySearch.location);
+        if (activitySearch.date) searchParams.append("date", activitySearch.date);
+        if (activitySearch.type) searchParams.append("type", activitySearch.type);
         
         // Validate and navigate
         if (!validateSearch(searchParams, uiToast)) return;
-        navigate(`/flights?${searchParams.toString()}`);
+        navigate(`/adventures?${searchParams.toString()}`);
         break;
         
       case "cars":
@@ -106,16 +106,6 @@ const SearchContainer = () => {
         // Validate and navigate
         if (!validateSearch(searchParams, uiToast)) return;
         navigate(`/bike-rentals?${searchParams.toString()}`);
-        break;
-        
-      case "activities":
-        if (activitySearch.location) searchParams.append("location", activitySearch.location);
-        if (activitySearch.date) searchParams.append("date", activitySearch.date);
-        if (activitySearch.type) searchParams.append("type", activitySearch.type);
-        
-        // Validate and navigate
-        if (!validateSearch(searchParams, uiToast)) return;
-        navigate(`/adventures?${searchParams.toString()}`);
         break;
     }
     
