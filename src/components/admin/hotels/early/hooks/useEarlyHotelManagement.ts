@@ -107,7 +107,16 @@ export const useEarlyHotelManagement = () => {
       const { error } = await supabase
         .from('early_hotels')
         .update({
-          ...hotel,
+          name: hotel.name,
+          location: hotel.location,
+          image: hotel.image,
+          stars: hotel.stars,
+          hourly_rate: hotel.hourly_rate,
+          min_hours: hotel.min_hours,
+          max_hours: hotel.max_hours,
+          description: hotel.description,
+          amenities: hotel.amenities,
+          featured: hotel.featured,
           status: hotel.status
         })
         .eq('id', hotel.id);
@@ -191,7 +200,7 @@ export const useEarlyHotelManagement = () => {
         })
       );
       
-      toast.success("Hotel status updated!");
+      toast.success(`Hotel ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`);
     } catch (error) {
       console.error('Error updating hotel status:', error);
       toast.error('Failed to update hotel status');
@@ -230,7 +239,7 @@ export const useEarlyHotelManagement = () => {
         })
       );
       
-      toast.success("Featured status updated!");
+      toast.success(`Hotel ${newFeaturedStatus ? 'featured' : 'unfeatured'} successfully!`);
     } catch (error) {
       console.error('Error updating featured status:', error);
       toast.error('Failed to update featured status');

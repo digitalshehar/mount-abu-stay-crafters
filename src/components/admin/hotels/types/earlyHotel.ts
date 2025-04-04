@@ -12,6 +12,7 @@ export interface EarlyHotel {
   amenities: string[];
   status: 'active' | 'inactive';
   featured: boolean;
+  created_at?: string;
 }
 
 export interface EarlyHotelFormData {
