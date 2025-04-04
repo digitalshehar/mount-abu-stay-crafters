@@ -241,7 +241,7 @@ const EarlyHotelManagement: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={hotel.status === 'active' ? "success" : "secondary"}>
+                      <Badge variant={hotel.status === 'active' ? "default" : "secondary"}>
                         {hotel.status === 'active' ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
