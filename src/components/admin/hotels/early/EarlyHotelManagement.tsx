@@ -5,8 +5,15 @@ import EarlyHotelSearch from './EarlyHotelSearch';
 import EarlyHotelList from './EarlyHotelList';
 import EarlyHotelDialog from './EarlyHotelDialog';
 import EarlyHotelBookingsList from './EarlyHotelBookingsList';
+import EarlyHotelDetailsTab from './EarlyHotelDetailsTab';
 import { useEarlyHotelManagement } from './hooks/useEarlyHotelManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { 
   Card, 
   CardContent, 
@@ -34,6 +41,8 @@ const EarlyHotelManagement: React.FC = () => {
     setIsAddDialogOpen,
     isEditDialogOpen,
     setIsEditDialogOpen,
+    isDetailsDialogOpen,
+    setIsDetailsDialogOpen,
     selectedHotel,
     setSelectedHotel,
     loading,
@@ -42,7 +51,8 @@ const EarlyHotelManagement: React.FC = () => {
     handleEditHotel,
     handleDeleteHotel,
     handleToggleStatus,
-    handleToggleFeatured
+    handleToggleFeatured,
+    fetchHotels
   } = useEarlyHotelManagement();
 
   const [activeTab, setActiveTab] = useState<string>("hotels");
@@ -105,6 +115,11 @@ const EarlyHotelManagement: React.FC = () => {
     }
   }, [activeTab]);
 
+  const handleViewDetails = (hotel: any) => {
+    setSelectedHotel(hotel);
+    setIsDetailsDialogOpen(true);
+  };
+
   return (
     <div className="space-y-4">
       <EarlyHotelHeader 
@@ -133,6 +148,7 @@ const EarlyHotelManagement: React.FC = () => {
                 setSelectedHotel(hotel);
                 setIsEditDialogOpen(true);
               }}
+              onViewDetails={handleViewDetails}
               onDelete={handleDeleteHotel}
               onToggleStatus={handleToggleStatus}
               onToggleFeatured={handleToggleFeatured}
@@ -240,6 +256,20 @@ const EarlyHotelManagement: React.FC = () => {
           title="Edit Early Hotel"
           initialData={selectedHotel}
         />
+      )}
+
+      {/* Details Dialog */}
+      {selectedHotel && (
+        <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Hotel Details: {selectedHotel.name}</DialogTitle>
+            </DialogHeader>
+            <div className="mt-4">
+              <EarlyHotelDetailsTab hotelId={selectedHotel.id} />
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

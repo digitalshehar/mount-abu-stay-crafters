@@ -5,7 +5,10 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { EarlyHotel } from "@/components/admin/hotels/types/earlyHotel";
 import Layout from "@/components/layout";
-import { Clock, MapPin, Star, Check, Info, Calendar, Users, Share2, Camera, ArrowLeft, Bookmark, Award } from "lucide-react";
+import { 
+  Clock, MapPin, Star, Check, Info, Calendar, Users, Share2, Camera, 
+  ArrowLeft, Bookmark, Award, Phone, Mail, ExternalLink, Map, BedDouble
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -16,6 +19,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useEarlyHotelBooking } from "@/hooks/useEarlyHotelBooking";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+
+interface EarlyHotelFAQ {
+  id: number;
+  question: string;
+  answer: string;
+}
+
+interface HotelImage {
+  id: number;
+  image_url: string;
+  caption?: string;
+  is_primary: boolean;
+}
 
 const EarlyHotelDetail = () => {
   const { hotelId } = useParams<{ hotelId: string }>();
@@ -25,6 +43,10 @@ const EarlyHotelDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [similarHotels, setSimilarHotels] = useState<EarlyHotel[]>([]);
+  const [faqs, setFaqs] = useState<EarlyHotelFAQ[]>([]);
+  const [hotelImages, setHotelImages] = useState<HotelImage[]>([]);
+  const [showGallery, setShowGallery] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const { user } = useAuth();
 
   const { 
@@ -59,6 +81,7 @@ const EarlyHotelDetail = () => {
           return;
         }
 
+        // Fetch hotel data
         const { data, error } = await supabase
           .from("early_hotels")
           .select("*")
@@ -79,6 +102,35 @@ const EarlyHotelDetail = () => {
             setSelectedHours(data.min_hours);
           }
           document.title = `${data.name} - Early Check-in Hotel`;
+
+          // Fetch hotel FAQs
+          const { data: faqData, error: faqError } = await supabase
+            .from("early_hotel_faqs")
+            .select("*")
+            .eq("hotel_id", data.id)
+            .order("display_order", { ascending: true });
+
+          if (!faqError && faqData) {
+            setFaqs(faqData);
+          }
+
+          // Fetch hotel images
+          const { data: imageData, error: imageError } = await supabase
+            .from("early_hotel_images")
+            .select("*")
+            .eq("hotel_id", data.id)
+            .order("display_order", { ascending: true });
+
+          if (!imageError && imageData && imageData.length > 0) {
+            setHotelImages(imageData);
+          } else {
+            // Use the main image as fallback
+            setHotelImages([{ 
+              id: 0, 
+              image_url: data.image, 
+              is_primary: true 
+            }]);
+          }
 
           // Fetch similar hotels in the same location
           const { data: similarData } = await supabase
@@ -143,6 +195,20 @@ const EarlyHotelDetail = () => {
     return reviews;
   };
 
+  const openGallery = (index: number) => {
+    setSelectedImageIndex(index);
+    setShowGallery(true);
+  };
+
+  const getMainImage = () => {
+    // Try to find primary image first
+    const primaryImage = hotelImages.find(img => img.is_primary);
+    if (primaryImage) return primaryImage.image_url;
+    
+    // Fallback to first image or hotel.image
+    return hotelImages.length > 0 ? hotelImages[0].image_url : hotel?.image;
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -205,7 +271,7 @@ const EarlyHotelDetail = () => {
           </Button>
           <h1 className="text-3xl font-bold mb-2">{hotel.name}</h1>
           
-          <div className="flex items-center text-gray-600 mb-4">
+          <div className="flex flex-wrap items-center text-gray-600 mb-4">
             <MapPin className="w-4 h-4 mr-1" />
             <span>{hotel.location}</span>
             <div className="mx-2">•</div>
@@ -215,9 +281,14 @@ const EarlyHotelDetail = () => {
               ))}
             </div>
             <div className="mx-2">•</div>
-            <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
               Early Check-in
-            </span>
+            </Badge>
+            <div className="mx-2">•</div>
+            <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
+              <Clock className="w-3 h-3 mr-1" />
+              Hourly Stay
+            </Badge>
           </div>
 
           <div className="flex flex-wrap gap-3">
@@ -238,6 +309,15 @@ const EarlyHotelDetail = () => {
               <Bookmark className="h-4 w-4" />
               <span>Save</span>
             </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-2"
+              onClick={() => openGallery(0)}
+            >
+              <Camera className="h-4 w-4" />
+              <span>View Photos</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -247,29 +327,49 @@ const EarlyHotelDetail = () => {
           {/* Main content */}
           <div className="lg:w-2/3">
             <div className="mb-8 relative">
-              <img 
-                src={hotel.image} 
-                alt={hotel.name} 
-                className="w-full h-[400px] object-cover rounded-lg" 
-              />
-              <div className="absolute top-4 right-4">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-white hover:bg-white/90"
+              {/* Main Image with Gallery Grid */}
+              <div className="grid grid-cols-4 gap-2 h-[400px]">
+                <div 
+                  className="col-span-4 md:col-span-2 h-full cursor-pointer relative overflow-hidden rounded-lg"
+                  onClick={() => openGallery(0)}
                 >
-                  <Camera className="h-4 w-4 mr-2" />
-                  View Photos
-                </Button>
-              </div>
-              <div className="absolute bottom-4 left-4 bg-primary text-white px-3 py-1 rounded-full flex items-center text-sm">
-                <Clock className="h-3 w-3 mr-1" />
-                Pay-by-hour Hotel
+                  <img 
+                    src={getMainImage()} 
+                    alt={hotel.name} 
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                  />
+                  <div className="absolute bottom-4 left-4 bg-primary text-white px-3 py-1 rounded-full flex items-center text-sm">
+                    <Clock className="h-3 w-3 mr-1" />
+                    ₹{hotel.hourly_rate}/hour
+                  </div>
+                </div>
+                
+                {/* Smaller gallery images */}
+                <div className="hidden md:grid md:col-span-2 grid-cols-2 grid-rows-2 gap-2 h-full">
+                  {hotelImages.slice(1, 5).map((image, index) => (
+                    <div 
+                      key={image.id} 
+                      className="overflow-hidden rounded-lg cursor-pointer relative"
+                      onClick={() => openGallery(index + 1)}
+                    >
+                      <img 
+                        src={image.image_url} 
+                        alt={image.caption || `${hotel.name} image ${index + 1}`} 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                      />
+                      {index === 3 && hotelImages.length > 5 && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-semibold">
+                          +{hotelImages.length - 5} more
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
             <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full mb-8">
-              <TabsList className="grid grid-cols-4 mb-6">
+              <TabsList className="grid w-full grid-cols-4 mb-6">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="amenities">Amenities</TabsTrigger>
                 <TabsTrigger value="policies">Policies</TabsTrigger>
@@ -286,7 +386,7 @@ const EarlyHotelDetail = () => {
 
                 <div>
                   <h2 className="text-xl font-semibold mb-3">Stay Details</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                       <div className="flex items-center text-primary mb-2">
                         <Clock className="w-5 h-5 mr-2" />
@@ -301,6 +401,14 @@ const EarlyHotelDetail = () => {
                         <span className="font-medium">Duration</span>
                       </div>
                       <p className="text-gray-700">Min: {hotel.min_hours} hours / Max: {hotel.max_hours} hours</p>
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                      <div className="flex items-center text-primary mb-2">
+                        <BedDouble className="w-5 h-5 mr-2" />
+                        <span className="font-medium">Room Type</span>
+                      </div>
+                      <p className="text-gray-700">Standard (Hourly Stay)</p>
                     </div>
                   </div>
                 </div>
@@ -319,6 +427,66 @@ const EarlyHotelDetail = () => {
                     </div>
                   </div>
                 </div>
+
+                <div>
+                  <h2 className="text-xl font-semibold mb-3">Location & Contact</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <h3 className="font-medium flex items-center mb-2">
+                          <MapPin className="w-4 h-4 mr-2 text-primary" />
+                          Address
+                        </h3>
+                        <p className="text-gray-700 mb-2">
+                          {hotel.name}, {hotel.location}
+                        </p>
+                        <div className="mt-3">
+                          <Button variant="outline" size="sm" className="flex items-center">
+                            <Map className="w-4 h-4 mr-1" />
+                            View on Map
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-4">
+                        <h3 className="font-medium mb-2">Contact Information</h3>
+                        <div className="space-y-2">
+                          <div className="flex items-center text-gray-700">
+                            <Phone className="w-4 h-4 mr-2 text-primary" />
+                            <span>+91 98765 43210</span>
+                          </div>
+                          <div className="flex items-center text-gray-700">
+                            <Mail className="w-4 h-4 mr-2 text-primary" />
+                            <span>info@{hotel.name.toLowerCase().replace(/\s+/g, '')}.com</span>
+                          </div>
+                          <div className="flex items-center text-gray-700">
+                            <ExternalLink className="w-4 h-4 mr-2 text-primary" />
+                            <span>www.{hotel.name.toLowerCase().replace(/\s+/g, '')}.com</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                {/* FAQs section */}
+                {faqs.length > 0 && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-3">Frequently Asked Questions</h2>
+                    <Accordion type="single" collapsible className="w-full">
+                      {faqs.map((faq) => (
+                        <AccordionItem key={faq.id} value={`faq-${faq.id}`}>
+                          <AccordionTrigger>{faq.question}</AccordionTrigger>
+                          <AccordionContent>
+                            <p className="text-gray-700">{faq.answer}</p>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                )}
               </TabsContent>
               
               <TabsContent value="amenities">
@@ -499,6 +667,39 @@ const EarlyHotelDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Image Gallery Dialog */}
+      <Dialog open={showGallery} onOpenChange={setShowGallery}>
+        <DialogContent className="sm:max-w-[90vw] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Hotel Gallery</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="mb-4">
+              <img 
+                src={hotelImages[selectedImageIndex]?.image_url || hotel.image} 
+                alt={`${hotel.name} large view`} 
+                className="w-full max-h-[60vh] object-contain rounded-md"
+              />
+            </div>
+            <div className="grid grid-cols-6 gap-2">
+              {hotelImages.map((image, index) => (
+                <div 
+                  key={image.id || index}
+                  className={`cursor-pointer border-2 rounded overflow-hidden h-16 ${selectedImageIndex === index ? 'border-primary' : 'border-transparent'}`}
+                  onClick={() => setSelectedImageIndex(index)}
+                >
+                  <img 
+                    src={image.image_url} 
+                    alt={`Thumbnail ${index + 1}`} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Booking Dialog */}
       <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
