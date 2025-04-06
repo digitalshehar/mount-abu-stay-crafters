@@ -7,7 +7,7 @@ import { EarlyHotel } from "@/components/admin/hotels/types/earlyHotel";
 import Layout from "@/components/layout";
 import { Clock, MapPin, Star, Check, Info, Calendar, Users, Share2, Camera, ArrowLeft, Bookmark, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,21 +15,38 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useEarlyHotelBooking } from "@/hooks/useEarlyHotelBooking";
 
 const EarlyHotelDetail = () => {
   const { hotelId } = useParams<{ hotelId: string }>();
   const navigate = useNavigate();
   const [hotel, setHotel] = useState<EarlyHotel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [selectedHours, setSelectedHours] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [similarHotels, setSimilarHotels] = useState<EarlyHotel[]>([]);
   const { user } = useAuth();
-  const [guestName, setGuestName] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
-  const [guestPhone, setGuestPhone] = useState("");
+
+  const { 
+    isBookingLoading,
+    selectedHours,
+    setSelectedHours,
+    showBookingForm,
+    setShowBookingForm,
+    showBookingSuccess,
+    setShowBookingSuccess,
+    bookingReference,
+    bookingDetails,
+    handleInitiateBooking,
+    handleBookingSubmit,
+    calculateTotalPrice,
+    guestName,
+    setGuestName,
+    guestEmail,
+    setGuestEmail,
+    guestPhone,
+    setGuestPhone
+  } = useEarlyHotelBooking(hotel);
 
   useEffect(() => {
     const fetchHotelDetails = async () => {
@@ -58,7 +75,9 @@ const EarlyHotelDetail = () => {
           setHotel(null);
         } else {
           setHotel(data as EarlyHotel);
-          setSelectedHours(data.min_hours);
+          if (data.min_hours) {
+            setSelectedHours(data.min_hours);
+          }
           document.title = `${data.name} - Early Check-in Hotel`;
 
           // Fetch similar hotels in the same location
@@ -94,24 +113,7 @@ const EarlyHotelDetail = () => {
     }
     setGuestName(user.user_metadata?.full_name || "");
     setGuestEmail(user.email || "");
-    setIsBookingModalOpen(true);
-  };
-
-  const calculateTotalPrice = () => {
-    if (!hotel) return 0;
-    return hotel.hourly_rate * selectedHours;
-  };
-
-  const handleSubmitBooking = () => {
-    if (!guestName.trim() || !guestEmail.trim()) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    toast.success("Booking successful!", {
-      description: `You have booked ${hotel?.name} for ${selectedHours} hours.`
-    });
-    setIsBookingModalOpen(false);
+    setShowBookingForm(true);
   };
 
   const handleShareHotel = async () => {
@@ -468,7 +470,7 @@ const EarlyHotelDetail = () => {
                 
                 <div className="flex justify-between text-lg font-bold mb-4 border-t pt-4">
                   <span>Total:</span>
-                  <span>₹{calculateTotalPrice()}</span>
+                  <span>₹{calculateTotalPrice(hotel, selectedHours)}</span>
                 </div>
               </div>
               
@@ -499,10 +501,13 @@ const EarlyHotelDetail = () => {
       </div>
 
       {/* Booking Dialog */}
-      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
+      <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Complete Your Booking</DialogTitle>
+            <DialogDescription>
+              Fill in your details to book {hotel.name} for {selectedHours} hours.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <div className="space-y-4">
@@ -524,7 +529,7 @@ const EarlyHotelDetail = () => {
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-2">
                 <span>Total Amount:</span>
-                <span>₹{calculateTotalPrice()}</span>
+                <span>₹{calculateTotalPrice(hotel, selectedHours)}</span>
               </div>
 
               <Separator />
@@ -564,8 +569,63 @@ const EarlyHotelDetail = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsBookingModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmitBooking}>Confirm Booking</Button>
+            <Button variant="outline" onClick={() => setShowBookingForm(false)}>Cancel</Button>
+            <Button 
+              onClick={() => handleBookingSubmit({
+                fullName: guestName,
+                email: guestEmail,
+                phone: guestPhone
+              })}
+              disabled={isBookingLoading}
+            >
+              {isBookingLoading ? "Processing..." : "Confirm Booking"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Booking Success Dialog */}
+      <Dialog open={showBookingSuccess} onOpenChange={setShowBookingSuccess}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-green-600">
+              <Check className="h-6 w-6 mr-2" />
+              Booking Confirmed!
+            </DialogTitle>
+            <DialogDescription>
+              Your booking has been successfully confirmed.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="bg-green-50 border border-green-100 rounded-lg p-4 mb-4">
+              <p className="text-sm text-green-800">A confirmation email has been sent to {bookingDetails.guestEmail}</p>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Booking Reference:</span>
+                <span className="font-medium">{bookingReference}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Guest Name:</span>
+                <span>{bookingDetails.guestName}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Hotel:</span>
+                <span>{hotel.name}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Duration:</span>
+                <span>{selectedHours} hours</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Total Amount:</span>
+                <span>₹{bookingDetails.totalPrice}</span>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowBookingSuccess(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
