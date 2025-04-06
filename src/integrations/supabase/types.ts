@@ -344,6 +344,390 @@ export type Database = {
         }
         Relationships: []
       }
+      early_hotel_amenities: {
+        Row: {
+          category_id: number | null
+          created_at: string | null
+          icon: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          category_id?: number | null
+          created_at?: string | null
+          icon?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          category_id?: number | null
+          created_at?: string | null
+          icon?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_hotel_amenities_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotel_amenity_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      early_hotel_amenity_categories: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          icon: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number
+          icon?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          icon?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      early_hotel_availability: {
+        Row: {
+          available_slots: number
+          created_at: string | null
+          date: string
+          hotel_id: number
+          id: number
+        }
+        Insert: {
+          available_slots?: number
+          created_at?: string | null
+          date: string
+          hotel_id: number
+          id?: number
+        }
+        Update: {
+          available_slots?: number
+          created_at?: string | null
+          date?: string
+          hotel_id?: number
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_hotel_availability_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotel_booking_stats"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "early_hotel_availability_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      early_hotel_faqs: {
+        Row: {
+          answer: string
+          created_at: string | null
+          display_order: number
+          hotel_id: number
+          id: number
+          question: string
+        }
+        Insert: {
+          answer: string
+          created_at?: string | null
+          display_order?: number
+          hotel_id: number
+          id?: number
+          question: string
+        }
+        Update: {
+          answer?: string
+          created_at?: string | null
+          display_order?: number
+          hotel_id?: number
+          id?: number
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_hotel_faqs_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotel_booking_stats"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "early_hotel_faqs_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      early_hotel_images: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          display_order: number
+          hotel_id: number
+          id: number
+          image_url: string
+          is_primary: boolean
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number
+          hotel_id: number
+          id?: number
+          image_url: string
+          is_primary?: boolean
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number
+          hotel_id?: number
+          id?: number
+          image_url?: string
+          is_primary?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_hotel_images_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotel_booking_stats"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "early_hotel_images_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      early_hotel_maintenance: {
+        Row: {
+          assigned_to: string | null
+          hotel_id: number
+          id: number
+          issue_description: string
+          notes: string | null
+          priority: string
+          reported_at: string | null
+          reported_by: string | null
+          resolved_at: string | null
+          status: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          hotel_id: number
+          id?: number
+          issue_description: string
+          notes?: string | null
+          priority?: string
+          reported_at?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          hotel_id?: number
+          id?: number
+          issue_description?: string
+          notes?: string | null
+          priority?: string
+          reported_at?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_hotel_maintenance_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotel_booking_stats"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "early_hotel_maintenance_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      early_hotel_pricing: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          hotel_id: number
+          id: number
+          price_multiplier: number
+          pricing_name: string
+          start_date: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          hotel_id: number
+          id?: number
+          price_multiplier?: number
+          pricing_name: string
+          start_date: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          hotel_id?: number
+          id?: number
+          price_multiplier?: number
+          pricing_name?: string
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_hotel_pricing_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotel_booking_stats"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "early_hotel_pricing_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      early_hotel_promotions: {
+        Row: {
+          active: boolean
+          created_at: string | null
+          discount_percent: number
+          end_date: string
+          hotel_id: number
+          id: number
+          promotion_code: string
+          start_date: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string | null
+          discount_percent: number
+          end_date: string
+          hotel_id: number
+          id?: number
+          promotion_code: string
+          start_date: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string | null
+          discount_percent?: number
+          end_date?: string
+          hotel_id?: number
+          id?: number
+          promotion_code?: string
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_hotel_promotions_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotel_booking_stats"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "early_hotel_promotions_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      early_hotel_reviews: {
+        Row: {
+          booking_id: string | null
+          comment: string | null
+          created_at: string | null
+          guest_name: string
+          hotel_id: number
+          id: number
+          rating: number
+          user_id: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          guest_name: string
+          hotel_id: number
+          id?: number
+          rating: number
+          user_id?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          guest_name?: string
+          hotel_id?: number
+          id?: number
+          rating?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_hotel_reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "early_hotel_reviews_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotel_booking_stats"
+            referencedColumns: ["hotel_id"]
+          },
+          {
+            foreignKeyName: "early_hotel_reviews_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "early_hotels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       early_hotels: {
         Row: {
           amenities: string[] | null
@@ -771,7 +1155,21 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      early_hotel_booking_stats: {
+        Row: {
+          cancelled_bookings: number | null
+          completed_bookings: number | null
+          confirmed_bookings: number | null
+          hotel_id: number | null
+          hotel_name: string | null
+          location: string | null
+          paid_bookings: number | null
+          pending_payments: number | null
+          total_bookings: number | null
+          total_revenue: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       bulk_delete_seasonal_pricing: {
