@@ -19,7 +19,8 @@ export const useEarlyHotelManagement = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('early_hotels')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) {
         throw error;
@@ -47,23 +48,37 @@ export const useEarlyHotelManagement = () => {
     fetchEarlyHotels();
   }, []);
 
+  // Filter hotels based on search term
   useEffect(() => {
-    // Filter hotels based on search term
+    if (!searchTerm.trim()) {
+      setFilteredHotels(earlyHotels);
+      return;
+    }
+    
+    const searchTermLower = searchTerm.toLowerCase();
     const filtered = earlyHotels.filter(hotel => 
-      hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      hotel.location.toLowerCase().includes(searchTerm.toLowerCase())
+      hotel.name.toLowerCase().includes(searchTermLower) ||
+      hotel.location.toLowerCase().includes(searchTermLower) ||
+      String(hotel.hourly_rate).includes(searchTermLower) ||
+      (hotel.description && hotel.description.toLowerCase().includes(searchTermLower))
     );
+    
     setFilteredHotels(filtered);
   }, [searchTerm, earlyHotels]);
 
+  // Handle search form submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Already handled by the useEffect
+    // Search is already handled by the useEffect
   };
 
+  // Add new hotel
   const handleAddHotel = async (hotel: EarlyHotelFormData) => {
     try {
       setLoading(true);
+      
+      // Ensure amenities is an array
+      const amenities = Array.isArray(hotel.amenities) ? hotel.amenities : [];
       
       // Insert new hotel into Supabase
       const { data, error } = await supabase
@@ -71,6 +86,7 @@ export const useEarlyHotelManagement = () => {
         .insert([
           {
             ...hotel,
+            amenities,
             status: hotel.status || 'active'
           }
         ])
@@ -87,7 +103,7 @@ export const useEarlyHotelManagement = () => {
           status: data[0].status as 'active' | 'inactive'
         };
         
-        setEarlyHotels(prevHotels => [...prevHotels, newHotel]);
+        setEarlyHotels(prevHotels => [newHotel, ...prevHotels]);
         setIsAddDialogOpen(false);
         toast.success("Early hotel added successfully!");
       }
@@ -99,9 +115,13 @@ export const useEarlyHotelManagement = () => {
     }
   };
 
+  // Edit existing hotel
   const handleEditHotel = async (hotel: EarlyHotel) => {
     try {
       setLoading(true);
+
+      // Ensure amenities is an array
+      const amenities = Array.isArray(hotel.amenities) ? hotel.amenities : [];
 
       // Update hotel in Supabase
       const { error } = await supabase
@@ -115,7 +135,7 @@ export const useEarlyHotelManagement = () => {
           min_hours: hotel.min_hours,
           max_hours: hotel.max_hours,
           description: hotel.description,
-          amenities: hotel.amenities,
+          amenities,
           featured: hotel.featured,
           status: hotel.status
         })
@@ -140,6 +160,7 @@ export const useEarlyHotelManagement = () => {
     }
   };
 
+  // Delete hotel
   const handleDeleteHotel = async (id: number) => {
     try {
       setLoading(true);
@@ -168,6 +189,7 @@ export const useEarlyHotelManagement = () => {
     }
   };
 
+  // Toggle hotel status (active/inactive)
   const handleToggleStatus = async (id: number) => {
     try {
       // Find the current hotel
@@ -207,6 +229,7 @@ export const useEarlyHotelManagement = () => {
     }
   };
 
+  // Toggle featured status
   const handleToggleFeatured = async (id: number) => {
     try {
       // Find the current hotel
@@ -263,6 +286,7 @@ export const useEarlyHotelManagement = () => {
     handleEditHotel,
     handleDeleteHotel,
     handleToggleStatus,
-    handleToggleFeatured
+    handleToggleFeatured,
+    fetchEarlyHotels
   };
 };

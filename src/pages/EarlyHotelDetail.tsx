@@ -105,7 +105,7 @@ const EarlyHotelDetail = () => {
           <Info className="w-16 h-16 mx-auto text-gray-400 mb-4" />
           <h1 className="text-2xl font-bold mb-2">Hotel Not Found</h1>
           <p className="text-gray-600 mb-6">{error || "Unable to find the requested hotel"}</p>
-          <Button onClick={() => navigate("/")}>Return to Homepage</Button>
+          <Button onClick={() => navigate("/early-hotels")}>Browse Early Hotels</Button>
         </div>
       </Layout>
     );
@@ -173,12 +173,16 @@ const EarlyHotelDetail = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-3">Amenities</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {hotel.amenities.map((amenity, index) => (
-                    <div key={index} className="flex items-center">
-                      <Check className="w-5 h-5 text-primary mr-2" />
-                      <span>{amenity}</span>
-                    </div>
-                  ))}
+                  {hotel.amenities && hotel.amenities.length > 0 ? (
+                    hotel.amenities.map((amenity, index) => (
+                      <div key={index} className="flex items-center">
+                        <Check className="w-5 h-5 text-primary mr-2" />
+                        <span>{amenity}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 col-span-3">No amenities listed</p>
+                  )}
                 </div>
               </div>
 

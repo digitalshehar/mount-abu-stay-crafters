@@ -1,14 +1,16 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, ChevronRight } from "lucide-react";
+import { Clock, ChevronRight, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EarlyHotel } from "@/components/admin/hotels/types/earlyHotel";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const EarlyHotels = () => {
   const [hotels, setHotels] = useState<EarlyHotel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,6 +39,16 @@ const EarlyHotels = () => {
     fetchEarlyHotels();
   }, []);
 
+  // Handle search submit to navigate to the search page with query
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/early-hotels?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate("/early-hotels");
+    }
+  };
+
   if (loading) {
     return (
       <div className="container-custom py-16">
@@ -59,18 +71,25 @@ const EarlyHotels = () => {
   return (
     <div className="bg-stone-50 py-16">
       <div className="container-custom">
-        <div className="flex justify-between items-center mb-8">
-          <div>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div className="mb-4 md:mb-0">
             <h2 className="text-2xl md:text-3xl font-bold mb-2">Early Check-in Hotels</h2>
             <p className="text-gray-600">Pay by the hour, perfect for day use and short stays</p>
           </div>
-          <Button 
-            variant="outline" 
-            className="hidden md:flex items-center"
-            onClick={() => navigate("/early-hotels")}
-          >
-            View All <ChevronRight className="ml-1 h-4 w-4" />
-          </Button>
+          
+          {/* Search form - visible on both mobile and desktop */}
+          <form onSubmit={handleSearchSubmit} className="w-full md:w-auto mb-4 md:mb-0 flex">
+            <Input
+              type="text"
+              placeholder="Search early hotels..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-grow md:w-64"
+            />
+            <Button type="submit" className="ml-2">
+              <Search className="h-4 w-4" />
+            </Button>
+          </form>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -108,12 +127,13 @@ const EarlyHotels = () => {
           ))}
         </div>
 
-        <div className="mt-8 text-center md:hidden">
+        <div className="mt-8 flex justify-center md:justify-end">
           <Button 
             variant="outline" 
+            className="flex items-center"
             onClick={() => navigate("/early-hotels")}
           >
-            View All Early Hotels
+            View All Early Hotels <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </div>
       </div>

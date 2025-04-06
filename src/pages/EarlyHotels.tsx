@@ -1,26 +1,33 @@
 
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { EarlyHotel } from "@/components/admin/hotels/types/earlyHotel";
 import Layout from "@/components/layout";
 import { useNavigate } from "react-router-dom";
-import { Clock, MapPin, Search, Star } from "lucide-react";
+import { Clock, MapPin, Search, Star, FilterIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const EarlyHotels = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSearchTerm = searchParams.get("search") || "";
+  
   const [hotels, setHotels] = useState<EarlyHotel[]>([]);
   const [filteredHotels, setFilteredHotels] = useState<EarlyHotel[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [priceRange, setPriceRange] = useState([0, 2000]);
   const [starFilter, setStarFilter] = useState<number[]>([]);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const navigate = useNavigate();
 
+  // Fetch hotels from database
   useEffect(() => {
     const fetchEarlyHotels = async () => {
       try {
@@ -33,15 +40,27 @@ const EarlyHotels = () => {
         if (error) {
           console.error("Error fetching early hotels:", error);
         } else {
-          setHotels(data as EarlyHotel[]);
-          setFilteredHotels(data as EarlyHotel[]);
-
+          const hotels = data as EarlyHotel[];
+          setHotels(hotels);
+          
           // Set initial price range based on data
-          if (data && data.length > 0) {
-            const rates = data.map(hotel => hotel.hourly_rate);
+          if (hotels && hotels.length > 0) {
+            const rates = hotels.map(hotel => hotel.hourly_rate);
             const minRate = Math.min(...rates);
             const maxRate = Math.max(...rates);
             setPriceRange([minRate, maxRate]);
+          }
+          
+          // Apply initial search term if provided in URL
+          if (initialSearchTerm) {
+            const filtered = hotels.filter(
+              hotel => 
+                hotel.name.toLowerCase().includes(initialSearchTerm.toLowerCase()) ||
+                hotel.location.toLowerCase().includes(initialSearchTerm.toLowerCase())
+            );
+            setFilteredHotels(filtered);
+          } else {
+            setFilteredHotels(hotels);
           }
         }
       } catch (error) {
@@ -52,8 +71,9 @@ const EarlyHotels = () => {
     };
 
     fetchEarlyHotels();
-  }, []);
+  }, [initialSearchTerm]);
 
+  // Apply filters when any filter changes
   useEffect(() => {
     // Apply filters
     let result = hotels;
@@ -82,7 +102,8 @@ const EarlyHotels = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Already handled by the useEffect
+    // Update URL query parameter
+    setSearchParams(searchTerm ? { search: searchTerm } : {});
   };
 
   const toggleStarFilter = (stars: number) => {
@@ -96,6 +117,7 @@ const EarlyHotels = () => {
   const clearFilters = () => {
     setSearchTerm("");
     setStarFilter([]);
+    setSearchParams({});
     
     // Reset price range to min and max of all hotels
     if (hotels.length > 0) {
@@ -105,6 +127,74 @@ const EarlyHotels = () => {
       setPriceRange([minRate, maxRate]);
     }
   };
+
+  // Filter component for both desktop (inline) and mobile (sheet)
+  const FiltersComponent = () => (
+    <div className="space-y-6">
+      {/* Price Range Filter */}
+      <div>
+        <h3 className="text-sm font-medium mb-3">Hourly Rate</h3>
+        <div className="px-2">
+          <Slider
+            value={priceRange}
+            min={0}
+            max={2000}
+            step={50}
+            onValueChange={setPriceRange}
+            className="mb-6"
+          />
+          <div className="flex justify-between text-sm">
+            <span>₹{priceRange[0]}</span>
+            <span>₹{priceRange[1]}</span>
+          </div>
+        </div>
+      </div>
+      
+      <Separator />
+      
+      {/* Star Rating Filter */}
+      <div>
+        <h3 className="text-sm font-medium mb-3">Star Rating</h3>
+        <ScrollArea className="h-[120px]">
+          <div className="space-y-2">
+            {[5, 4, 3, 2, 1].map(stars => (
+              <label 
+                key={stars}
+                className="flex items-center space-x-2 cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={starFilter.includes(stars)}
+                  onChange={() => toggleStarFilter(stars)}
+                  className="rounded text-primary focus:ring-primary"
+                />
+                <div className="flex items-center">
+                  {Array.from({ length: stars }).map((_, i) => (
+                    <Star 
+                      key={i} 
+                      className="w-4 h-4 text-amber-400 fill-amber-400" 
+                    />
+                  ))}
+                </div>
+              </label>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
+      
+      {/* Clear Filters Button */}
+      <div className="pt-2">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={clearFilters}
+          className="w-full"
+        >
+          Clear All Filters
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <Layout>
@@ -133,15 +223,37 @@ const EarlyHotels = () => {
                 className="pl-10 py-6 text-black rounded-lg w-full"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2">
+                Search
+              </Button>
             </form>
           </div>
         </div>
       </div>
 
       <div className="container-custom py-8">
+        {/* Mobile Filter Button */}
+        <div className="flex justify-between items-center mb-4 md:hidden">
+          <h2 className="text-lg font-medium">
+            {filteredHotels.length} {filteredHotels.length === 1 ? 'hotel' : 'hotels'} found
+          </h2>
+          <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="flex items-center">
+                <FilterIcon className="h-4 w-4 mr-2" />
+                Filters
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[300px]">
+              <h2 className="text-lg font-semibold mb-4">Filters</h2>
+              <FiltersComponent />
+            </SheetContent>
+          </Sheet>
+        </div>
+
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters sidebar */}
-          <div className="md:w-1/4">
+          {/* Desktop Filters sidebar */}
+          <div className="md:w-1/4 hidden md:block">
             <div className="bg-white rounded-lg shadow p-4 sticky top-24">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold">Filters</h2>
@@ -155,64 +267,13 @@ const EarlyHotels = () => {
                 </Button>
               </div>
               
-              <div className="space-y-6">
-                {/* Price Range Filter */}
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Hourly Rate</h3>
-                  <div className="px-2">
-                    <Slider
-                      value={priceRange}
-                      min={0}
-                      max={2000}
-                      step={50}
-                      onValueChange={setPriceRange}
-                      className="mb-6"
-                    />
-                    <div className="flex justify-between text-sm">
-                      <span>₹{priceRange[0]}</span>
-                      <span>₹{priceRange[1]}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                {/* Star Rating Filter */}
-                <div>
-                  <h3 className="text-sm font-medium mb-3">Star Rating</h3>
-                  <ScrollArea className="h-[120px]">
-                    <div className="space-y-2">
-                      {[5, 4, 3, 2, 1].map(stars => (
-                        <label 
-                          key={stars}
-                          className="flex items-center space-x-2 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={starFilter.includes(stars)}
-                            onChange={() => toggleStarFilter(stars)}
-                            className="rounded text-primary focus:ring-primary"
-                          />
-                          <div className="flex items-center">
-                            {Array.from({ length: stars }).map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className="w-4 h-4 text-amber-400 fill-amber-400" 
-                              />
-                            ))}
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
-              </div>
+              <FiltersComponent />
             </div>
           </div>
           
           {/* Hotel listing */}
           <div className="md:w-3/4">
-            <div className="mb-4 flex justify-between items-center">
+            <div className="mb-4 hidden md:flex justify-between items-center">
               <h2 className="text-lg font-medium">
                 {filteredHotels.length} {filteredHotels.length === 1 ? 'hotel' : 'hotels'} found
               </h2>

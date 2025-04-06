@@ -19,16 +19,26 @@ const EarlyHotelSearch: React.FC<EarlyHotelSearchProps> = ({
 }) => {
   return (
     <div className="bg-white border rounded-lg p-4">
-      <form onSubmit={onSearch} className="flex gap-2 mb-4">
+      <form onSubmit={onSearch} className="flex flex-col sm:flex-row gap-2">
         <Input
-          placeholder="Search early hotels..."
+          placeholder="Search by hotel name or location..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
+          className="flex-grow"
         />
-        <Button type="submit">
-          <Search className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Button type="submit" className="w-full sm:w-auto">
+            <Search className="h-4 w-4 mr-2" /> Search
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onAddClick}
+            className="w-full sm:w-auto"
+          >
+            <Plus className="h-4 w-4 mr-2" /> Add Hotel
+          </Button>
+        </div>
       </form>
     </div>
   );
