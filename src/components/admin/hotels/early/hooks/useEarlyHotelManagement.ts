@@ -10,6 +10,7 @@ export const useEarlyHotelManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState<EarlyHotel | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -278,6 +279,8 @@ export const useEarlyHotelManagement = () => {
     setIsAddDialogOpen,
     isEditDialogOpen,
     setIsEditDialogOpen,
+    isDetailsDialogOpen,
+    setIsDetailsDialogOpen,
     selectedHotel,
     setSelectedHotel,
     loading,

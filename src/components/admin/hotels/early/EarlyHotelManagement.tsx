@@ -52,7 +52,7 @@ const EarlyHotelManagement: React.FC = () => {
     handleDeleteHotel,
     handleToggleStatus,
     handleToggleFeatured,
-    fetchHotels
+    fetchEarlyHotels
   } = useEarlyHotelManagement();
 
   const [activeTab, setActiveTab] = useState<string>("hotels");
