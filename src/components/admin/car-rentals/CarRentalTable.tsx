@@ -1,23 +1,35 @@
 
 import React from "react";
-import { 
-  Edit, 
-  Trash, 
-  Eye,
-  Check,
-  X
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { CarRental } from "@/integrations/supabase/custom-types";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash, Eye, Check, X } from "lucide-react";
 
 interface CarRentalTableProps {
   cars: CarRental[];
   onEdit: (car: CarRental) => void;
   onDelete: (id: number) => void;
   onToggleStatus: (id: number) => void;
+  isLoading?: boolean;
 }
 
-const CarRentalTable = ({ cars, onEdit, onDelete, onToggleStatus }: CarRentalTableProps) => {
+const CarRentalTable: React.FC<CarRentalTableProps> = ({ 
+  cars, 
+  onEdit, 
+  onDelete, 
+  onToggleStatus,
+  isLoading = false 
+}) => {
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-pulse">
+          <div className="h-4 bg-stone-200 rounded w-1/4 mx-auto mb-4"></div>
+          <div className="h-4 bg-stone-200 rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -27,8 +39,8 @@ const CarRentalTable = ({ cars, onEdit, onDelete, onToggleStatus }: CarRentalTab
             <th className="px-6 py-3 font-medium">Name</th>
             <th className="px-6 py-3 font-medium">Type</th>
             <th className="px-6 py-3 font-medium">Capacity</th>
+            <th className="px-6 py-3 font-medium">Transmission</th>
             <th className="px-6 py-3 font-medium">Price</th>
-            <th className="px-6 py-3 font-medium">Bookings</th>
             <th className="px-6 py-3 font-medium">Status</th>
             <th className="px-6 py-3 font-medium">Actions</th>
           </tr>
@@ -41,13 +53,16 @@ const CarRentalTable = ({ cars, onEdit, onDelete, onToggleStatus }: CarRentalTab
                   src={car.image} 
                   alt={car.name} 
                   className="w-16 h-12 object-cover rounded"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/100x80?text=Car";
+                  }}
                 />
               </td>
               <td className="px-6 py-4 font-medium">{car.name}</td>
               <td className="px-6 py-4 text-stone-600">{car.type}</td>
-              <td className="px-6 py-4 text-stone-600">{car.capacity} seats</td>
-              <td className="px-6 py-4">₹{car.price.toLocaleString()}/day</td>
-              <td className="px-6 py-4">{car.bookings}</td>
+              <td className="px-6 py-4 text-stone-600">{car.capacity || car.seats} passengers</td>
+              <td className="px-6 py-4 text-stone-600">{car.transmission}</td>
+              <td className="px-6 py-4">₹{car.price?.toLocaleString() || car.price_per_day?.toLocaleString()}/day</td>
               <td className="px-6 py-4">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   car.status === 'available' ? 'bg-green-100 text-green-800' : 
@@ -77,7 +92,7 @@ const CarRentalTable = ({ cars, onEdit, onDelete, onToggleStatus }: CarRentalTab
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    title="Edit" 
+                    title="Edit"
                     onClick={() => onEdit(car)}
                   >
                     <Edit size={16} className="text-amber-500" />

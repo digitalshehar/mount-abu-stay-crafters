@@ -1,46 +1,73 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
+import { MapPin, Calendar, Info } from "lucide-react";
 
-const DestinationSidebar: React.FC = () => {
+interface DestinationSidebarProps {
+  location: string;
+  bestTimeToVisit?: string;
+  onBookClick?: () => void;
+}
+
+const DestinationSidebar: React.FC<DestinationSidebarProps> = ({ 
+  location, 
+  bestTimeToVisit,
+  onBookClick
+}) => {
   return (
-    <div className="lg:col-span-1">
-      <div className="bg-white rounded-xl shadow-md p-6 border border-stone-100 sticky top-24">
-        <h2 className="text-2xl font-display font-semibold mb-4">Location Information</h2>
-        
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-medium mb-2">Weather</h3>
-            <p className="text-stone-600">Due to its elevation, Mount Abu enjoys a pleasant climate throughout most of the year. Summers (April to June) are mild compared to the surrounding regions, while winters (November to February) can get quite cool.</p>
-          </div>
-          
-          <Separator />
-          
-          <div>
-            <h3 className="font-medium mb-2">How to Reach</h3>
-            <div className="space-y-2 text-stone-600">
-              <p><span className="font-medium">By Air:</span> The nearest airport is Udaipur (185 km).</p>
-              <p><span className="font-medium">By Train:</span> Abu Road railway station (28 km) is well connected.</p>
-              <p><span className="font-medium">By Road:</span> Well connected to major cities in Rajasthan and Gujarat.</p>
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-center">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+              <MapPin className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-stone-500">Location</h3>
+              <p className="font-medium">{location}</p>
             </div>
           </div>
           
-          <Separator />
+          {bestTimeToVisit && (
+            <div className="flex items-center">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-stone-500">Best Time to Visit</h3>
+                <p className="font-medium">{bestTimeToVisit}</p>
+              </div>
+            </div>
+          )}
           
-          <div>
-            <h3 className="font-medium mb-2">Local Transportation</h3>
-            <p className="text-stone-600">Taxis, auto-rickshaws, and rental vehicles are readily available for local transportation.</p>
-          </div>
-        </div>
-        
-        <div className="mt-6">
-          <Button asChild className="w-full">
-            <Link to="/adventures">Explore All Adventures</Link>
+          <Button 
+            className="w-full" 
+            onClick={onBookClick}
+          >
+            Book Adventures
           </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-start">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mt-1 mr-3">
+              <Info className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">Travel Tips</h3>
+              <ul className="space-y-2 text-stone-600 text-sm">
+                <li>• Carry enough water when exploring outdoor attractions</li>
+                <li>• Early morning is the best time for sightseeing</li>
+                <li>• Local transportation options include taxis and auto-rickshaws</li>
+                <li>• Keep emergency contact numbers handy</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

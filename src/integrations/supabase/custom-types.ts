@@ -1,4 +1,3 @@
-
 export interface Hotel {
   id: number;
   name: string;
@@ -17,6 +16,54 @@ export interface Hotel {
   longitude?: number;
   gallery?: string[];
   categories?: string[];
+}
+
+export interface Destination {
+  id: number;
+  name: string;
+  slug: string;
+  image: string;
+  description?: string;
+  location?: string;
+  status: string;
+  featured?: boolean;
+  highlights?: string[];
+  activities?: string[];
+  gallery?: string[];
+  meta_title?: string;
+  meta_description?: string;
+  bestTimeToVisit?: string;
+}
+
+export interface Adventure {
+  id: number;
+  name: string;
+  slug: string;
+  image: string;
+  price: number;
+  duration: string;
+  location: string;
+  description?: string;
+  inclusions?: string[];
+  requirements?: string[];
+  status: string; // Changed from enum to string to match database
+  rating?: number;
+  review_count?: number;
+  reviewCount?: number; // Alternative property used in components
+  featured?: boolean;
+  difficulty?: string; // Changed from enum to string to match database
+  categories?: string[];
+  max_people?: number;
+  itinerary?: any[];
+  type?: string;
+  bookings?: number;
+  // Additional properties used in components
+  includes?: string[];
+  timeline?: string[];
+  meetingPoint?: string;
+  maxGroupSize?: number;
+  minAge?: number;
+  cancellationPolicy?: string;
 }
 
 export interface BikeRental {
@@ -65,73 +112,4 @@ export interface CarRental {
   capacity?: number;
   price?: number;
   bookings?: number;
-}
-
-export interface Adventure {
-  id: number;
-  name: string;
-  slug: string;
-  image: string;
-  price: number;
-  duration: string;
-  location: string;
-  description?: string;
-  inclusions?: string[];
-  requirements?: string[];
-  status: string; // Changed from enum to string to match database
-  rating?: number;
-  review_count?: number;
-  reviewCount?: number; // Alternative property used in components
-  featured?: boolean;
-  difficulty?: string; // Changed from enum to string to match database
-  categories?: string[];
-  max_people?: number;
-  itinerary?: any[];
-  type?: string;
-  bookings?: number;
-  // Additional properties used in components
-  includes?: string[];
-  timeline?: string[];
-  meetingPoint?: string;
-  maxGroupSize?: number;
-  minAge?: number;
-  cancellationPolicy?: string;
-}
-
-export interface Destination {
-  id: number;
-  name: string;
-  slug: string;
-  image: string;
-  description?: string;
-  location?: string;
-  status: string;
-  featured?: boolean;
-  highlights?: string[];
-  activities?: string[];
-  gallery?: string[];
-  meta_title?: string;
-  meta_description?: string;
-  bestTimeToVisit?: string;
-}
-
-export interface BlogPost {
-  id: number;
-  title: string;
-  slug: string;
-  content: string;
-  excerpt?: string;
-  featured_image?: string;
-  author_id?: number;
-  author_name?: string;
-  author?: string;
-  published_at?: string;
-  status: string;
-  categories?: string[];
-  tags?: string[];
-  meta_title?: string;
-  meta_description?: string;
-  category?: string;
-  date?: string;
-  image?: string;
 }

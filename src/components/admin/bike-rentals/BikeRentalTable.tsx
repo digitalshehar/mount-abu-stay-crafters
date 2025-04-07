@@ -13,6 +13,17 @@ interface BikeRentalTableProps {
 }
 
 const BikeRentalTable = ({ bikes, isLoading, onDelete, onToggleStatus, onEdit }: BikeRentalTableProps) => {
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-pulse">
+          <div className="h-4 bg-stone-200 rounded w-1/4 mx-auto mb-4"></div>
+          <div className="h-4 bg-stone-200 rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -36,12 +47,15 @@ const BikeRentalTable = ({ bikes, isLoading, onDelete, onToggleStatus, onEdit }:
                   src={bike.image} 
                   alt={bike.name} 
                   className="w-16 h-12 object-cover rounded"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/100x80?text=Bike";
+                  }}
                 />
               </td>
               <td className="px-6 py-4 font-medium">{bike.name}</td>
               <td className="px-6 py-4 text-stone-600">{bike.type}</td>
               <td className="px-6 py-4 text-stone-600">{bike.engine}</td>
-              <td className="px-6 py-4">₹{bike.price.toLocaleString()}/day</td>
+              <td className="px-6 py-4">₹{bike.price?.toLocaleString()}/day</td>
               <td className="px-6 py-4">{bike.bookings}</td>
               <td className="px-6 py-4">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -89,7 +103,7 @@ const BikeRentalTable = ({ bikes, isLoading, onDelete, onToggleStatus, onEdit }:
               </td>
             </tr>
           ))}
-          {bikes.length === 0 && !isLoading && (
+          {bikes.length === 0 && (
             <tr>
               <td colSpan={8} className="px-6 py-8 text-center text-stone-500">
                 No bikes found. Try a different search or add a new bike.
