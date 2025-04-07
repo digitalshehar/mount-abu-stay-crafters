@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wifi, Coffee, Utensils, Dumbbell, Car, Snowflake, Tv, Shower } from 'lucide-react';
+import { Wifi, Coffee, Utensils, Dumbbell, Car, Snowflake, Tv, Bath } from 'lucide-react';
 
 interface HotelAmenitiesProps {
   amenities: string[];
@@ -27,7 +27,7 @@ const HotelAmenities: React.FC<HotelAmenitiesProps> = ({ amenities = [] }) => {
     if (amenityLower.includes('tv') || amenityLower.includes('television'))
       return <Tv className="h-5 w-5" />;
     if (amenityLower.includes('bathroom') || amenityLower.includes('shower'))
-      return <Shower className="h-5 w-5" />;
+      return <Bath className="h-5 w-5" />;
       
     // Default icon
     return (
