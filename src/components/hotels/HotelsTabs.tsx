@@ -6,6 +6,7 @@ import { List, SlidersHorizontal, X } from "lucide-react";
 import HotelListView from "@/components/hotels/HotelListView";
 import MobileFilter from "@/components/hotels/MobileFilter";
 import { Hotel } from "@/components/admin/hotels/types";
+import { useResponsive } from "@/context/ResponsiveContext";
 
 interface HotelsTabsProps {
   activeView: string;
@@ -52,6 +53,8 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
   handleAmenityFilter,
   commonAmenities,
 }) => {
+  const { isMobile } = useResponsive();
+
   return (
     <Tabs defaultValue="classic" value={activeView} onValueChange={setActiveView}>
       <div className="flex items-center justify-between mb-4">
@@ -75,17 +78,19 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
         )}
       </div>
 
-      <div className="lg:hidden mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsFilterOpen(true)}
-          className="flex items-center w-full justify-center"
-        >
-          <SlidersHorizontal className="h-4 w-4 mr-1" />
-          Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
-        </Button>
-      </div>
+      {isMobile && (
+        <div className="mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsFilterOpen(true)}
+            className="flex items-center w-full justify-center"
+          >
+            <SlidersHorizontal className="h-4 w-4 mr-1" />
+            Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
+          </Button>
+        </div>
+      )}
 
       <MobileFilter
         isFilterOpen={isFilterOpen}
