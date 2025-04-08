@@ -1,137 +1,97 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Home, Map, Hotel, Mountain, Car, Bike, User, Search } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAuth } from "@/context/AuthContext";
-import Logo from "@/components/Logo";
-import SearchButton from "@/components/search/SearchButton";
-import { GlobalSearch } from "@/components/search/GlobalSearch";
+import Logo from "../Logo";
+import { Button } from "@/components/ui/button";
+import SearchButton from "../search/MobileSearchButton";
 
 const MobileHeader: React.FC = () => {
-  const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
 
-  const menuItems = [
-    { icon: <Home size={18} />, label: "Home", path: "/" },
-    { icon: <Map size={18} />, label: "Destinations", path: "/destinations" },
-    { icon: <Hotel size={18} />, label: "Hotels", path: "/hotels" },
-    { icon: <Mountain size={18} />, label: "Adventures", path: "/adventures" },
-    { icon: <Car size={18} />, label: "Car Rental", path: "/rentals/car" },
-    { icon: <Bike size={18} />, label: "Bike Rental", path: "/bike-rentals" },
-  ];
-
-  // Improved search handler for mobile
-  const handleOpenSearch = () => {
-    setSearchOpen(true);
+  const closeMenu = () => {
+    setIsOpen(false);
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b h-14 flex items-center px-4">
-      <div className="w-full flex items-center justify-between">
-        {/* Logo */}
+    <header className="fixed top-0 left-0 right-0 h-14 bg-white z-50 border-b flex items-center px-4">
+      <div className="flex items-center justify-between w-full">
         <Link to="/" className="flex items-center">
-          <Logo />
+          <Logo className="h-8 w-auto" />
         </Link>
 
-        {/* Search and Menu */}
         <div className="flex items-center gap-2">
-          <button 
-            onClick={handleOpenSearch}
-            className="p-1.5 rounded-full hover:bg-stone-100 flex items-center"
-          >
-            <Search size={18} />
-          </button>
-
+          <SearchButton />
+          
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <button className="p-1.5 rounded-full hover:bg-stone-100">
-                <Menu size={22} />
-              </button>
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Menu</span>
+              </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="p-0">
-              <div className="flex flex-col h-full">
-                <div className="p-4 border-b flex items-center justify-between">
-                  <span className="font-semibold">Menu</span>
-                  <button onClick={() => setIsOpen(false)}>
-                    <X size={20} />
-                  </button>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto py-2">
-                  {menuItems.map((item, index) => (
-                    <Link
-                      key={index}
-                      to={item.path}
-                      className="flex items-center px-4 py-3 hover:bg-stone-50"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <span className="w-8">{item.icon}</span>
-                      <span>{item.label}</span>
-                    </Link>
-                  ))}
-                  
-                  <div className="border-t my-2"></div>
-                  
-                  {user ? (
-                    <>
-                      <Link
-                        to="/account"
-                        className="flex items-center px-4 py-3 hover:bg-stone-50"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <span className="w-8"><User size={18} /></span>
-                        <span>My Account</span>
-                      </Link>
-                      <Link
-                        to="/admin/hotels"
-                        className="flex items-center px-4 py-3 hover:bg-stone-50"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <span className="w-8"><Hotel size={18} /></span>
-                        <span>Dashboard</span>
-                      </Link>
-                      <button
-                        onClick={() => {
-                          signOut();
-                          setIsOpen(false);
-                        }}
-                        className="flex items-center px-4 py-3 w-full text-left text-red-600 hover:bg-stone-50"
-                      >
-                        <span className="w-8">→</span>
-                        <span>Logout</span>
-                      </button>
-                    </>
-                  ) : (
-                    <div className="p-4">
-                      <div className="grid grid-cols-2 gap-2">
-                        <Link
-                          to="/login"
-                          className="py-2 px-3 rounded-lg border border-stone-200 text-center"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          Login
-                        </Link>
-                        <Link
-                          to="/register"
-                          className="py-2 px-3 rounded-lg bg-primary text-white text-center"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          Register
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </div>
+            <SheetContent side="right" className="w-[85vw] sm:w-[350px] pt-12">
+              <nav className="space-y-6">
+                <Link 
+                  to="/hotels" 
+                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
+                  onClick={closeMenu}
+                >
+                  Hotels
+                </Link>
+                <Link 
+                  to="/hotels?type=apartment" 
+                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
+                  onClick={closeMenu}
+                >
+                  Homes & Apartments
+                </Link>
+                <Link 
+                  to="/adventures" 
+                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
+                  onClick={closeMenu}
+                >
+                  Adventures
+                </Link>
+                <Link 
+                  to="/destinations" 
+                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
+                  onClick={closeMenu}
+                >
+                  Destinations
+                </Link>
+                <Link 
+                  to="/bike-rentals" 
+                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
+                  onClick={closeMenu}
+                >
+                  Bike Rentals
+                </Link>
+                <Link 
+                  to="/rentals/car" 
+                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
+                  onClick={closeMenu}
+                >
+                  Car Rentals
+                </Link>
+              </nav>
+              
+              <div className="absolute top-4 right-4">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+                </Button>
               </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
-
-      {/* Global Search Component */}
-      <GlobalSearch open={searchOpen} setOpen={setSearchOpen} />
     </header>
   );
 };

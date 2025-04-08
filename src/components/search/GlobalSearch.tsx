@@ -12,6 +12,7 @@ import { useSearchNavigation } from "./useSearchNavigation";
 import SearchResultGroups from "./SearchResultGroups";
 import RecentSearches from "./RecentSearches";
 import { useResponsive } from "@/context/ResponsiveContext";
+import { cn } from "@/lib/utils";
 
 export function GlobalSearch({ open = false, setOpen }: GlobalSearchProps) {
   const [isOpen, setIsOpen] = useState(open);
@@ -74,50 +75,48 @@ export function GlobalSearch({ open = false, setOpen }: GlobalSearchProps) {
     handleSelect(result);
   };
 
-  // Apply mobile-specific styling
-  const mobileClass = isMobile ? "w-full h-[90vh] rounded-t-xl" : "";
-
   return (
     <CommandDialog 
       open={isOpen} 
       onOpenChange={handleOpenChange}
-      className={mobileClass}
     >
-      <CommandInput 
-        placeholder="Search hotels, homes, activities..." 
-        value={searchQuery}
-        onValueChange={handleSearch}
-        className={isMobile ? "text-base p-4" : ""}
-      />
-      <CommandList className={isMobile ? "max-h-[75vh]" : ""}>
-        <CommandEmpty>
-          {isLoading ? (
-            <div className="p-4 text-center text-sm">
-              Searching...
-            </div>
-          ) : searchQuery.length > 0 ? (
-            <div className="p-4 text-center text-sm">
-              No results found.
-            </div>
-          ) : null}
-        </CommandEmpty>
-        
-        {/* Show recent searches when there's no query */}
-        {!searchQuery && recentSearches.length > 0 && (
-          <RecentSearches 
-            recentSearches={recentSearches} 
-            onSelect={handleResultSelect} 
-          />
-        )}
-        
-        {/* Show search results when there is a query */}
-        {searchQuery.length > 0 && (
-          <SearchResultGroups 
-            groupedResults={groupedResults} 
-            onSelect={handleResultSelect} 
-          />
-        )}
-      </CommandList>
+      <div className={isMobile ? "w-full h-[90vh] rounded-t-xl" : ""}>
+        <CommandInput 
+          placeholder="Search hotels, homes, activities..." 
+          value={searchQuery}
+          onValueChange={handleSearch}
+          className={isMobile ? "text-base p-4" : ""}
+        />
+        <CommandList className={isMobile ? "max-h-[75vh]" : ""}>
+          <CommandEmpty>
+            {isLoading ? (
+              <div className="p-4 text-center text-sm">
+                Searching...
+              </div>
+            ) : searchQuery.length > 0 ? (
+              <div className="p-4 text-center text-sm">
+                No results found.
+              </div>
+            ) : null}
+          </CommandEmpty>
+          
+          {/* Show recent searches when there's no query */}
+          {!searchQuery && recentSearches.length > 0 && (
+            <RecentSearches 
+              recentSearches={recentSearches} 
+              onSelect={handleResultSelect} 
+            />
+          )}
+          
+          {/* Show search results when there is a query */}
+          {searchQuery.length > 0 && (
+            <SearchResultGroups 
+              groupedResults={groupedResults} 
+              onSelect={handleResultSelect} 
+            />
+          )}
+        </CommandList>
+      </div>
     </CommandDialog>
   );
 }

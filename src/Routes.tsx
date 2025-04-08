@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
@@ -15,13 +14,23 @@ import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import Dashboard from "./pages/admin/Dashboard";
+import HotelNotFound from "./pages/HotelNotFound";
+import EarlyHotelDetailPage from "./pages/EarlyHotelDetailPage";
+import EnhancedHotels from "./pages/EnhancedHotels";
 
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
+      
+      {/* Hotel routes */}
       <Route path="/hotels" element={<Hotels />} />
-      <Route path="/hotels/:id" element={<HotelDetail />} />
+      <Route path="/hotels/enhanced" element={<EnhancedHotels />} />
+      <Route path="/hotel/:slug" element={<HotelDetail />} />
+      <Route path="/hotel-not-found" element={<HotelNotFound />} />
+      <Route path="/early-hotel/:id" element={<EarlyHotelDetailPage />} />
+      
+      {/* Other routes */}
       <Route path="/adventures" element={<Adventures />} />
       <Route path="/adventures/:id" element={<AdventureDetail />} />
       <Route path="/destinations" element={<Destinations />} />
