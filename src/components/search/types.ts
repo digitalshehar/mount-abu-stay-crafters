@@ -7,7 +7,7 @@ import {
   CarRental 
 } from "@/integrations/supabase/custom-types";
 
-export type SearchResultType = "hotel" | "home" | "destination" | "adventure" | "bike" | "car";
+export type SearchResultType = "hotel" | "home" | "destination" | "adventure" | "bike" | "car" | "early-hotel";
 
 export interface SearchResult {
   id: number;

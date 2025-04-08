@@ -74,6 +74,14 @@ export const useSearchResults = () => {
         .ilike("name", `%${query}%`)
         .order("name")
         .limit(5);
+        
+      // Search early hotels
+      const { data: earlyHotels } = await supabase
+        .from("early_hotels")
+        .select("id, name, location, image")
+        .ilike("name", `%${query}%`)
+        .order("name")
+        .limit(5);
 
       // Combine results
       const combinedResults: SearchResult[] = [
@@ -82,7 +90,8 @@ export const useSearchResults = () => {
         ...(destinations || []).map(dest => ({ ...dest, type: "destination" as const })),
         ...(adventures || []).map(adv => ({ ...adv, type: "adventure" as const })),
         ...(bikes || []).map(bike => ({ ...bike, type: "bike" as const })),
-        ...(cars || []).map(car => ({ ...car, type: "car" as const }))
+        ...(cars || []).map(car => ({ ...car, type: "car" as const })),
+        ...(earlyHotels || []).map(earlyHotel => ({ ...earlyHotel, type: "early-hotel" as const }))
       ];
 
       setResults(combinedResults);

@@ -23,6 +23,8 @@ export const getGroupLabel = (type: string): string => {
       return "Bike Rentals";
     case "car":
       return "Car Rentals";
+    case "early-hotel":
+      return "Hourly Hotels";
     default:
       return "Results";
   }
