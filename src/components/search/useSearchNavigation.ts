@@ -30,6 +30,9 @@ export const useSearchNavigation = () => {
       case "car":
         navigate(`/rentals/car?search=${encodeURIComponent(result.name)}`);
         break;
+      case "early-hotel":
+        navigate(`/early-hotel/${result.id}`);
+        break;
     }
   };
 
