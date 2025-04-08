@@ -1,15 +1,17 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Home, Map, Hotel, Mountain, Car, Bike, User } from "lucide-react";
+import { Menu, X, Home, Map, Hotel, Mountain, Car, Bike, User, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/context/AuthContext";
 import Logo from "@/components/Logo";
 import SearchButton from "@/components/search/SearchButton";
+import { GlobalSearch } from "@/components/search/GlobalSearch";
 
 const MobileHeader: React.FC = () => {
   const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const menuItems = [
     { icon: <Home size={18} />, label: "Home", path: "/" },
@@ -19,6 +21,11 @@ const MobileHeader: React.FC = () => {
     { icon: <Car size={18} />, label: "Car Rental", path: "/rentals/car" },
     { icon: <Bike size={18} />, label: "Bike Rental", path: "/bike-rentals" },
   ];
+
+  // Improved search handler for mobile
+  const handleOpenSearch = () => {
+    setSearchOpen(true);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b h-14 flex items-center px-4">
@@ -30,7 +37,12 @@ const MobileHeader: React.FC = () => {
 
         {/* Search and Menu */}
         <div className="flex items-center gap-2">
-          <SearchButton />
+          <button 
+            onClick={handleOpenSearch}
+            className="p-1.5 rounded-full hover:bg-stone-100 flex items-center"
+          >
+            <Search size={18} />
+          </button>
 
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
@@ -117,6 +129,9 @@ const MobileHeader: React.FC = () => {
           </Sheet>
         </div>
       </div>
+
+      {/* Global Search Component */}
+      <GlobalSearch open={searchOpen} setOpen={setSearchOpen} />
     </header>
   );
 };

@@ -11,6 +11,7 @@ import { useSearchResults } from "./useSearchResults";
 import { useSearchNavigation } from "./useSearchNavigation";
 import SearchResultGroups from "./SearchResultGroups";
 import RecentSearches from "./RecentSearches";
+import { useResponsive } from "@/context/ResponsiveContext";
 
 export function GlobalSearch({ open = false, setOpen }: GlobalSearchProps) {
   const [isOpen, setIsOpen] = useState(open);
@@ -23,14 +24,17 @@ export function GlobalSearch({ open = false, setOpen }: GlobalSearchProps) {
     refreshRecentSearches
   } = useSearchResults();
   const { handleSelect } = useSearchNavigation();
+  const { isMobile } = useResponsive();
 
   // Update internal state when props change
   useEffect(() => {
     setIsOpen(open);
   }, [open]);
 
-  // Set up keyboard shortcut (Ctrl+K) to open search
+  // Set up keyboard shortcut (Ctrl+K) to open search (on desktop only)
   useEffect(() => {
+    if (typeof window === 'undefined' || isMobile) return;
+    
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -41,7 +45,7 @@ export function GlobalSearch({ open = false, setOpen }: GlobalSearchProps) {
 
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [setOpen]);
+  }, [setOpen, isMobile]);
 
   // Handle dialog open state change
   const handleOpenChange = (open: boolean) => {
@@ -70,14 +74,22 @@ export function GlobalSearch({ open = false, setOpen }: GlobalSearchProps) {
     handleSelect(result);
   };
 
+  // Apply mobile-specific styling
+  const mobileClass = isMobile ? "w-full h-[90vh] rounded-t-xl" : "";
+
   return (
-    <CommandDialog open={isOpen} onOpenChange={handleOpenChange}>
+    <CommandDialog 
+      open={isOpen} 
+      onOpenChange={handleOpenChange}
+      className={mobileClass}
+    >
       <CommandInput 
         placeholder="Search hotels, homes, activities..." 
         value={searchQuery}
         onValueChange={handleSearch}
+        className={isMobile ? "text-base p-4" : ""}
       />
-      <CommandList>
+      <CommandList className={isMobile ? "max-h-[75vh]" : ""}>
         <CommandEmpty>
           {isLoading ? (
             <div className="p-4 text-center text-sm">
