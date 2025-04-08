@@ -5,6 +5,7 @@ export type DeviceType = 'mobile' | 'tablet' | 'desktop';
 
 interface DeviceInfo {
   type: DeviceType;
+  deviceType: DeviceType; // Adding this to match the expected interface
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
@@ -21,6 +22,7 @@ export function useDeviceDetect(): DeviceInfo {
   // Default to desktop in SSR or initial render
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo>({
     type: 'desktop',
+    deviceType: 'desktop', // Adding the required property
     isMobile: false,
     isTablet: false,
     isDesktop: true,
@@ -70,6 +72,7 @@ export function useDeviceDetect(): DeviceInfo {
       
       setDeviceInfo({
         type,
+        deviceType: type, // Set the deviceType property
         isMobile,
         isTablet,
         isDesktop,
