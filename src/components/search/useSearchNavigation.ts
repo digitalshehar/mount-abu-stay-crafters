@@ -1,11 +1,16 @@
 
 import { useNavigate } from "react-router-dom";
 import { SearchResult } from "./types";
+import { addToRecentSearches } from "./utils/searchStorage";
 
 export const useSearchNavigation = () => {
   const navigate = useNavigate();
 
   const handleSelect = (result: SearchResult) => {
+    // Add to recent searches
+    addToRecentSearches(result);
+    
+    // Navigate based on type
     switch (result.type) {
       case "hotel":
         navigate(`/hotel/${result.slug || result.id}`);

@@ -1,16 +1,23 @@
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SearchResult } from "./types";
+import { debounce } from "./utils/debounce";
+import { getRecentSearches } from "./utils/searchStorage";
 
 export const useSearchResults = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<SearchResult[]>([]);
 
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    
+  // Load recent searches on initial render
+  useEffect(() => {
+    setRecentSearches(getRecentSearches());
+  }, []);
+
+  // The actual search function
+  const performSearch = async (query: string) => {
     if (query.length < 2) {
       setResults([]);
       return;
@@ -86,10 +93,26 @@ export const useSearchResults = () => {
     }
   };
 
+  // Create a debounced version of the search function (300ms delay)
+  const debouncedSearch = useCallback(debounce(performSearch, 300), []);
+
+  // Handle search query changes
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    debouncedSearch(query);
+  };
+
+  // Refresh recent searches
+  const refreshRecentSearches = () => {
+    setRecentSearches(getRecentSearches());
+  };
+
   return {
     searchQuery,
     results,
     isLoading,
-    handleSearch
+    recentSearches,
+    handleSearch,
+    refreshRecentSearches
   };
 };

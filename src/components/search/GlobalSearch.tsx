@@ -10,10 +10,18 @@ import { GlobalSearchProps } from "./types";
 import { useSearchResults } from "./useSearchResults";
 import { useSearchNavigation } from "./useSearchNavigation";
 import SearchResultGroups from "./SearchResultGroups";
+import RecentSearches from "./RecentSearches";
 
 export function GlobalSearch({ open = false, setOpen }: GlobalSearchProps) {
   const [isOpen, setIsOpen] = useState(open);
-  const { searchQuery, results, isLoading, handleSearch } = useSearchResults();
+  const { 
+    searchQuery, 
+    results, 
+    isLoading, 
+    recentSearches,
+    handleSearch,
+    refreshRecentSearches
+  } = useSearchResults();
   const { handleSelect } = useSearchNavigation();
 
   // Update internal state when props change
@@ -39,6 +47,11 @@ export function GlobalSearch({ open = false, setOpen }: GlobalSearchProps) {
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (setOpen) setOpen(open);
+    
+    // Refresh recent searches when opening the dialog
+    if (open) {
+      refreshRecentSearches();
+    }
   };
 
   // Group results by type
@@ -70,17 +83,28 @@ export function GlobalSearch({ open = false, setOpen }: GlobalSearchProps) {
             <div className="p-4 text-center text-sm">
               Searching...
             </div>
-          ) : (
+          ) : searchQuery.length > 0 ? (
             <div className="p-4 text-center text-sm">
               No results found.
             </div>
-          )}
+          ) : null}
         </CommandEmpty>
         
-        <SearchResultGroups 
-          groupedResults={groupedResults} 
-          onSelect={handleResultSelect} 
-        />
+        {/* Show recent searches when there's no query */}
+        {!searchQuery && recentSearches.length > 0 && (
+          <RecentSearches 
+            recentSearches={recentSearches} 
+            onSelect={handleResultSelect} 
+          />
+        )}
+        
+        {/* Show search results when there is a query */}
+        {searchQuery.length > 0 && (
+          <SearchResultGroups 
+            groupedResults={groupedResults} 
+            onSelect={handleResultSelect} 
+          />
+        )}
       </CommandList>
     </CommandDialog>
   );
