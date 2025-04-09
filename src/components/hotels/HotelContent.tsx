@@ -35,7 +35,7 @@ const HotelContent: React.FC<HotelContentProps> = ({
   };
 
   // Normalize hotels to ensure they match the expected Hotel type
-  const normalizedHotels: Hotel[] = normalizeHotels(filteredHotels);
+  const normalizedHotels = normalizeHotels(filteredHotels);
 
   return (
     <div className="space-y-4">

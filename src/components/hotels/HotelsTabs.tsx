@@ -37,7 +37,7 @@ const HotelsTabs: React.FC<HotelTabsProps> = ({
     }
   };
   
-  // Normalize hotels to app type
+  // Normalize hotels to our app's Hotel type to ensure consistency
   const normalizedHotels = normalizeHotels(hotels);
   
   return (

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
@@ -18,6 +17,8 @@ import Dashboard from "./pages/admin/Dashboard";
 import HotelNotFound from "./pages/HotelNotFound";
 import EarlyHotelDetailPage from "./pages/EarlyHotelDetailPage";
 import EnhancedHotels from "./pages/EnhancedHotels";
+import AboutUs from "./pages/AboutUs";
+import Blog from "./pages/Blog";
 
 const AppRoutes: React.FC = () => {
   const location = useLocation();
@@ -37,6 +38,10 @@ const AppRoutes: React.FC = () => {
       <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
       <Route path="/hotel-not-found" element={<HotelNotFound />} />
       <Route path="/early-hotel/:id" element={<EarlyHotelDetailPage />} />
+      
+      {/* Information pages */}
+      <Route path="/about-us" element={<AboutUs />} />
+      <Route path="/blog" element={<Blog />} />
       
       {/* Other routes */}
       <Route path="/adventures" element={<Adventures />} />

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -39,6 +40,9 @@ const Header = () => {
             <Link to="/" className="px-3 py-2 rounded-md hover:bg-stone-100">
               Home
             </Link>
+            <Link to="/about-us" className="px-3 py-2 rounded-md hover:bg-stone-100">
+              About Us
+            </Link>
             <Link to="/destinations" className="px-3 py-2 rounded-md hover:bg-stone-100">
               Destinations
             </Link>
@@ -48,11 +52,8 @@ const Header = () => {
             <Link to="/adventures" className="px-3 py-2 rounded-md hover:bg-stone-100">
               Adventures
             </Link>
-            <Link to="/rentals/car" className="px-3 py-2 rounded-md hover:bg-stone-100">
-              Car Rental
-            </Link>
-            <Link to="/bike-rentals" className="px-3 py-2 rounded-md hover:bg-stone-100">
-              Bike Rental
+            <Link to="/blog" className="px-3 py-2 rounded-md hover:bg-stone-100">
+              Blog
             </Link>
           </nav>
         </div>
@@ -113,6 +114,9 @@ const Header = () => {
                   <Link to="/" className="px-4 py-3 rounded-md hover:bg-stone-100">
                     Home
                   </Link>
+                  <Link to="/about-us" className="px-4 py-3 rounded-md hover:bg-stone-100">
+                    About Us
+                  </Link>
                   <Link to="/destinations" className="px-4 py-3 rounded-md hover:bg-stone-100">
                     Destinations
                   </Link>
@@ -122,7 +126,10 @@ const Header = () => {
                   <Link to="/adventures" className="px-4 py-3 rounded-md hover:bg-stone-100">
                     Adventures
                   </Link>
-                   <Link to="/rentals/car" className="px-4 py-3 rounded-md hover:bg-stone-100">
+                  <Link to="/blog" className="px-4 py-3 rounded-md hover:bg-stone-100">
+                    Blog
+                  </Link>
+                  <Link to="/rentals/car" className="px-4 py-3 rounded-md hover:bg-stone-100">
                     Car Rental
                   </Link>
                   <Link to="/bike-rentals" className="px-4 py-3 rounded-md hover:bg-stone-100">
