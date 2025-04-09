@@ -1,7 +1,7 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Search, RefreshCw } from 'lucide-react';
+import React from "react";
+import { Search, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface NoHotelsFoundProps {
   clearFilters: () => void;
@@ -9,17 +9,21 @@ interface NoHotelsFoundProps {
 
 const NoHotelsFound: React.FC<NoHotelsFoundProps> = ({ clearFilters }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <div className="rounded-full bg-stone-100 p-4 mb-4">
-        <Search className="h-8 w-8 text-stone-500" />
+    <div className="bg-white rounded-lg shadow-sm p-8 flex flex-col items-center justify-center text-center space-y-4">
+      <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center">
+        <Search className="h-8 w-8 text-stone-400" />
       </div>
-      <h3 className="text-xl font-semibold text-stone-800 mb-2">No hotels found</h3>
-      <p className="text-stone-600 max-w-md mb-6">
-        We couldn't find any hotels matching your current filters. Try adjusting your search criteria or clearing filters.
+      <h3 className="text-xl font-semibold text-stone-800">No hotels found</h3>
+      <p className="text-stone-500 max-w-md">
+        We couldn't find any hotels matching your filter criteria. Try adjusting your filters or clear them to see all available hotels.
       </p>
-      <Button onClick={clearFilters} className="flex items-center">
+      <Button 
+        onClick={clearFilters} 
+        variant="default" 
+        className="mt-2 flex items-center"
+      >
         <RefreshCw className="h-4 w-4 mr-2" />
-        Clear all filters
+        Clear All Filters
       </Button>
     </div>
   );

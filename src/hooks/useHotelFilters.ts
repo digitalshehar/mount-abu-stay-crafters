@@ -31,7 +31,8 @@ export const useHotelFilters = (hotels: any[]) => {
       // Filter amenities that appear in at least 2 hotels
       const commonAmenitiesList = Array.from(amenitiesCounts.entries())
         .filter(([_, count]) => count >= 2)
-        .map(([amenity]) => amenity);
+        .map(([amenity]) => amenity)
+        .sort();
       
       setCommonAmenities(commonAmenitiesList);
     }
