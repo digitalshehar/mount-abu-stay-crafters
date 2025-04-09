@@ -18,7 +18,7 @@ const MobileHeader: React.FC = () => {
     <header className="fixed top-0 left-0 right-0 h-14 bg-white z-50 border-b flex items-center px-4">
       <div className="flex items-center justify-between w-full">
         <Link to="/" className="flex items-center">
-          <Logo className="h-8 w-auto" />
+          <Logo />
         </Link>
 
         <div className="flex items-center gap-2">
