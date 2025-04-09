@@ -20,7 +20,7 @@ const WeatherWidgetExtended = ({
 }: WeatherWidgetProps) => {
   const { weather, isLoading, error } = useWeather(city);
 
-  const getWeatherIcon = (iconCode: string) => {
+  const getWeatherIcon = (iconCode?: string) => {
     switch (iconCode) {
       case "sun":
         return <Sun className="h-8 w-8 text-amber-500" />;
@@ -91,7 +91,7 @@ const WeatherWidgetExtended = ({
         <div className="grid grid-cols-2 gap-2 mt-4">
           <div className="flex items-center text-sm text-stone-600">
             <Thermometer className="h-4 w-4 mr-1 text-stone-400" />
-            <span>Feels like {weather.feelsLike}°C</span>
+            <span>Feels like {weather.feelsLike || weather.temperature}°C</span>
           </div>
           <div className="flex items-center text-sm text-stone-600">
             <Wind className="h-4 w-4 mr-1 text-stone-400" />
@@ -119,7 +119,7 @@ const WeatherWidgetExtended = ({
         </div>
       </div>
       <div className="bg-stone-50 px-4 py-2 text-xs text-stone-500">
-        Last updated: {weather.lastUpdated}
+        Last updated: {weather.lastUpdated || "Just now"}
       </div>
     </div>
   );

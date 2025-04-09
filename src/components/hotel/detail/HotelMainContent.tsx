@@ -10,53 +10,7 @@ import HotelGallery from './HotelGallery';
 import HotelTransport from './HotelTransport';
 import HotelAmenities from './HotelAmenities';
 import HotelPolicies from './HotelPolicies';
-
-interface Room {
-  type: string;
-  price: number;
-  capacity: number;
-}
-
-interface Review {
-  name: string;
-  rating: number;
-  date?: string;
-  comment?: string;
-}
-
-interface Hotel {
-  id: number;
-  name: string;
-  location: string;
-  stars: number;
-  rating: number;
-  reviewCount: number;
-  description: string;
-  image: string;
-  images?: string[];
-  gallery?: string[];
-  amenities: string[];
-  rooms?: Room[];
-  reviews?: Review[];
-  checkInTime?: string;
-  checkOutTime?: string;
-  policies?: string[];
-  address?: string;
-  contactInfo?: {
-    phone: string;
-    email: string;
-    website?: string;
-  };
-  landmarks?: {
-    airport: string;
-    busStation: string;
-    cityCenter: string;
-  };
-  latitude?: number;
-  longitude?: number;
-  price?: number;
-  pricePerNight?: number;
-}
+import { Room, Hotel } from '@/components/admin/hotels/types';
 
 interface NearbyAttraction {
   name: string;
@@ -98,6 +52,12 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
       
   // Get price from either price or pricePerNight
   const price = hotel.price || hotel.pricePerNight || 0;
+
+  // Ensure rooms have the 'count' property
+  const enhancedRooms: Room[] = (hotel.rooms || []).map(room => ({
+    ...room,
+    count: room.count || 5 // Default to 5 if count is not provided
+  }));
 
   return (
     <main className="container-custom py-6 lg:py-8">
@@ -164,7 +124,7 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
               
               <div className="mt-6">
                 <TabsContent value="rooms">
-                  <HotelRooms rooms={hotel.rooms || []} onBookRoom={onBookRoom} />
+                  <HotelRooms rooms={enhancedRooms} onBookRoom={onBookRoom} />
                 </TabsContent>
                 
                 <TabsContent value="amenities">
@@ -199,7 +159,10 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
                 </TabsContent>
                 
                 <TabsContent value="transport">
-                  <HotelTransport />
+                  <HotelTransport 
+                    hotelName={hotel.name}
+                    location={hotel.location}
+                  />
                 </TabsContent>
                 
                 <TabsContent value="faq">

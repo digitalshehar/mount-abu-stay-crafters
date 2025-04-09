@@ -4,7 +4,7 @@ export interface Room {
   type: string;
   price: number;
   capacity: number;
-  count?: number;
+  count: number;
   images?: string[];
   hotel_id?: number;
   description?: string;

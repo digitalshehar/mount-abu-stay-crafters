@@ -16,6 +16,8 @@ interface WeatherData {
   low: number;
   location: string;
   icon?: string;
+  feelsLike?: number;
+  lastUpdated?: string;
 }
 
 export const useWeather = (locationParam: LocationParam) => {
@@ -40,6 +42,10 @@ export const useWeather = (locationParam: LocationParam) => {
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 500));
         
+        // Current date for lastUpdated
+        const now = new Date();
+        const lastUpdated = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
         // Mock weather data
         const mockWeatherData: WeatherData = {
           temperature: 24 + Math.floor(Math.random() * 8),
@@ -49,6 +55,9 @@ export const useWeather = (locationParam: LocationParam) => {
           high: 28 + Math.floor(Math.random() * 5),
           low: 18 + Math.floor(Math.random() * 5),
           location: locationName,
+          icon: "cloud-sun",
+          feelsLike: 22 + Math.floor(Math.random() * 5),
+          lastUpdated: lastUpdated
         };
         
         setWeather(mockWeatherData);

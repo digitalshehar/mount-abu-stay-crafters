@@ -1,186 +1,241 @@
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Separator } from "@/components/ui/separator";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import HotelSearchSection from "@/components/hotels/HotelSearchSection";
-import HotelInfoSections from "@/components/hotels/HotelInfoSections";
-import HotelsHeader from "@/components/hotels/HotelsHeader";
-import HotelsTabs from "@/components/hotels/HotelsTabs";
-import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
+import { Hotel } from "@/components/admin/hotels/types";
 import { useHotelFilters } from "@/hooks/useHotelFilters";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import Breadcrumb from "@/components/Breadcrumb";
+import HotelFilters from "@/components/hotels/HotelFilters";
+import HotelListView from "@/components/hotels/HotelListView";
+import HotelGridView from "@/components/hotels/HotelGridView";
+import HotelViewToggle from "@/components/hotels/HotelViewToggle";
+import HotelMapView from "@/components/hotels/HotelMapView";
+import ScrollToTop from "@/components/ScrollToTop";
+import { Button } from "@/components/ui/button";
+import { useDebounce } from "@/hooks/useDebounce";
+import PageHeader from "@/components/PageHeader";
 
 const Hotels = () => {
-  console.log("Rendering Hotels component");
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [activeView, setActiveView] = useState<string>("classic");
+  const navigate = useNavigate();
+  const { search } = useLocation();
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [viewMode, setViewMode] = useState("grid");
+  const [showMap, setShowMap] = useState(false);
 
-  const { data: hotels, isLoading, error } = useQuery({
-    queryKey: ["hotels"],
-    queryFn: async () => {
-      console.log("Fetching hotels from Supabase");
+  // Get search params from URL
+  const searchParams = new URLSearchParams(search);
+  const locationParam = searchParams.get("location") || "";
+  const checkInParam = searchParams.get("check_in") || "";
+  const checkOutParam = searchParams.get("check_out") || "";
+  const guestsParam = searchParams.get("guests") || "2";
+
+  // Local filter state
+  const [searchQuery, setSearchQuery] = useState(locationParam);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 8500]);
+  const [selectedStars, setSelectedStars] = useState<number[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState("recommended");
+
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Use the hotel filters hook
+  const {
+    filteredHotels,
+    commonAmenities,
+    applyFilters,
+    resetFilters
+  } = useHotelFilters(hotels);
+
+  // Initial hotels fetch from Supabase
+  useEffect(() => {
+    const fetchHotels = async () => {
       try {
+        setIsLoading(true);
+        setHasError(false);
+        
+        console.info('Rendering Hotels component');
+        
         const { data, error } = await supabase
-          .from("hotels")
-          .select("*")
-          .eq("status", "active");
+          .from('hotels')
+          .select('*')
+          .eq('status', 'active');
         
         if (error) {
-          console.error("Supabase error:", error);
           throw error;
         }
         
-        console.log("Hotels data received:", data?.length || 0, "hotels");
+        // Augment hotel data with rooms
+        const hotelsWithRooms = await Promise.all(
+          data.map(async (hotel: any) => {
+            // Fetch rooms for each hotel
+            const { data: roomsData, error: roomsError } = await supabase
+              .from('rooms')
+              .select('*')
+              .eq('hotel_id', hotel.id);
+              
+            if (roomsError) {
+              console.error(`Error fetching rooms for hotel ${hotel.id}:`, roomsError);
+              return {
+                ...hotel,
+                rooms: []
+              };
+            }
+            
+            return {
+              ...hotel,
+              pricePerNight: hotel.price_per_night,
+              rooms: roomsData || []
+            };
+          })
+        );
         
-        // If no data is returned, use an empty array
-        if (!data || data.length === 0) {
-          console.log("No hotels found in database, using empty array");
-          return [];
-        }
+        console.info('Hotels data after processing:', hotelsWithRooms.length, 'hotels');
         
-        const adminHotels: AdminHotel[] = data.map(hotel => ({
-          id: hotel.id,
-          name: hotel.name,
-          slug: hotel.slug || '',
-          location: hotel.location,
-          stars: hotel.stars,
-          pricePerNight: hotel.price_per_night,
-          image: hotel.image,
-          status: hotel.status === 'active' ? 'active' : 'inactive',
-          description: hotel.description || '',
-          amenities: hotel.amenities || [],
-          reviewCount: hotel.review_count || 0,
-          rating: hotel.rating || 0,
-          featured: hotel.featured || false,
-          rooms: [],
-          categories: hotel.categories || [],
-          gallery: hotel.gallery || [],
-          latitude: hotel.latitude,
-          longitude: hotel.longitude
-        }));
-        
-        return adminHotels;
+        setHotels(hotelsWithRooms);
       } catch (error) {
-        console.error("Error in fetchHotels:", error);
-        throw error;
-      }
-    },
-  });
-
-  // Ensure hotels is always an array, even when undefined or null
-  const safeHotels = hotels || [];
-  console.log("Hotels data after processing:", safeHotels.length, "hotels");
-
-  const {
-    priceRange,
-    setPriceRange,
-    selectedStars,
-    setSelectedStars,
-    selectedAmenities,
-    setSelectedAmenities,
-    activeFilterCount,
-    filteredHotels,
-    handleStarFilter,
-    handleAmenityFilter,
-    clearFilters,
-    commonAmenities
-  } = useHotelFilters(safeHotels, searchQuery);
-
-  // Display a toast message when there's an error
-  useEffect(() => {
-    if (error) {
-      console.error("Error details:", error);
-      toast.error("Failed to load hotels", {
-        description: "Please try again or contact support."
-      });
-    }
-  }, [error]);
-
-  // Close filter drawer when orientation changes on mobile
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768 && isFilterOpen) {
-        setIsFilterOpen(false);
+        console.error('Error fetching hotels:', error);
+        setHasError(true);
+        toast.error("Failed to load hotels. Please try again later.");
+      } finally {
+        setIsLoading(false);
       }
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [isFilterOpen]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSearchParams(prev => {
-      if (searchQuery) {
-        prev.set("search", searchQuery);
-      } else {
-        prev.delete("search");
-      }
-      return prev;
+    fetchHotels();
+  }, []);
+
+  // Apply filters when filter state changes
+  useEffect(() => {
+    applyFilters({
+      searchQuery: debouncedSearchQuery,
+      priceRange,
+      selectedStars,
+      selectedAmenities
     });
+  }, [debouncedSearchQuery, priceRange, selectedStars, selectedAmenities, applyFilters]);
+
+  // Handle reset filters
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setPriceRange([0, 8500]);
+    setSelectedStars([]);
+    setSelectedAmenities([]);
+    resetFilters();
+    toast.info("Filters have been reset");
   };
 
-  console.log("Rendering Hotels page with:", {
+  // Log key information for debugging
+  console.info('Rendering Hotels page with:', {
     isLoading,
-    hasError: !!error,
-    hotelsCount: safeHotels.length,
-    filteredHotelsCount: filteredHotels?.length || 0
+    hasError,
+    hotelsCount: hotels.length,
+    filteredHotelsCount: filteredHotels.length
   });
 
   return (
     <>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-
-        <main className="flex-grow pt-20 md:pt-28 pb-16 bg-stone-50">
-          <div className="container-custom mb-8">
-            <HotelsHeader hotelsCount={safeHotels.length || 0} />
-
-            <div className="flex flex-col space-y-6">
-              <HotelSearchSection 
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                handleSearch={handleSearch}
-              />
-
-              <HotelsTabs 
-                activeView={activeView}
-                setActiveView={setActiveView}
-                activeFilterCount={activeFilterCount}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
+      <ScrollToTop />
+      
+      <div className="bg-stone-50 pb-12">
+        <PageHeader 
+          title="Hotels in Mount Abu" 
+          description="Find and book the best hotels in Mount Abu, Rajasthan."
+          breadcrumb={
+            <Breadcrumb
+              items={[
+                { label: 'Home', href: '/' },
+                { label: 'Hotels', href: '/hotels', active: true }
+              ]}
+            />
+          }
+        />
+        
+        <div className="container-custom">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Sidebar Filters */}
+            <aside className="lg:w-64 flex-shrink-0">
+              <HotelFilters
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
                 selectedStars={selectedStars}
                 setSelectedStars={setSelectedStars}
                 selectedAmenities={selectedAmenities}
                 setSelectedAmenities={setSelectedAmenities}
-                priceRange={priceRange}
-                setPriceRange={setPriceRange}
-                clearFilters={clearFilters}
-                isFilterOpen={isFilterOpen}
-                setIsFilterOpen={setIsFilterOpen}
-                isLoading={isLoading}
-                filteredHotels={filteredHotels || []}
-                hotels={safeHotels}
-                handleStarFilter={handleStarFilter}
-                handleAmenityFilter={handleAmenityFilter}
-                commonAmenities={commonAmenities}
+                availableAmenities={commonAmenities}
+                onReset={handleResetFilters}
               />
               
-              <Separator className="my-10" />
-              
-              <HotelInfoSections />
-            </div>
+              <div className="mt-6">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => setShowMap(!showMap)}
+                >
+                  {showMap ? 'Hide Map' : 'Show Map'}
+                </Button>
+              </div>
+            </aside>
+            
+            {/* Main Content */}
+            <main className="flex-1">
+              {showMap ? (
+                <HotelMapView 
+                  hotels={filteredHotels.map(hotel => ({
+                    ...hotel,
+                    pricePerNight: hotel.pricePerNight || hotel.price || 0,
+                    reviewCount: hotel.reviewCount || 0,
+                    rooms: hotel.rooms || []
+                  }))} 
+                  onToggleMap={() => setShowMap(false)} 
+                />
+              ) : (
+                <>
+                  <div className="mb-5 flex justify-between items-center">
+                    <HotelViewToggle
+                      viewMode={viewMode}
+                      onChange={setViewMode}
+                    />
+                    
+                    <input
+                      type="text"
+                      placeholder="Search hotels..."
+                      className="border border-stone-300 rounded-md px-3 py-1.5 text-sm w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  
+                  {viewMode === 'list' ? (
+                    <HotelListView
+                      hotels={filteredHotels}
+                      isLoading={isLoading}
+                      hasError={hasError}
+                      sortBy={sortBy}
+                      onSortChange={setSortBy}
+                    />
+                  ) : (
+                    <HotelGridView
+                      hotels={filteredHotels.map(hotel => ({
+                        ...hotel,
+                        pricePerNight: hotel.pricePerNight || hotel.price || 0,
+                        reviewCount: hotel.reviewCount || 0,
+                        rooms: hotel.rooms || []
+                      }))}
+                      isLoading={isLoading}
+                      hasError={hasError}
+                      sortBy={sortBy}
+                      onSortChange={setSortBy}
+                    />
+                  )}
+                </>
+              )}
+            </main>
           </div>
-        </main>
-
-        <Footer />
+        </div>
       </div>
     </>
   );
