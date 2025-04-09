@@ -14,7 +14,7 @@ import AddHotelFooter from "./dialog/AddHotelFooter";
 interface AddHotelDialogProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  onAddHotel: () => void;
+  onAddHotel: () => Promise<void>;
   newHotel: NewHotel;
   setNewHotel: (hotel: NewHotel) => void;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
@@ -100,6 +100,7 @@ const AddHotelDialog = ({
       await onAddHotel();
       setIsLoading(false);
     } catch (error) {
+      console.error("Error during hotel submission:", error);
       setIsLoading(false);
     }
   };
