@@ -3,13 +3,21 @@ import { useState, useEffect, useMemo } from "react";
 import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
 import { Hotel } from "@/integrations/supabase/custom-types";
 
-export const useHotelFilters = (hotels: (AdminHotel | Hotel)[], searchQuery: string) => {
+type HotelType = AdminHotel | Hotel;
+
+export const useHotelFilters = (hotels: HotelType[], searchQuery: string) => {
   console.log("useHotelFilters called with", hotels.length, "hotels");
   
   // Default price range
   const maxPrice = useMemo(() => {
     return hotels.length > 0
-      ? Math.max(...hotels.map(hotel => hotel.pricePerNight || 0)) + 1000
+      ? Math.max(...hotels.map(hotel => {
+          // Handle both types of price fields
+          const price = 'pricePerNight' in hotel 
+            ? hotel.pricePerNight 
+            : hotel.price_per_night || 0;
+          return price;
+        })) + 1000
       : 10000;
   }, [hotels]);
 
@@ -104,7 +112,10 @@ export const useHotelFilters = (hotels: (AdminHotel | Hotel)[], searchQuery: str
       }
       
       // Filter by price range
-      const price = hotel.pricePerNight || 0;
+      const price = 'pricePerNight' in hotel 
+        ? hotel.pricePerNight 
+        : hotel.price_per_night || 0;
+      
       if (price < priceRange[0] || price > priceRange[1]) {
         return false;
       }
