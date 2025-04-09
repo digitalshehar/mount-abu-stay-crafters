@@ -5,7 +5,6 @@ import HotelGridView from './HotelGridView';
 import HotelListView from './HotelListView';
 import HotelMapView from './HotelMapView';
 import { Hotel } from '@/types';
-import { convertIntegrationToAdminHotels } from '@/utils/hotelTypeAdapter';
 import { useHotelComparison } from '@/hooks/useHotelComparison';
 
 interface HotelsTabsProps {
@@ -34,9 +33,6 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
     setIsCompareVisible
   } = useHotelComparison();
   
-  // Convert hotels to admin format for the components that expect them
-  const adminHotels = convertIntegrationToAdminHotels(hotels);
-
   useEffect(() => {
     // Set viewMode based on activeTab for consistency
     if (activeTab === 'grid' || activeTab === 'list' || activeTab === 'map') {
@@ -68,40 +64,28 @@ const HotelsTabs: React.FC<HotelsTabsProps> = ({
 
         <TabsContent value="grid" className="mt-0">
           <HotelGridView 
-            hotels={adminHotels} 
+            hotels={hotels} 
             isLoading={isLoading}
-            activeFilterCount={activeFilterCount}
-            clearFilters={clearFilters}
-            compareList={compareList}
-            onAddToCompare={addToCompare}
-            onRemoveFromCompare={removeFromCompare}
-            isInCompare={isInCompare}
+            sortBy="recommended"
+            onSortChange={() => {}}
+            hasError={false}
           />
         </TabsContent>
 
         <TabsContent value="list" className="mt-0">
           <HotelListView 
-            hotels={adminHotels} 
+            hotels={hotels} 
             isLoading={isLoading}
-            activeFilterCount={activeFilterCount}
-            clearFilters={clearFilters}
-            compareList={compareList}
-            onAddToCompare={addToCompare}
-            onRemoveFromCompare={removeFromCompare}
-            isInCompare={isInCompare}
+            sortBy="recommended"
+            onSortChange={() => {}}
+            hasError={false}
           />
         </TabsContent>
 
         <TabsContent value="map" className="mt-0">
           <HotelMapView 
-            hotels={adminHotels}
-            isLoading={isLoading}
-            activeFilterCount={activeFilterCount}
-            clearFilters={clearFilters}
-            compareList={compareList}
-            onAddToCompare={addToCompare}
-            onRemoveFromCompare={removeFromCompare}
-            isInCompare={isInCompare}
+            hotels={hotels}
+            onToggleMap={() => setActiveTab('grid')}
           />
         </TabsContent>
       </Tabs>

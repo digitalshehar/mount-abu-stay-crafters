@@ -1,148 +1,80 @@
 
 import { Hotel as AdminHotel } from '@/components/admin/hotels/types';
+import { Hotel } from '@/types';
 import { Hotel as IntegrationHotel } from '@/integrations/supabase/custom-types';
-import { Hotel as AppHotel } from '@/types';
 
 /**
- * Converts admin hotel type to integration hotel type
+ * Converts Supabase integration hotel records to the Admin Hotel type
  */
-export const convertAdminToIntegrationHotels = (
-  adminHotels: AdminHotel[]
-): IntegrationHotel[] => {
-  return adminHotels.map((hotel) => adminToIntegrationHotel(hotel));
-};
-
-/**
- * Converts a single admin hotel to integration hotel type
- */
-export const adminToIntegrationHotel = (
-  hotel: AdminHotel
-): IntegrationHotel => {
-  return {
+export function convertIntegrationToAdminHotels(hotels: IntegrationHotel[]): AdminHotel[] {
+  if (!hotels || !Array.isArray(hotels)) return [];
+  
+  return hotels.map(hotel => ({
     id: hotel.id,
     name: hotel.name,
     slug: hotel.slug,
     location: hotel.location,
     stars: hotel.stars,
-    price_per_night: hotel.pricePerNight,
+    status: hotel.status as any,
+    pricePerNight: hotel.price_per_night,
+    description: hotel.description || '',
     image: hotel.image,
-    status: hotel.status,
-    description: hotel.description,
-    amenities: hotel.amenities,
-    review_count: hotel.reviewCount,
-    rating: hotel.rating,
-    featured: hotel.featured,
-    latitude: hotel.latitude,
-    longitude: hotel.longitude,
-    gallery: hotel.gallery,
-    categories: hotel.categories
-  };
-};
+    amenities: hotel.amenities || [],
+    rating: hotel.rating || 0,
+    reviewCount: hotel.review_count || 0,
+    featured: hotel.featured || false,
+    latitude: hotel.latitude || 0,
+    longitude: hotel.longitude || 0,
+    gallery: hotel.gallery || [],
+    categories: hotel.categories || [],
+  }));
+}
 
 /**
- * Normalizes various hotel types to the app Hotel type
+ * Converts Admin Hotel type to Supabase integration hotel records
  */
-export const normalizeToAppHotel = (
-  hotel: AdminHotel | IntegrationHotel | any
-): AppHotel => {
-  // Handle AdminHotel type
-  if ('pricePerNight' in hotel) {
-    return {
-      id: typeof hotel.id === 'string' ? parseInt(hotel.id, 10) : hotel.id,
-      name: hotel.name,
-      slug: hotel.slug,
-      location: hotel.location,
-      description: hotel.description,
-      pricePerNight: hotel.pricePerNight,
-      stars: hotel.stars,
-      rating: hotel.rating,
-      reviewCount: hotel.reviewCount,
-      image: hotel.image,
-      amenities: hotel.amenities,
-      featured: hotel.featured,
-      status: hotel.status,
-      rooms: hotel.rooms || [],
-      gallery: hotel.gallery,
-      categories: hotel.categories,
-      latitude: hotel.latitude,
-      longitude: hotel.longitude
-    };
-  }
-  
-  // Handle IntegrationHotel type
-  if ('price_per_night' in hotel) {
-    return {
-      id: typeof hotel.id === 'string' ? parseInt(hotel.id, 10) : hotel.id,
-      name: hotel.name,
-      slug: hotel.slug,
-      location: hotel.location,
-      description: hotel.description,
-      pricePerNight: hotel.price_per_night,
-      stars: hotel.stars,
-      rating: hotel.rating,
-      reviewCount: hotel.review_count,
-      image: hotel.image,
-      amenities: hotel.amenities,
-      featured: hotel.featured,
-      status: hotel.status,
-      rooms: [],
-      gallery: hotel.gallery,
-      categories: hotel.categories,
-      latitude: hotel.latitude,
-      longitude: hotel.longitude
-    };
-  }
-  
-  // Generic fallback
+export function adminToIntegrationHotel(hotel: AdminHotel): IntegrationHotel {
   return {
-    id: typeof hotel.id === 'string' ? parseInt(hotel.id, 10) : hotel.id,
+    id: hotel.id,
     name: hotel.name,
     slug: hotel.slug || '',
     location: hotel.location || '',
-    image: hotel.image,
-    pricePerNight: hotel.pricePerNight || hotel.price_per_night || hotel.price || 0,
-    status: hotel.status || 'active',
     stars: hotel.stars || 0,
-    amenities: hotel.amenities || [],
-    description: hotel.description || ''
-  };
-};
-
-/**
- * Batch normalize hotels
- */
-export const normalizeHotels = (hotels: any[]): AppHotel[] => {
-  if (!Array.isArray(hotels)) {
-    console.warn('normalizeHotels received non-array input:', hotels);
-    return [];
-  }
-  return hotels.map(hotel => normalizeToAppHotel(hotel));
-};
-
-/**
- * Converts integration hotel type to admin hotel type
- */
-export const convertIntegrationToAdminHotels = (
-  integrationHotels: IntegrationHotel[]
-): AdminHotel[] => {
-  return integrationHotels.map((hotel) => ({
-    id: typeof hotel.id === 'string' ? parseInt(hotel.id, 10) : hotel.id,
-    name: hotel.name,
-    slug: hotel.slug,
-    location: hotel.location,
-    stars: hotel.stars,
-    pricePerNight: hotel.price_per_night,
-    image: hotel.image,
-    status: hotel.status === 'active' ? 'active' : 'inactive',
+    status: hotel.status || 'active',
+    price_per_night: hotel.pricePerNight || 0,
     description: hotel.description || '',
+    image: hotel.image || '',
     amenities: hotel.amenities || [],
-    reviewCount: hotel.review_count || 0,
     rating: hotel.rating || 0,
+    review_count: hotel.reviewCount || 0,
     featured: hotel.featured || false,
-    rooms: [],
+    latitude: hotel.latitude || 0,
+    longitude: hotel.longitude || 0,
     gallery: hotel.gallery || [],
     categories: hotel.categories || [],
-    latitude: hotel.latitude,
-    longitude: hotel.longitude
+  };
+}
+
+/**
+ * Normalize hotel objects from various sources to a standard format
+ */
+export function normalizeHotels(hotels: any[]): Hotel[] {
+  if (!hotels || !Array.isArray(hotels)) return [];
+  
+  return hotels.map(hotel => ({
+    id: hotel.id,
+    name: hotel.name,
+    slug: hotel.slug || '',
+    location: hotel.location,
+    stars: hotel.stars || 0,
+    pricePerNight: hotel.pricePerNight || hotel.price_per_night || 0,
+    description: hotel.description || '',
+    image: hotel.image || '',
+    amenities: hotel.amenities || [],
+    rating: hotel.rating || 0,
+    reviewCount: hotel.reviewCount || hotel.review_count || 0,
+    featured: hotel.featured || false,
+    status: hotel.status || 'active',
+    gallery: hotel.gallery || [],
   }));
-};
+}

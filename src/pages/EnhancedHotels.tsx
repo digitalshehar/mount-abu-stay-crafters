@@ -5,13 +5,11 @@ import { Helmet } from 'react-helmet-async';
 import HotelSearchSection from '@/components/hotels/HotelSearchSection';
 import FilterSidebar from '@/components/hotels/FilterSidebar';
 import HotelsTabs from '@/components/hotels/HotelsTabs';
-import { useHotelFilters } from '@/hooks/useHotelFilters';
+import useEnhancedFilters from '@/hooks/useEnhancedFilters';
 import { supabase } from '@/integrations/supabase/client';
 import { Hotel } from '@/types';
 import { useResponsive } from '@/context/ResponsiveContext';
-import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
-import { SlidersHorizontal } from 'lucide-react';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 
 const EnhancedHotels = () => {
   const [hotels, setHotels] = useState<Hotel[]>([]);
@@ -40,7 +38,14 @@ const EnhancedHotels = () => {
     commonAmenities,
     sortOption,
     setSortOption
-  } = useHotelFilters(hotels, initialSearchQuery);
+  } = useEnhancedFilters(hotels);
+
+  // Set initial search query
+  useEffect(() => {
+    if (initialSearchQuery) {
+      setSearchQuery(initialSearchQuery);
+    }
+  }, [initialSearchQuery, setSearchQuery]);
 
   // Handle form search submission
   const handleSearch = (e: React.FormEvent) => {
@@ -140,7 +145,7 @@ const EnhancedHotels = () => {
             {!isMobile && (
               <div className="md:col-span-3 lg:col-span-2">
                 <FilterSidebar
-                  priceRange={priceRange as [number, number]}
+                  priceRange={priceRange}
                   setPriceRange={setPriceRange}
                   selectedStars={selectedStars}
                   handleStarFilter={handleStarFilter}
@@ -148,7 +153,6 @@ const EnhancedHotels = () => {
                   handleAmenityFilter={handleAmenityFilter}
                   commonAmenities={commonAmenities}
                   clearFilters={clearFilters}
-                  activeFilterCount={activeFilterCount}
                   sortOption={sortOption}
                   setSortOption={setSortOption}
                 />
@@ -172,7 +176,7 @@ const EnhancedHotels = () => {
             <DrawerContent className="max-h-[85vh]">
               <div className="px-4 py-6">
                 <FilterSidebar
-                  priceRange={priceRange as [number, number]}
+                  priceRange={priceRange}
                   setPriceRange={setPriceRange}
                   selectedStars={selectedStars}
                   handleStarFilter={handleStarFilter}
@@ -180,7 +184,6 @@ const EnhancedHotels = () => {
                   handleAmenityFilter={handleAmenityFilter}
                   commonAmenities={commonAmenities}
                   clearFilters={clearFilters}
-                  activeFilterCount={activeFilterCount}
                   sortOption={sortOption}
                   setSortOption={setSortOption}
                   onClose={() => setIsFilterDrawerOpen(false)}

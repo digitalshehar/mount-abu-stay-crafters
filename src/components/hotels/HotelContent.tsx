@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Hotel } from "@/types";
 import { normalizeHotels } from "@/utils/hotelTypeAdapter";
 import NoHotelsFound from "./content/NoHotelsFound";
 import HotelGrid from "./content/HotelGrid";

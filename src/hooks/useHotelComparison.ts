@@ -4,13 +4,14 @@ import { Hotel } from '@/components/admin/hotels/types';
 import { useToast } from '@/hooks/use-toast';
 
 export const useHotelComparison = () => {
-  const [compareList, setCompareList] = useState<Hotel[]>([]);
+  const [compareList, setCompareList] = useState<number[]>([]);
+  const [isCompareVisible, setIsCompareVisible] = useState(false);
   const { toast } = useToast();
   
   const addToCompare = (id: number) => {
     setCompareList(prev => {
       // Check if hotel is already in the list
-      if (prev.some(hotel => hotel.id === id)) {
+      if (prev.includes(id)) {
         return prev;
       }
       
@@ -24,19 +25,18 @@ export const useHotelComparison = () => {
         return prev;
       }
       
-      // Add hotel by id (the actual hotel data will be fetched from the hotels array when needed)
       toast({
         title: "Added to compare",
         description: "Hotel has been added to your comparison list"
       });
       
-      return [...prev, { id } as Hotel];
+      return [...prev, id];
     });
   };
   
   const removeFromCompare = (id: number) => {
     setCompareList(prev => {
-      const newList = prev.filter(hotel => hotel.id !== id);
+      const newList = prev.filter(hotelId => hotelId !== id);
       
       if (newList.length !== prev.length) {
         toast({
@@ -49,7 +49,7 @@ export const useHotelComparison = () => {
     });
   };
   
-  const clearCompare = () => {
+  const clearCompareList = () => {
     setCompareList([]);
     toast({
       title: "Compare list cleared",
@@ -58,14 +58,22 @@ export const useHotelComparison = () => {
   };
   
   const isInCompare = (id: number) => {
-    return compareList.some(hotel => hotel.id === id);
+    return compareList.includes(id);
+  };
+  
+  // Function to get hotel data for comparison
+  const compareHotels = (hotels: Hotel[]) => {
+    return hotels.filter(hotel => compareList.includes(hotel.id as number));
   };
   
   return {
     compareList,
     addToCompare,
     removeFromCompare,
-    clearCompare,
-    isInCompare
+    clearCompareList,
+    isInCompare,
+    compareHotels,
+    isCompareVisible,
+    setIsCompareVisible
   };
 };
