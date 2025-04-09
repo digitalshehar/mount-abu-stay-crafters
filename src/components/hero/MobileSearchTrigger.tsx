@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Search } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -7,7 +8,6 @@ import HotelSearchForm from "./HotelSearchForm";
 import CarSearchForm from "./CarSearchForm";
 import BikeSearchForm from "./BikeSearchForm";
 import ActivitySearchForm from "./ActivitySearchForm";
-import { useResponsive } from "@/context/ResponsiveContext";
 
 interface MobileSearchTriggerProps {
   isSheetOpen: boolean;
@@ -46,11 +46,6 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
   setActivitySearch,
   handleSearch
 }) => {
-  const { isMobile } = useResponsive();
-  
-  // If not on mobile, don't render this component
-  if (!isMobile) return null;
-  
   // Safe array splitting with null checks and default values
   const firstRowTypes = bookingTypes && bookingTypes.length > 0 
     ? bookingTypes.slice(0, Math.min(4, bookingTypes.length)) 
@@ -61,7 +56,7 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
     : [];
 
   return (
-    <div className="w-full px-4">
+    <div className="w-full px-4 md:hidden">
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetTrigger asChild>
           <button 
@@ -73,7 +68,7 @@ const MobileSearchTrigger: React.FC<MobileSearchTriggerProps> = ({
             <span className="text-stone-500">Where are you going?</span>
           </button>
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-xl px-4 pt-6 pb-8">
+        <SheetContent side="bottom" className="h-[90vh] rounded-t-xl px-4 pt-6 pb-8">
           <div className="h-full overflow-y-auto">
             {/* Booking type selector */}
             <div className="grid grid-cols-2 gap-2 mb-4">

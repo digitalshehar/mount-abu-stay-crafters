@@ -11,11 +11,8 @@ import CarouselSection from "@/components/home/CarouselSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import Newsletter from "@/components/home/Newsletter";
 import EarlyHotels from "@/components/home/EarlyHotels";
-import { useResponsive } from "@/context/ResponsiveContext";
 
 const Index: React.FC = () => {
-  const { isMobile } = useResponsive();
-  
   return (
     <>
       <Helmet>
@@ -24,32 +21,16 @@ const Index: React.FC = () => {
           name="description"
           content="Discover the best of Mount Abu with our comprehensive travel guide. Find hotels, adventures, car rentals, and more for your perfect getaway."
         />
-        {isMobile && (
-          <meta name="theme-color" content="#ffffff" />
-        )}
       </Helmet>
 
       <Layout>
         <Hero />
         <FeaturedDestinations />
-        
-        {/* Conditionally render sections based on device */}
-        {isMobile ? (
-          <>
-            <PopularHotels />
-            <EarlyHotels />
-            <FeaturedAdventures />
-          </>
-        ) : (
-          <>
-            <HarleyHotels />
-            <EarlyHotels />
-            <PopularHotels />
-            <CarouselSection />
-            <FeaturedAdventures />
-          </>
-        )}
-        
+        <HarleyHotels />
+        <EarlyHotels />
+        <PopularHotels />
+        <CarouselSection />
+        <FeaturedAdventures />
         <TestimonialsSection />
         <Newsletter />
       </Layout>

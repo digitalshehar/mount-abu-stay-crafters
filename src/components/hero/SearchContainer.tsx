@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { toast } from "sonner";
 import { validateSearch } from "./HeroUtils";
-import { useResponsive } from "@/context/ResponsiveContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import MobileSearchTrigger from "./MobileSearchTrigger";
 import DesktopSearchForm from "./DesktopSearchForm";
 
@@ -13,7 +13,7 @@ const SearchContainer = () => {
   const { toast: uiToast } = useToast();
   const [activeTab, setActiveTab] = useState("hotels");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { isMobile } = useResponsive();
+  const isMobile = useIsMobile();
   
   // Updated booking types - removed Flight option
   const bookingTypes = [
@@ -121,46 +121,42 @@ const SearchContainer = () => {
   return (
     <div className="max-w-5xl mx-auto animate-fade-in-up animation-delay-400">
       {/* Mobile search trigger */}
-      {isMobile && (
-        <MobileSearchTrigger 
-          isSheetOpen={isSheetOpen}
-          setIsSheetOpen={setIsSheetOpen}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          bookingTypes={bookingTypes}
-          stayType={stayType}
-          setStayType={setStayType}
-          hotelSearch={hotelSearch}
-          setHotelSearch={setHotelSearch}
-          carSearch={carSearch}
-          setCarSearch={setCarSearch}
-          bikeSearch={bikeSearch}
-          setBikeSearch={setBikeSearch}
-          activitySearch={activitySearch}
-          setActivitySearch={setActivitySearch}
-          handleSearch={handleSearch}
-        />
-      )}
+      <MobileSearchTrigger 
+        isSheetOpen={isSheetOpen}
+        setIsSheetOpen={setIsSheetOpen}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        bookingTypes={bookingTypes}
+        stayType={stayType}
+        setStayType={setStayType}
+        hotelSearch={hotelSearch}
+        setHotelSearch={setHotelSearch}
+        carSearch={carSearch}
+        setCarSearch={setCarSearch}
+        bikeSearch={bikeSearch}
+        setBikeSearch={setBikeSearch}
+        activitySearch={activitySearch}
+        setActivitySearch={setActivitySearch}
+        handleSearch={handleSearch}
+      />
       
       {/* Desktop search container */}
-      {!isMobile && (
-        <DesktopSearchForm
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          bookingTypes={bookingTypes}
-          stayType={stayType}
-          setStayType={setStayType}
-          hotelSearch={hotelSearch}
-          setHotelSearch={setHotelSearch}
-          carSearch={carSearch}
-          setCarSearch={setCarSearch}
-          bikeSearch={bikeSearch}
-          setBikeSearch={setBikeSearch}
-          activitySearch={activitySearch}
-          setActivitySearch={setActivitySearch}
-          handleSearch={handleSearch}
-        />
-      )}
+      <DesktopSearchForm
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        bookingTypes={bookingTypes}
+        stayType={stayType}
+        setStayType={setStayType}
+        hotelSearch={hotelSearch}
+        setHotelSearch={setHotelSearch}
+        carSearch={carSearch}
+        setCarSearch={setCarSearch}
+        bikeSearch={bikeSearch}
+        setBikeSearch={setBikeSearch}
+        activitySearch={activitySearch}
+        setActivitySearch={setActivitySearch}
+        handleSearch={handleSearch}
+      />
     </div>
   );
 };
