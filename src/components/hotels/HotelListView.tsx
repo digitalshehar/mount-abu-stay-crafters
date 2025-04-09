@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
 import { Hotel } from "@/components/admin/hotels/types";
 import HotelCard from "@/components/HotelCard";
 import HotelListHeader from "./HotelListHeader";
@@ -74,7 +73,7 @@ const HotelListView = ({
             rating={hotel.rating}
             reviewCount={hotel.reviewCount || 0}
             image={hotel.image}
-            pricePerNight={hotel.pricePerNight || hotel.price || 0}
+            pricePerNight={hotel.pricePerNight}
             amenities={hotel.amenities || []}
             featured={hotel.featured || false}
           />

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MapPin, Navigation, Phone, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,8 +27,8 @@ interface HotelLocationProps {
   latitude?: number;
   longitude?: number;
   nearbyAttractions?: NearbyAttraction[];
-  landmarks?: Landmarks;
-  contactInfo?: ContactInfo;
+  landmarks?: Partial<Landmarks>;
+  contactInfo?: Partial<ContactInfo>;
 }
 
 const HotelLocation: React.FC<HotelLocationProps> = ({

@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
 
 interface HotelListHeaderProps {
   count: number;
@@ -8,18 +7,17 @@ interface HotelListHeaderProps {
 }
 
 const HotelListHeader: React.FC<HotelListHeaderProps> = ({ count, isLoading = false }) => {
+  if (isLoading) {
+    return (
+      <div className="animate-pulse h-6 w-32 bg-stone-200 rounded"></div>
+    );
+  }
+
   return (
     <div className="flex items-center">
-      {isLoading ? (
-        <div className="flex items-center text-stone-500">
-          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          <span>Loading hotels...</span>
-        </div>
-      ) : (
-        <h2 className="text-xl font-semibold">
-          {count} {count === 1 ? 'Hotel' : 'Hotels'} Found
-        </h2>
-      )}
+      <h2 className="text-lg font-semibold">
+        {count} {count === 1 ? 'hotel' : 'hotels'} found
+      </h2>
     </div>
   );
 };

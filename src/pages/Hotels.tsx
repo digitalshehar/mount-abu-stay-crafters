@@ -85,10 +85,36 @@ const Hotels = () => {
               };
             }
             
+            // Transform from database schema to application schema
             return {
-              ...hotel,
-              pricePerNight: hotel.price_per_night,
-              rooms: roomsData || []
+              id: hotel.id,
+              name: hotel.name,
+              slug: hotel.slug || '',
+              location: hotel.location,
+              stars: hotel.stars,
+              pricePerNight: parseFloat(hotel.price_per_night),
+              image: hotel.image,
+              status: hotel.status as 'active' | 'inactive',
+              description: hotel.description || '',
+              amenities: hotel.amenities || [],
+              reviewCount: hotel.review_count || 0,
+              rating: hotel.rating || 0,
+              featured: hotel.featured || false,
+              rooms: roomsData ? roomsData.map((room: any) => ({
+                id: room.id,
+                type: room.type,
+                price: room.price,
+                capacity: room.capacity,
+                count: room.count,
+                images: room.images,
+                hotel_id: room.hotel_id,
+                description: room.description,
+                amenities: room.amenities
+              })) : [],
+              gallery: hotel.gallery || [],
+              categories: hotel.categories || [],
+              latitude: hotel.latitude,
+              longitude: hotel.longitude
             };
           })
         );
@@ -184,12 +210,7 @@ const Hotels = () => {
             <main className="flex-1">
               {showMap ? (
                 <HotelMapView 
-                  hotels={filteredHotels.map(hotel => ({
-                    ...hotel,
-                    pricePerNight: hotel.pricePerNight || hotel.price || 0,
-                    reviewCount: hotel.reviewCount || 0,
-                    rooms: hotel.rooms || []
-                  }))} 
+                  hotels={filteredHotels} 
                   onToggleMap={() => setShowMap(false)} 
                 />
               ) : (
@@ -219,12 +240,7 @@ const Hotels = () => {
                     />
                   ) : (
                     <HotelGridView
-                      hotels={filteredHotels.map(hotel => ({
-                        ...hotel,
-                        pricePerNight: hotel.pricePerNight || hotel.price || 0,
-                        reviewCount: hotel.reviewCount || 0,
-                        rooms: hotel.rooms || []
-                      }))}
+                      hotels={filteredHotels}
                       isLoading={isLoading}
                       hasError={hasError}
                       sortBy={sortBy}

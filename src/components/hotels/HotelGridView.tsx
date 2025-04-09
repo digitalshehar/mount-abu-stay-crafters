@@ -68,9 +68,9 @@ const HotelGridView: React.FC<HotelGridViewProps> = ({
             slug={hotel.slug}
             location={hotel.location}
             rating={hotel.rating}
-            reviewCount={hotel.reviewCount}
+            reviewCount={hotel.reviewCount || 0}
             image={hotel.image}
-            pricePerNight={hotel.pricePerNight || hotel.price || 0}
+            pricePerNight={hotel.pricePerNight}
             amenities={hotel.amenities || []}
             featured={hotel.featured || false}
           />
