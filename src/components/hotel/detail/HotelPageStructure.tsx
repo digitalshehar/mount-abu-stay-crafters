@@ -4,8 +4,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Dialog } from "@/components/ui/dialog";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Home } from "lucide-react";
+import { ArrowLeft, Home, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Helmet } from "react-helmet-async";
+import { Progress } from "@/components/ui/progress";
 
 interface HotelPageStructureProps {
   children: React.ReactNode;
@@ -14,6 +16,7 @@ interface HotelPageStructureProps {
   seoKeywords?: string;
   schemaMarkup: string;
   isLoading?: boolean;
+  loadingProgress?: number;
   error?: string | null;
   errorMessage?: string;
   errorImage?: string;
@@ -26,6 +29,7 @@ const HotelPageStructure = ({
   seoKeywords,
   schemaMarkup,
   isLoading,
+  loadingProgress = 30,
   error,
   errorMessage = "Sorry, we couldn't find the hotel you're looking for.",
   errorImage = "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=2574&ixlib=rb-4.0.3"
@@ -39,6 +43,9 @@ const HotelPageStructure = ({
           <div className="animate-pulse space-y-8 w-full max-w-7xl mx-auto p-8">
             <div className="h-10 bg-gray-200 rounded-md w-3/4"></div>
             <div className="h-64 bg-gray-200 rounded-lg w-full"></div>
+            
+            <Progress value={loadingProgress} className="w-full transition-all duration-500 h-2" />
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="col-span-2 space-y-4">
                 <div className="h-8 bg-gray-200 rounded w-1/2"></div>
@@ -68,8 +75,12 @@ const HotelPageStructure = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               <div className="order-2 lg:order-1">
                 <div className="max-w-lg">
+                  <div className="flex items-center mb-4 text-amber-500">
+                    <AlertTriangle className="h-6 w-6 mr-2" />
+                    <span className="font-medium">Hotel Not Found</span>
+                  </div>
                   <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-4">
-                    Hotel Not Found
+                    We couldn't find that hotel
                   </h1>
                   <p className="text-stone-600 text-lg mb-8">
                     {error || errorMessage}
@@ -117,13 +128,18 @@ const HotelPageStructure = ({
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col w-full">
-      <title>{title}</title>
-      <meta name="description" content={metaDescription} />
-      {seoKeywords && <meta name="keywords" content={seoKeywords} />}
-      
-      <script type="application/ld+json">
-        {schemaMarkup}
-      </script>
+      <Helmet>
+        <title>{title}</title>
+        <meta name="description" content={metaDescription} />
+        {seoKeywords && <meta name="keywords" content={seoKeywords} />}
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={metaDescription} />
+        <script type="application/ld+json">{schemaMarkup}</script>
+      </Helmet>
       
       <Header />
       <main className="flex-1 w-full">

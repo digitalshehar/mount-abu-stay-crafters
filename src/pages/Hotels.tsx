@@ -3,9 +3,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Hotel } from "@/components/admin/hotels/types";
 import { useHotelFilters } from "@/hooks/useHotelFilters";
-import Breadcrumb from "@/components/Breadcrumb";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import HotelFilters from "@/components/hotels/HotelFilters";
 import HotelListView from "@/components/hotels/HotelListView";
 import HotelGridView from "@/components/hotels/HotelGridView";
@@ -15,11 +14,18 @@ import ScrollToTop from "@/components/ScrollToTop";
 import { Button } from "@/components/ui/button";
 import { useDebounce } from "@/hooks/useDebounce";
 import PageHeader from "@/components/PageHeader";
+import { Hotel } from "@/types";
+
+// Extended HotelType with database fields
+interface HotelType extends Hotel {
+  price_per_night?: number;
+  status: "active" | "inactive";
+}
 
 const Hotels = () => {
   const navigate = useNavigate();
   const { search } = useLocation();
-  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [hotels, setHotels] = useState<HotelType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
@@ -34,7 +40,7 @@ const Hotels = () => {
 
   // Local filter state
   const [searchQuery, setSearchQuery] = useState(locationParam);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 8500]);
+  const [priceRange, setPriceRange] = useState([0, 8500]);
   const [selectedStars, setSelectedStars] = useState<number[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("recommended");
@@ -43,12 +49,7 @@ const Hotels = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Use the hotel filters hook
-  const {
-    filteredHotels,
-    commonAmenities,
-    applyFilters,
-    resetFilters
-  } = useHotelFilters(hotels);
+  const { filteredHotels, commonAmenities, applyFilters, resetFilters } = useHotelFilters(hotels);
 
   // Initial hotels fetch from Supabase
   useEffect(() => {
@@ -56,71 +57,41 @@ const Hotels = () => {
       try {
         setIsLoading(true);
         setHasError(false);
-        
         console.info('Rendering Hotels component');
         
         const { data, error } = await supabase
           .from('hotels')
           .select('*')
           .eq('status', 'active');
-        
+          
         if (error) {
           throw error;
         }
         
         // Augment hotel data with rooms
-        const hotelsWithRooms = await Promise.all(
-          data.map(async (hotel: any) => {
-            // Fetch rooms for each hotel
-            const { data: roomsData, error: roomsError } = await supabase
-              .from('rooms')
-              .select('*')
-              .eq('hotel_id', hotel.id);
-              
-            if (roomsError) {
-              console.error(`Error fetching rooms for hotel ${hotel.id}:`, roomsError);
-              return {
-                ...hotel,
-                rooms: []
-              };
-            }
+        const hotelsWithRooms = await Promise.all(data.map(async (hotel) => {
+          // Fetch rooms for each hotel
+          const { data: roomsData, error: roomsError } = await supabase
+            .from('rooms')
+            .select('*')
+            .eq('hotel_id', hotel.id);
             
-            // Transform from database schema to application schema
+          if (roomsError) {
+            console.error(`Error fetching rooms for hotel ${hotel.id}:`, roomsError);
             return {
-              id: hotel.id,
-              name: hotel.name,
-              slug: hotel.slug || '',
-              location: hotel.location,
-              stars: hotel.stars,
-              pricePerNight: parseFloat(hotel.price_per_night),
-              image: hotel.image,
-              status: hotel.status as 'active' | 'inactive',
-              description: hotel.description || '',
-              amenities: hotel.amenities || [],
-              reviewCount: hotel.review_count || 0,
-              rating: hotel.rating || 0,
-              featured: hotel.featured || false,
-              rooms: roomsData ? roomsData.map((room: any) => ({
-                id: room.id,
-                type: room.type,
-                price: room.price,
-                capacity: room.capacity,
-                count: room.count,
-                images: room.images,
-                hotel_id: room.hotel_id,
-                description: room.description,
-                amenities: room.amenities
-              })) : [],
-              gallery: hotel.gallery || [],
-              categories: hotel.categories || [],
-              latitude: hotel.latitude,
-              longitude: hotel.longitude
+              ...hotel,
+              rooms: []
             };
-          })
-        );
+          }
+          
+          return {
+            ...hotel,
+            pricePerNight: hotel.price_per_night,
+            rooms: roomsData || []
+          };
+        }));
         
         console.info('Hotels data after processing:', hotelsWithRooms.length, 'hotels');
-        
         setHotels(hotelsWithRooms);
       } catch (error) {
         console.error('Error fetching hotels:', error);
@@ -130,7 +101,7 @@ const Hotels = () => {
         setIsLoading(false);
       }
     };
-
+    
     fetchHotels();
   }, []);
 
@@ -162,13 +133,32 @@ const Hotels = () => {
     filteredHotelsCount: filteredHotels.length
   });
 
+  // Function to map HotelType to Hotel
+  const mapToHotelType = (hotels: HotelType[]): Hotel[] => {
+    return hotels.map(hotel => ({
+      id: hotel.id,
+      name: hotel.name,
+      slug: hotel.slug,
+      location: hotel.location,
+      description: hotel.description,
+      price: hotel.price_per_night,
+      pricePerNight: hotel.pricePerNight || hotel.price_per_night,
+      stars: hotel.stars,
+      rating: hotel.rating,
+      reviewCount: hotel.reviewCount || 0,
+      image: hotel.image,
+      rooms: hotel.rooms || [],
+      amenities: hotel.amenities,
+      status: hotel.status
+    }));
+  };
+
   return (
     <>
       <ScrollToTop />
-      
       <div className="bg-stone-50 pb-12">
-        <PageHeader 
-          title="Hotels in Mount Abu" 
+        <PageHeader
+          title="Hotels in Mount Abu"
           description="Find and book the best hotels in Mount Abu, Rajasthan."
           breadcrumb={
             <Breadcrumb
@@ -182,7 +172,6 @@ const Hotels = () => {
         
         <div className="container-custom">
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Sidebar Filters */}
             <aside className="lg:w-64 flex-shrink-0">
               <HotelFilters
                 priceRange={priceRange}
@@ -206,19 +195,18 @@ const Hotels = () => {
               </div>
             </aside>
             
-            {/* Main Content */}
             <main className="flex-1">
               {showMap ? (
                 <HotelMapView 
-                  hotels={filteredHotels} 
+                  hotels={mapToHotelType(filteredHotels)} 
                   onToggleMap={() => setShowMap(false)} 
                 />
               ) : (
                 <>
                   <div className="mb-5 flex justify-between items-center">
-                    <HotelViewToggle
-                      viewMode={viewMode}
-                      onChange={setViewMode}
+                    <HotelViewToggle 
+                      viewMode={viewMode} 
+                      onChange={setViewMode} 
                     />
                     
                     <input
@@ -232,7 +220,7 @@ const Hotels = () => {
                   
                   {viewMode === 'list' ? (
                     <HotelListView
-                      hotels={filteredHotels}
+                      hotels={mapToHotelType(filteredHotels)}
                       isLoading={isLoading}
                       hasError={hasError}
                       sortBy={sortBy}
@@ -240,7 +228,7 @@ const Hotels = () => {
                     />
                   ) : (
                     <HotelGridView
-                      hotels={filteredHotels}
+                      hotels={mapToHotelType(filteredHotels)}
                       isLoading={isLoading}
                       hasError={hasError}
                       sortBy={sortBy}

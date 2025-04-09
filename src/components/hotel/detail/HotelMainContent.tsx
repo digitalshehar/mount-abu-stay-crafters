@@ -6,42 +6,24 @@ import { Button } from '@/components/ui/button';
 import HotelRooms from './HotelRooms';
 import HotelReviews from './HotelReviews';
 import HotelLocation from './HotelLocation';
-import HotelGallery from './HotelGallery';
-import HotelTransport from './HotelTransport';
 import HotelAmenities from './HotelAmenities';
 import HotelPolicies from './HotelPolicies';
-import { Room, Hotel } from '@/components/admin/hotels/types';
+import { Room, Hotel, ContactInfo, Landmarks } from '@/types';
+import HotelTransport from './HotelTransport';
+import ImageGallery from './ImageGallery';
+import { toast } from 'sonner';
 
-// Add missing type definitions
-interface HotelExtended extends Hotel {
-  checkInTime?: string;
-  checkOutTime?: string;
-  policies?: string[];
-  address?: string;
-  landmarks?: {
-    airport?: string;
-    busStation?: string;
-    cityCenter?: string;
-  };
-  contactInfo?: {
-    phone?: string;
-    email?: string;
-    website?: string;
-  };
-  reviews?: any[];
-  price?: number;
-  gallery?: string[];
-  images?: string[];
-}
-
+// Define NearbyAttraction interface compatible with props
 interface NearbyAttraction {
   name: string;
   distance: string;
   description?: string;
+  image?: string;
+  rating?: number;
 }
 
 interface HotelMainContentProps {
-  hotel: HotelExtended | null;
+  hotel: Hotel | null;
   activeTab: string;
   setActiveTab: (tab: string) => void;
   isFavorite?: boolean;
@@ -81,6 +63,38 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
     count: room.count || 5 // Default to 5 if count is not provided
   }));
 
+  // Create properly typed ContactInfo and Landmarks
+  const contactInfo: ContactInfo = {
+    phone: hotel.contactInfo?.phone || "+91 9876543210",
+    email: hotel.contactInfo?.email,
+    website: hotel.contactInfo?.website
+  };
+
+  const landmarks: Landmarks = {
+    airport: hotel.landmarks?.airport || "Nearest Airport (100 km)",
+    busStation: hotel.landmarks?.busStation,
+    cityCenter: hotel.landmarks?.cityCenter
+  };
+
+  // Add share functionality
+  const handleShareHotel = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: hotel.name,
+          text: `Check out ${hotel.name} in ${hotel.location}`,
+          url: window.location.href,
+        })
+        .then(() => toast.success("Shared successfully"))
+        .catch((error) => console.log("Error sharing:", error));
+    } else {
+      // Fallback for browsers that don't support navigator.share
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        toast.success("Link copied to clipboard");
+      });
+    }
+  };
+
   return (
     <main className="container-custom py-6 lg:py-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -92,7 +106,7 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
                   <span>{hotel.location}</span>
                   <span className="mx-2">•</span>
                   <div className="flex items-center">
-                    {Array.from({ length: hotel.stars }).map((_, i) => (
+                    {Array.from({ length: hotel.stars || 0 }).map((_, i) => (
                       <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
                     ))}
                   </div>
@@ -101,10 +115,10 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
                 <div className="flex items-center mt-2">
                   <div className="flex items-center mr-2">
                     <Star className="w-4 h-4 mr-1 text-amber-400 fill-amber-400" />
-                    <span className="font-semibold">{hotel.rating.toFixed(1)}</span>
+                    <span className="font-semibold">{(hotel.rating || 4.0).toFixed(1)}</span>
                   </div>
                   <span className="text-sm text-gray-600">
-                    ({hotel.reviewCount} {hotel.reviewCount === 1 ? 'review' : 'reviews'})
+                    ({hotel.reviewCount || 0} {hotel.reviewCount === 1 ? 'review' : 'reviews'})
                   </span>
                 </div>
               </div>
@@ -115,17 +129,16 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
                   {isFavorite ? 'Saved' : 'Save'}
                 </Button>
                 
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleShareHotel}>
                   <Share className="h-4 w-4 mr-2 text-gray-600" />
                   Share
                 </Button>
               </div>
             </div>
             
-            <HotelGallery 
-              images={galleryImages} 
-              showFullGallery={showFullGallery} 
-              setShowFullGallery={setShowFullGallery} 
+            <ImageGallery
+              images={galleryImages}
+              hotelName={hotel.name}
             />
             
             <div className="bg-white rounded-lg p-5 border">
@@ -167,16 +180,16 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
                     latitude={hotel.latitude}
                     longitude={hotel.longitude}
                     nearbyAttractions={nearbyAttractions}
-                    landmarks={hotel.landmarks}
-                    contactInfo={hotel.contactInfo}
+                    landmarks={landmarks}
+                    contactInfo={contactInfo}
                   />
                 </TabsContent>
                 
                 <TabsContent value="reviews">
                   <HotelReviews 
                     reviews={hotel.reviews || []} 
-                    averageRating={hotel.rating} 
-                    reviewCount={hotel.reviewCount} 
+                    averageRating={hotel.rating || 4.0} 
+                    reviewCount={hotel.reviewCount || 0} 
                   />
                 </TabsContent>
                 

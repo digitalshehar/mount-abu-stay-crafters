@@ -13,7 +13,7 @@ interface BreadcrumbProps {
   items: BreadcrumbItem[];
 }
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
+export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
   return (
     <nav aria-label="breadcrumb">
       <ol className="flex items-center space-x-2 text-sm">
@@ -39,5 +39,3 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
     </nav>
   );
 };
-
-export default Breadcrumb;

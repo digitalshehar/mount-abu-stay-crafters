@@ -1,3 +1,4 @@
+
 // Hotel Types
 export interface Hotel {
   id: string | number;
@@ -5,7 +6,8 @@ export interface Hotel {
   slug: string;
   location: string;
   description?: string;
-  price: number;
+  price?: number;
+  pricePerNight?: number;
   stars?: number;
   rating?: number;
   reviewCount?: number;
@@ -13,16 +15,28 @@ export interface Hotel {
   images?: string[];
   gallery?: string[];
   amenities?: string[];
+  rooms?: Room[];
   latitude?: number;
   longitude?: number;
   featured?: boolean;
-  contactInfo?: {
-    phone?: string;
-    email?: string;
-    website?: string;
-  };
+  status?: "active" | "inactive";
+  contactInfo?: ContactInfo;
   checkInTime?: string;
   checkOutTime?: string;
+  landmarks?: Landmarks;
+}
+
+// Define required properties for ContactInfo and Landmarks
+export interface ContactInfo {
+  phone: string;
+  email?: string;
+  website?: string;
+}
+
+export interface Landmarks {
+  airport: string;
+  busStation?: string;
+  cityCenter?: string;
 }
 
 // Review Types
@@ -41,6 +55,7 @@ export interface Room {
   capacity: number;
   description?: string;
   images?: string[];
+  count?: number;
 }
 
 // Booking Types
@@ -67,4 +82,5 @@ export interface Attraction {
   distance: string;
   description: string;
   image?: string;
+  rating?: number;
 }

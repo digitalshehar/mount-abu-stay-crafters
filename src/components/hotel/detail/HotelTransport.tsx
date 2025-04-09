@@ -1,119 +1,238 @@
 
-import React from "react";
-import { Bus, Car, Train, Plane, User, Users as UsersIcon } from "lucide-react";
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { MapPin, Car, CalendarIcon, Clock, User, Users as UsersIcon } from 'lucide-react';
 
-export interface TransportOption {
-  type: "airport" | "bus" | "train" | "taxi";
-  name: string;
-  distance: string;
-  travelTime: string;
+interface HotelTransportProps {
+  hotelName: string;
+  location: string;
 }
 
-interface TransportOptionsProps {
-  options?: TransportOption[];
-  hotelName?: string;
-  location?: string;
+const transportOptions = [
+  { type: 'Sedan', price: 1200, capacity: 3, image: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&q=80&w=2236&ixlib=rb-4.0.3' },
+  { type: 'SUV', price: 1800, capacity: 6, image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3' },
+  { type: 'Tempo Traveller', price: 2500, capacity: 12, image: 'https://images.unsplash.com/photo-1515876305430-f06edab8282a?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3' }
+];
+
+interface TransportOption {
+  type: string;
+  price: number;
+  capacity: number;
+  image: string;
 }
 
-const HotelTransport = ({ options = [], hotelName, location }: TransportOptionsProps) => {
-  // Default options if none provided
-  const transportOptions = options.length > 0 ? options : [
-    {
-      type: "airport",
-      name: "Maharana Pratap Airport (UDR)",
-      distance: "175 km",
-      travelTime: "3.5 hours by car"
-    },
-    {
-      type: "train",
-      name: "Abu Road Railway Station",
-      distance: "28 km",
-      travelTime: "40 minutes by car"
-    },
-    {
-      type: "bus",
-      name: "Mount Abu Bus Stand",
-      distance: "3 km",
-      travelTime: "10 minutes by car"
-    },
-    {
-      type: "taxi",
-      name: "Taxi Services",
-      distance: "Available at hotel",
-      travelTime: "On request"
+const HotelTransport: React.FC<HotelTransportProps> = ({ hotelName, location }) => {
+  const [selectedTab, setSelectedTab] = useState('airport');
+  const [selectedTransport, setSelectedTransport] = useState<TransportOption | null>(null);
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [time, setTime] = useState('12:00');
+  const [guests, setGuests] = useState(2);
+  
+  const handleBookTransport = () => {
+    if (!selectedTransport) {
+      toast.error('Please select a transport option');
+      return;
     }
-  ];
-
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "airport":
-        return <Plane className="h-5 w-5 text-blue-500" />;
-      case "train":
-        return <Train className="h-5 w-5 text-green-500" />;
-      case "bus":
-        return <Bus className="h-5 w-5 text-amber-500" />;
-      case "taxi":
-        return <Car className="h-5 w-5 text-stone-500" />;
-      default:
-        return <Car className="h-5 w-5 text-stone-500" />;
+    
+    if (!date) {
+      toast.error('Please select a date');
+      return;
     }
+    
+    toast.success(`Transport booked successfully! ${selectedTransport.type} will pick you up on ${format(date, 'PP')} at ${time}.`);
   };
-
+  
   return (
-    <div>
-      <h2 className="text-2xl font-display font-semibold mb-6">Transportation Options</h2>
-      {(hotelName && location) && (
-        <p className="mb-4 text-stone-600">
-          How to reach {hotelName} in {location}:
-        </p>
-      )}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {transportOptions.map((option, index) => (
-          <div key={index} className="flex items-start gap-4 bg-white p-5 rounded-lg shadow-sm border border-stone-100">
-            <div className="mt-1">
-              {getIcon(option.type)}
-            </div>
-            <div>
-              <h3 className="font-semibold">{option.name}</h3>
-              <p className="text-sm text-stone-600 mt-1">Distance: {option.distance}</p>
-              <p className="text-sm text-stone-600">Travel Time: {option.travelTime}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Transportation Options</CardTitle>
+          <CardDescription>Book a comfortable ride to or from {hotelName}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue={selectedTab} onValueChange={setSelectedTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="airport">Airport Transfer</TabsTrigger>
+              <TabsTrigger value="sightseeing">Sightseeing</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="airport" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Pickup Location</label>
+                  <Select defaultValue="airport">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="airport">Udaipur Airport</SelectItem>
+                      <SelectItem value="railway">Railway Station</SelectItem>
+                      <SelectItem value="bus">Bus Terminal</SelectItem>
+                      <SelectItem value="custom">Custom Location</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Drop Location</label>
+                  <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    <MapPin className="h-4 w-4 opacity-50 mr-2" />
+                    <span className="opacity-50">{hotelName}, {location}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Date</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Time</label>
+                  <div className="flex">
+                    <div className="relative flex-1">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                      <Input 
+                        type="time" 
+                        value={time} 
+                        onChange={(e) => setTime(e.target.value)} 
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Passengers</label>
+                  <div className="relative">
+                    <UsersIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50" />
+                    <Input 
+                      type="number" 
+                      min={1} 
+                      max={20} 
+                      value={guests} 
+                      onChange={(e) => setGuests(parseInt(e.target.value))} 
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="sightseeing" className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+                <h3 className="text-blue-800 font-medium text-sm mb-1">Popular Sightseeing Tours</h3>
+                <p className="text-blue-700 text-xs">
+                  Explore the beautiful Mount Abu with our curated sightseeing packages designed for hotel guests.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="overflow-hidden">
+                  <div className="h-40 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1584554576681-52891b800657?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3" 
+                      alt="Dilwara Temples Tour" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <CardContent className="py-4">
+                    <h3 className="font-medium">Dilwara Temples Tour</h3>
+                    <p className="text-sm text-muted-foreground mb-2">4 hours • Lunch included</p>
+                    <p className="text-primary font-semibold">₹1,500 per person</p>
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <Button className="w-full">Book This Tour</Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card className="overflow-hidden">
+                  <div className="h-40 overflow-hidden">
+                    <img 
+                      src="https://images.unsplash.com/photo-1588416499018-d8c621ee3f39?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3" 
+                      alt="Nakki Lake Sunset Tour" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <CardContent className="py-4">
+                    <h3 className="font-medium">Nakki Lake Sunset Tour</h3>
+                    <p className="text-sm text-muted-foreground mb-2">3 hours • Evening snacks included</p>
+                    <p className="text-primary font-semibold">₹1,200 per person</p>
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <Button className="w-full">Book This Tour</Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
       
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold mb-4">Shared Transfers</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-5 rounded-lg shadow-sm border border-stone-100">
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <UsersIcon className="h-5 w-5 text-blue-500" />
+      {selectedTab === 'airport' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {transportOptions.map((option) => (
+            <Card 
+              key={option.type} 
+              className={`cursor-pointer transition-all ${selectedTransport?.type === option.type ? 'ring-2 ring-primary' : ''}`}
+              onClick={() => setSelectedTransport(option)}
+            >
+              <div className="h-36 overflow-hidden">
+                <img 
+                  src={option.image} 
+                  alt={option.type} 
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div>
-                <h4 className="font-semibold">Shared Airport Shuttle</h4>
-                <p className="text-sm text-stone-600 mt-1">₹800 per person</p>
-                <p className="text-sm text-stone-600">Daily departures at 9 AM and 2 PM</p>
-                <p className="text-sm text-green-600 mt-2">Eco-friendly option</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white p-5 rounded-lg shadow-sm border border-stone-100">
-            <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <UsersIcon className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <h4 className="font-semibold">Group Railway Station Transfer</h4>
-                <p className="text-sm text-stone-600 mt-1">₹300 per person</p>
-                <p className="text-sm text-stone-600">Meets all major train arrivals</p>
-                <p className="text-sm text-amber-600 mt-2">Advance booking required</p>
-              </div>
-            </div>
-          </div>
+              <CardContent className="py-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium">{option.type}</h3>
+                    <p className="text-sm text-muted-foreground flex items-center">
+                      <User className="h-3 w-3 mr-1" />
+                      Up to {option.capacity} passengers
+                    </p>
+                  </div>
+                  <p className="text-primary font-semibold">₹{option.price}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </div>
+      )}
+      
+      {selectedTab === 'airport' && (
+        <div className="flex justify-end">
+          <Button size="lg" onClick={handleBookTransport}>
+            <Car className="mr-2 h-4 w-4" />
+            Book Transport
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
