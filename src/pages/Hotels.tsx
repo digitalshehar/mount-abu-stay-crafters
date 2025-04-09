@@ -16,6 +16,7 @@ import { useHotelFilters } from "@/hooks/useHotelFilters";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const Hotels = () => {
+  console.log("Rendering Hotels component");
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
@@ -25,6 +26,7 @@ const Hotels = () => {
   const { data: hotels, isLoading, error } = useQuery({
     queryKey: ["hotels"],
     queryFn: async () => {
+      console.log("Fetching hotels from Supabase");
       try {
         const { data, error } = await supabase
           .from("hotels")
@@ -36,7 +38,15 @@ const Hotels = () => {
           throw error;
         }
         
-        const adminHotels: AdminHotel[] = (data || []).map(hotel => ({
+        console.log("Hotels data received:", data?.length || 0, "hotels");
+        
+        // If no data is returned, use an empty array
+        if (!data || data.length === 0) {
+          console.log("No hotels found in database, using empty array");
+          return [];
+        }
+        
+        const adminHotels: AdminHotel[] = data.map(hotel => ({
           id: hotel.id,
           name: hotel.name,
           slug: hotel.slug || '',
@@ -65,6 +75,10 @@ const Hotels = () => {
     },
   });
 
+  // Ensure hotels is always an array, even when undefined or null
+  const safeHotels = hotels || [];
+  console.log("Hotels data after processing:", safeHotels.length, "hotels");
+
   const {
     priceRange,
     setPriceRange,
@@ -78,8 +92,9 @@ const Hotels = () => {
     handleAmenityFilter,
     clearFilters,
     commonAmenities
-  } = useHotelFilters(hotels || [], searchQuery);
+  } = useHotelFilters(safeHotels, searchQuery);
 
+  // Display a toast message when there's an error
   useEffect(() => {
     if (error) {
       console.error("Error details:", error);
@@ -112,6 +127,13 @@ const Hotels = () => {
     });
   };
 
+  console.log("Rendering Hotels page with:", {
+    isLoading,
+    hasError: !!error,
+    hotelsCount: safeHotels.length,
+    filteredHotelsCount: filteredHotels?.length || 0
+  });
+
   return (
     <>
       <div className="min-h-screen flex flex-col">
@@ -119,7 +141,7 @@ const Hotels = () => {
 
         <main className="flex-grow pt-20 md:pt-28 pb-16 bg-stone-50">
           <div className="container-custom mb-8">
-            <HotelsHeader hotelsCount={hotels?.length || 0} />
+            <HotelsHeader hotelsCount={safeHotels.length || 0} />
 
             <div className="flex flex-col space-y-6">
               <HotelSearchSection 
@@ -145,7 +167,7 @@ const Hotels = () => {
                 setIsFilterOpen={setIsFilterOpen}
                 isLoading={isLoading}
                 filteredHotels={filteredHotels || []}
-                hotels={hotels || []}
+                hotels={safeHotels}
                 handleStarFilter={handleStarFilter}
                 handleAmenityFilter={handleAmenityFilter}
                 commonAmenities={commonAmenities}

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Logo from "../Logo";
@@ -9,9 +9,19 @@ import SearchButton from "../search/MobileSearchButton";
 
 const MobileHeader: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const closeMenu = () => {
     setIsOpen(false);
+  };
+
+  const handleNavigation = (path: string) => {
+    console.log("Navigation to:", path);
+    closeMenu();
+    // Add a small timeout to ensure the menu closes before navigation
+    setTimeout(() => {
+      navigate(path);
+    }, 10);
   };
 
   return (
@@ -33,48 +43,42 @@ const MobileHeader: React.FC = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[85vw] sm:w-[350px] pt-12">
               <nav className="space-y-6">
-                <Link 
-                  to="/hotels" 
-                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
-                  onClick={closeMenu}
+                <button 
+                  onClick={() => handleNavigation("/hotels")}
+                  className="block w-full text-left py-2 text-lg font-medium hover:text-primary transition-colors"
                 >
                   Hotels
-                </Link>
-                <Link 
-                  to="/hotels?type=apartment" 
-                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
-                  onClick={closeMenu}
+                </button>
+                <button 
+                  onClick={() => handleNavigation("/hotels?type=apartment")}
+                  className="block w-full text-left py-2 text-lg font-medium hover:text-primary transition-colors"
                 >
                   Homes & Apartments
-                </Link>
-                <Link 
-                  to="/adventures" 
-                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
-                  onClick={closeMenu}
+                </button>
+                <button 
+                  onClick={() => handleNavigation("/adventures")}
+                  className="block w-full text-left py-2 text-lg font-medium hover:text-primary transition-colors"
                 >
                   Adventures
-                </Link>
-                <Link 
-                  to="/destinations" 
-                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
-                  onClick={closeMenu}
+                </button>
+                <button 
+                  onClick={() => handleNavigation("/destinations")}
+                  className="block w-full text-left py-2 text-lg font-medium hover:text-primary transition-colors"
                 >
                   Destinations
-                </Link>
-                <Link 
-                  to="/bike-rentals" 
-                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
-                  onClick={closeMenu}
+                </button>
+                <button 
+                  onClick={() => handleNavigation("/bike-rentals")}
+                  className="block w-full text-left py-2 text-lg font-medium hover:text-primary transition-colors"
                 >
                   Bike Rentals
-                </Link>
-                <Link 
-                  to="/rentals/car" 
-                  className="block py-2 text-lg font-medium hover:text-primary transition-colors"
-                  onClick={closeMenu}
+                </button>
+                <button 
+                  onClick={() => handleNavigation("/rentals/car")}
+                  className="block w-full text-left py-2 text-lg font-medium hover:text-primary transition-colors"
                 >
                   Car Rentals
-                </Link>
+                </button>
               </nav>
               
               <div className="absolute top-4 right-4">

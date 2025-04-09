@@ -1,5 +1,6 @@
-import React from "react";
-import { Routes, Route } from "react-router-dom";
+
+import React, { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./components/NotFound";
 import Hotels from "./pages/Hotels";
@@ -19,6 +20,13 @@ import EarlyHotelDetailPage from "./pages/EarlyHotelDetailPage";
 import EnhancedHotels from "./pages/EnhancedHotels";
 
 const AppRoutes: React.FC = () => {
+  const location = useLocation();
+  
+  // Log navigation for debugging
+  useEffect(() => {
+    console.log("Navigation to:", location.pathname);
+  }, [location]);
+
   return (
     <Routes>
       <Route path="/" element={<Index />} />
@@ -26,7 +34,7 @@ const AppRoutes: React.FC = () => {
       {/* Hotel routes */}
       <Route path="/hotels" element={<Hotels />} />
       <Route path="/hotels/enhanced" element={<EnhancedHotels />} />
-      <Route path="/hotel/:slug" element={<HotelDetail />} />
+      <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
       <Route path="/hotel-not-found" element={<HotelNotFound />} />
       <Route path="/early-hotel/:id" element={<EarlyHotelDetailPage />} />
       
