@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Map, Grid3X3, List, Package, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Hotel } from '@/types';
+import { normalizeHotels } from '@/utils/hotelTypeAdapter';
 import HotelGridView from './HotelGridView';
 import HotelListView from './HotelListView';
 import HotelMapView from './HotelMapView';
@@ -11,23 +12,12 @@ import HotelPackages from './HotelPackages';
 import HotelSortOptions from './HotelSortOptions';
 
 interface HotelTabsProps {
-  hotels: Hotel[];
+  hotels: any[];
   isLoading: boolean;
   hasError?: boolean;
   onFilterClick?: () => void;
   searchQuery?: string;
   onSearchChange?: (value: string) => void;
-}
-
-interface HotelViewProps {
-  hotels: Hotel[];
-  isLoading: boolean;
-  hasError?: boolean;
-}
-
-interface HotelListViewProps extends HotelViewProps {
-  sortBy: string;
-  onSortChange: (value: string) => void;
 }
 
 const HotelsTabs: React.FC<HotelTabsProps> = ({
@@ -46,6 +36,9 @@ const HotelsTabs: React.FC<HotelTabsProps> = ({
       onSearchChange(e.target.value);
     }
   };
+  
+  // Normalize hotels to app type
+  const normalizedHotels = normalizeHotels(hotels);
   
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -105,7 +98,7 @@ const HotelsTabs: React.FC<HotelTabsProps> = ({
       
       <TabsContent value="grid">
         <HotelGridView 
-          hotels={hotels} 
+          hotels={normalizedHotels} 
           isLoading={isLoading} 
           hasError={hasError}
           sortBy={sortBy}
@@ -115,7 +108,7 @@ const HotelsTabs: React.FC<HotelTabsProps> = ({
       
       <TabsContent value="list">
         <HotelListView 
-          hotels={hotels} 
+          hotels={normalizedHotels} 
           isLoading={isLoading} 
           hasError={hasError}
           sortBy={sortBy}
@@ -125,14 +118,14 @@ const HotelsTabs: React.FC<HotelTabsProps> = ({
       
       <TabsContent value="map">
         <HotelMapView 
-          hotels={hotels} 
+          hotels={normalizedHotels} 
           isLoading={isLoading} 
         />
       </TabsContent>
       
       <TabsContent value="packages">
         <HotelPackages 
-          hotels={hotels} 
+          hotels={normalizedHotels} 
           isLoading={isLoading}
         />
       </TabsContent>

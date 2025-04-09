@@ -19,7 +19,7 @@ export interface Hotel {
   latitude?: number;
   longitude?: number;
   featured?: boolean;
-  status?: "active" | "inactive";
+  status?: "active" | "inactive" | string;
   contactInfo?: ContactInfo;
   checkInTime?: string;
   checkOutTime?: string;

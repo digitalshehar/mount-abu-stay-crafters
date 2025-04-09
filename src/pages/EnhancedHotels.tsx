@@ -11,6 +11,7 @@ import HotelSearchSection from "@/components/hotels/HotelSearchSection";
 import HotelInfoSections from "@/components/hotels/HotelInfoSections";
 import HotelsHeader from "@/components/hotels/HotelsHeader";
 import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
+import { normalizeHotels } from "@/utils/hotelTypeAdapter";
 import { useEnhancedFilters } from "@/hooks/useEnhancedFilters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import EnhancedFilters from "@/components/hotels/EnhancedFilters";
@@ -21,7 +22,7 @@ import NoHotelsFound from "@/components/hotels/content/NoHotelsFound";
 import HotelListHeader from "@/components/hotels/content/HotelListHeader";
 import FilterTags from "@/components/hotels/content/FilterTags";
 
-const defaultPriceRange = [1000, 15000];
+const defaultPriceRange: [number, number] = [1000, 15000];
 
 const EnhancedHotels = () => {
   const isMobile = useIsMobile();
@@ -45,7 +46,7 @@ const EnhancedHotels = () => {
         }
         
         const adminHotels: AdminHotel[] = (data || []).map(hotel => ({
-          id: hotel.id,
+          id: typeof hotel.id === 'string' ? parseInt(hotel.id, 10) : hotel.id,
           name: hotel.name,
           slug: hotel.slug || '',
           location: hotel.location,
@@ -196,7 +197,7 @@ const EnhancedHotels = () => {
                     <NoHotelsFound clearFilters={clearFilters} />
                   ) : (
                     <HotelGrid 
-                      hotels={filteredHotels} 
+                      hotels={normalizeHotels(filteredHotels)} 
                       compareList={compareList}
                       onAddToCompare={handleAddToCompare}
                       onRemoveFromCompare={handleRemoveFromCompare}

@@ -1,14 +1,14 @@
 
 import React from "react";
-import { Hotel as AdminHotel } from "@/components/admin/hotels/types";
-import { Hotel } from "@/integrations/supabase/custom-types";
+import { Hotel } from "@/types";
+import { normalizeHotels } from "@/utils/hotelTypeAdapter";
 import NoHotelsFound from "./content/NoHotelsFound";
 import HotelGrid from "./content/HotelGrid";
 import HotelFiltersMobile from "./content/HotelFiltersMobile";
 
 export interface HotelContentProps {
   isLoading: boolean;
-  filteredHotels: AdminHotel[] | Hotel[];
+  filteredHotels: any[];
   activeFilterCount: number;
   clearFilters: () => void;
   compareList?: number[];
@@ -33,6 +33,9 @@ const HotelContent: React.FC<HotelContentProps> = ({
     // set some state or trigger a modal/drawer to open
     document.dispatchEvent(new CustomEvent('open-hotel-filters'));
   };
+
+  // Normalize hotels to ensure they match the expected Hotel type
+  const normalizedHotels: Hotel[] = normalizeHotels(filteredHotels);
 
   return (
     <div className="space-y-4">
@@ -64,11 +67,11 @@ const HotelContent: React.FC<HotelContentProps> = ({
             </div>
           ))}
         </div>
-      ) : filteredHotels.length === 0 ? (
+      ) : normalizedHotels.length === 0 ? (
         <NoHotelsFound clearFilters={clearFilters} />
       ) : (
         <HotelGrid 
-          hotels={filteredHotels} 
+          hotels={normalizedHotels} 
           compareList={compareList}
           onAddToCompare={onAddToCompare}
           onRemoveFromCompare={onRemoveFromCompare}

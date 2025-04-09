@@ -67,7 +67,7 @@ const HotelListHeader: React.FC<HotelListHeaderProps> = ({
 
         {/* Mobile Sort & Filter Button */}
         <div className="md:hidden flex gap-2 w-full">
-          <Select value={sortOption} onValueChange={setSortOption} className="flex-1">
+          <Select value={sortOption} onValueChange={setSortOption}>
             <SelectTrigger className="h-9">
               <ArrowUpDown className="h-3.5 w-3.5 mr-2" />
               <SelectValue placeholder="Sort" />
