@@ -19,6 +19,7 @@ import EarlyHotelDetailPage from "./pages/EarlyHotelDetailPage";
 import EnhancedHotels from "./pages/EnhancedHotels";
 import AboutUs from "./pages/AboutUs";
 import Blog from "./pages/Blog";
+import HotelsManagement from "./pages/admin/Hotels";
 
 const AppRoutes: React.FC = () => {
   const location = useLocation();
@@ -51,12 +52,13 @@ const AppRoutes: React.FC = () => {
       <Route path="/rentals/car" element={<CarRentals />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Login />} />
+      <Route path="/auth" element={<Login />} />
       
       {/* Protected routes */}
       <Route path="/account" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       
       {/* Admin routes */}
-      <Route path="/admin/hotels" element={<AdminRoute><Dashboard /></AdminRoute>} />
+      <Route path="/admin/hotels" element={<AdminRoute><HotelsManagement /></AdminRoute>} />
       <Route path="/admin/dashboard" element={<AdminRoute><Dashboard /></AdminRoute>} />
       
       {/* 404 route */}

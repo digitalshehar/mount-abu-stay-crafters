@@ -5,7 +5,6 @@ import HotelAdminHeader from "@/components/admin/hotels/HotelAdminHeader";
 import HotelAdminContent from "@/components/admin/hotels/HotelAdminContent";
 import HotelDialogs from "@/components/admin/hotels/HotelDialogs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Hotel } from "@/components/admin/hotels/types";
 import EarlyHotelManagement from "@/components/admin/hotels/early/EarlyHotelManagement";
 
 const HotelsManagement = () => {
@@ -18,6 +17,7 @@ const HotelsManagement = () => {
       hotelManagement.setIsMobileView(window.innerWidth < 768);
     };
     
+    console.log("Hotel management dashboard loading");
     checkMobileView();
     window.addEventListener('resize', checkMobileView);
     

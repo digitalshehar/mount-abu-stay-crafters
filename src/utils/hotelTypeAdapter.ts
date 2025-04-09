@@ -112,6 +112,10 @@ export const normalizeToAppHotel = (
  * Batch normalize hotels
  */
 export const normalizeHotels = (hotels: any[]): AppHotel[] => {
+  if (!Array.isArray(hotels)) {
+    console.warn('normalizeHotels received non-array input:', hotels);
+    return [];
+  }
   return hotels.map(hotel => normalizeToAppHotel(hotel));
 };
 

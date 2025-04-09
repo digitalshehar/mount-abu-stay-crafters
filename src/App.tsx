@@ -21,6 +21,8 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  console.log("Rendering App with all providers");
+  
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>

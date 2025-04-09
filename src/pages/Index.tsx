@@ -16,6 +16,8 @@ import { useResponsive } from "@/context/ResponsiveContext";
 const Index: React.FC = () => {
   const { isMobile } = useResponsive();
   
+  console.log("Rendering Index page with layout");
+  
   return (
     <>
       <Helmet>
