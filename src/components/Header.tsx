@@ -1,169 +1,74 @@
 
-import React from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
-import Logo from "./Logo";
-import SearchButton from "@/components/search/SearchButton";
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
+import Logo from './Logo';
+import { Search, User } from 'lucide-react';
+import SearchButton from './search/SearchButton';
+import DarkModeToggle from './theme/DarkModeToggle';
 
-const Header = () => {
-  const { user, signOut } = useAuth();
-  const isMobile = useIsMobile();
+const Header: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  
+  const navigation = [
+    { name: 'Hotels', href: '/hotels' },
+    { name: 'Adventures', href: '/adventures' },
+    { name: 'Destinations', href: '/destinations' },
+    { name: 'Bike Rentals', href: '/bike-rentals' },
+    { name: 'Car Rentals', href: '/rentals/car' },
+    { name: 'About Us', href: '/about-us' },
+    { name: 'Blog', href: '/blog' },
+  ];
 
   return (
-    <header className="bg-white border-b fixed top-0 left-0 right-0 z-50">
-      <div className="container-custom h-16 flex items-center justify-between">
-        {/* Main Navigation */}
-        <div className="flex items-center gap-4">
-          {/* Logo */}
-          <Logo />
+    <header className="fixed top-0 left-0 right-0 bg-white border-b z-40 h-16">
+      <nav className="container-custom mx-auto h-full flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Link to="/" className="flex-shrink-0">
+            <Logo />
+          </Link>
           
-          {/* Search Button */}
-          <div className="hidden md:flex">
-            <SearchButton />
+          <div className="hidden lg:flex space-x-6">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="text-sm font-medium text-stone-700 hover:text-primary transition-colors"
+              >
+                {item.name}
+              </Link>
+            ))}
           </div>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <SearchButton />
           
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1">
-            <Link to="/" className="px-3 py-2 rounded-md hover:bg-stone-100">
-              Home
-            </Link>
-            <Link to="/about-us" className="px-3 py-2 rounded-md hover:bg-stone-100">
-              About Us
-            </Link>
-            <Link to="/destinations" className="px-3 py-2 rounded-md hover:bg-stone-100">
-              Destinations
-            </Link>
-            <Link to="/hotels" className="px-3 py-2 rounded-md hover:bg-stone-100">
-              Hotels
-            </Link>
-            <Link to="/adventures" className="px-3 py-2 rounded-md hover:bg-stone-100">
-              Adventures
-            </Link>
-            <Link to="/blog" className="px-3 py-2 rounded-md hover:bg-stone-100">
-              Blog
-            </Link>
-          </nav>
-        </div>
-
-        {/* Right Side Navigation */}
-        <div className="flex items-center gap-2">
+          <DarkModeToggle />
+          
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.user_metadata?.avatar_url as string} alt={user?.user_metadata?.full_name as string} />
-                    <AvatarFallback>{(user?.user_metadata?.full_name as string)?.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Link to="/admin/hotels" className="w-full block">
-                    Dashboard
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <a href={`mailto:${user.email}`} className="w-full block">
-                    Support
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()}>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center"
+              onClick={() => navigate('/account')}
+            >
+              <User className="h-5 w-5 mr-2" />
+              Account
+            </Button>
           ) : (
-            <>
-              <Link to="/login">
-                <Button variant="outline" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button size="sm">Register</Button>
-              </Link>
-            </>
-          )}
-
-          {/* Mobile Navigation */}
-          {isMobile && (
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:w-64">
-                <div className="flex flex-col h-full">
-                  <Link to="/" className="px-4 py-3 rounded-md hover:bg-stone-100">
-                    Home
-                  </Link>
-                  <Link to="/about-us" className="px-4 py-3 rounded-md hover:bg-stone-100">
-                    About Us
-                  </Link>
-                  <Link to="/destinations" className="px-4 py-3 rounded-md hover:bg-stone-100">
-                    Destinations
-                  </Link>
-                  <Link to="/hotels" className="px-4 py-3 rounded-md hover:bg-stone-100">
-                    Hotels
-                  </Link>
-                  <Link to="/adventures" className="px-4 py-3 rounded-md hover:bg-stone-100">
-                    Adventures
-                  </Link>
-                  <Link to="/blog" className="px-4 py-3 rounded-md hover:bg-stone-100">
-                    Blog
-                  </Link>
-                  <Link to="/rentals/car" className="px-4 py-3 rounded-md hover:bg-stone-100">
-                    Car Rental
-                  </Link>
-                  <Link to="/bike-rentals" className="px-4 py-3 rounded-md hover:bg-stone-100">
-                    Bike Rental
-                  </Link>
-                  {user ? (
-                    <>
-                      <Link to="/admin/hotels" className="px-4 py-3 rounded-md hover:bg-stone-100">
-                        Dashboard
-                      </Link>
-                      <Button variant="outline" size="sm" className="mt-auto" onClick={() => signOut()}>
-                        Logout
-                      </Button>
-                    </>
-                  ) : (
-                    <div className="mt-auto">
-                      <Link to="/login">
-                        <Button variant="outline" size="sm" className="w-full mb-2">
-                          Login
-                        </Button>
-                      </Link>
-                      <Link to="/register">
-                        <Button size="sm" className="w-full">
-                          Register
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={() => navigate('/login')}
+            >
+              Sign In
+            </Button>
           )}
         </div>
-      </div>
+      </nav>
     </header>
   );
 };

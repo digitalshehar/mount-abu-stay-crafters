@@ -48,7 +48,7 @@ export const normalizeToAppHotel = (
   // Handle AdminHotel type
   if ('pricePerNight' in hotel) {
     return {
-      id: hotel.id,
+      id: typeof hotel.id === 'string' ? parseInt(hotel.id, 10) : hotel.id,
       name: hotel.name,
       slug: hotel.slug,
       location: hotel.location,
@@ -72,7 +72,7 @@ export const normalizeToAppHotel = (
   // Handle IntegrationHotel type
   if ('price_per_night' in hotel) {
     return {
-      id: hotel.id,
+      id: typeof hotel.id === 'string' ? parseInt(hotel.id, 10) : hotel.id,
       name: hotel.name,
       slug: hotel.slug,
       location: hotel.location,
@@ -95,7 +95,7 @@ export const normalizeToAppHotel = (
   
   // Generic fallback
   return {
-    id: hotel.id,
+    id: typeof hotel.id === 'string' ? parseInt(hotel.id, 10) : hotel.id,
     name: hotel.name,
     slug: hotel.slug || '',
     location: hotel.location || '',

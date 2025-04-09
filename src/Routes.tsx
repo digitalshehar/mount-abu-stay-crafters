@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
@@ -14,12 +15,12 @@ import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import Dashboard from "./pages/admin/Dashboard";
+import HotelsManagement from "./pages/admin/Hotels";
 import HotelNotFound from "./pages/HotelNotFound";
 import EarlyHotelDetailPage from "./pages/EarlyHotelDetailPage";
 import EnhancedHotels from "./pages/EnhancedHotels";
 import AboutUs from "./pages/AboutUs";
 import Blog from "./pages/Blog";
-import HotelsManagement from "./pages/admin/Hotels";
 
 const AppRoutes: React.FC = () => {
   const location = useLocation();

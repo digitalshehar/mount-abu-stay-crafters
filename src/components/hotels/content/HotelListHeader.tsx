@@ -1,155 +1,97 @@
 
-import React from "react";
-import { SlidersHorizontal, ArrowUpDown, LayoutGrid, LayoutList } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Grid, List, Map, SlidersHorizontal } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface HotelListHeaderProps {
-  filteredHotelCount: number;
-  isLoading: boolean;
-  activeFilterCount: number;
-  compareCount: number;
-  sortOption: string;
-  setSortOption: (value: string) => void;
-  onToggleFilter: () => void;
-  onToggleCompare: () => void;
-  onToggleView?: (view: 'grid' | 'list') => void;
-  currentView?: 'grid' | 'list';
+  count: number;
+  sortBy: string;
+  onSortChange: (value: string) => void;
+  viewMode: 'grid' | 'list' | 'map';
+  onViewModeChange: (mode: 'grid' | 'list' | 'map') => void;
+  onOpenFilters: () => void;
+  isLoading?: boolean;
 }
 
-const HotelListHeader: React.FC<HotelListHeaderProps> = ({
-  filteredHotelCount,
-  isLoading,
-  activeFilterCount,
-  compareCount,
-  sortOption,
-  setSortOption,
-  onToggleFilter,
-  onToggleCompare,
-  onToggleView,
-  currentView = 'grid'
+const HotelListHeader: React.FC<HotelListHeaderProps> = ({ 
+  count, 
+  sortBy, 
+  onSortChange, 
+  viewMode, 
+  onViewModeChange, 
+  onOpenFilters,
+  isLoading = false 
 }) => {
-  return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4">
-      <div className="text-stone-700">
-        {isLoading ? (
-          <span>Finding hotels...</span>
-        ) : (
-          <span className="font-medium">
-            {filteredHotelCount} {filteredHotelCount === 1 ? 'hotel' : 'hotels'} found
-          </span>
-        )}
+  if (isLoading) {
+    return (
+      <div className="flex justify-between items-center mb-6">
+        <div className="animate-pulse h-6 w-32 bg-stone-200 rounded"></div>
+        <div className="flex items-center gap-2">
+          <div className="animate-pulse h-9 w-32 bg-stone-200 rounded"></div>
+          <div className="animate-pulse h-9 w-20 bg-stone-200 rounded"></div>
+        </div>
       </div>
+    );
+  }
 
-      <div className="flex items-center gap-3 w-full md:w-auto">
-        {/* Sort Options */}
-        <div className="hidden md:block w-48">
-          <Select value={sortOption} onValueChange={setSortOption}>
-            <SelectTrigger className="h-9">
+  return (
+    <div className="flex justify-between items-center mb-6">
+      <h2 className="text-lg font-semibold">
+        {count} {count === 1 ? 'hotel' : 'hotels'} found
+      </h2>
+      
+      <div className="flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-2">
+          <Select 
+            value={sortBy} 
+            onValueChange={onSortChange}
+          >
+            <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="recommended">Recommended</SelectItem>
               <SelectItem value="price_low">Price: Low to High</SelectItem>
               <SelectItem value="price_high">Price: High to Low</SelectItem>
-              <SelectItem value="rating">Rating</SelectItem>
+              <SelectItem value="rating">Highest Rating</SelectItem>
               <SelectItem value="name">Name</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
-        {/* Mobile Sort & Filter Button */}
-        <div className="md:hidden flex gap-2 w-full">
-          <Select value={sortOption} onValueChange={setSortOption}>
-            <SelectTrigger className="h-9">
-              <ArrowUpDown className="h-3.5 w-3.5 mr-2" />
-              <SelectValue placeholder="Sort" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="recommended">Recommended</SelectItem>
-              <SelectItem value="price_low">Price: Low to High</SelectItem>
-              <SelectItem value="price_high">Price: High to Low</SelectItem>
-              <SelectItem value="rating">Rating</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onToggleFilter}
-            className="flex items-center justify-center bg-white"
+        
+        <div className="hidden lg:flex items-center border rounded-md">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={cn("rounded-none", viewMode === 'grid' && "bg-muted")}
+            onClick={() => onViewModeChange('grid')}
           >
-            <SlidersHorizontal className="h-4 w-4 mr-1" />
-            Filter
-            {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-1 bg-primary text-white">
-                {activeFilterCount}
-              </Badge>
-            )}
+            <Grid className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={cn("rounded-none", viewMode === 'list' && "bg-muted")}
+            onClick={() => onViewModeChange('list')}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className={cn("rounded-none", viewMode === 'map' && "bg-muted")}
+            onClick={() => onViewModeChange('map')}
+          >
+            <Map className="h-4 w-4" />
           </Button>
         </div>
-
-        {/* Desktop View Toggle and Filter Button */}
-        <div className="hidden md:flex items-center gap-2">
-          {onToggleView && (
-            <div className="flex border rounded-md overflow-hidden">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onToggleView('grid')}
-                className={`h-9 px-3 rounded-none ${
-                  currentView === 'grid' ? 'bg-stone-100' : ''
-                }`}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onToggleView('list')}
-                className={`h-9 px-3 rounded-none ${
-                  currentView === 'list' ? 'bg-stone-100' : ''
-                }`}
-              >
-                <LayoutList className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onToggleFilter}
-            className="flex items-center md:hidden lg:flex"
-          >
-            <SlidersHorizontal className="h-4 w-4 mr-2" />
-            Filters
-            {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-primary text-white">
-                {activeFilterCount}
-              </Badge>
-            )}
-          </Button>
-          
-          {compareCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onToggleCompare}
-              className="flex items-center"
-            >
-              Compare ({compareCount})
-            </Button>
-          )}
-        </div>
+        
+        <Button variant="outline" size="sm" onClick={onOpenFilters} className="sm:ml-2">
+          <SlidersHorizontal className="h-4 w-4 mr-2" />
+          <span className="hidden sm:inline">Filters</span>
+        </Button>
       </div>
     </div>
   );
