@@ -6,7 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { EarlyHotel } from "@/components/admin/hotels/types/earlyHotel";
-import { BookingFormValues } from '@/hooks/useEarlyHotelBooking';
+
+interface BookingFormValues {
+  fullName: string;
+  email: string;
+  phone: string;
+}
 
 interface EarlyHotelBookingDialogProps {
   hotel: EarlyHotel | null;

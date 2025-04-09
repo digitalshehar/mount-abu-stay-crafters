@@ -5,6 +5,12 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 
+export interface BookingFormValues {
+  fullName: string;
+  email: string;
+  phone: string;
+}
+
 export const useEarlyHotelBooking = (hotel: EarlyHotel | null) => {
   const { user } = useAuth();
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -51,21 +57,19 @@ export const useEarlyHotelBooking = (hotel: EarlyHotel | null) => {
     }
   };
   
-  const handleBookingSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
+  const handleBookingSubmit = async (data: BookingFormValues) => {
     if (!hotel) {
       toast.error('Hotel information is missing');
       return;
     }
     
     // Validate inputs
-    if (!guestName.trim()) {
+    if (!data.fullName.trim()) {
       toast.error('Please enter your name');
       return;
     }
     
-    if (!guestEmail.trim()) {
+    if (!data.email.trim()) {
       toast.error('Please enter your email');
       return;
     }
@@ -89,9 +93,9 @@ export const useEarlyHotelBooking = (hotel: EarlyHotel | null) => {
         hotel_id: hotel.id,
         hotel_name: hotel.name,
         user_id: user?.id,
-        guest_name: guestName,
-        guest_email: guestEmail,
-        guest_phone: guestPhone,
+        guest_name: data.fullName,
+        guest_email: data.email,
+        guest_phone: data.phone,
         hours_booked: selectedHours,
         hourly_rate: hotel.hourly_rate,
         total_price: totalPrice,
@@ -118,8 +122,8 @@ export const useEarlyHotelBooking = (hotel: EarlyHotel | null) => {
         hoursBooked: selectedHours,
         hourlyRate: hotel.hourly_rate,
         totalPrice: totalPrice,
-        guestName,
-        guestEmail
+        guestName: data.fullName,
+        guestEmail: data.email
       });
       
       // Close booking form and show success

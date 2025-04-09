@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, CheckCircle, AlertCircle, Sparkles, Virus, HeartPulse, Utensils, Check } from 'lucide-react';
+import { Shield, CheckCircle, AlertCircle, Sparkles, HeartPulse, Utensils, Check, AlertTriangle } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const HealthAndSafety: React.FC = () => {
@@ -19,7 +19,7 @@ const HealthAndSafety: React.FC = () => {
     },
     {
       category: 'COVID-19 Precautions',
-      icon: <Virus className="h-5 w-5 text-amber-500" />,
+      icon: <AlertTriangle className="h-5 w-5 text-amber-500" />,
       measures: [
         'Staff trained in COVID-19 safety protocols',
         'Staff temperature checks before each shift',

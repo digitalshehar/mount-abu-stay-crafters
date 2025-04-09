@@ -1,3 +1,4 @@
+
 // Hotel Types
 export interface Hotel {
   id: string | number;
