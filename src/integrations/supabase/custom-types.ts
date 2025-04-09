@@ -1,3 +1,4 @@
+
 export interface Hotel {
   id: number;
   name: string;
@@ -112,4 +113,17 @@ export interface CarRental {
   capacity?: number;
   price?: number;
   bookings?: number;
+}
+
+export interface BlogPost {
+  id: number;
+  title: string;
+  slug?: string;
+  content: string;
+  excerpt: string;
+  author: string;
+  category: string;
+  date: string;
+  image: string;
+  status: string;
 }

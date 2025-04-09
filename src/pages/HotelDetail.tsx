@@ -1,18 +1,28 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useHotelDetail } from "@/hooks/useHotelDetail";
 import { generateHotelDescription, generateHotelSchema } from "@/utils/hotel";
 import { useHotelBooking } from "@/hooks/useHotelBooking";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Import refactored components
 import HotelPageStructure from "@/components/hotel/detail/HotelPageStructure";
 import HotelMainContent from "@/components/hotel/detail/HotelMainContent";
+import HotelTabContent from "@/components/hotel/detail/HotelTabContent";
+import HotelTabNavigation from "@/components/hotel/detail/HotelTabNavigation";
+import HotelSidebar from "@/components/hotel/detail/HotelSidebar";
 import { BookingDialog, BookingSuccessDialog } from "@/components/hotel/detail/BookingDialog";
+import PriceOverview from "@/components/hotel/detail/sidebar/PriceOverview";
+import HotelContact from "@/components/hotel/detail/sidebar/HotelContact";
+import QuickActions from "@/components/hotel/detail/sidebar/QuickActions";
+import PriceMatchGuarantee from "@/components/hotel/detail/sidebar/PriceMatchGuarantee";
+import ContactLocation from "@/components/hotel/detail/sidebar/ContactLocation";
+import UpcomingEvents from "@/components/hotel/detail/sidebar/UpcomingEvents";
 
 const HotelDetail = () => {
   const { hotelSlug } = useParams<{ hotelSlug: string }>();
@@ -92,7 +102,7 @@ const HotelDetail = () => {
     }
   };
 
-  // Fix: This early return should only happen when both loading and error are false
+  // This early return should only happen when both loading and error are false
   if (!hotel && !loading && !error) {
     return null;
   }
@@ -119,47 +129,111 @@ const HotelDetail = () => {
       error={error}
     >
       {hotel && (
-        <HotelMainContent
-          hotel={hotelWithCoordinates}
-          activeTab={activeTab}
-          setActiveTab={handleTabChange}
-          isFavorite={isFavorite}
-          onToggleFavorite={handleToggleFavorite}
-          showFullGallery={showFullGallery}
-          setShowFullGallery={setShowFullGallery}
-          nearbyAttractions={nearbyAttractions}
-          onBookRoom={handleInitiateBooking}
-        />
+        <div className="container-custom pt-6 pb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <HotelMainContent
+                hotel={hotelWithCoordinates}
+                activeTab={activeTab}
+                setActiveTab={handleTabChange}
+                isFavorite={isFavorite}
+                onToggleFavorite={handleToggleFavorite}
+                showFullGallery={showFullGallery}
+                setShowFullGallery={setShowFullGallery}
+                nearbyAttractions={nearbyAttractions}
+                onBookRoom={handleInitiateBooking}
+              />
+              
+              <div className="mt-8 bg-white border rounded-lg p-6 shadow-sm">
+                <Tabs defaultValue={activeTab} value={activeTab} onValueChange={handleTabChange}>
+                  <HotelTabNavigation 
+                    activeTab={activeTab} 
+                    onChange={handleTabChange} 
+                  />
+                  
+                  <div className="mt-6">
+                    <TabsContent value={activeTab}>
+                      <HotelTabContent 
+                        activeTab={activeTab}
+                        hotel={hotel}
+                        nearbyAttractions={nearbyAttractions}
+                        onBookRoom={handleInitiateBooking}
+                      />
+                    </TabsContent>
+                  </div>
+                </Tabs>
+              </div>
+            </div>
+            
+            <div className="lg:col-span-1 space-y-6">
+              <div className="sticky top-24 space-y-6">
+                <PriceOverview
+                  price={hotel.price || hotel.pricePerNight}
+                  rating={hotel.rating}
+                  reviewCount={hotel.reviewCount}
+                  onSelectRooms={() => handleTabChange("rooms")}
+                />
+                
+                <QuickActions 
+                  hotel={hotel} 
+                  onSelectRooms={() => handleTabChange("rooms")} 
+                />
+                
+                <ContactLocation 
+                  address={hotel.address}
+                  contactInfo={hotel.contactInfo}
+                  landmarks={hotel.landmarks}
+                />
+                
+                <HotelContact 
+                  phone={hotel.contactInfo?.phone}
+                  email={hotel.contactInfo?.email}
+                  website={hotel.contactInfo?.website}
+                  checkInTime={hotel.checkInTime}
+                  checkOutTime={hotel.checkOutTime}
+                />
+                
+                <PriceMatchGuarantee priceMatch={hotel.priceMatchDetails} />
+                
+                <UpcomingEvents location={hotel.location} />
+              </div>
+            </div>
+          </div>
+        </div>
       )}
       
       {/* Booking Dialog */}
       <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
-        <BookingDialog 
-          hotel={hotel}
-          selectedRoom={selectedRoom}
-          isLoading={isBookingLoading}
-          onSubmit={handleBookingSubmit}
-          onClose={() => setShowBookingForm(false)}
-        />
+        <DialogContent className="max-w-2xl">
+          <BookingDialog 
+            hotel={hotel}
+            selectedRoom={selectedRoom}
+            isLoading={isBookingLoading}
+            onSubmit={handleBookingSubmit}
+            onClose={() => setShowBookingForm(false)}
+          />
+        </DialogContent>
       </Dialog>
 
       {/* Booking Success Dialog */}
       <Dialog open={showBookingSuccess} onOpenChange={setShowBookingSuccess}>
-        <BookingSuccessDialog 
-          hotel={hotel}
-          selectedRoom={selectedRoom}
-          onClose={() => setShowBookingSuccess(false)}
-          onBookTransport={() => {
-            setShowBookingSuccess(false);
-            setActiveTab("transport");
-          }}
-          bookingReference={bookingReference}
-          checkInDate={bookingDetails.checkInDate}
-          checkOutDate={bookingDetails.checkOutDate}
-          guestName={bookingDetails.guestName}
-          guestEmail={bookingDetails.guestEmail}
-          totalPrice={bookingDetails.totalPrice}
-        />
+        <DialogContent className="max-w-2xl">
+          <BookingSuccessDialog 
+            hotel={hotel}
+            selectedRoom={selectedRoom}
+            onClose={() => setShowBookingSuccess(false)}
+            onBookTransport={() => {
+              setShowBookingSuccess(false);
+              setActiveTab("transport");
+            }}
+            bookingReference={bookingReference}
+            checkInDate={bookingDetails.checkInDate}
+            checkOutDate={bookingDetails.checkOutDate}
+            guestName={bookingDetails.guestName}
+            guestEmail={bookingDetails.guestEmail}
+            totalPrice={bookingDetails.totalPrice}
+          />
+        </DialogContent>
       </Dialog>
     </HotelPageStructure>
   );

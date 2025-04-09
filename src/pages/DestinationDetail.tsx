@@ -82,7 +82,11 @@ const DestinationDetail = () => {
             </div>
             
             {/* Sidebar */}
-            <DestinationSidebar />
+            <DestinationSidebar 
+              location={destination.location || "Mount Abu"}
+              bestTimeToVisit={destination.bestTimeToVisit}
+              onBookClick={() => window.location.href = "/adventures"}
+            />
           </div>
         </div>
       </main>
