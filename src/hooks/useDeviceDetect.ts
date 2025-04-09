@@ -33,8 +33,6 @@ export function useDeviceDetect(): DeviceInfo {
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
     // Function to detect device type based on screen width and user agent
     const detectDevice = () => {
       const width = window.innerWidth;

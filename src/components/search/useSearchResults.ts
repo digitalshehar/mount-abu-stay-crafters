@@ -4,14 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { SearchResult } from "./types";
 import { debounce } from "./utils/debounce";
 import { getRecentSearches } from "./utils/searchStorage";
-import { useResponsive } from "@/context/ResponsiveContext";
 
 export const useSearchResults = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<SearchResult[]>([]);
-  const { isMobile } = useResponsive();
 
   // Load recent searches on initial render
   useEffect(() => {
@@ -28,16 +26,13 @@ export const useSearchResults = () => {
     setIsLoading(true);
     
     try {
-      // Search hotels - limit results on mobile
-      const resultsLimit = isMobile ? 3 : 5;
-
       // Search hotels
       const { data: hotels } = await supabase
         .from("hotels")
         .select("id, name, slug, location, image")
         .ilike("name", `%${query}%`)
         .order("name")
-        .limit(resultsLimit);
+        .limit(5);
 
       // Search apartments/homes (hotels with apartment category)
       const { data: homes } = await supabase
@@ -46,7 +41,7 @@ export const useSearchResults = () => {
         .contains('categories', ['apartment'])
         .ilike("name", `%${query}%`)
         .order("name")
-        .limit(resultsLimit);
+        .limit(5);
 
       // Search destinations
       const { data: destinations } = await supabase
@@ -54,7 +49,7 @@ export const useSearchResults = () => {
         .select("id, name, slug, location, image")
         .ilike("name", `%${query}%`)
         .order("name")
-        .limit(resultsLimit);
+        .limit(5);
 
       // Search adventures
       const { data: adventures } = await supabase
@@ -62,7 +57,7 @@ export const useSearchResults = () => {
         .select("id, name, slug, location, image")
         .ilike("name", `%${query}%`)
         .order("name")
-        .limit(resultsLimit);
+        .limit(5);
 
       // Search bike rentals
       const { data: bikes } = await supabase
@@ -70,7 +65,7 @@ export const useSearchResults = () => {
         .select("id, name, image")
         .ilike("name", `%${query}%`)
         .order("name")
-        .limit(resultsLimit);
+        .limit(5);
 
       // Search car rentals
       const { data: cars } = await supabase
@@ -78,7 +73,7 @@ export const useSearchResults = () => {
         .select("id, name, image")
         .ilike("name", `%${query}%`)
         .order("name")
-        .limit(resultsLimit);
+        .limit(5);
         
       // Search early hotels
       const { data: earlyHotels } = await supabase
@@ -86,7 +81,7 @@ export const useSearchResults = () => {
         .select("id, name, location, image")
         .ilike("name", `%${query}%`)
         .order("name")
-        .limit(resultsLimit);
+        .limit(5);
 
       // Combine results
       const combinedResults: SearchResult[] = [
@@ -107,9 +102,8 @@ export const useSearchResults = () => {
     }
   };
 
-  // Create a debounced version of the search function - shorter delay on mobile
-  const debounceTime = isMobile ? 200 : 300;
-  const debouncedSearch = useCallback(debounce(performSearch, debounceTime), [isMobile]);
+  // Create a debounced version of the search function (300ms delay)
+  const debouncedSearch = useCallback(debounce(performSearch, 300), []);
 
   // Handle search query changes
   const handleSearch = (query: string) => {

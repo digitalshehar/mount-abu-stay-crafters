@@ -1,76 +1,79 @@
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
-export type LocationParam = string | { 
-  location: string; 
-  latitude?: number; 
-  longitude?: number; 
-};
-
-interface WeatherData {
+export interface WeatherData {
+  location: string;
   temperature: number;
   description: string;
+  icon: string;
   humidity: number;
   windSpeed: number;
+  feelsLike: number;
   high: number;
   low: number;
-  location: string;
-  icon?: string;
-  feelsLike?: number;
-  lastUpdated?: string;
+  lastUpdated: string;
 }
 
-export const useWeather = (locationParam: LocationParam) => {
+export type LocationParam = string | {
+  location: string;
+  latitude?: number;
+  longitude?: number;
+};
+
+// Update to use a string parameter or a location object
+export const useWeather = (locationParam: LocationParam = "Mount Abu") => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchWeather = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        setIsLoading(true);
-        setError(null);
-        
-        // In a real app, we would fetch actual weather data here
-        // For demo purposes, we'll simulate a weather API response with mock data
-        
-        // Extract location details
-        let locationName = typeof locationParam === 'string' 
+        // Get the location string regardless of parameter type
+        const locationName = typeof locationParam === 'string' 
           ? locationParam 
           : locationParam.location;
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Current date for lastUpdated
-        const now = new Date();
-        const lastUpdated = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        // Mock weather data
-        const mockWeatherData: WeatherData = {
-          temperature: 24 + Math.floor(Math.random() * 8),
-          description: "Partly cloudy",
-          humidity: 45 + Math.floor(Math.random() * 30),
-          windSpeed: 5 + Math.floor(Math.random() * 10),
-          high: 28 + Math.floor(Math.random() * 5),
-          low: 18 + Math.floor(Math.random() * 5),
+
+        // Demo data for location - In a real app, you would fetch from a weather API
+        const mockData: WeatherData = {
           location: locationName,
+          temperature: 24,
+          description: "Sunny with some clouds",
           icon: "cloud-sun",
-          feelsLike: 22 + Math.floor(Math.random() * 5),
-          lastUpdated: lastUpdated
+          humidity: 65,
+          windSpeed: 12,
+          feelsLike: 26,
+          high: 28,
+          low: 19,
+          lastUpdated: new Date().toLocaleTimeString()
         };
         
-        setWeather(mockWeatherData);
-      } catch (err: any) {
-        console.error('Error fetching weather data:', err);
-        setError(err.message || 'Failed to fetch weather data');
+        setWeather(mockData);
+      } catch (err) {
+        console.error("Failed to fetch weather data:", err);
+        setError("Could not load weather data. Please try again later.");
+        toast({
+          title: "Weather Data Error",
+          description: "Failed to load weather information",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchWeather();
-  }, [locationParam]);
+    
+    // Refresh every 30 minutes
+    const intervalId = setInterval(fetchWeather, 30 * 60 * 1000);
+    
+    return () => clearInterval(intervalId);
+  }, [typeof locationParam === 'string' ? locationParam : locationParam.location, toast]);
 
   return { weather, isLoading, error };
 };

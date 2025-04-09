@@ -1,6 +1,6 @@
 
-import React, { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./components/NotFound";
 import Hotels from "./pages/Hotels";
@@ -15,30 +15,13 @@ import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import Dashboard from "./pages/admin/Dashboard";
-import HotelNotFound from "./pages/HotelNotFound";
-import EarlyHotelDetailPage from "./pages/EarlyHotelDetailPage";
-import EnhancedHotels from "./pages/EnhancedHotels";
 
 const AppRoutes: React.FC = () => {
-  const location = useLocation();
-  
-  // Log navigation for debugging
-  useEffect(() => {
-    console.log("Navigation to:", location.pathname);
-  }, [location]);
-
   return (
     <Routes>
       <Route path="/" element={<Index />} />
-      
-      {/* Hotel routes */}
       <Route path="/hotels" element={<Hotels />} />
-      <Route path="/hotels/enhanced" element={<EnhancedHotels />} />
-      <Route path="/hotel/:hotelSlug" element={<HotelDetail />} />
-      <Route path="/hotel-not-found" element={<HotelNotFound />} />
-      <Route path="/early-hotel/:id" element={<EarlyHotelDetailPage />} />
-      
-      {/* Other routes */}
+      <Route path="/hotels/:id" element={<HotelDetail />} />
       <Route path="/adventures" element={<Adventures />} />
       <Route path="/adventures/:id" element={<AdventureDetail />} />
       <Route path="/destinations" element={<Destinations />} />

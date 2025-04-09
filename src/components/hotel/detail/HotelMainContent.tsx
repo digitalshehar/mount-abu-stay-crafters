@@ -10,28 +10,52 @@ import HotelGallery from './HotelGallery';
 import HotelTransport from './HotelTransport';
 import HotelAmenities from './HotelAmenities';
 import HotelPolicies from './HotelPolicies';
-import { Room, Hotel } from '@/components/admin/hotels/types';
 
-// Add missing type definitions
-interface HotelExtended extends Hotel {
+interface Room {
+  type: string;
+  price: number;
+  capacity: number;
+}
+
+interface Review {
+  name: string;
+  rating: number;
+  date?: string;
+  comment?: string;
+}
+
+interface Hotel {
+  id: number;
+  name: string;
+  location: string;
+  stars: number;
+  rating: number;
+  reviewCount: number;
+  description: string;
+  image: string;
+  images?: string[];
+  gallery?: string[];
+  amenities: string[];
+  rooms?: Room[];
+  reviews?: Review[];
   checkInTime?: string;
   checkOutTime?: string;
   policies?: string[];
   address?: string;
-  landmarks?: {
-    airport?: string;
-    busStation?: string;
-    cityCenter?: string;
-  };
   contactInfo?: {
-    phone?: string;
-    email?: string;
+    phone: string;
+    email: string;
     website?: string;
   };
-  reviews?: any[];
+  landmarks?: {
+    airport: string;
+    busStation: string;
+    cityCenter: string;
+  };
+  latitude?: number;
+  longitude?: number;
   price?: number;
-  gallery?: string[];
-  images?: string[];
+  pricePerNight?: number;
 }
 
 interface NearbyAttraction {
@@ -41,7 +65,7 @@ interface NearbyAttraction {
 }
 
 interface HotelMainContentProps {
-  hotel: HotelExtended | null;
+  hotel: Hotel | null;
   activeTab: string;
   setActiveTab: (tab: string) => void;
   isFavorite?: boolean;
@@ -74,12 +98,6 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
       
   // Get price from either price or pricePerNight
   const price = hotel.price || hotel.pricePerNight || 0;
-
-  // Ensure rooms have the 'count' property
-  const enhancedRooms: Room[] = (hotel.rooms || []).map(room => ({
-    ...room,
-    count: room.count || 5 // Default to 5 if count is not provided
-  }));
 
   return (
     <main className="container-custom py-6 lg:py-8">
@@ -146,7 +164,7 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
               
               <div className="mt-6">
                 <TabsContent value="rooms">
-                  <HotelRooms rooms={enhancedRooms} onBookRoom={onBookRoom} />
+                  <HotelRooms rooms={hotel.rooms || []} onBookRoom={onBookRoom} />
                 </TabsContent>
                 
                 <TabsContent value="amenities">
@@ -181,10 +199,7 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
                 </TabsContent>
                 
                 <TabsContent value="transport">
-                  <HotelTransport 
-                    hotelName={hotel.name}
-                    location={hotel.location}
-                  />
+                  <HotelTransport />
                 </TabsContent>
                 
                 <TabsContent value="faq">

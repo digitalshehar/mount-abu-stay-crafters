@@ -2,17 +2,9 @@
 import React, { useState } from "react";
 import { Search } from "lucide-react";
 import { GlobalSearch } from "./GlobalSearch";
-import { useResponsive } from "@/context/ResponsiveContext";
-import MobileSearchButton from "./MobileSearchButton";
 
 const SearchButton = () => {
   const [open, setOpen] = useState(false);
-  const { isMobile } = useResponsive();
-
-  // Use MobileSearchButton for mobile devices
-  if (isMobile) {
-    return <MobileSearchButton />;
-  }
 
   return (
     <>

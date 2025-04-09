@@ -1,84 +1,52 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
-import { Hotel } from "@/components/admin/hotels/types";
-import HotelCard from "@/components/HotelCard";
-import HotelListHeader from "./HotelListHeader";
-import HotelSortOptions from "./HotelSortOptions";
-import EmptyState from "./EmptyState";
+import HotelContent from "./HotelContent";
+import FilterSidebar from "./FilterSidebar";
+import { useHotelFilters } from "@/hooks/useHotelFilters";
 
 interface HotelListViewProps {
-  hotels: Hotel[];
-  isLoading?: boolean;
-  hasError?: boolean;
-  error?: string;
-  sortBy?: string;
-  onSortChange?: (sort: string) => void;
+  hotels: any[];
+  isLoading: boolean;
 }
 
-const HotelListView = ({
-  hotels = [],
-  isLoading = false,
-  hasError = false,
-  error = "",
-  sortBy = "recommended",
-  onSortChange = () => {},
-}: HotelListViewProps) => {
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <HotelListHeader 
-          count={0} 
-          isLoading={true} 
-        />
-        <div className="animate-pulse space-y-6">
-          {[1, 2, 3].map((i) => (
-            <div 
-              key={i}
-              className="bg-stone-100 h-[200px] rounded-lg"
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div className="p-8 text-center bg-red-50 rounded-lg">
-        <h3 className="text-red-600 font-semibold">Error loading hotels</h3>
-        <p className="text-red-500">{error || "Please try again later"}</p>
-      </div>
-    );
-  }
-
-  if (hotels.length === 0) {
-    return <EmptyState />;
-  }
+const HotelListView = ({ hotels, isLoading }: HotelListViewProps) => {
+  const {
+    priceRange,
+    setPriceRange,
+    selectedStars,
+    setSelectedStars,
+    selectedAmenities,
+    setSelectedAmenities,
+    activeFilterCount,
+    filteredHotels,
+    handleStarFilter,
+    handleAmenityFilter,
+    clearFilters,
+    commonAmenities,
+  } = useHotelFilters(hotels, "");
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <HotelListHeader count={hotels.length} />
-        <HotelSortOptions sortBy={sortBy} onSortChange={onSortChange} />
-      </div>
-      
-      <div className="space-y-6">
-        {hotels.map((hotel) => (
-          <HotelCard 
-            key={hotel.id}
-            id={hotel.id}
-            name={hotel.name}
-            slug={hotel.slug}
-            location={hotel.location}
-            rating={hotel.rating}
-            reviewCount={hotel.reviewCount || 0}
-            image={hotel.image}
-            pricePerNight={hotel.pricePerNight || hotel.price || 0}
-            amenities={hotel.amenities || []}
-            featured={hotel.featured || false}
+    <div className="container mx-auto py-6 lg:py-8 px-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+        <div className="hidden lg:block">
+          <FilterSidebar
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            selectedStars={selectedStars}
+            handleStarFilter={handleStarFilter}
+            selectedAmenities={selectedAmenities}
+            handleAmenityFilter={handleAmenityFilter}
+            clearFilters={clearFilters}
+            commonAmenities={commonAmenities}
           />
-        ))}
+        </div>
+
+        <HotelContent
+          isLoading={isLoading}
+          filteredHotels={filteredHotels}
+          activeFilterCount={activeFilterCount}
+          clearFilters={clearFilters}
+        />
       </div>
     </div>
   );

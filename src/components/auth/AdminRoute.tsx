@@ -1,12 +1,12 @@
 
 import React, { ReactNode } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface AdminRouteProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
@@ -65,9 +65,9 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     );
   }
 
-  // If admin or debug mode, render children
+  // If admin or debug mode, render children or outlet
   console.log("Access granted to admin dashboard");
-  return <>{children}</>;
+  return children ? <>{children}</> : <Outlet />;
 };
 
 export default AdminRoute;
