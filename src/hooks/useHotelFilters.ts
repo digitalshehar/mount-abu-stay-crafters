@@ -5,8 +5,17 @@ import { Hotel } from "@/integrations/supabase/custom-types";
 
 type HotelType = AdminHotel | Hotel;
 
-export const useHotelFilters = (hotels: HotelType[], searchQuery: string) => {
+interface FilterCriteria {
+  searchQuery: string;
+  priceRange: [number, number];
+  selectedStars: number[];
+  selectedAmenities: string[];
+}
+
+export const useHotelFilters = (hotels: HotelType[], initialSearch: string = "") => {
   console.log("useHotelFilters called with", hotels.length, "hotels");
+  
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   
   // Default price range
   const maxPrice = useMemo(() => {
@@ -24,6 +33,7 @@ export const useHotelFilters = (hotels: HotelType[], searchQuery: string) => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, maxPrice]);
   const [selectedStars, setSelectedStars] = useState<number[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [filteredHotels, setFilteredHotels] = useState<HotelType[]>(hotels);
 
   // Reset price range when maxPrice changes
   useEffect(() => {
@@ -80,6 +90,7 @@ export const useHotelFilters = (hotels: HotelType[], searchQuery: string) => {
     setSelectedStars([]);
     setSelectedAmenities([]);
     setPriceRange([0, maxPrice]);
+    setSearchQuery("");
   };
 
   // Calculate active filter count
@@ -88,26 +99,23 @@ export const useHotelFilters = (hotels: HotelType[], searchQuery: string) => {
     if (selectedStars.length > 0) count++;
     if (selectedAmenities.length > 0) count++;
     if (priceRange[0] > 0 || priceRange[1] < maxPrice) count++;
+    if (searchQuery) count++;
     return count;
-  }, [selectedStars, selectedAmenities, priceRange, maxPrice]);
+  }, [selectedStars, selectedAmenities, priceRange, maxPrice, searchQuery]);
 
-  // Filter hotels based on criteria
-  const filteredHotels = useMemo(() => {
-    console.log("Filtering hotels with criteria:", {
-      searchQuery,
-      priceRange,
-      selectedStars,
-      selectedAmenities
-    });
+  // Apply filters function
+  const applyFilters = (criteria: FilterCriteria) => {
+    console.log("Applying filters with criteria:", criteria);
     
     if (!hotels || hotels.length === 0) {
       console.log("No hotels to filter");
-      return [];
+      setFilteredHotels([]);
+      return;
     }
     
-    return hotels.filter(hotel => {
+    const filtered = hotels.filter(hotel => {
       // Filter by search query
-      if (searchQuery && !hotel.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      if (criteria.searchQuery && !hotel.name.toLowerCase().includes(criteria.searchQuery.toLowerCase())) {
         return false;
       }
       
@@ -116,21 +124,21 @@ export const useHotelFilters = (hotels: HotelType[], searchQuery: string) => {
         ? hotel.pricePerNight 
         : hotel.price_per_night || 0;
       
-      if (price < priceRange[0] || price > priceRange[1]) {
+      if (price < criteria.priceRange[0] || price > criteria.priceRange[1]) {
         return false;
       }
       
       // Filter by star rating
-      if (selectedStars.length > 0 && !selectedStars.includes(hotel.stars)) {
+      if (criteria.selectedStars.length > 0 && !criteria.selectedStars.includes(hotel.stars)) {
         return false;
       }
       
       // Filter by amenities
-      if (selectedAmenities.length > 0) {
+      if (criteria.selectedAmenities.length > 0) {
         const hotelAmenities = hotel.amenities || [];
         if (!Array.isArray(hotelAmenities)) return false;
         
-        for (const amenity of selectedAmenities) {
+        for (const amenity of criteria.selectedAmenities) {
           if (!hotelAmenities.includes(amenity)) {
             return false;
           }
@@ -139,11 +147,35 @@ export const useHotelFilters = (hotels: HotelType[], searchQuery: string) => {
       
       return true;
     });
-  }, [hotels, searchQuery, priceRange, selectedStars, selectedAmenities]);
+    
+    console.log(`Filtering complete: ${filtered.length} hotels match criteria`);
+    setFilteredHotels(filtered);
+  };
 
-  console.log("useHotelFilters returning", filteredHotels.length, "filtered hotels");
+  // Initial filter application
+  useEffect(() => {
+    setFilteredHotels(hotels);
+  }, [hotels]);
+
+  // Apply filters when filter state changes
+  useEffect(() => {
+    applyFilters({
+      searchQuery,
+      priceRange,
+      selectedStars,
+      selectedAmenities
+    });
+  }, [searchQuery, priceRange, selectedStars, selectedAmenities, hotels]);
+
+  // Reset filters function
+  const resetFilters = () => {
+    clearFilters();
+    setFilteredHotels(hotels);
+  };
 
   return {
+    searchQuery,
+    setSearchQuery,
     priceRange,
     setPriceRange,
     selectedStars,
@@ -155,6 +187,8 @@ export const useHotelFilters = (hotels: HotelType[], searchQuery: string) => {
     handleStarFilter,
     handleAmenityFilter,
     clearFilters,
-    commonAmenities
+    commonAmenities,
+    applyFilters,
+    resetFilters
   };
 };

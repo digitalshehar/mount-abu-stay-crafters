@@ -12,6 +12,28 @@ import HotelAmenities from './HotelAmenities';
 import HotelPolicies from './HotelPolicies';
 import { Room, Hotel } from '@/components/admin/hotels/types';
 
+// Add missing type definitions
+interface HotelExtended extends Hotel {
+  checkInTime?: string;
+  checkOutTime?: string;
+  policies?: string[];
+  address?: string;
+  landmarks?: {
+    airport?: string;
+    busStation?: string;
+    cityCenter?: string;
+  };
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
+  reviews?: any[];
+  price?: number;
+  gallery?: string[];
+  images?: string[];
+}
+
 interface NearbyAttraction {
   name: string;
   distance: string;
@@ -19,7 +41,7 @@ interface NearbyAttraction {
 }
 
 interface HotelMainContentProps {
-  hotel: Hotel | null;
+  hotel: HotelExtended | null;
   activeTab: string;
   setActiveTab: (tab: string) => void;
   isFavorite?: boolean;

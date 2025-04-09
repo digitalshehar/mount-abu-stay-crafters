@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bus, Car, Train, Plane, UserCircle, User, Users as UsersIcon } from "lucide-react";
+import { Bus, Car, Train, Plane, User, Users } from "lucide-react";
 
 export interface TransportOption {
   type: "airport" | "bus" | "train" | "taxi";
@@ -88,7 +88,7 @@ const HotelTransport = ({ options = [], hotelName, location }: TransportOptionsP
           <div className="bg-white p-5 rounded-lg shadow-sm border border-stone-100">
             <div className="flex items-start gap-3">
               <div className="mt-1">
-                <UsersIcon className="h-5 w-5 text-blue-500" />
+                <Users className="h-5 w-5 text-blue-500" />
               </div>
               <div>
                 <h4 className="font-semibold">Shared Airport Shuttle</h4>
@@ -102,7 +102,7 @@ const HotelTransport = ({ options = [], hotelName, location }: TransportOptionsP
           <div className="bg-white p-5 rounded-lg shadow-sm border border-stone-100">
             <div className="flex items-start gap-3">
               <div className="mt-1">
-                <UsersIcon className="h-5 w-5 text-blue-500" />
+                <Users className="h-5 w-5 text-blue-500" />
               </div>
               <div>
                 <h4 className="font-semibold">Group Railway Station Transfer</h4>
