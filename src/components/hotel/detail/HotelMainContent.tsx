@@ -3,15 +3,11 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Heart, Share, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import HotelRooms from './HotelRooms';
-import HotelReviews from './HotelReviews';
-import HotelLocation from './HotelLocation';
-import HotelAmenities from './HotelAmenities';
-import HotelPolicies from './HotelPolicies';
-import { Room, Hotel, ContactInfo, Landmarks } from '@/types';
-import HotelTransport from './HotelTransport';
+import { Hotel, Room, ContactInfo, Landmarks, Review } from '@/types';
 import ImageGallery from './ImageGallery';
 import { toast } from 'sonner';
+import SocialSharing from './SocialSharing';
+import HotelTabContent from './HotelTabContent';
 
 // Define NearbyAttraction interface compatible with props
 interface NearbyAttraction {
@@ -129,10 +125,10 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
                   {isFavorite ? 'Saved' : 'Save'}
                 </Button>
                 
-                <Button variant="outline" size="sm" onClick={handleShareHotel}>
-                  <Share className="h-4 w-4 mr-2 text-gray-600" />
-                  Share
-                </Button>
+                <SocialSharing 
+                  hotelName={hotel.name}
+                  hotelLocation={hotel.location}
+                />
               </div>
             </div>
             
@@ -146,67 +142,12 @@ const HotelMainContent: React.FC<HotelMainContentProps> = ({
               <p className="text-gray-700">{hotel.description}</p>
             </div>
             
-            <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-3 md:grid-cols-7 h-auto">
-                <TabsTrigger value="rooms" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white">Rooms</TabsTrigger>
-                <TabsTrigger value="amenities" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white">Amenities</TabsTrigger>
-                <TabsTrigger value="policies" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white">Policies</TabsTrigger>
-                <TabsTrigger value="location" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white">Location</TabsTrigger>
-                <TabsTrigger value="reviews" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white">Reviews</TabsTrigger>
-                <TabsTrigger value="transport" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white">Transport</TabsTrigger>
-                <TabsTrigger value="faq" className="py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white">FAQ</TabsTrigger>
-              </TabsList>
-              
-              <div className="mt-6">
-                <TabsContent value="rooms">
-                  <HotelRooms rooms={enhancedRooms} onBookRoom={onBookRoom} />
-                </TabsContent>
-                
-                <TabsContent value="amenities">
-                  <HotelAmenities amenities={hotel.amenities} />
-                </TabsContent>
-                
-                <TabsContent value="policies">
-                  <HotelPolicies 
-                    checkInTime={hotel.checkInTime || '2:00 PM'} 
-                    checkOutTime={hotel.checkOutTime || '12:00 PM'} 
-                    policies={hotel.policies || []}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="location">
-                  <HotelLocation 
-                    address={hotel.address || `${hotel.name}, ${hotel.location}, Mount Abu, Rajasthan, India`}
-                    latitude={hotel.latitude}
-                    longitude={hotel.longitude}
-                    nearbyAttractions={nearbyAttractions}
-                    landmarks={landmarks}
-                    contactInfo={contactInfo}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="reviews">
-                  <HotelReviews 
-                    reviews={hotel.reviews || []} 
-                    averageRating={hotel.rating || 4.0} 
-                    reviewCount={hotel.reviewCount || 0} 
-                  />
-                </TabsContent>
-                
-                <TabsContent value="transport">
-                  <HotelTransport 
-                    hotelName={hotel.name}
-                    location={hotel.location}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="faq">
-                  <div className="flex items-center justify-center py-10">
-                    <p className="text-gray-500">Frequently asked questions will appear here.</p>
-                  </div>
-                </TabsContent>
-              </div>
-            </Tabs>
+            <HotelTabContent 
+              activeTab={activeTab}
+              hotel={hotel}
+              nearbyAttractions={nearbyAttractions}
+              onBookRoom={onBookRoom}
+            />
           </div>
         </div>
         

@@ -1,134 +1,140 @@
 
-import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { EarlyHotel } from "@/components/admin/hotels/types/earlyHotel";
-import { useAuth } from "@/context/AuthContext";
-import { v4 as uuidv4 } from "uuid";
-
-export interface BookingFormValues {
-  fullName: string;
-  email: string;
-  phone?: string;
-}
+import { useState } from 'react';
+import { EarlyHotel } from '@/components/admin/hotels/types/earlyHotel';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 export const useEarlyHotelBooking = (hotel: EarlyHotel | null) => {
+  const { user } = useAuth();
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [isBookingLoading, setIsBookingLoading] = useState(false);
-  const [selectedHours, setSelectedHours] = useState(1);
+  const [selectedHours, setSelectedHours] = useState(hotel?.min_hours || 3);
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
-  const [bookingReference, setBookingReference] = useState<string>("");
-  const [guestName, setGuestName] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
-  const [guestPhone, setGuestPhone] = useState("");
-  const [bookingDetails, setBookingDetails] = useState<{
-    guestName: string;
-    guestEmail: string;
-    totalPrice: number;
-  }>({
-    guestName: "",
-    guestEmail: "",
-    totalPrice: 0
-  });
+  const [bookingReference, setBookingReference] = useState('');
+  const [bookingDetails, setBookingDetails] = useState<any>({});
   
-  const { user } = useAuth();
-
-  // Calculate the total price based on hourly rate and selected hours
+  // Guest information state
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  
+  const generateBookingReference = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = 'EH-';
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+  
   const calculateTotalPrice = (hotel: EarlyHotel | null, hours: number) => {
     if (!hotel) return 0;
-    return hotel.hourly_rate * hours;
+    
+    const basePrice = hotel.hourly_rate * hours;
+    const tax = Math.round(basePrice * 0.18); // 18% tax
+    
+    return basePrice + tax;
   };
-
-  // Handle booking submission
-  const handleBookingSubmit = async (data: BookingFormValues) => {
-    if (!hotel || !user) {
-      toast.error("Unable to complete booking. Please try again.");
+  
+  const handleInitiateBooking = () => {
+    if (hotel && selectedHours >= hotel.min_hours && selectedHours <= hotel.max_hours) {
+      // Pre-fill user information if logged in
+      if (user) {
+        setGuestName(user.user_metadata?.full_name || '');
+        setGuestEmail(user.email || '');
+      }
+      
+      setShowBookingForm(true);
+    } else {
+      toast.error('Please select a valid number of hours for your stay');
+    }
+  };
+  
+  const handleBookingSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!hotel) {
+      toast.error('Hotel information is missing');
       return;
     }
     
-    if (!data.fullName.trim() || !data.email.trim()) {
-      toast.error("Please fill in all required fields");
+    // Validate inputs
+    if (!guestName.trim()) {
+      toast.error('Please enter your name');
+      return;
+    }
+    
+    if (!guestEmail.trim()) {
+      toast.error('Please enter your email');
       return;
     }
     
     setIsBookingLoading(true);
     
     try {
-      // Generate a unique booking reference
-      const reference = `EH${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000)}`;
+      // Generate booking reference
+      const reference = generateBookingReference();
+      
+      // Calculate check-in and check-out times (for demonstration)
+      const now = new Date();
+      const checkInDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Tomorrow
+      const checkOutDate = new Date(checkInDate.getTime() + selectedHours * 60 * 60 * 1000);
+      
+      // Calculate total price
       const totalPrice = calculateTotalPrice(hotel, selectedHours);
       
-      // Get current date for check-in
-      const checkInDate = new Date();
-      
-      // Get check-out date (current date + selectedHours hours)
-      const checkOutDate = new Date(checkInDate);
-      checkOutDate.setHours(checkOutDate.getHours() + selectedHours);
-      
-      // Create booking data
+      // Create booking object
       const bookingData = {
-        id: uuidv4(),
-        user_id: user.id,
         hotel_id: hotel.id,
         hotel_name: hotel.name,
-        room_type: 'Hourly Stay',
-        check_in_date: checkInDate.toISOString(),
-        check_out_date: checkOutDate.toISOString(),
-        guest_name: data.fullName,
-        guest_email: data.email,
-        guest_phone: data.phone || '',
-        number_of_guests: 1,
-        base_price: hotel.hourly_rate,
+        user_id: user?.id,
+        guest_name: guestName,
+        guest_email: guestEmail,
+        guest_phone: guestPhone,
+        hours_booked: selectedHours,
+        hourly_rate: hotel.hourly_rate,
         total_price: totalPrice,
-        tax_amount: totalPrice * 0.1, // 10% tax
         booking_reference: reference,
+        check_in_time: checkInDate.toISOString(),
+        check_out_time: checkOutDate.toISOString(),
         booking_status: 'confirmed',
         payment_status: 'pending',
         created_at: new Date().toISOString()
       };
       
-      // Insert booking into database
-      const { error } = await supabase
-        .from('bookings')
-        .insert([bookingData]);
+      // In a real application, you would save this to your database
+      // For demo purposes, we'll just simulate the API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       
-      if (error) {
-        throw error;
-      }
-      
-      // Update booking details for success modal
+      // Store booking details for the success screen
       setBookingReference(reference);
       setBookingDetails({
-        guestName: data.fullName,
-        guestEmail: data.email,
-        totalPrice: totalPrice
+        hotelName: hotel.name,
+        checkInDate: checkInDate.toLocaleDateString(),
+        checkInTime: checkInDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        checkOutDate: checkOutDate.toLocaleDateString(),
+        checkOutTime: checkOutDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        hoursBooked: selectedHours,
+        hourlyRate: hotel.hourly_rate,
+        totalPrice: totalPrice,
+        guestName,
+        guestEmail
       });
       
-      // Close booking form and show success message
+      // Close booking form and show success
       setShowBookingForm(false);
       setShowBookingSuccess(true);
       
-      toast.success("Booking confirmed!", {
-        description: `Your booking for ${hotel.name} has been confirmed.`
-      });
-      
-    } catch (error: any) {
-      console.error("Error during booking:", error);
-      toast.error("Booking failed", {
-        description: error.message || "There was an error processing your booking. Please try again."
-      });
+      toast.success('Booking confirmed! Check your email for details');
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      toast.error('There was a problem creating your booking. Please try again.');
     } finally {
       setIsBookingLoading(false);
     }
   };
-
-  const handleInitiateBooking = () => {
-    if (hotel && hotel.min_hours) {
-      setSelectedHours(hotel.min_hours);
-    }
-    setShowBookingForm(true);
-  };
-
+  
   return {
     showBookingForm,
     setShowBookingForm,

@@ -16,16 +16,16 @@ import { useDebounce } from "@/hooks/useDebounce";
 import PageHeader from "@/components/PageHeader";
 import { Hotel } from "@/types";
 
-// Extended HotelType with database fields
-interface HotelType extends Hotel {
-  price_per_night?: number;
-  status: "active" | "inactive";
+// Define a type for the hotel data coming from Supabase
+interface HotelType extends Omit<Hotel, 'pricePerNight' | 'reviewCount' | 'rooms'> {
+  price_per_night: number;
+  review_count?: number;
 }
 
 const Hotels = () => {
   const navigate = useNavigate();
   const { search } = useLocation();
-  const [hotels, setHotels] = useState<HotelType[]>([]);
+  const [hotels, setHotels] = useState<Hotel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [viewMode, setViewMode] = useState("grid");
@@ -58,24 +58,47 @@ const Hotels = () => {
         setIsLoading(true);
         setHasError(false);
         console.info('Rendering Hotels component');
-        
+
         const { data, error } = await supabase
           .from('hotels')
           .select('*')
           .eq('status', 'active');
-          
+
         if (error) {
           throw error;
         }
-        
+
+        // Transform database hotels to match our Hotel type
+        const transformedHotels: Hotel[] = data.map((hotelData: HotelType) => ({
+          id: hotelData.id,
+          name: hotelData.name,
+          slug: hotelData.slug,
+          location: hotelData.location,
+          description: hotelData.description,
+          pricePerNight: hotelData.price_per_night,
+          stars: hotelData.stars,
+          rating: hotelData.rating,
+          reviewCount: hotelData.review_count,
+          image: hotelData.image,
+          images: hotelData.images,
+          gallery: hotelData.gallery,
+          amenities: hotelData.amenities,
+          featured: hotelData.featured,
+          status: hotelData.status as "active" | "inactive",
+          latitude: hotelData.latitude,
+          longitude: hotelData.longitude,
+          categories: hotelData.categories,
+          rooms: [] // Will be populated below
+        }));
+
         // Augment hotel data with rooms
-        const hotelsWithRooms = await Promise.all(data.map(async (hotel) => {
+        const hotelsWithRooms = await Promise.all(transformedHotels.map(async (hotel) => {
           // Fetch rooms for each hotel
           const { data: roomsData, error: roomsError } = await supabase
             .from('rooms')
             .select('*')
             .eq('hotel_id', hotel.id);
-            
+
           if (roomsError) {
             console.error(`Error fetching rooms for hotel ${hotel.id}:`, roomsError);
             return {
@@ -83,14 +106,13 @@ const Hotels = () => {
               rooms: []
             };
           }
-          
+
           return {
             ...hotel,
-            pricePerNight: hotel.price_per_night,
             rooms: roomsData || []
           };
         }));
-        
+
         console.info('Hotels data after processing:', hotelsWithRooms.length, 'hotels');
         setHotels(hotelsWithRooms);
       } catch (error) {
@@ -101,7 +123,7 @@ const Hotels = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchHotels();
   }, []);
 
@@ -133,26 +155,6 @@ const Hotels = () => {
     filteredHotelsCount: filteredHotels.length
   });
 
-  // Function to map HotelType to Hotel
-  const mapToHotelType = (hotels: HotelType[]): Hotel[] => {
-    return hotels.map(hotel => ({
-      id: hotel.id,
-      name: hotel.name,
-      slug: hotel.slug,
-      location: hotel.location,
-      description: hotel.description,
-      price: hotel.price_per_night,
-      pricePerNight: hotel.pricePerNight || hotel.price_per_night,
-      stars: hotel.stars,
-      rating: hotel.rating,
-      reviewCount: hotel.reviewCount || 0,
-      image: hotel.image,
-      rooms: hotel.rooms || [],
-      amenities: hotel.amenities,
-      status: hotel.status
-    }));
-  };
-
   return (
     <>
       <ScrollToTop />
@@ -169,7 +171,7 @@ const Hotels = () => {
             />
           }
         />
-        
+
         <div className="container-custom">
           <div className="flex flex-col lg:flex-row gap-8">
             <aside className="lg:w-64 flex-shrink-0">
@@ -185,8 +187,8 @@ const Hotels = () => {
               />
               
               <div className="mt-6">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full"
                   onClick={() => setShowMap(!showMap)}
                 >
@@ -194,19 +196,24 @@ const Hotels = () => {
                 </Button>
               </div>
             </aside>
-            
+
             <main className="flex-1">
               {showMap ? (
                 <HotelMapView 
-                  hotels={mapToHotelType(filteredHotels)} 
-                  onToggleMap={() => setShowMap(false)} 
+                  hotels={filteredHotels.map(hotel => ({
+                    ...hotel,
+                    pricePerNight: hotel.pricePerNight || 0,
+                    reviewCount: hotel.reviewCount || 0,
+                    rooms: hotel.rooms || []
+                  }))}
+                  onToggleMap={() => setShowMap(false)}
                 />
               ) : (
                 <>
                   <div className="mb-5 flex justify-between items-center">
-                    <HotelViewToggle 
-                      viewMode={viewMode} 
-                      onChange={setViewMode} 
+                    <HotelViewToggle
+                      viewMode={viewMode}
+                      onChange={setViewMode}
                     />
                     
                     <input
@@ -217,10 +224,10 @@ const Hotels = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
                   </div>
-                  
+
                   {viewMode === 'list' ? (
                     <HotelListView
-                      hotels={mapToHotelType(filteredHotels)}
+                      hotels={filteredHotels}
                       isLoading={isLoading}
                       hasError={hasError}
                       sortBy={sortBy}
@@ -228,7 +235,12 @@ const Hotels = () => {
                     />
                   ) : (
                     <HotelGridView
-                      hotels={mapToHotelType(filteredHotels)}
+                      hotels={filteredHotels.map(hotel => ({
+                        ...hotel,
+                        pricePerNight: hotel.pricePerNight || 0,
+                        reviewCount: hotel.reviewCount || 0,
+                        rooms: hotel.rooms || []
+                      }))}
                       isLoading={isLoading}
                       hasError={hasError}
                       sortBy={sortBy}

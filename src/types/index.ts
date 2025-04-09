@@ -1,4 +1,3 @@
-
 // Hotel Types
 export interface Hotel {
   id: string | number;
@@ -24,6 +23,15 @@ export interface Hotel {
   checkInTime?: string;
   checkOutTime?: string;
   landmarks?: Landmarks;
+  address?: string;
+  policies?: string[];
+  reviews?: Review[];
+  priceMatchDetails?: {
+    available: boolean;
+    description: string;
+    termsUrl: string;
+  };
+  categories?: string[];
 }
 
 // Define required properties for ContactInfo and Landmarks

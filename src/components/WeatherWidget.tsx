@@ -1,122 +1,109 @@
 
-import React, { useState, useEffect } from 'react';
-import { Cloud, CloudRain, Sun, Snowflake, Wind } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import React, { useEffect, useState } from 'react';
+import { Cloud, CloudRain, CloudSnow, Sun, Wind } from 'lucide-react';
+import { Card, CardContent } from './ui/card';
 
-interface WeatherData {
+interface WeatherWidgetProps {
   location: string;
-  temperature: number;
-  condition: string;
-  icon: string;
-  humidity: number;
-  windSpeed: number;
-  forecast: {
-    day: string;
-    temperature: number;
-    condition: string;
-    icon: string;
-  }[];
+  latitude?: number;
+  longitude?: number;
 }
 
-// Mock weather data for Mount Abu
-const mockWeatherData: WeatherData = {
-  location: 'Mount Abu, Rajasthan',
-  temperature: 24,
-  condition: 'Sunny',
-  icon: 'sun',
-  humidity: 45,
-  windSpeed: 10,
-  forecast: [
-    { day: 'Mon', temperature: 24, condition: 'Sunny', icon: 'sun' },
-    { day: 'Tue', temperature: 23, condition: 'Partly Cloudy', icon: 'cloud' },
-    { day: 'Wed', temperature: 22, condition: 'Cloudy', icon: 'cloud' },
-    { day: 'Thu', temperature: 20, condition: 'Rain', icon: 'rain' },
-    { day: 'Fri', temperature: 22, condition: 'Partly Cloudy', icon: 'cloud' },
-  ],
-};
+interface WeatherData {
+  temperature: number;
+  condition: string;
+  humidity: number;
+  windSpeed: number;
+  icon: React.ReactNode;
+}
 
-const WeatherWidget: React.FC = () => {
+const WeatherWidget: React.FC<WeatherWidgetProps> = ({ location }) => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real application, this would be an API call to a weather service
-    // For this demo, we'll use the mock data after a short delay
-    const timer = setTimeout(() => {
-      setWeather(mockWeatherData);
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const renderWeatherIcon = (icon: string) => {
-    switch (icon) {
-      case 'sun':
-        return <Sun className="w-6 h-6 text-yellow-400" />;
-      case 'cloud':
-        return <Cloud className="w-6 h-6 text-gray-400" />;
-      case 'rain':
-        return <CloudRain className="w-6 h-6 text-blue-400" />;
-      case 'snow':
-        return <Snowflake className="w-6 h-6 text-blue-200" />;
-      default:
-        return <Wind className="w-6 h-6 text-gray-500" />;
-    }
-  };
+    // This would normally fetch from a real weather API
+    // For demo purposes, we'll use mocked data
+    const fetchWeather = () => {
+      setLoading(true);
+      
+      // Simulate API call
+      setTimeout(() => {
+        const conditions = ['sunny', 'cloudy', 'rainy', 'snowy', 'windy'];
+        const randomCondition = conditions[Math.floor(Math.random() * conditions.length)];
+        const randomTemp = Math.floor(Math.random() * 30) + 5; // 5 to 35°C
+        
+        const weatherIcons = {
+          sunny: <Sun className="h-6 w-6 text-amber-500" />,
+          cloudy: <Cloud className="h-6 w-6 text-gray-400" />,
+          rainy: <CloudRain className="h-6 w-6 text-blue-400" />,
+          snowy: <CloudSnow className="h-6 w-6 text-blue-200" />,
+          windy: <Wind className="h-6 w-6 text-gray-500" />
+        };
+        
+        setWeather({
+          temperature: randomTemp,
+          condition: randomCondition,
+          humidity: Math.floor(Math.random() * 60) + 30, // 30% to 90%
+          windSpeed: Math.floor(Math.random() * 30) + 5, // 5 to 35 km/h
+          icon: weatherIcons[randomCondition as keyof typeof weatherIcons]
+        });
+        
+        setLoading(false);
+      }, 1000);
+    };
+    
+    fetchWeather();
+  }, [location]);
 
   if (loading) {
     return (
-      <Card className="overflow-hidden">
+      <Card>
         <CardContent className="p-4">
-          <Skeleton className="h-6 w-40 mb-4" />
-          <div className="flex items-center gap-4 mb-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <Skeleton className="h-8 w-28" />
-          </div>
-          <div className="flex gap-2 justify-between">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-20 w-12" />
-            ))}
+          <div className="animate-pulse flex space-x-4">
+            <div className="rounded-full bg-gray-200 h-10 w-10"></div>
+            <div className="flex-1 space-y-3 py-1">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="space-y-2">
+                <div className="h-3 bg-gray-200 rounded"></div>
+                <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (!weather) return null;
+  if (!weather) {
+    return null;
+  }
 
   return (
-    <Card className="overflow-hidden bg-white/80 backdrop-blur-sm shadow-sm">
+    <Card>
       <CardContent className="p-4">
-        <h3 className="text-sm font-medium text-gray-500 mb-2">Current Weather</h3>
-        <div className="flex items-center mb-4">
-          <div className="mr-4">{renderWeatherIcon(weather.icon)}</div>
+        <div className="flex items-center justify-between">
           <div>
-            <div className="text-2xl font-bold">{weather.temperature}°C</div>
-            <div className="text-sm text-gray-500">{weather.location}</div>
-          </div>
-        </div>
-        
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-xs text-gray-500">
-            Humidity: {weather.humidity}%
-          </div>
-          <div className="text-xs text-gray-500">
-            Wind: {weather.windSpeed} km/h
-          </div>
-        </div>
-        
-        <h4 className="text-xs font-medium text-gray-500 mb-2">5-Day Forecast</h4>
-        <div className="flex justify-between">
-          {weather.forecast.map((day, index) => (
-            <div key={index} className="flex flex-col items-center">
-              <span className="text-xs font-medium">{day.day}</span>
-              <div className="my-1">{renderWeatherIcon(day.icon)}</div>
-              <span className="text-xs">{day.temperature}°C</span>
+            <h3 className="font-medium text-sm">{location}</h3>
+            <div className="flex items-center mt-1">
+              <span className="text-2xl font-bold">{weather.temperature}°C</span>
+              <span className="ml-2 text-sm capitalize text-gray-600">{weather.condition}</span>
             </div>
-          ))}
+          </div>
+          <div className="bg-blue-50 p-2 rounded-full">
+            {weather.icon}
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2 mt-4 text-sm text-gray-600">
+          <div>
+            <p className="text-xs">Humidity</p>
+            <p className="font-medium">{weather.humidity}%</p>
+          </div>
+          <div>
+            <p className="text-xs">Wind</p>
+            <p className="font-medium">{weather.windSpeed} km/h</p>
+          </div>
         </div>
       </CardContent>
     </Card>

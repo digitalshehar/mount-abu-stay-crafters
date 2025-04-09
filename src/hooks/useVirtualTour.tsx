@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, ArrowLeft, ArrowRight, RotateCw, ZoomIn, ZoomOut } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 interface VirtualTourProps {
   isOpen: boolean;
@@ -10,106 +10,181 @@ interface VirtualTourProps {
   hotelName: string;
 }
 
-const VirtualTourDialog: React.FC<VirtualTourProps> = ({ isOpen, onClose, hotelName }) => {
-  const [currentView, setCurrentView] = useState(0);
-  const [zoom, setZoom] = useState(1);
+export const useVirtualTour = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(0);
   
-  const viewPoints = [
-    { name: 'Lobby', image: 'https://images.unsplash.com/photo-1590073242678-70ee3fc28f8e?auto=format&fit=crop&q=80&w=2074&ixlib=rb-4.0.3' },
-    { name: 'Room', image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3' },
-    { name: 'Bathroom', image: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3' },
-    { name: 'Restaurant', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3' },
+  // Mock panoramic images for the virtual tour
+  const panoramicViews = [
+    'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3',
+    'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3',
+    'https://images.unsplash.com/photo-1540304453527-62f979142a17?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3',
+    'https://images.unsplash.com/photo-1596436889106-be35e843f974?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3'
   ];
   
-  const handleNext = () => {
-    setCurrentView((prev) => (prev + 1) % viewPoints.length);
+  const locations = [
+    'Hotel Entrance',
+    'Lobby',
+    'Restaurant',
+    'Superior Room'
+  ];
+  
+  const startVirtualTour = () => {
+    setIsLoading(true);
+    
+    // Simulate loading
+    setTimeout(() => {
+      setIsLoading(false);
+      setCurrentPosition(0);
+    }, 1000);
   };
   
-  const handlePrevious = () => {
-    setCurrentView((prev) => (prev - 1 + viewPoints.length) % viewPoints.length);
+  const nextPosition = () => {
+    setCurrentPosition((prev) => 
+      prev === panoramicViews.length - 1 ? 0 : prev + 1
+    );
   };
   
-  const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 0.2, 2));
+  const prevPosition = () => {
+    setCurrentPosition((prev) => 
+      prev === 0 ? panoramicViews.length - 1 : prev - 1
+    );
   };
   
-  const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 0.2, 0.6));
-  };
-  
-  const handleResetZoom = () => {
-    setZoom(1);
-  };
-  
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 bg-black text-white">
-        <DialogHeader className="p-4 flex flex-row items-center justify-between">
-          <div>
-            <DialogTitle className="text-white">Virtual Tour: {hotelName}</DialogTitle>
-            <DialogDescription className="text-gray-300">
-              Currently viewing: {viewPoints[currentView].name}
-            </DialogDescription>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-white">
-            <X className="h-5 w-5" />
-          </Button>
-        </DialogHeader>
-        
-        <div className="relative flex-1 overflow-hidden">
-          <img
-            src={viewPoints[currentView].image}
-            alt={viewPoints[currentView].name}
-            className="w-full h-full object-cover transition-transform duration-300"
-            style={{ transform: `scale(${zoom})` }}
-          />
+  const VirtualTourComponent: React.FC<VirtualTourProps> = ({ isOpen, onClose, hotelName }) => {
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
+    
+    const handleZoomIn = () => {
+      setZoom((prev) => Math.min(prev + 0.2, 2));
+    };
+    
+    const handleZoomOut = () => {
+      setZoom((prev) => Math.max(prev - 0.2, 0.6));
+    };
+    
+    const handleRotate = () => {
+      setRotation((prev) => (prev + 90) % 360);
+    };
+    
+    const resetView = () => {
+      setZoom(1);
+      setRotation(0);
+    };
+    
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-5xl h-[80vh] p-0 flex flex-col">
+          <DialogHeader className="p-4 bg-black text-white">
+            <div className="flex justify-between items-center">
+              <DialogTitle>{hotelName} - Virtual Tour</DialogTitle>
+              <Button variant="ghost" size="icon" onClick={onClose} className="text-white">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </DialogHeader>
           
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm p-2 rounded-lg flex items-center space-x-2">
-            <Button variant="outline" size="icon" onClick={handlePrevious}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            
-            {viewPoints.map((point, index) => (
+          <div className="flex-1 bg-black relative overflow-hidden">
+            {isLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-12 w-12 border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <div className="h-full w-full relative">
+                <img
+                  src={panoramicViews[currentPosition]}
+                  alt={`${hotelName} - ${locations[currentPosition]}`}
+                  className="h-full w-full object-cover transition-all duration-300"
+                  style={{
+                    transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                    transformOrigin: 'center',
+                  }}
+                />
+                
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-60 text-white px-4 py-2 rounded-full text-sm">
+                  {locations[currentPosition]}
+                </div>
+                
+                <div className="absolute inset-x-0 bottom-4 flex justify-center gap-2">
+                  {panoramicViews.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`h-2 w-2 rounded-full ${index === currentPosition ? 'bg-white' : 'bg-gray-500'}`}
+                      onClick={() => setCurrentPosition(index)}
+                    ></button>
+                  ))}
+                </div>
+                
+                <button
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 text-white p-2 rounded-full"
+                  onClick={prevPosition}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                
+                <button
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-60 text-white p-2 rounded-full"
+                  onClick={nextPosition}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+                
+                <div className="absolute top-4 right-4 flex flex-col gap-2">
+                  <button
+                    className="bg-black bg-opacity-60 text-white p-2 rounded-full"
+                    onClick={handleZoomIn}
+                  >
+                    <ZoomIn className="h-5 w-5" />
+                  </button>
+                  
+                  <button
+                    className="bg-black bg-opacity-60 text-white p-2 rounded-full"
+                    onClick={handleZoomOut}
+                  >
+                    <ZoomOut className="h-5 w-5" />
+                  </button>
+                  
+                  <button
+                    className="bg-black bg-opacity-60 text-white p-2 rounded-full"
+                    onClick={handleRotate}
+                  >
+                    <RotateCcw className="h-5 w-5" />
+                  </button>
+                  
+                  <button
+                    className="bg-black bg-opacity-60 text-white p-2 rounded-full text-xs"
+                    onClick={resetView}
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="p-4 bg-gray-100 flex flex-wrap gap-2">
+            {locations.map((location, index) => (
               <Button
                 key={index}
-                variant={index === currentView ? "default" : "outline"}
+                variant={currentPosition === index ? "default" : "outline"}
                 size="sm"
-                onClick={() => setCurrentView(index)}
+                onClick={() => setCurrentPosition(index)}
               >
-                {point.name}
+                {location}
               </Button>
             ))}
-            
-            <Button variant="outline" size="icon" onClick={handleNext}>
-              <ArrowRight className="h-4 w-4" />
-            </Button>
           </div>
-          
-          <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm p-2 rounded-lg flex items-center space-x-2">
-            <Button variant="outline" size="icon" onClick={handleZoomIn}>
-              <ZoomIn className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={handleResetZoom}>
-              <RotateCw className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon" onClick={handleZoomOut}>
-              <ZoomOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-export const useVirtualTour = () => {
-  const startVirtualTour = () => {
-    // Could include additional setup logic here
-    return true;
+        </DialogContent>
+      </Dialog>
+    );
   };
   
   return {
     startVirtualTour,
-    VirtualTourComponent: VirtualTourDialog
+    isLoading,
+    currentPosition,
+    nextPosition,
+    prevPosition,
+    VirtualTourComponent
   };
 };
